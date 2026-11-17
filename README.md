@@ -12,6 +12,26 @@ Map how a research field grew: papers on a timeline, linked into a family tree b
 
 The live preview (link at the top right of this page) shows the made-up example in [`example/displaydata.json`](example/displaydata.json).
 
+## Sync with GitHub (recommended)
+
+The copy in your browser is lost if its data is cleared. A private repository of your own keeps every change and every earlier version, and works on any computer.
+
+1. [Create a private repository](https://github.com/new?name=paper-map-data&visibility=private) and tick **Add a README file**.
+2. [Create a token](https://github.com/settings/personal-access-tokens/new?name=Paper+Map&expires_in=366&contents=write). Under Repository access, choose **Only select repositories** and pick that repository. Under Permissions, the only one needed is **Contents: Read and write**. The link already sets it, and **Metadata (read-only)** comes with it automatically; remove anything else.
+3. In the page, open **Settings → GitHub sync**, paste the token and click **Connect**.
+
+### First time
+
+When you click **Connect**, the page creates `data/paper-map.json` in your private repository. That one file is your whole list, so you don't need to make it yourself. Already have a backup? Import it first (**Settings → Data → Import backup**), then connect, and the backup becomes that file.
+
+Notes you write are copied into `notes/`, and PDFs you attach go into `pdfs/`. Edit notes in the page; the copies in `notes/` are for reading.
+
+If the page says the repository can't be found, the token doesn't include it yet: open the token on GitHub and add the repository under 
+
+**Repository access**.
+
+On another computer, download `index.html` again and paste the token once more.
+
 ## Use it
 
 1. Download [`index.html`](index.html): open it and click **Download raw file**.
@@ -37,27 +57,6 @@ PDFs need GitHub sync. To export every note at once, use **Settings → Data →
 Can't drag, on a phone say? Modify the subtopic and choose its new place under **Inside**.
 
 ![Opening Exam season › Procrastination, adding a subtopic inside it, and seeing every level on the map](assets/subtopics.gif)
-
-
-## Sync with GitHub (recommended)
-
-The copy in your browser is lost if its data is cleared. A private repository of your own keeps every change and every earlier version, and works on any computer.
-
-1. [Create a private repository](https://github.com/new?name=paper-map-data&visibility=private) and tick **Add a README file**.
-2. [Create a token](https://github.com/settings/personal-access-tokens/new?name=Paper+Map&expires_in=366&contents=write). Under Repository access, choose **Only select repositories** and pick that repository. Under Permissions, the only one needed is **Contents: Read and write**. The link already sets it, and **Metadata (read-only)** comes with it automatically; remove anything else.
-3. In the page, open **Settings → GitHub sync**, paste the token and click **Connect**.
-
-### First time
-
-When you click **Connect**, the page creates `data/paper-map.json` in your private repository. That one file is your whole list, so you don't need to make it yourself. Already have a backup? Import it first (**Settings → Data → Import backup**), then connect, and the backup becomes that file.
-
-Notes you write are copied into `notes/`, and PDFs you attach go into `pdfs/`. Edit notes in the page; the copies in `notes/` are for reading.
-
-If the page says the repository can't be found, the token doesn't include it yet: open the token on GitHub and add the repository under 
-
-**Repository access**.
-
-On another computer, download `index.html` again and paste the token once more.
 
 ## Structure
 
