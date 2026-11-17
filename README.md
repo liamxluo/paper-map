@@ -8,11 +8,9 @@ Map how a research field grew: papers on a timeline, linked into a family tree b
 - **Tree:** you draw the lines between papers, what builds on what and what responds to what.
 - **Notes:** each paper keeps its PDF and your Markdown notes, ready to export as Markdown or PDF.
 
-![Each topic as a table, with status, notes, tags and concept cards](assets/table.png)
-
 The live preview (link at the top right of this page) shows the made-up example in [`example/displaydata.json`](example/displaydata.json).
 
-## Sync with GitHub (recommended)
+## Sync with GitHub (highly recommended)
 
 The copy in your browser is lost if its data is cleared. A private repository of your own keeps every change and every earlier version, and works on any computer.
 
