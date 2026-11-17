@@ -10,7 +10,7 @@ A family tree for the papers you read. Papers are laid out by year, one row per 
 
 Prefer Chinese? Use `simplifiedchineseversion.html` instead (简体中文版). Both files read the same data and backups.
 
-## Sync with GitHub (optional)
+## Sync with GitHub
 
 Keep your list in a private repository of your own, with every change saved and every version kept.
 
