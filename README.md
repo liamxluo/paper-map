@@ -10,6 +10,12 @@ Map how a research field grew: papers on a timeline, linked into a family tree b
 
 The live preview (link at the top right of this page) shows the made-up example in [`example/displaydata.json`](example/displaydata.json).
 
+## Two structures, one map
+
+**Where it belongs:** topics and subtopics, as many levels deep as you need. **What it connects to:** lines between any two papers, across topics and levels, each with an optional note.
+
+![Linking a paper to one in another subtopic, then giving the line a note](assets/lines.gif)
+
 ## Sync with GitHub (highly recommended)
 
 The copy in your browser is lost if its data is cleared. A private repository of your own keeps every change and every earlier version, and works on any computer.
