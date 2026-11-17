@@ -4,7 +4,7 @@ Map how a research field grew: papers on a timeline, linked into a family tree b
 
 ![Papers on a timeline, joined by hand-drawn lines](assets/preview.png)
 
-- **Timeline:** papers by topic and year, so you can see how a field developed.
+- **Timeline:** papers by topic and year.
 - **Family tree:** you draw the lines between papers, what builds on what and what responds to what.
 - **Notes:** each paper keeps its PDF and your Markdown notes, ready to export as Markdown or PDF.
 
