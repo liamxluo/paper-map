@@ -110,6 +110,11 @@ h1{font-family:var(--serif);font-weight:900;font-size:clamp(2.2rem,6.6vw,3.8rem)
 .net .edge.o{stroke-width:1.2;opacity:.55}
 .net .edge.p{opacity:0;stroke:var(--muted);stroke-dasharray:7 3}
 .net .edge.muted{opacity:.1}
+.net .edge-note{font-size:10.5px;font-style:italic;fill:var(--muted);paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round;pointer-events:none}
+.net .edge-note.muted{opacity:.2}
+.net.focus .edge-note{opacity:.12}
+.net.focus .edge-note.hot{opacity:1;fill:var(--ink)}
+.rel-note{font-size:.8rem;font-style:italic;color:var(--muted);margin:0 .6em 0 .1em}
 .net .node{cursor:pointer;outline:none}
 .net .node .hit{fill:transparent}
 .net .dot{stroke:var(--ink);stroke-width:1.2;fill:var(--surface)}
@@ -207,6 +212,10 @@ button.tagchip[aria-pressed="true"]{border-color:var(--ink);font-weight:500}
 .crumb .sep{font-family:var(--sans);font-weight:400;color:var(--faint);margin:0 .45em}
 .save-state{flex:none;font-size:.8rem;color:var(--faint);white-space:nowrap;max-width:22em;overflow:hidden;text-overflow:ellipsis}
 .appbar-actions{display:flex;gap:8px;flex:none}
+.preview-banner{background:var(--hl);border-top:1px solid var(--rule)}
+.preview-banner[hidden]{display:none}
+.preview-inner{padding-top:7px;padding-bottom:7px;font-size:.88rem;color:var(--ink)}
+.preview-banner a{color:var(--focus);font-weight:500;text-underline-offset:2px}
 .edit-banner{background:var(--ink);color:var(--bg)}
 .edit-banner[hidden]{display:none}
 .edit-inner{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding-top:7px;padding-bottom:7px;font-size:.88rem}
@@ -457,6 +466,9 @@ textarea.backup{width:100%;min-height:220px;font-family:ui-monospace,Menlo,Conso
       <button type="button" class="btn" id="btnSettings">Settings</button>
     </div>
   </div>
+  <div class="preview-banner" id="previewBanner" hidden>
+    <div class="wrap preview-inner">This is a preview with example data. Nothing you change here is saved. <a href="index.html" download="index.html">Download the page</a> to make your own.</div>
+  </div>
   <div class="edit-banner" id="editBanner" hidden>
     <div class="wrap edit-inner">
       <strong>Modify mode</strong>
@@ -576,6 +588,8 @@ function defaultTags(){ return [
 ]; }
 const PRIO_LABEL = {3:'★ Must read', 2:'○ Optional', 1:'· Background'};
 const DEFAULT_COLORS = {green:'#009473', red:'#E34234'};
+const PREVIEW_DATA = 'example/displaydata.json';
+let PREVIEW = false;
 const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
 /* ===================== utils ===================== */
@@ -584,7 +598,7 @@ function clone(o){ return JSON.parse(JSON.stringify(o)); }
 function debounce(fn, ms){ let t; return function(){ clearTimeout(t); const a = arguments; t = setTimeout(() => fn.apply(null, a), ms); }; }
 function reduceMotion(){ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
 function lsGet(k){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; }catch(e){ return null; } }
-function lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+function lsSet(k, v){ if(PREVIEW) return true; try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
 function textW(str, fs){ let w = 0; for(const ch of String(str)){ w += /[\u0000-\u024F\u0370-\u03FF\u2000-\u206F]/.test(ch) ? fs * 0.56 : fs; } return w; }
 function surnames(au){
   return String(au || '').replace(/\s*\(eds?\.\)/gi, '').split(/\s*,\s*|\s*&\s*/).map(x => x.trim())
@@ -659,9 +673,9 @@ function reindex(){
   const topics = Object.fromEntries(lib.topics.map(tp => [tp.id, tp]));
   const up = {}, down = {}, cUp = {}, cDown = {};
   lib.links = lib.links.filter(l => Array.isArray(l) && lib.entries[l[0]] && lib.entries[l[1]] && l[0] !== l[1]);
-  lib.links.forEach(([a, b, t]) => {
+  lib.links.forEach(([a, b, t, note]) => {
     if(t === 'o'){ (cDown[a] = cDown[a] || []).push(b); (cUp[b] = cUp[b] || []).push(a); }
-    else{ (down[a] = down[a] || []).push([b, t]); (up[b] = up[b] || []).push([a, t]); }
+    else{ (down[a] = down[a] || []).push([b, t, note || '']); (up[b] = up[b] || []).push([a, t, note || '']); }
   });
   const users = {}, children = {}, bySub = {};
   Object.values(lib.entries).forEach(e => {
@@ -714,7 +728,7 @@ function persistSettings(opts){ settings.updatedAt = Date.now(); lsSet(LS.settin
 const GH_KEY = 'rl:github';
 const GH_DELAY = 4000;
 const gh = {st:'off', msg:'', when:'', busy:false, again:false, rev:0, timer:null};
-function ghCfg(){ const c = lsGet(GH_KEY); return c && c.owner && c.repo && c.token ? Object.assign({branch:'main', path:'data/readinglist.json'}, c) : null; }
+function ghCfg(){ if(PREVIEW) return null; const c = lsGet(GH_KEY); return c && c.owner && c.repo && c.token ? Object.assign({branch:'main', path:'data/readinglist.json'}, c) : null; }
 function ghStore(c){ lsSet(GH_KEY, c); }
 function ghApi(c){ return 'https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + '/contents/' + String(c.path).split('/').filter(Boolean).map(encodeURIComponent).join('/'); }
 function ghHeaders(c, extra){ return Object.assign({'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + c.token}, extra || {}); }
@@ -725,6 +739,7 @@ function snapshot(){ return {app: APP, v:1, savedAt: Date.now(), lib, status:{ma
 function hhmm(ts){ const d = new Date(ts || Date.now()); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
 function stampText(ts){ const d = new Date(ts); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + ' ' + hhmm(ts); }
 function saveStateText(){
+  if(PREVIEW) return 'Preview: changes aren’t saved';
   if(ghCfg()){
     if(gh.st === 'saved') return 'Saved to GitHub' + (gh.when ? ' · ' + gh.when : '');
     if(gh.st === 'pending') return 'Unsaved changes, saving shortly';
@@ -1334,12 +1349,19 @@ function renderMap(force){
   s += '<rect class="axis-zone" x="' + left + '" y="' + (axisY - 4) + '" width="' + inner + '" height="30"></rect>';
   s += '<rect class="brush" id="brush" x="0" y="' + top + '" width="0" height="' + (axisY - top) + '"></rect>';
   s += '<g clip-path="url(#plotClip)">';
-  lib.links.forEach(([a, b, t]) => {
+  let notes = '';
+  lib.links.forEach(([a, b, t, note]) => {
     const p = P[a], q = P[b];
     if(!p || !q) return;
     const muted = (!ok[a] || !ok[b]) && t !== 'o' ? ' muted' : '';
     s += '<path class="edge ' + t + muted + '" data-a="' + a + '" data-b="' + b + '" d="' + edgePath(p, q) + '"></path>';
+    if(note){
+      const same = Math.abs(p.y - q.y) < 1;
+      const nx = (p.x + q.x) / 2, ny = same ? p.y - Math.min(20, 6 + Math.abs(q.x - p.x) * 0.08) / 2 - 4 : (p.y + q.y) / 2 - 3;
+      notes += '<text class="edge-note' + muted + '" data-a="' + a + '" data-b="' + b + '" x="' + nx.toFixed(1) + '" y="' + ny.toFixed(1) + '" text-anchor="middle">' + esc(note) + '</text>';
+    }
   });
+  s += notes;
   items.forEach(e => {
     (e.needs || []).forEach(c => { if(P[c] && P[e.id]) s += '<path class="edge p" data-a="' + c + '" data-b="' + e.id + '" d="' + edgePath(P[c], P[e.id]) + '"></path>'; });
   });
@@ -1406,7 +1428,7 @@ function applyFocus(id){
   }
   mapSvg.classList.add('focus');
   const related = new Set([id]);
-  mapSvg.querySelectorAll('.edge').forEach(e => {
+  mapSvg.querySelectorAll('.edge,.edge-note').forEach(e => {
     const hot = e.dataset.a === id || e.dataset.b === id;
     e.classList.toggle('hot', hot);
     if(hot){ related.add(e.dataset.a); related.add(e.dataset.b); }
@@ -1468,6 +1490,10 @@ function relChip(oid){
   return '<button type="button" class="relchip" data-select="' + oid + '">' + esc(mapLabel(o)) + ' ' + esc(o.y) + '</button>';
 }
 function group(title, ids){ ids = ids.filter(x => lib.entries[x]); return ids.length ? '<p class="rel"><span class="rel-k">' + title + '</span>' + ids.map(relChip).join('') + '</p>' : ''; }
+function relGroup(title, items){
+  items = items.filter(x => lib.entries[x[0]]);
+  return items.length ? '<p class="rel"><span class="rel-k">' + title + '</span>' + items.map(x => relChip(x[0]) + (x[2] ? '<span class="rel-note">' + esc(x[2]) + '</span>' : '')).join('') + '</p>' : '';
+}
 function infoHTML(id){
   const e = id && lib.entries[id];
   if(!e) return '<p class="info-empty">Click any dot to see what it builds on and what built on or challenged it, and mark it “Want to read” or “Read” here. On a wide screen, hover over a dot to preview its lines.</p>';
@@ -1484,10 +1510,10 @@ function infoHTML(id){
       '<p class="info-actions"><button type="button" class="linkbtn" data-card="' + e.id + '">Readings</button><button type="button" class="linkbtn" data-clear-sel="1">Clear selection</button></p></div></div>';
   }
   const up = IDX.up[id] || [], down = IDX.down[id] || [];
-  let rels = group('Builds on', up.filter(x => x[1] === 'b').map(x => x[0])) +
-    group('Responds to', up.filter(x => x[1] === 'c').map(x => x[0])) +
-    group('Built on by', down.filter(x => x[1] === 'b').map(x => x[0])) +
-    group('Challenged by', down.filter(x => x[1] === 'c').map(x => x[0])) +
+  let rels = relGroup('Builds on', up.filter(x => x[1] === 'b')) +
+    relGroup('Responds to', up.filter(x => x[1] === 'c')) +
+    relGroup('Built on by', down.filter(x => x[1] === 'b')) +
+    relGroup('Challenged by', down.filter(x => x[1] === 'c')) +
     group('Prerequisites', e.needs || []);
   if(ui.edit) rels += editLinksHTML(id) + '<p class="info-actions"><button type="button" class="btn" data-link-add="b" data-id="' + e.id + '">+ It builds on…</button><button type="button" class="btn" data-link-add="c" data-id="' + e.id + '">+ It responds to…</button></p>';
   else if(!rels) rels = '<p class="info-note">No lines yet. After reading it, turn on Modify mode to link the papers it builds on.</p>';
@@ -1510,8 +1536,21 @@ function editLinksHTML(id){
   return '<p class="rel"><span class="rel-k">Lines</span>' + L.map(l => {
     const other = lib.entries[l[0] === id ? l[1] : l[0]];
     const rel = l[0] === id ? (l[2] === 'c' ? 'Challenged by' : 'Built on by') : (l[2] === 'c' ? 'Responds to' : 'Builds on');
-    return '<span class="pick">' + esc(rel + ': ' + mapLabel(other) + ' ' + other.y) + '<button type="button" data-link-del="' + esc(l[0] + '|' + l[1] + '|' + l[2]) + '" aria-label="Delete this line">×</button></span>';
+    const key = esc(l[0] + '|' + l[1] + '|' + l[2]);
+    return '<span class="pick">' + esc(rel + ': ' + mapLabel(other) + ' ' + other.y) + (l[3] ? ' · <em>' + esc(l[3]) + '</em>' : '') + '<button type="button" data-link-note="' + key + '" aria-label="Note on this line" title="Note on this line">✎</button><button type="button" data-link-del="' + key + '" aria-label="Delete this line">×</button></span>';
   }).join('') + '</p>';
+}
+function openLinkNote(a, b, ty){
+  const l = lib.links.find(x => x[0] === a && x[1] === b && x[2] === ty); if(!l) return;
+  openModal({
+    title:'Note on this line',
+    body:'<div class="form-grid"><label class="full">Shown on the map next to the line<input type="text" id="lnNote" maxlength="60" value="' + esc(l[3] || '') + '"></label></div>',
+    actions:[{label:'Cancel'}, {label:'Save', primary:true, onClick: bd => {
+      const v = bd.querySelector('#lnNote').value.trim();
+      if(v) l[3] = v; else l.length = 3;
+      reindex(); touchLib(); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected);
+    }}]
+  });
 }
 function openLinkPicker(id, type){
   const e = lib.entries[id]; if(!e) return;
@@ -1664,7 +1703,7 @@ function setEditUI(){
 function enterEditMode(then){ ui.edit = true; setEditUI(); renderTabs(); renderMain(); infoEl.innerHTML = infoHTML(ui.selected); toast('Modify mode on'); if(typeof then === 'function') setTimeout(then, 0); }
 function askEditMode(then){
   if(ui.edit){ ui.edit = false; setEditUI(); renderTabs(); renderMain(); infoEl.innerHTML = infoHTML(ui.selected); toast('Modify mode off'); return; }
-  if(settings.skipModifyConfirm){ enterEditMode(then); return; }
+  if(settings.skipModifyConfirm || PREVIEW){ enterEditMode(then); return; }
   openModal({
     title:'Turn on Modify mode',
     body:'<p>In Modify mode you can change everything in your list:</p><ul>' +
@@ -2230,6 +2269,7 @@ function openSettings(){
 const REPO_LINK = 'https://github.com/new?name=readinglist-data&visibility=private&description=Reading+List+data';
 const TOKEN_LINK = 'https://github.com/settings/personal-access-tokens/new?name=Reading+List&description=Lets+Reading+List+save+to+one+private+repository&expires_in=366&contents=write';
 function ghSectionHTML(){
+  if(PREVIEW) return '<div class="set-section"><h3>GitHub sync</h3><p class="hint">Not available in the preview. Download the page to use it with your own list.</p></div>';
   const g = lsGet(GH_KEY) || {};
   const has = !!(g.owner && g.repo && g.token);
   return '<div class="set-section"><h3>GitHub sync</h3>' +
@@ -2419,6 +2459,7 @@ infoEl.addEventListener('click', ev => {
   const tg = ev.target.closest('[data-tagtoggle]'); if(tg && ui.selected){ toggleTag(ui.selected, tg.dataset.tagtoggle); return; }
   if(ev.target.closest('[data-act="tags"]')){ openTagManager(); return; }
   const la = ev.target.closest('[data-link-add]'); if(la){ openLinkPicker(la.dataset.id, la.dataset.linkAdd); return; }
+  const ln = ev.target.closest('[data-link-note]'); if(ln){ const [a, b, ty] = ln.dataset.linkNote.split('|'); openLinkNote(a, b, ty); return; }
   const ld = ev.target.closest('[data-link-del]');
   if(ld){
     const [a, b, ty] = ld.dataset.linkDel.split('|');
@@ -2552,7 +2593,26 @@ window.addEventListener('hashchange', () => {
 });
 
 /* ===================== init ===================== */
-loadAll();
+/* Served from a website next to example/displaydata.json → read-only preview of that example.
+   Opened as a downloaded file → the normal app. */
+async function loadPreview(){
+  if(!/^https?:$/.test(location.protocol) || /[?&]app\b/.test(location.search)) return null;
+  try{
+    const r = await fetch(PREVIEW_DATA, {cache:'no-cache'});
+    if(!r.ok) return null;
+    const obj = await r.json();
+    return obj && validLib(obj.lib) ? obj : null;
+  }catch(e){ return null; }
+}
+(async () => {
+const demo = await loadPreview();
+if(demo){
+  PREVIEW = true;
+  lib = normalizeLib(demo.lib);
+  status = (demo.status && demo.status.map) || {}; statusTime = 0;
+  settings = normalizeSettings(Object.assign(defaultSettings(), demo.settings || {}));
+  document.getElementById('previewBanner').hidden = false;
+}else loadAll();
 reindex();
 applyColors();
 const initView = resolveView(location.hash.slice(1));
@@ -2565,7 +2625,7 @@ const onResize = debounce(() => { renderMap(false); setBarH(); document.getEleme
 if('ResizeObserver' in window) new ResizeObserver(onResize).observe(mapScroll);
 window.addEventListener('resize', onResize);
 if(location.hash.length > 1) setTimeout(() => scrollToEl(mainEl, 'start'), 80);
-if(ghCfg()) ghLoad();
+if(!PREVIEW && ghCfg()) ghLoad();
 const reTheme = () => { renderMain(); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); };
 if(window.matchMedia){ const mq = window.matchMedia('(prefers-color-scheme: dark)'); if(mq.addEventListener) mq.addEventListener('change', reTheme); }
 if('MutationObserver' in window) new MutationObserver(reTheme).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
@@ -2578,6 +2638,7 @@ window.addEventListener('beforeunload', ev => {
   const c = ghCfg();
   if(c && (c.dirty || gh.busy)){ ev.preventDefault(); ev.returnValue = ''; }
 });
+})();
 })();
 </script>
 </body>

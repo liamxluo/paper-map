@@ -1,16 +1,22 @@
 # Reading List
 
-A family tree for the papers you read. Papers are laid out by year, one row per topic. Mark them *Read* or *Want to read*, tag them, and draw the lines between them yourself.
+A family tree for the papers you read.
+
+![Papers on a timeline, joined by hand-drawn lines](assets/preview.png)
+
+Papers sit on a timeline, one row per topic. Mark what you have read and what you want to read, tag things in your own colours, and draw the lines between papers yourself. It is one HTML file, with nothing to install.
+
+The live preview (link at the top right of this page) shows the made-up example in [`example/displaydata.json`](example/displaydata.json).
 
 ## Use it
 
-1. Download `index.html`: open it above and click **Download raw file**.
+1. Download [`index.html`](index.html): open it and click **Download raw file**.
 2. Double-click it to open it in your browser.
-3. Click **Modify** to add topics and papers. Everything is saved in that browser automatically.
+3. Click **Modify** to add topics and papers. Everything is saved in that browser.
 
-Prefer Chinese? Use `simplifiedchineseversion.html` instead (简体中文版). Both files read the same data and backups.
+To start from the example instead, use **Settings → Data → Import backup** and choose `displaydata.json`.
 
-## Sync with GitHub
+## Sync with GitHub (optional)
 
 Keep your list in a private repository of your own, with every change saved and every version kept.
 
@@ -19,6 +25,12 @@ Keep your list in a private repository of your own, with every change saved and 
 3. In the page, open **Settings → GitHub sync**, paste the token and click **Connect**.
 
 On another computer, download `index.html` again and paste the token once more.
+
+## What's in this repository
+
+- `index.html` – the whole app
+- `example/displaydata.json` – the example shown in the live preview
+- `assets/` – images for this page
 
 ## Privacy
 
