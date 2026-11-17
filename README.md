@@ -1,5 +1,7 @@
 # Reading List
 
+![Papers on a timeline, joined by hand-drawn lines](assets/preview.png)
+
 A family tree for the papers you read.
 
 Papers sit on a timeline, one row per topic. Mark what you have read and what you want to read, tag things in your own colours, and draw the lines between papers yourself. It is one HTML file, with nothing to install.
@@ -23,8 +25,6 @@ The copy in your browser is lost if its data is cleared. A private repository of
 3. In the page, open **Settings → GitHub sync**, paste the token and click **Connect**.
 
 On another computer, simply download `index.html` again and paste the token once more.
-
-![Papers on a timeline, joined by hand-drawn lines](assets/preview.png)
 
 ## Repository Structure
 
