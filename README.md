@@ -24,9 +24,9 @@ The copy in your browser is lost if its data is cleared. A private repository of
 2. [Create a token](https://github.com/settings/personal-access-tokens/new?name=Reading+List&expires_in=366&contents=write). Under Repository access, choose **Only select repositories** and pick that repository.
 3. In the page, open **Settings → GitHub sync**, paste the token and click **Connect**.
 
-On another computer, download `index.html` again and paste the token once more.
+On another computer, simply download `index.html` again and paste the token once more.
 
-## Structure
+## Repository Structure
 
 ```
 /
