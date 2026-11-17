@@ -12,8 +12,8 @@
     "desc": "Everything currently balanced on the desk, in roughly the order it fell over.",
     "subs": [
      {
-      "id": "people",
-      "name": "People",
+      "id": "psych",
+      "name": "Psychology",
       "desc": "Why anyone does anything.",
       "chain": "",
       "groups": []
@@ -43,16 +43,16 @@
    }
   ],
   "entries": {
-   "kt1979": {
-    "id": "kt1979",
+   "psyecon1979": {
+    "id": "psyecon1979",
     "kind": "paper",
     "topic": "pile",
-    "sub": "people",
+    "sub": "psych",
     "group": "",
     "y": 1979,
-    "au": "Kahneman, D. & Tversky, A.",
-    "t": "Prospect Theory: An Analysis of Decision under Risk",
-    "v": "Econometrica 47(2): 263–291",
+    "au": "",
+    "t": "A Perspective on Psychology and Economics",
+    "v": "",
     "l": "Paper",
     "p": 3,
     "tags": [
@@ -63,7 +63,8 @@
     ],
     "f": "Why losing a tenner hurts more than finding one feels good.",
     "n": "Read the first ten pages. The rest can wait until after lunch.",
-    "needs": []
+    "needs": [],
+    "short": "A perspective on psychology and economics"
    },
    "chem2015": {
     "id": "chem2015",
@@ -88,18 +89,19 @@
     "n": "Exam on Tuesday.",
     "needs": [
      "caffeine"
-    ]
+    ],
+    "short": "A Level Chemistry"
    },
-   "nosrat2017": {
-    "id": "nosrat2017",
+   "cooking2017": {
+    "id": "cooking2017",
     "kind": "paper",
     "topic": "pile",
     "sub": "dinner",
     "group": "",
     "y": 2017,
-    "au": "Nosrat, S.",
+    "au": "",
     "t": "Salt, Fat, Acid, Heat",
-    "v": "Simon & Schuster",
+    "v": "",
     "l": "Book",
     "p": 1,
     "tags": [
@@ -110,7 +112,8 @@
     ],
     "f": "Four elements of good cooking.",
     "n": "The only book here that has improved dinner.",
-    "needs": []
+    "needs": [],
+    "short": "Salt, Fat, Acid, Heat"
    },
    "caffeine": {
     "id": "caffeine",
@@ -125,16 +128,16 @@
     "why": "Required before opening any textbook.",
     "refs": []
    },
-   "carroll1996": {
-    "id": "carroll1996",
+   "astro1996": {
+    "id": "astro1996",
     "kind": "paper",
     "topic": "pile",
     "sub": "space",
     "group": "",
     "y": 1996,
-    "au": "Carroll, B. W. & Ostlie, D. A.",
+    "au": "",
     "t": "An Introduction to Modern Astrophysics",
-    "v": "Addison-Wesley",
+    "v": "",
     "l": "Textbook",
     "p": 2,
     "tags": [
@@ -145,25 +148,26 @@
     ],
     "f": "How stars live, burn out and occasionally explode.",
     "n": "Heavy enough to have its own gravity.",
-    "needs": []
+    "needs": [],
+    "short": "Modern astrophysics"
    }
   },
   "links": [
    [
-    "kt1979",
-    "carroll1996",
+    "psyecon1979",
+    "astro1996",
     "b",
     "no connection whatsoever"
    ],
    [
-    "carroll1996",
+    "astro1996",
     "chem2015",
     "c",
     "also unrelated"
    ],
    [
     "chem2015",
-    "nosrat2017",
+    "cooking2017",
     "b",
     "still nothing"
    ]
@@ -198,10 +202,14 @@
  },
  "status": {
   "map": {
-   "nosrat2017": "read",
-   "carroll1996": "want"
+   "cooking2017": "read",
+   "astro1996": "want"
   },
   "updatedAt": 1
  },
- "settings": {}
+ "settings": {},
+ "preview": {
+  "view": "pile-all",
+  "select": "caffeine"
+ }
 }
