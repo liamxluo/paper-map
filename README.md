@@ -35,3 +35,7 @@ On another computer, download `index.html` again and paste the token once more.
 ## Privacy
 
 The file contains no data and connects to nothing except your own repository, and only once you set one up. The token stays in the browser where you enter it. Don't use it on shared computers.
+
+## Credits
+
+The interface and code were built with help from Claude, an AI model made by Anthropic.

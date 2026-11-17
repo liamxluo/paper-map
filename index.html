@@ -606,15 +606,17 @@ function surnames(au){
 }
 function shortAu(au){
   const n = surnames(au);
-  if(!n.length) return au || 'Anonymous';
+  if(!n.length) return au || '';
   if(n.length === 1) return n[0];
   if(n.length === 2) return n[0] + ' & ' + n[1];
   return n[0] + ' et al.';
 }
+function shortTitle(s){ s = String(s || ''); return s.length > 44 ? s.slice(0, 42).replace(/\s+\S*$/, '') + '…' : s; }
 function mapLabel(e){
-  if(e.kind === 'concept') return e.short || e.t;
+  if(e.short) return e.short;
+  if(e.kind === 'concept') return e.t;
   const n = surnames(e.au);
-  if(!n.length) return String(e.t || '').slice(0, 12);
+  if(!n.length) return shortTitle(e.t);
   if(n.length === 1) return n[0];
   if(n.length === 2) return n[0] + ' & ' + n[1];
   return n[0] + ' et al.';
@@ -1039,7 +1041,7 @@ function renderProgress(){
 
 /* ===================== main content ===================== */
 function statusDots(e){
-  const st = stOf(e), lab = shortAu(e.au) + ' ' + e.y;
+  const st = stOf(e), lab = mapLabel(e) + ' ' + e.y;
   return '<span class="stset">' +
     '<button type="button" class="st want" data-st="want" data-id="' + e.id + '" aria-pressed="' + (st === 'want') + '" aria-label="Want to read: ' + esc(lab) + '" title="Want to read"></button>' +
     '<button type="button" class="st read" data-st="read" data-id="' + e.id + '" aria-pressed="' + (st === 'read') + '" aria-label="Read: ' + esc(lab) + '" title="Read"></button></span>';
@@ -1099,7 +1101,7 @@ function conceptCard(c){
   const done = conceptDone(c);
   const rows = r.refs.map(x => readingRow(x.e, x.n || '')).concat(r.kids.map(e => readingRow(e)));
   return '<article class="concept" id="card-' + c.id + '">' +
-    '<div class="concept-head"><h4>' + esc(c.t) + '</h4><span class="concept-meta">' + esc(c.y) + ' onwards · readings read ' + done[0] + ' / ' + done[1] + '</span></div>' +
+    '<div class="concept-head"><h4>' + esc(c.t) + '</h4><span class="concept-meta">' + esc(c.y) + ' onwards' + (done[1] ? ' · readings read ' + done[0] + ' / ' + done[1] : '') + '</span></div>' +
     (c.what ? '<p class="concept-what">' + esc(c.what) + '</p>' : '') +
     (c.why ? '<p class="concept-why"><span class="k">Why first</span>' + esc(c.why) + '</p>' : '') +
     (up.length ? '<p class="concept-links"><span class="k">Prerequisites</span>' + conceptChips(up) + '</p>' : '') +
@@ -1368,7 +1370,7 @@ function renderMap(force){
   const useSrc = settings.mapColor !== 'plain';
   items.slice().sort((a, b) => (a.p || 1) - (b.p || 1)).forEach(e => {
     const p = P[e.id];
-    const label = e.kind === 'concept' ? ('Concept: ' + e.t) : (e.y + ' ' + shortAu(e.au) + ': ' + e.t);
+    const label = e.kind === 'concept' ? ('Concept: ' + e.t) : ([e.y, shortAu(e.au)].filter(Boolean).join(' ') + ': ' + e.t);
     if(e.kind === 'concept'){
       const d = conceptDone(e);
       const cls = 'node cnode' + (d[1] && d[0] === d[1] ? ' cdone' : '') + (ui.selected === e.id ? ' sel' : '');
@@ -1503,7 +1505,7 @@ function infoHTML(id){
     const users = (IDX.users[e.id] || []).map(i => lib.entries[i]).sort(byYear).map(u => u.id);
     const d = conceptDone(e);
     return '<div class="info-grid"><p class="info-year">' + esc(e.y) + '</p><div>' +
-      '<p class="info-au">' + place + ' · readings read ' + d[0] + ' / ' + d[1] + '</p>' +
+      '<p class="info-au">' + place + (d[1] ? ' · readings read ' + d[0] + ' / ' + d[1] : '') + '</p>' +
       '<p class="info-t">' + esc(e.t) + '</p>' +
       (e.what ? '<p class="info-f">' + esc(e.what) + '</p>' : '') + (e.why ? '<p class="info-note">' + esc(e.why) + '</p>' : '') +
       group('Prerequisites', IDX.cUp[e.id] || []) + group('Next', IDX.cDown[e.id] || []) + group('Papers that use it', users) +
@@ -1519,7 +1521,7 @@ function infoHTML(id){
   else if(!rels) rels = '<p class="info-note">No lines yet. After reading it, turn on Modify mode to link the papers it builds on.</p>';
   const st = stOf(e);
   return '<div class="info-grid"><p class="info-year">' + esc(e.y) + '</p><div>' +
-    '<p class="info-au">' + esc(e.au) + ' · ' + place + '</p>' +
+    '<p class="info-au">' + (e.au ? esc(e.au) + ' · ' : '') + place + '</p>' +
     '<p class="info-t">' + esc(e.t) + '</p>' + (e.f ? '<p class="info-f">' + esc(e.f) + '</p>' : '') + infoTagsHTML(e) + rels +
     '<p class="info-actions"><button type="button" class="stbtn want" data-st="want" data-id="' + e.id + '" aria-pressed="' + (st === 'want') + '">Want to read</button><button type="button" class="stbtn read" data-st="read" data-id="' + e.id + '" aria-pressed="' + (st === 'read') + '">Read</button><button type="button" class="linkbtn" data-goto="' + e.id + '">Show in table</button>' +
     (ui.edit ? '<button type="button" class="linkbtn" data-edit="' + e.id + '">Modify</button>' : '') +
@@ -1564,7 +1566,7 @@ function openLinkPicker(id, type){
         const q = inp.value.trim().toLowerCase();
         const have = new Set(lib.links.filter(l => l[1] === id && l[2] === type).map(l => l[0]));
         const c = Object.values(lib.entries).filter(x => x.kind === 'paper' && !x.parent && x.id !== id && !have.has(x.id) && (!q || [x.y, x.au, x.t].join(' ').toLowerCase().includes(q))).sort(byYear).slice(0, 60);
-        list.innerHTML = c.map(x => '<button type="button" data-pick-link="' + x.id + '">' + esc(x.y + '  ' + shortAu(x.au) + ': ' + x.t) + '</button>').join('') || '<p class="hint" style="padding:.4em .6em">Nothing found.</p>';
+        list.innerHTML = c.map(x => '<button type="button" data-pick-link="' + x.id + '">' + esc([x.y, shortAu(x.au)].filter(Boolean).join('  ') + ': ' + x.t) + '</button>').join('') || '<p class="hint" style="padding:.4em .6em">Nothing found.</p>';
       };
       inp.addEventListener('input', draw);
       list.addEventListener('click', ev => {
@@ -1744,7 +1746,7 @@ function bindPickers(body, state, selfId){
       if(!q){ list.innerHTML = ''; return; }
       const terms = q.split(/\s+/);
       const hits = pool().filter(e => { const hay = (e.y + ' ' + (e.au || '') + ' ' + (e.t || '') + ' ' + (e.short || '')).toLowerCase(); return terms.every(t => hay.includes(t)); }).sort(byYear).slice(0, 8);
-      list.innerHTML = hits.map(e => '<button type="button" data-pick="' + e.id + '">' + esc(e.kind === 'concept' ? e.t : (e.y + '  ' + shortAu(e.au) + '  ' + e.t)) + '</button>').join('') || '';
+      list.innerHTML = hits.map(e => '<button type="button" data-pick="' + e.id + '">' + esc(e.kind === 'concept' ? e.t : [e.y, shortAu(e.au), e.t].filter(Boolean).join('  ')) + '</button>').join('') || '';
     };
     input.addEventListener('input', refresh);
     input.addEventListener('focus', refresh);
@@ -2615,9 +2617,11 @@ if(demo){
 }else loadAll();
 reindex();
 applyColors();
-const initView = resolveView(location.hash.slice(1));
+const pv = (demo && demo.preview) || {};
+const initView = resolveView(location.hash.slice(1) || pv.view || '');
 ui.topic = initView.topic; ui.sub = initView.sub;
 renderAll();
+if(pv.select && lib.entries[pv.select]) select(pv.select);
 setToc(isWide() && settings.toc !== 'closed', false);
 updateSaveState();
 setBarH();
