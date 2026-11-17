@@ -18,17 +18,36 @@ The live preview (link at the top right of this page) shows the made-up example 
 
 To start from the example instead, use **Settings → Data → Import backup** and choose `displaydata.json`.
 
+## Zoom the timeline
+
+![Dragging along the years to zoom in, dragging sideways to move, double-clicking a point](assets/zoom.gif)
+
+- **Drag along the year axis** to zoom into a period.
+- **Drag sideways** on the map to move along once you have zoomed in.
+- **Double-click** the map to zoom in on a point. Pinch or Ctrl + scroll zooms too.
+- **Years** at the top shows the period on screen; open it to type exact years or go back to all years.
+
+Over long spans, busy decades get more room and sparse years less; once you zoom in, the scale is even.
+
+## Notes and PDFs
+
+Open **Notes & PDF** on any paper, or click its notes in the table, to get a reading view: the PDF on the left, your notes on the right. Notes use Markdown and save as you type. Export one paper's notes from that view, or all of them from **Settings → Data → Export notes**, as a Markdown file or a PDF.
+
+With GitHub sync on, you can attach each paper's PDF. It is kept in your private repository under `pdfs/`, and every note is also saved there as a Markdown file under `notes/`, so you can read your notes on GitHub too. PDFs are usually copyrighted, so keep that repository private.
+
 ## Sync with GitHub (recommended)
 
 The copy in your browser is lost if its data is cleared. A private repository of your own keeps every change and every earlier version, and works on any computer.
 
 1. [Create a private repository](https://github.com/new?name=readinglist-data&visibility=private) and tick **Add a README file**.
-2. [Create a token](https://github.com/settings/personal-access-tokens/new?name=Reading+List&expires_in=366&contents=write). Under Repository access, choose **Only select repositories** and pick that repository. Under Permissions, the only one needed is **Contents: Read and write**. **Metadata (read-only)** comes with it automatically; remove anything else.
+2. [Create a token](https://github.com/settings/personal-access-tokens/new?name=Reading+List&expires_in=366&contents=write). Under Repository access, choose **Only select repositories** and pick that repository. Under Permissions, the only one needed is **Contents: Read and write**. The link already sets it, and **Metadata (read-only)** comes with it automatically; remove anything else.
 3. In the page, open **Settings → GitHub sync**, paste the token and click **Connect**.
 
 ### First time
 
 When you click **Connect**, the page creates `data/readinglist.json` in your private repository. That one file is your whole list, so you don't need to make it yourself. Already have a backup? Import it first (**Settings → Data → Import backup**), then connect, and the backup becomes that file.
+
+Notes you write are copied into `notes/`, and PDFs you attach go into `pdfs/`. Edit notes in the page; the copies in `notes/` are for reading.
 
 If the page says the repository can't be found, the token doesn't include it yet: open the token on GitHub and add the repository under **Repository access**.
 
@@ -45,13 +64,12 @@ On another computer, download `index.html` again and paste the token once more.
 │   └── displaydata.json    the example shown in the live preview
 └── assets/
     ├── preview.png         the map at the top of this page
-    └── table.png           the list view below it
+    ├── table.png           the list view below it
+    └── zoom.gif            zooming the timeline
 ```
 
-## Privacy
+## Good to know
 
-The file contains no data and connects to nothing except your own repository, and only once you set one up. The token stays in the browser where you enter it. Don't use it on shared computers.
+**Privacy.** The file holds no data and connects to nothing except your own repository, and only once you set one up. The token stays in the browser where you enter it, so don't use it on shared computers.
 
-## Credits
-
-The interface and code were built with help from Claude, an AI model made by Anthropic.
+**Credits.** The interface and code were built with help from Claude, an AI model made by Anthropic.
