@@ -23,7 +23,7 @@ To start from the example instead, use **Settings → Data → Import backup** a
 The copy in your browser is lost if its data is cleared. A private repository of your own keeps every change and every earlier version, and works on any computer.
 
 1. [Create a private repository](https://github.com/new?name=readinglist-data&visibility=private) and tick **Add a README file**.
-2. [Create a token](https://github.com/settings/personal-access-tokens/new?name=Reading+List&expires_in=366&contents=write). Under Repository access, choose **Only select repositories** and pick that repository. Under Permissions, the only one needed is **Contents: Read and write**. The link already sets it, and **Metadata (read-only)** comes with it automatically; remove anything else.
+2. [Create a token](https://github.com/settings/personal-access-tokens/new?name=Reading+List&expires_in=366&contents=write). Under Repository access, choose **Only select repositories** and pick that repository. Under Permissions, the only one needed is **Contents: Read and write**. **Metadata (read-only)** comes with it automatically; remove anything else.
 3. In the page, open **Settings → GitHub sync**, paste the token and click **Connect**.
 
 ### First time
