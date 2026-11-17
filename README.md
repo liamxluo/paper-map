@@ -1,8 +1,6 @@
-# Paper Map
+![Paper Map: papers on a timeline, joined by hand-drawn lines](assets/preview.png)
 
 Map how a research field grew: papers on a timeline, linked into a family tree by you, each with its PDF and notes. One HTML file, nothing to install.
-
-![Papers on a timeline, joined by hand-drawn lines](assets/preview.png)
 
 - **Timeline:** papers by topic and year.
 - **Tree:** you draw the lines between papers, what builds on what and what responds to what.
@@ -11,7 +9,6 @@ Map how a research field grew: papers on a timeline, linked into a family tree b
 ![Each topic as a table, with status, notes, tags and concept cards](assets/table.png)
 
 The live preview (link at the top right of this page) shows the made-up example in [`example/displaydata.json`](example/displaydata.json).
-
 
 ## Sync with GitHub (highly recommended)
 
@@ -27,9 +24,7 @@ When you click **Connect**, the page creates `data/paper-map.json` in your priva
 
 Notes you write are copied into `notes/`, and PDFs you attach go into `pdfs/`. Edit notes in the page; the copies in `notes/` are for reading.
 
-If the page says the repository can't be found, the token doesn't include it yet: open the token on GitHub and add the repository under 
-
-**Repository access**.
+If the page says the repository can't be found, the token doesn't include it yet: open the token on GitHub and add the repository under **Repository access**.
 
 On another computer, download `index.html` again and paste the token once more.
 
