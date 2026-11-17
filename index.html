@@ -2275,7 +2275,7 @@ function ghSectionHTML(){
   const g = lsGet(GH_KEY) || {};
   const has = !!(g.owner && g.repo && g.token);
   return '<div class="set-section"><h3>GitHub sync</h3>' +
-    '<p class="hint">Optional. Keeps your list in a private GitHub repository you own: each change is saved there within seconds, earlier versions stay in its history, and you can open the list on any device. The token stays in this browser only.</p>' +
+    '<p class="hint">Recommended: the copy in this browser is lost if its data is cleared. This keeps your list in a private GitHub repository you own: each change is saved there within seconds, earlier versions stay in its history, and you can open the list on any device. The token stays in this browser only.</p>' +
     (has ? '' : '<ol class="gh-steps">' +
       '<li><a href="' + REPO_LINK + '" target="_blank" rel="noopener">Create a private repository</a>. The name is filled in; tick <em>Add a README file</em>.</li>' +
       '<li><a href="' + TOKEN_LINK + '" target="_blank" rel="noopener">Create a token</a>: under Repository access, choose <em>Only select repositories</em> and pick that repository. Everything else is filled in.</li>' +
