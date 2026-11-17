@@ -1,10 +1,12 @@
-# Reading List
+# Paper Map
 
-A family tree for the papers you read.
+Map how a research field grew: papers on a timeline, linked into a family tree by you, each with its PDF and notes. One HTML file, nothing to install.
 
 ![Papers on a timeline, joined by hand-drawn lines](assets/preview.png)
 
-Papers sit on a timeline, one row per topic. Mark what you have read and what you want to read, tag things in your own colours, and draw the lines between papers yourself. It is one HTML file, with nothing to install.
+- **Timeline:** papers by topic and year, so you can see how a field developed.
+- **Family tree:** you draw the lines between papers, what builds on what and what responds to what.
+- **Notes:** each paper keeps its PDF and your Markdown notes, ready to export as Markdown or PDF.
 
 ![Each topic as a table, with status, notes, tags and concept cards](assets/table.png)
 
@@ -22,30 +24,31 @@ To start from the example instead, use **Settings → Data → Import backup** a
 
 ![Dragging along the years to zoom in, dragging sideways to move, double-clicking a point](assets/zoom.gif)
 
-- **Drag along the year axis** to zoom into a period.
-- **Drag sideways** on the map to move along once you have zoomed in.
-- **Double-click** the map to zoom in on a point. Pinch or Ctrl + scroll zooms too.
-- **Years** at the top shows the period on screen; open it to type exact years or go back to all years.
+## Subtopics inside subtopics
 
-Over long spans, busy decades get more room and sparse years less; once you zoom in, the scale is even.
+![Opening Exam season › Procrastination, adding a subtopic inside it, and seeing every level on the map](assets/subtopics.gif)
+
+![Dragging a subtopic under another topic, then making it a topic of its own, then undoing](assets/drag.gif)
+
+Can't drag, on a phone say? Modify the subtopic and choose its new place under **Inside**.
 
 ## Notes and PDFs
 
-Open **Notes & PDF** on any paper, or click its notes in the table, to get a reading view: the PDF on the left, your notes on the right. Notes use Markdown and save as you type. Export one paper's notes from that view, or all of them from **Settings → Data → Export notes**, as a Markdown file or a PDF.
+![Opening a paper’s notes, attaching its PDF, writing Markdown notes beside it, exporting them](assets/notes.gif)
 
-With GitHub sync on, you can attach each paper's PDF. It is kept in your private repository under `pdfs/`, and every note is also saved there as a Markdown file under `notes/`, so you can read your notes on GitHub too. PDFs are usually copyrighted, so keep that repository private.
+PDFs need GitHub sync. To export every note at once, use **Settings → Data → Export notes**.
 
 ## Sync with GitHub (recommended)
 
 The copy in your browser is lost if its data is cleared. A private repository of your own keeps every change and every earlier version, and works on any computer.
 
-1. [Create a private repository](https://github.com/new?name=readinglist-data&visibility=private) and tick **Add a README file**.
-2. [Create a token](https://github.com/settings/personal-access-tokens/new?name=Reading+List&expires_in=366&contents=write). Under Repository access, choose **Only select repositories** and pick that repository. Under Permissions, the only one needed is **Contents: Read and write**. The link already sets it, and **Metadata (read-only)** comes with it automatically; remove anything else.
+1. [Create a private repository](https://github.com/new?name=paper-map-data&visibility=private) and tick **Add a README file**.
+2. [Create a token](https://github.com/settings/personal-access-tokens/new?name=Paper+Map&expires_in=366&contents=write). Under Repository access, choose **Only select repositories** and pick that repository. Under Permissions, the only one needed is **Contents: Read and write**. The link already sets it, and **Metadata (read-only)** comes with it automatically; remove anything else.
 3. In the page, open **Settings → GitHub sync**, paste the token and click **Connect**.
 
 ### First time
 
-When you click **Connect**, the page creates `data/readinglist.json` in your private repository. That one file is your whole list, so you don't need to make it yourself. Already have a backup? Import it first (**Settings → Data → Import backup**), then connect, and the backup becomes that file.
+When you click **Connect**, the page creates `data/paper-map.json` in your private repository. That one file is your whole list, so you don't need to make it yourself. Already have a backup? Import it first (**Settings → Data → Import backup**), then connect, and the backup becomes that file.
 
 Notes you write are copied into `notes/`, and PDFs you attach go into `pdfs/`. Edit notes in the page; the copies in `notes/` are for reading.
 
@@ -63,12 +66,20 @@ On another computer, download `index.html` again and paste the token once more.
 ├── example/
 │   └── displaydata.json    the example shown in the live preview
 └── assets/
-    ├── *.png         
-    └── *.gif           
+    ├── *.png
+    └── *.gif
 ```
 
 ## Good to know
 
-**Privacy.** The file holds no data and connects to nothing except your own repository, and only once you set one up. The token stays in the browser where you enter it, so don't use it on shared computers.
+**Not a reference manager.** It maps and annotates what you read; it doesn't look up DOIs or format citations the way Zotero does.
+
+**Keep a copy.** Without GitHub sync, your list lives only in this browser, and clearing its data deletes it. Connect sync, or export a backup now and then.
+
+**Your token.** It stays in the browser where you enter it. Give it one private repository and **Contents: Read and write** only, and don't connect on shared computers.
+
+**PDFs and copyright.** Attached PDFs are stored in your own repository. Keep it private and only add papers you may keep a copy of; sharing them is where copyright trouble starts.
+
+**Privacy.** The file holds no data and connects to nothing except your own repository, and only once you set one up.
 
 **Credits.** The interface and code were built with help from Claude, an AI model made by Anthropic.

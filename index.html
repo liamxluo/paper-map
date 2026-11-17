@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Reading List</title>
+<title>Paper Map</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;900&display=swap">
@@ -92,7 +92,7 @@ h1{font-family:var(--serif);font-weight:900;font-size:clamp(2.2rem,6.6vw,3.8rem)
 .lp-subs input,.lp-topic input{accent-color:var(--ink)}
 
 /* central map */
-.map{display:grid;grid-template-columns:var(--lab-w,132px) minmax(0,1fr)}
+.map{display:grid;grid-template-columns:calc(var(--lab-w,132px) + var(--lab-extra,0px)) minmax(0,1fr)}
 .map-labels{display:grid;grid-auto-rows:var(--lane-h,46px);padding-top:var(--map-top,8px);align-content:start}
 .map-labels button{font-family:var(--serif);font-weight:600;font-size:.9rem;line-height:1.2;text-align:left;background:transparent;border:0;border-radius:4px 0 0 4px;padding:0 10px 0 8px;color:var(--ink);cursor:pointer;display:flex;align-items:center;min-width:0;overflow:hidden}
 .map-labels button.band{background:var(--band)}
@@ -287,8 +287,7 @@ main{padding-bottom:40px;scroll-margin-top:calc(var(--bar-h,120px) + env(safe-ar
 .branch-head{display:grid;grid-template-columns:1fr auto;column-gap:16px;align-items:baseline;border-bottom:2px solid var(--ink);padding-bottom:12px}
 .branch-head h2{font-family:var(--serif);font-weight:900;font-size:clamp(1.3rem,3.2vw,1.75rem);line-height:1.3;margin:0}
 .branch-count{margin:0;color:var(--muted);font-size:.9rem;font-variant-numeric:tabular-nums}
-.branch-desc,.chain{grid-column:1 / -1;margin:.4em 0 0;max-width:52em}
-.chain{color:var(--muted);font-size:.88rem}
+.branch-desc{grid-column:1 / -1;margin:.4em 0 0;max-width:52em}
 .subs-row{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:.65em}
 .head-edit{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:8px;margin-top:.7em}
 .subchip{font-size:.83rem;padding:.05em .7em;border:1px solid var(--rule-strong);border-radius:999px;background:transparent;color:var(--ink);cursor:pointer}
@@ -524,6 +523,36 @@ body.reader-open{overflow:hidden}
   #printArea .md{color:#000}
   @page{margin:18mm}
 }
+
+/* ---------- nested subtopics ---------- */
+.toc-sub{position:relative}
+.toc-subs .toc-sub > .toc-link{padding-left:calc(36px + var(--d,0) * 16px)}
+.toc-caret.sub{position:absolute;left:calc(13px + var(--d,0) * 16px);top:0;bottom:0;width:22px;z-index:1}
+.crumb .crumb-mid{color:var(--muted)}
+.branch.nested{margin-left:calc(var(--d,1) * 18px);padding-left:16px;border-left:2px solid var(--rule)}
+.nest-h{display:flex;align-items:baseline;flex-wrap:wrap;gap:.6em}
+.nest-link{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.nest-link:hover{text-decoration:underline;text-underline-offset:3px}
+.nest-in{font-family:var(--sans);font-size:.78rem;font-weight:400;color:var(--muted)}
+.map-labels button{padding-left:calc(8px + var(--d,0) * 14px)}
+.lane-in{color:var(--faint);font-family:var(--sans);font-weight:400;margin-right:.3em}
+@media (max-width:760px){
+  .crumb .crumb-mid{display:none}
+  .branch.nested{margin-left:calc(var(--d,1) * 8px);padding-left:10px}
+  .map-labels button{padding-left:5px}
+}
+
+/* ---------- dragging in Contents (Modify mode) ---------- */
+.toc-row{position:relative}
+.toc-drag{position:absolute;right:4px;top:50%;transform:translateY(-50%);z-index:2;cursor:grab;color:var(--faint);font-size:15px;line-height:1;padding:5px 6px;border-radius:4px;user-select:none;-webkit-user-select:none}
+.toc-drag:hover{color:var(--ink);background:var(--band)}
+.toc-drag:active{cursor:grabbing}
+body.editing .toc-link{padding-right:34px}
+.dragging{opacity:.45}
+.drop-before{box-shadow:inset 0 3px 0 var(--focus)}
+.drop-after{box-shadow:inset 0 -3px 0 var(--focus)}
+.drop-inside > .toc-link{background:var(--hl);box-shadow:inset 0 0 0 2px var(--focus)}
+.drop-end .toc-link{background:var(--hl);box-shadow:inset 0 0 0 2px var(--focus)}
 </style>
 </head>
 <body>
@@ -591,7 +620,7 @@ body.reader-open{overflow:hidden}
 </div>
 
 <header class="hero wrap">
-  <h1 id="appTitle">Reading List</h1>
+  <h1 id="appTitle">Paper Map</h1>
 
   <div class="map-tools">
     <button type="button" class="btn" id="btnLanes" aria-expanded="false" aria-controls="lanePicker">Topics on the map</button>
@@ -680,7 +709,7 @@ body.reader-open{overflow:hidden}
 const DOMAINS = [];
 
 /* ===================== constants ===================== */
-const APP = 'readinglist';
+const APP = 'paper-map';
 const LS = {lib:'rl:lib', status:'rl:status', settings:'rl:settings'};
 const LAYERS = ['Paper','Book','Chapter','Review','Theory','Empirical','Method','Textbook','Other'];
 /* Tags: user-defined labels with a name, colour and order */
@@ -731,7 +760,7 @@ const byYear = (a, b) => (a.y || 0) - (b.y || 0) || String(a.au || a.t).localeCo
 
 /* ===================== seed ===================== */
 function buildSeed(){
-  const topics = [{id:'main', name:'My reading list', desc:'', subs:[{id:'main-s', name:'My reading list', desc:'', chain:'', groups:[], hidden:true}]}];
+  const topics = [{id:'main', name:'My reading list', desc:'', subs:[{id:'main-s', name:'My reading list', desc:'', groups:[], hidden:true}]}];
   return {v:1, topics, entries:{}, links:[], tags: defaultTags(), updatedAt:0};
 }
 
@@ -792,7 +821,19 @@ function reindex(){
   });
   const domains = new Set(DOMAINS);
   Object.values(lib.entries).forEach(e => (e.d || []).forEach(x => domains.add(x)));
-  IDX = {subs, topicOf, topics, up, down, cUp, cDown, users, children, bySub, domains: Array.from(domains), tags: Object.fromEntries(lib.tags.map(x => [x.id, x]))};
+  /* subtopics nest without limit: s.parent names another subtopic of the same topic */
+  const kids = {}, depth = {}, subOrder = {};
+  lib.topics.forEach(tp => {
+    const ids = new Set(tp.subs.map(s => s.id));
+    tp.subs.forEach(s => { if(s.parent && (s.hidden || s.parent === s.id || !ids.has(s.parent) || subs[s.parent].hidden)) delete s.parent; });
+    tp.subs.forEach(s => { const seen = new Set(); let x = s; while(x && x.parent){ if(seen.has(x.id)){ delete s.parent; break; } seen.add(x.id); x = subs[x.parent]; } });
+    tp.subs.forEach(s => { if(s.parent) (kids[s.parent] = kids[s.parent] || []).push(s); });
+    const order = [];
+    const walk = (s, d) => { depth[s.id] = d; order.push(s); (kids[s.id] || []).forEach(k => walk(k, d + 1)); };
+    tp.subs.forEach(s => { if(!s.parent) walk(s, 0); });
+    subOrder[tp.id] = order;
+  });
+  IDX = {subs, topicOf, topics, up, down, cUp, cDown, users, children, bySub, kids, depth, subOrder, domains: Array.from(domains), tags: Object.fromEntries(lib.tags.map(x => [x.id, x]))};
 }
 const keyOf = e => e.k || e.id;
 function stOf(e){ return status[keyOf(e)] || ''; }
@@ -814,7 +855,11 @@ function tagColor(x){
 function tagChip(x){ return '<span class="tagchip"><i style="background:' + tagColor(x) + '"></i>' + esc(x.name) + '</span>'; }
 function tagToggle(x, on, attr){ return '<button type="button" class="tagchip" ' + attr + '="' + esc(x.id) + '" aria-pressed="' + on + '"><i style="background:' + tagColor(x) + '"></i>' + esc(x.name) + '</button>'; }
 function defaultNewTags(){ return []; }
-function visibleSubs(tp){ return tp.subs.filter(s => !s.hidden); }
+function treeSubs(tp){ return (IDX && IDX.subOrder && IDX.subOrder[tp.id]) || tp.subs; }
+function visibleSubs(tp){ return treeSubs(tp).filter(s => !s.hidden); }
+function subDescendants(sid){ const out = []; const walk = id => (IDX.kids[id] || []).forEach(k => { out.push(k); walk(k.id); }); walk(sid); return out; }
+function subAncestors(s){ const out = []; let x = s, guard = 0; while(x && x.parent && IDX.subs[x.parent] && guard++ < 64){ x = IDX.subs[x.parent]; out.unshift(x); } return out; }
+function subPath(s){ return subAncestors(s).concat([s]).filter(x => !x.hidden).map(x => x.name); }
 
 /* ===================== persistence ===================== */
 function touchLib(){
@@ -833,7 +878,7 @@ function persistSettings(opts){ settings.updatedAt = Date.now(); lsSet(LS.settin
 const GH_KEY = 'rl:github';
 const GH_DELAY = 4000;
 const gh = {st:'off', msg:'', when:'', busy:false, again:false, rev:0, timer:null};
-function ghCfg(){ if(PREVIEW) return null; const c = lsGet(GH_KEY); return c && c.owner && c.repo && c.token ? Object.assign({branch:'main', path:'data/readinglist.json'}, c) : null; }
+function ghCfg(){ if(PREVIEW) return null; const c = lsGet(GH_KEY); return c && c.owner && c.repo && c.token ? Object.assign({branch:'main', path:'data/paper-map.json'}, c) : null; }
 function ghStore(c){ lsSet(GH_KEY, c); }
 function ghApi(c){ return 'https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + '/contents/' + String(c.path).split('/').filter(Boolean).map(encodeURIComponent).join('/'); }
 function ghHeaders(c, extra){ return Object.assign({'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + c.token}, extra || {}); }
@@ -1037,6 +1082,7 @@ function subCount(s){
   return concepts + listPapers(es).filter(matches).length;
 }
 function topicCount(tp){ return tp.subs.reduce((n, s) => n + subCount(s), 0); }
+function subCountDeep(s){ return subDescendants(s.id).reduce((n, d) => n + subCount(d), subCount(s)); }
 
 /* ===================== views & tabs ===================== */
 const mainEl = document.getElementById('main');
@@ -1061,6 +1107,7 @@ function fixView(){
 }
 function openView(id, opts){
   const v = resolveView(id);
+  if(v.sub && IDX.subs[v.sub]) subAncestors(IDX.subs[v.sub]).forEach(a => tocClosedSet.delete(a.id));
   if(v.topic !== ui.topic || v.sub !== ui.sub) ui.group = null;
   ui.topic = v.topic; ui.sub = v.sub;
   ui.pending = opts || {scroll:true};
@@ -1084,6 +1131,7 @@ function tocExpanded(tp){ if(tocClosedSet.has(tp.id)) return false; return tocOp
 function tocLink(view, label, n, on, cls){
   return '<button type="button" class="toc-link' + (cls ? ' ' + cls : '') + (on ? ' on' : '') + (n ? '' : ' dim') + '" data-view="' + view + '"' + (on ? ' aria-current="page"' : '') + '><span>' + esc(label) + '</span><span class="n">' + n + '</span></button>';
 }
+const DRAG = '<span class="toc-drag" draggable="true" title="Drag to move" aria-hidden="true">⠿</span>';
 function renderTabs(){
   const ae = document.activeElement;
   let focusSel = null;
@@ -1097,12 +1145,20 @@ function renderTabs(){
     const n = topicCount(tp);
     const exp = vis.length > 0 && tocExpanded(tp);
     const topicOn = tp.id === ui.topic && !vis.length;
-    h += '<li class="toc-topic"><div class="toc-row">' +
+    h += '<li class="toc-topic"><div class="toc-row"' + (ui.edit ? ' data-node="t:' + tp.id + '"' : '') + '>' +
       (vis.length ? '<button type="button" class="toc-caret" data-toc-toggle="' + tp.id + '" aria-expanded="' + exp + '" aria-label="' + (exp ? 'Collapse “' : 'Expand “') + esc(tp.name) + '”">' + CARET + '</button>' : '<span class="toc-caret-sp" aria-hidden="true"></span>') +
-      tocLink(tp.id, tp.name, n, topicOn, 'topic') + '</div>';
+      tocLink(tp.id, tp.name, n, topicOn, 'topic') + (ui.edit ? DRAG : '') + '</div>';
     const showSubs = exp || (ui.edit && tp.id === ui.topic);
     if(showSubs){
-      h += '<ul class="toc-subs">' + vis.map(s => '<li>' + tocLink(s.id, s.name, subCount(s), s.id === ui.sub) + '</li>').join('');
+      h += '<ul class="toc-subs">';
+      const folded = new Set();
+      vis.forEach(s => {
+        if(s.parent && (folded.has(s.parent) || tocClosedSet.has(s.parent))){ folded.add(s.id); return; }
+        const kn = (IDX.kids[s.id] || []).length, open = kn && !tocClosedSet.has(s.id);
+        h += '<li class="toc-sub" style="--d:' + (IDX.depth[s.id] || 0) + '"' + (ui.edit ? ' data-node="s:' + s.id + '"' : '') + '>' +
+          (kn ? '<button type="button" class="toc-caret sub" data-toc-toggle="' + s.id + '" aria-expanded="' + !!open + '" aria-label="' + (open ? 'Collapse “' : 'Expand “') + esc(s.name) + '”">' + CARET + '</button>' : '') +
+          tocLink(s.id, s.name, subCountDeep(s), s.id === ui.sub) + (ui.edit ? DRAG : '') + '</li>';
+      });
       if(vis.length > 1) h += '<li>' + tocLink(tp.id + '-all', 'All (by year)', n, tp.id === ui.topic && !ui.sub, 'all') + '</li>';
       if(ui.edit) h += '<li><button type="button" class="toc-link add" data-act="new-sub" data-topic="' + tp.id + '">+ New subtopic here</button></li>';
       h += '</ul>';
@@ -1110,15 +1166,18 @@ function renderTabs(){
     h += '</li>';
   });
   h += '</ul>';
-  if(ui.edit) h += '<div class="toc-add"><button type="button" class="toc-link add" data-act="new-topic">+ New topic</button></div>';
+  if(ui.edit) h += '<div class="toc-add" data-node="e:end"><button type="button" class="toc-link add" data-act="new-topic">+ New topic</button></div>';
   tocBody.innerHTML = h;
   if(focusSel){ const f = tocBody.querySelector(focusSel); if(f) f.focus({preventScroll:true}); }
   const tp = IDX.topics[ui.topic], s = ui.sub ? IDX.subs[ui.sub] : null;
   const crumb = document.getElementById('crumb');
   if(tp){
-    const tail = s ? (s.hidden ? '' : s.name) : 'All';
-    crumb.innerHTML = '<span class="crumb-top' + (tail ? ' has-tail' : '') + '">' + esc(tp.name) + '</span>' + (tail ? '<span class="sep">/</span><span class="crumb-tail">' + esc(tail) + '</span>' : '');
-    mainEl.setAttribute('aria-label', tp.name + (tail ? ' / ' + tail : ''));
+    const path = s ? (s.hidden ? [] : subPath(s)) : ['All'];
+    const tail = path.length ? path[path.length - 1] : '';
+    crumb.innerHTML = '<span class="crumb-top' + (tail ? ' has-tail' : '') + '">' + esc(tp.name) + '</span>' +
+      path.slice(0, -1).map(m => '<span class="sep crumb-mid">/</span><span class="crumb-mid">' + esc(m) + '</span>').join('') +
+      (tail ? '<span class="sep">/</span><span class="crumb-tail">' + esc(tail) + '</span>' : '');
+    mainEl.setAttribute('aria-label', [tp.name].concat(path).join(' / '));
   }else crumb.textContent = '';
   const labels = document.getElementById('mapLabels');
   labels.querySelectorAll('[data-view]').forEach(x => x.classList.toggle('on', x.dataset.view === ui.sub));
@@ -1159,7 +1218,7 @@ function rowHTML(e, withPlace){
   const st = stOf(e);
   const tags = ['<span class="prio">' + PRIO_LABEL[e.p || 1] + '</span>'];
   if(st) tags.push('<span class="stlabel ' + st + '">' + (st === 'read' ? 'Read' : 'Want to read') + '</span>');
-  if(withPlace){ const s = IDX.subs[e.sub]; const g = s && e.group ? s.groups.find(x => x.id === e.group) : null; tags.push('<span class="tag">' + esc(s && !s.hidden ? s.name : (IDX.topics[e.topic] || {}).name) + (g ? ' / ' + esc(g.name) : '') + '</span>'); }
+  if(withPlace){ const s = IDX.subs[e.sub]; const g = s && e.group ? s.groups.find(x => x.id === e.group) : null; tags.push('<span class="tag">' + esc(s && !s.hidden ? subPath(s).join(' › ') : (IDX.topics[e.topic] || {}).name) + (g ? ' / ' + esc(g.name) : '') + '</span>'); }
   if(e.l) tags.push('<span class="tag' + '' + '">' + esc(e.l) + '</span>');
   tagsOf(e).forEach(x => tags.push(tagChip(x)));
   const doms = (e.d || []).map(x => '<button type="button" class="dom' + (ui.dom === x ? ' on' : '') + '" data-dom="' + esc(x) + '">' + esc(x) + '</button>').join('');
@@ -1228,15 +1287,19 @@ function countText(es){
   const concepts = es.filter(e => e.kind === 'concept').length;
   return (concepts ? concepts + (concepts === 1 ? ' concept' : ' concepts') + (papers.length ? ', ' : '') : '') + (papers.length || !concepts ? papers.length + (papers.length === 1 ? ' paper' : ' papers') + ', ' + read + ' read, ' + want + ' want to read' : '');
 }
-function renderSubSection(s, tp, asPart){
+function renderSubSection(s, tp, asPart, opts){
+  opts = opts || {};
   const es = entriesOfSub(s.id);
   const concepts = es.filter(e => e.kind === 'concept').sort(byYear);
   const papers = listPapers(es);
   const rows = papers.filter(matches).sort(byYear);
   const title = s.hidden ? tp.name : s.name;
   let h = '';
-  if(asPart){
-    h += '<h3 class="sub-h3">' + esc(title) + '</h3>';
+  if(asPart === 'nested'){
+    const par = s.parent && IDX.subs[s.parent];
+    h += '<h3 class="sub-h3 nest-h"><button type="button" class="nest-link" data-view="' + s.id + '">' + esc(title) + '</button>' + (par && opts.showParent ? '<span class="nest-in">in ' + esc(par.name) + '</span>' : '') + '</h3>';
+  }else if(asPart){
+    h += '<h3 class="sub-h3">' + esc(s.hidden ? title : subPath(s).join(' › ')) + '</h3>';
   }else{
     const chips = s.groups.length ? '<div class="subs-row">' +
       '<button type="button" class="subchip' + (ui.group ? '' : ' on') + '" data-group="">All<span>' + papers.length + '</span></button>' +
@@ -1244,17 +1307,18 @@ function renderSubSection(s, tp, asPart){
     const edit = ui.edit ? '<div class="head-edit"><button type="button" class="btn" data-act="new-entry">Add paper</button>' +
       (concepts.length ? '<button type="button" class="btn" data-act="new-concept">Add concept</button>' : '') +
       '<button type="button" class="btn" data-act="edit-sub" data-sub="' + s.id + '">Modify ' + (s.hidden ? 'topic' : 'subtopic') + '</button>' +
+      (!s.hidden ? '<button type="button" class="btn" data-act="new-sub" data-topic="' + tp.id + '" data-parent="' + s.id + '">Add subtopic inside</button>' : '') +
       (!s.hidden ? '<button type="button" class="btn" data-act="del-sub" data-sub="' + s.id + '">Delete subtopic</button>' : '') + '</div>' : '';
     h += '<div class="branch-head"><h2>' + esc(title) + '</h2>' +
-      '<p class="branch-count">' + countText(es) + '</p>' +
+      '<p class="branch-count">' + countText(opts.countEs || es) + '</p>' +
       ((s.hidden ? tp.desc : s.desc) ? '<p class="branch-desc">' + esc(s.hidden ? tp.desc : s.desc) + '</p>' : '') +
-      (s.chain ? '<p class="chain">' + esc(s.chain) + '</p>' : '') + chips + edit + '</div>';
+      chips + edit + '</div>';
   }
   h += concepts.map(conceptCard).join('');
   if(papers.length){
     if(concepts.length && !asPart) h += '<h3 class="sub-h3">Other readings</h3>';
     h += rows.length ? tableHTML(rows, false) : '<p class="empty">No papers match the current filters. Check the counts on the labels, or set the filters back to “All”.</p>';
-  }else if(!concepts.length && !asPart){
+  }else if(!concepts.length && !asPart && !opts.kids){
     h += '<p class="empty">No papers here yet. ' + (ui.edit ? 'Use “Add paper” above to start.' : 'Click “Modify” at the top right to add some.') + '</p>';
   }
   return h;
@@ -1272,7 +1336,13 @@ function renderMain(){
   let html = '';
   if(ui.sub){
     const s = IDX.subs[ui.sub];
-    html = '<section class="branch" id="sec-' + s.id + '" data-sub="' + s.id + '">' + renderSubSection(s, tp, false) + '</section>';
+    const below = subDescendants(s.id), d0 = IDX.depth[s.id] || 0;
+    const countEs = below.length ? below.reduce((a, d) => a.concat(entriesOfSub(d.id)), entriesOfSub(s.id)) : null;
+    html = '<section class="branch" id="sec-' + s.id + '" data-sub="' + s.id + '">' + renderSubSection(s, tp, false, {kids: below.length, countEs}) + '</section>';
+    below.forEach(d => {
+      const rel = (IDX.depth[d.id] || 0) - d0;
+      html += '<section class="branch nested" id="sec-' + d.id + '" data-sub="' + d.id + '" style="--d:' + rel + '">' + renderSubSection(d, tp, 'nested', {showParent: rel > 1}) + '</section>';
+    });
   }else{
     const es = topicEntries(tp.id);
     const anyConcept = es.some(e => e.kind === 'concept');
@@ -1300,7 +1370,7 @@ const MAP = {P:{}, x:null, W:0, H:0, left:0, inner:0, axisY:0, full:[1700, 2030]
 
 function lanesShown(){
   const all = [];
-  lib.topics.forEach(tp => tp.subs.forEach(s => all.push({sub:s, topic:tp})));
+  lib.topics.forEach(tp => treeSubs(tp).forEach(s => all.push({sub:s, topic:tp})));
   if(!Array.isArray(settings.lanes)) return all;
   const set = new Set(settings.lanes);
   return all.filter(x => set.has(x.sub.id));
@@ -1396,10 +1466,18 @@ function edgePath(p, q){
   return 'M' + p.x.toFixed(1) + ' ' + p.y + ' C' + mx.toFixed(1) + ' ' + p.y + ' ' + mx.toFixed(1) + ' ' + q.y + ' ' + q.x.toFixed(1) + ' ' + q.y;
 }
 function renderMapLabels(lanes, laneH){
+  const onMap = new Set(lanes.map(l => l.sub.id));
+  let maxD = 0;
+  lanes.forEach(ln => { const n = subAncestors(ln.sub).filter(a => onMap.has(a.id)).length; if(n > maxD) maxD = n; });
+  document.documentElement.style.setProperty('--lab-extra', (maxD ? Math.min(90, 14 + maxD * 14) : 0) + 'px');
   mapLabels.innerHTML = lanes.map((ln, i) => {
-    const name = ln.sub.hidden ? ln.topic.name : ln.sub.name;
+    const anc = subAncestors(ln.sub);
+    let last = -1; anc.forEach((a, k) => { if(onMap.has(a.id)) last = k; });
+    const dd = anc.filter(a => onMap.has(a.id)).length;
+    const pre = anc.slice(last + 1).map(a => a.name);
+    const name = ln.sub.hidden ? ln.topic.name : (pre.length ? pre.join(' › ') + ' › ' : '') + ln.sub.name;
     const showTopic = !ln.sub.hidden && (i === 0 || lanes[i - 1].topic.id !== ln.topic.id);
-    return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + (ln.sub.id === ui.sub ? ' on' : '') + '" data-view="' + ln.sub.id + '" title="Open “' + esc(name) + '”"><span><span class="full">' + (showTopic ? '<span class="lt">' + esc(ln.topic.name) + '</span>' : '') + esc(name) + '</span><span class="short">' + esc(name.slice(0, 4)) + '</span></span></button>';
+    return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + (ln.sub.id === ui.sub ? ' on' : '') + '" data-view="' + ln.sub.id + '" style="--d:' + dd + '" title="Open “' + esc(name) + '”"><span><span class="full">' + (showTopic ? '<span class="lt">' + esc(ln.topic.name) + '</span>' : '') + (dd ? '<span class="lane-in" aria-hidden="true">└</span>' : '') + esc(name) + '</span><span class="short">' + esc(ln.sub.name.slice(0, 4)) + '</span></span></button>';
   }).join('');
 }
 function renderMap(force){
@@ -1423,7 +1501,7 @@ function renderMap(force){
     return;
   }
   const me = document.getElementById('mapEmpty'); if(me) me.remove();
-  const W = Math.max(280, avail);
+  const W = Math.max(280, Math.floor(mapScroll.clientWidth)); lastMapW = Math.floor(mapScroll.clientWidth);
   const top = 8, left = 12, right = 14;
   const laneIndex = {};
   lanes.forEach((ln, i) => { laneIndex[ln.sub.id] = i; });
@@ -1759,7 +1837,7 @@ function updateFilterToggle(){
   btn.textContent = row.classList.contains('open') ? 'Hide filters' : (n ? 'Filters (' + n + ')' : 'Filters');
 }
 function rerenderAfterFilter(){ updateFilterToggle(); renderTabs(); renderMain(); renderMap(true); }
-function appTitle(){ return String(lib.title || '').trim() || 'Reading List'; }
+function appTitle(){ return String(lib.title || '').trim() || 'Paper Map'; }
 function applyTitle(){ const n = appTitle(); document.title = n; const h = document.getElementById('appTitle'); if(h) h.textContent = n; }
 function renderAll(){ applyTitle(); reindex(); syncControls(); renderTabs(); renderMain(); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); setEditUI(); }
 function setBarH(){ document.documentElement.style.setProperty('--bar-h', document.getElementById('bar').offsetHeight + 'px'); }
@@ -1811,6 +1889,7 @@ document.getElementById('toast').addEventListener('click', ev => {
 /* ===================== edit mode ===================== */
 function setEditUI(){
   document.getElementById('editBanner').hidden = !ui.edit;
+  document.body.classList.toggle('editing', !!ui.edit);
   document.getElementById('btnEdit').textContent = ui.edit ? 'Done' : 'Modify';
   setBarH();
 }
@@ -1878,7 +1957,7 @@ function bindPickers(body, state, selfId){
 
 /* ---------- entry form ---------- */
 function optionList(items, val){ return items.map(([v, l]) => '<option value="' + esc(v) + '"' + (v === val ? ' selected' : '') + '>' + esc(l) + '</option>').join(''); }
-function subOptions(tid, val){ const tp = IDX.topics[tid]; return tp ? optionList(tp.subs.map(s => [s.id, s.hidden ? '(no subtopics)' : s.name]), val) : ''; }
+function subOptions(tid, val){ const tp = IDX.topics[tid]; return tp ? optionList(treeSubs(tp).map(s => { const d = IDX.depth[s.id] || 0; return [s.id, s.hidden ? '(no subtopics)' : '\u00a0\u00a0\u00a0'.repeat(d) + (d ? '↳ ' : '') + s.name]; }), val) : ''; }
 function groupOptions(sid, val){ const s = IDX.subs[sid]; return '<option value="">No group</option>' + (s ? optionList(s.groups.map(g => [g.id, g.name]), val) : ''); }
 function parentOptions(sid, val){ const cs = entriesOfSub(sid).filter(e => e.kind === 'concept').sort(byYear); return '<option value="">Not under a concept</option>' + optionList(cs.map(c => [c.id, c.t]), val); }
 function openEntryForm(id, preset){
@@ -2058,7 +2137,7 @@ function openTopicForm(tid){
       if(isNew){
         let id; do{ id = rid('t'); }while(IDX.topics[id] || IDX.subs[id]);
         const names = b.querySelector('[name=subs]').value.split('\n').map(x => x.trim()).filter(Boolean);
-        const mk = (n, hidden) => { let s; do{ s = rid('s'); }while(IDX.subs[s] || IDX.topics[s]); const o = {id:s, name:n, desc:'', chain:'', groups:[]}; if(hidden) o.hidden = true; return o; };
+        const mk = (n, hidden) => { let s; do{ s = rid('s'); }while(IDX.subs[s] || IDX.topics[s]); const o = {id:s, name:n, desc:'', groups:[]}; if(hidden) o.hidden = true; return o; };
         const subs = names.length ? names.map(n => mk(n, false)) : [mk(name, true)];
         lib.topics.push({id, name, desc, subs});
         if(Array.isArray(settings.lanes)){ subs.forEach(s => settings.lanes.push(s.id)); persistSettings(); }
@@ -2075,20 +2154,25 @@ function openTopicForm(tid){
     }}]
   });
 }
-function openSubForm(sid, topicId){
+function openSubForm(sid, topicId, parentId){
   const isNew = !sid;
   const tp = IDX.topics[isNew ? topicId : IDX.topicOf[sid]];
-  const s = isNew ? {name:'', desc:'', chain:'', groups:[]} : IDX.subs[sid];
+  const s = isNew ? {name:'', desc:'', groups:[], parent: parentId && IDX.subs[parentId] && !IDX.subs[parentId].hidden ? parentId : ''} : IDX.subs[sid];
+  const below = new Set(isNew ? [] : [sid].concat(subDescendants(sid).map(x => x.id)));
+  const here = s.parent ? 's:' + s.parent : 't:' + tp.id;
+  const insideSel = '<label class="full">Inside<select name="parent">' + lib.topics.map(X =>
+      '<option value="t:' + X.id + '"' + (here === 't:' + X.id ? ' selected' : '') + '>Top level of “' + esc(X.name) + '”</option>' +
+      visibleSubs(X).filter(x => !below.has(x.id)).map(x => '<option value="s:' + x.id + '"' + (here === 's:' + x.id ? ' selected' : '') + '>' + '\u00a0\u00a0\u00a0'.repeat((IDX.depth[x.id] || 0) + 1) + esc(x.name) + '</option>').join('')).join('') +
+    (isNew ? '' : '<option value="new">A topic of its own</option>') + '</select><span class="hint">You can also drag it in the Contents panel while Modify is on.</span></label>';
   const groups = s.groups.map(g => ({id:g.id, name:g.name}));
   const grpRows = () => groups.map((g, i) => '<div class="grp-row"><input type="text" data-gi="' + i + '" value="' + esc(g.name) + '"><button type="button" class="btn" data-gdel="' + i + '">Delete</button></div>').join('');
   const body = '<div class="form-grid">' +
-    (s.hidden ? '<p class="full hint">This topic has no subtopics. Here you change how its papers are grouped.</p>' : '<label class="full">Subtopic name<input type="text" name="name" value="' + esc(s.name) + '"></label>') +
+    (s.hidden ? '<p class="full hint">This topic has no subtopics. Here you change how its papers are grouped.</p>' : '<label class="full">Subtopic name<input type="text" name="name" value="' + esc(s.name) + '"></label>' + insideSel) +
     (s.hidden ? '' : '<label class="full">Description<textarea name="desc" rows="2">' + esc(s.desc) + '</textarea></label>') +
-    (s.hidden ? '' : '<label class="full">Lineage (optional)<textarea name="chain" rows="2" placeholder="A → B → C">' + esc(s.chain) + '</textarea></label>') +
     '<div class="field full"><span>Groups (small filters above the table, optional)</span><div id="grpBox">' + grpRows() + '</div><button type="button" class="btn" id="grpAdd">Add group</button></div>' +
     '</div><p class="form-error" id="formErr" hidden></p>';
   openModal({
-    title: isNew ? 'New subtopic in “' + tp.name + '”' : (s.hidden ? 'Modify groups' : 'Modify subtopic'), body,
+    title: isNew ? 'New subtopic' : (s.hidden ? 'Modify groups' : 'Modify subtopic'), body,
     actions:[{label:'Cancel'}, {label:'Save', primary:true, onClick: b => {
       b.querySelectorAll('[data-gi]').forEach(inp => { groups[+inp.dataset.gi].name = inp.value.trim(); });
       const name = s.hidden ? s.name : b.querySelector('[name=name]').value.trim();
@@ -2097,26 +2181,27 @@ function openSubForm(sid, topicId){
       const cleanGroups = groups.filter(g => g.name).map(g => g.id ? g : {id: (function(){ let x; do{ x = rid('g'); }while(IDX.subs[x]); return x; })(), name: g.name});
       if(isNew){
         let nid; do{ nid = rid('s'); }while(IDX.subs[nid] || IDX.topics[nid]);
-        const ns = {id:nid, name, desc: b.querySelector('[name=desc]').value.trim(), chain: b.querySelector('[name=chain]').value.trim(), groups: cleanGroups};
-        const T = lib.topics.find(t => t.id === tp.id);
-        const hidden = T.subs.filter(x => x.hidden);
-        hidden.forEach(h => {
-          const has = (IDX.bySub[h.id] || []).length > 0;
-          if(has){ delete h.hidden; h.name = 'Ungrouped'; }
-          else T.subs = T.subs.filter(x => x !== h);
-        });
-        T.subs.push(ns);
+        const ns = {id:nid, name, desc: b.querySelector('[name=desc]').value.trim(), groups: cleanGroups};
+        const pv = b.querySelector('[name=parent]').value;
+        attachSubtree([ns], pv.startsWith('s:') && IDX.subs[pv.slice(2)] ? {k:'s', id: pv.slice(2)} : {k:'t', id: pv.startsWith('t:') && IDX.topics[pv.slice(2)] ? pv.slice(2) : tp.id}, 'inside');
         if(Array.isArray(settings.lanes)){ settings.lanes.push(nid); persistSettings(); }
-        reindex(); touchLib([tp.id]);
+        reindex(); touchAllTopics();
         openView(nid);
         toast('Created subtopic “' + name + '”', () => { lib = before; reindex(); touchAllTopics(); fixView(); renderAll(); toast('Undone'); });
       }else{
         const S = IDX.subs[sid];
-        if(!S.hidden){ S.name = name; S.desc = b.querySelector('[name=desc]').value.trim(); S.chain = b.querySelector('[name=chain]').value.trim(); }
         const keep = new Set(cleanGroups.map(g => g.id));
         S.groups = cleanGroups;
         (IDX.bySub[sid] || []).forEach(e => { if(e.group && !keep.has(e.group)) e.group = ''; });
-        reindex(); touchLib([tp.id]); fixView(); renderAll();
+        if(!S.hidden){
+          S.name = name; S.desc = b.querySelector('[name=desc]').value.trim(); delete S.chain;
+          const pv = b.querySelector('[name=parent]').value;
+          if(pv !== here){
+            const target = pv === 'new' ? {k:'t', id: tp.id} : pv.startsWith('s:') ? {k:'s', id: pv.slice(2)} : {k:'t', id: pv.slice(2)};
+            if(canDrop({k:'s', id: sid}, target, pv === 'new' ? 'after' : 'inside')) moveNode({k:'s', id: sid}, target, pv === 'new' ? 'after' : 'inside');
+          }
+        }
+        reindex(); touchAllTopics(); fixView(); renderAll();
         toast('Saved', () => { lib = before; reindex(); touchAllTopics(); fixView(); renderAll(); toast('Undone'); });
       }
       return true;
@@ -2164,7 +2249,8 @@ function deleteEntry(id){
 function deleteSub(sid){
   const tp = IDX.topics[IDX.topicOf[sid]], s = IDX.subs[sid];
   const n = (IDX.bySub[sid] || []).length;
-  confirmDanger('Delete subtopic', 'Delete subtopic “' + s.name + '” and its ' + n + ' items?', 'Delete subtopic', () => {
+  const kn = (IDX.kids[sid] || []).length;
+  confirmDanger('Delete subtopic', 'Delete subtopic “' + s.name + '” and its ' + n + ' items?' + (kn ? ' Its ' + kn + (kn === 1 ? ' subtopic moves' : ' subtopics move') + ' up one level.' : ''), 'Delete subtopic', () => {
     const before = clone(lib), stBefore = clone(status);
     const gone = new Set((IDX.bySub[sid] || []).map(e => e.id));
     gone.forEach(k => { const x = lib.entries[k]; if(x) delete status[keyOf(x)]; delete lib.entries[k]; });
@@ -2172,8 +2258,9 @@ function deleteSub(sid){
     lib.links = lib.links.filter(l => !gone.has(l[0]) && !gone.has(l[1]));
     Object.values(lib.entries).forEach(x => { if(x.needs) x.needs = x.needs.filter(c => !gone.has(c)); });
     const T = lib.topics.find(t => t.id === tp.id);
+    T.subs.forEach(x => { if(x.parent === sid){ if(s.parent) x.parent = s.parent; else delete x.parent; } });
     T.subs = T.subs.filter(x => x.id !== sid);
-    if(!T.subs.length){ let h; do{ h = rid('s'); }while(IDX.subs[h]); T.subs.push({id:h, name:T.name, desc:'', chain:'', groups:[], hidden:true}); }
+    if(!T.subs.length){ let h; do{ h = rid('s'); }while(IDX.subs[h]); T.subs.push({id:h, name:T.name, desc:'', groups:[], hidden:true}); }
     if(Array.isArray(settings.lanes)){ settings.lanes = settings.lanes.filter(x => x !== sid); persistSettings(); }
     reindex(); touchAllTopics(); ui.sub = null; openView(T.id);
     toast('Deleted subtopic “' + s.name + '”', () => { lib = before; status = stBefore; statusTime = Date.now(); persistStatus(); reindex(); touchAllTopics(); fixView(); renderAll(); toast('Undone'); });
@@ -2312,7 +2399,7 @@ function renderLanePicker(){
       const n = ids.filter(x => shown.has(x)).length;
       const hiddenOnly = tp.subs.length === 1 && tp.subs[0].hidden;
       return '<div class="lp-topic"><label><input type="checkbox" data-lpt="' + tp.id + '"' + (n === ids.length ? ' checked' : '') + (n && n < ids.length ? ' data-mixed="1"' : '') + '>' + esc(tp.name) + '</label>' +
-        (hiddenOnly ? '' : '<div class="lp-subs">' + tp.subs.map(s => '<label><input type="checkbox" data-lps="' + s.id + '"' + (shown.has(s.id) ? ' checked' : '') + '>' + esc(s.hidden ? 'Ungrouped' : s.name) + '</label>').join('') + '</div>') + '</div>';
+        (hiddenOnly ? '' : '<div class="lp-subs">' + treeSubs(tp).map(s => '<label><input type="checkbox" data-lps="' + s.id + '"' + (shown.has(s.id) ? ' checked' : '') + '>' + esc(s.hidden ? 'Ungrouped' : subPath(s).join(' › ')) + '</label>').join('') + '</div>') + '</div>';
     }).join('');
   lanePicker.querySelectorAll('[data-mixed]').forEach(cb => { cb.indeterminate = true; });
 }
@@ -2350,7 +2437,7 @@ function openSettings(){
   const c = settings.colors || {};
   openModal({
     title:'Settings',
-    body:'<div class="set-section" style="border-top:0;margin-top:0;padding-top:0"><h3>Page name</h3><div class="form-grid"><label class="full"><span class="sr">Page name</span><input type="text" id="setTitle" value="' + esc(lib.title || '') + '" placeholder="Reading List"></label></div><p class="hint">Saved with your data, so it follows you across devices.</p></div>' +
+    body:'<div class="set-section" style="border-top:0;margin-top:0;padding-top:0"><h3>Page name</h3><div class="form-grid"><label class="full"><span class="sr">Page name</span><input type="text" id="setTitle" value="' + esc(lib.title || '') + '" placeholder="Paper Map"></label></div><p class="hint">Saved with your data, so it follows you across devices.</p></div>' +
       '<div class="set-section"><h3>Read and Want-to-read colours</h3>' +
       '<p class="hint">The defaults are emerald #009473 and cinnabar #E34234. They sit almost opposite each other on the colour wheel, so both stay bright on a light page without clashing. Nothing else on the page uses these two colours.</p>' +
       '<div class="color-row"><label><input type="color" id="cGreen" value="' + esc(c.green || DEFAULT_COLORS.green) + '"> Read</label><label><input type="color" id="cRed" value="' + esc(c.red || DEFAULT_COLORS.red) + '"> Want to read</label><button type="button" class="btn" id="cReset">Reset to defaults</button></div></div>' +
@@ -2381,8 +2468,8 @@ function openSettings(){
     }
   });
 }
-const REPO_LINK = 'https://github.com/new?name=readinglist-data&visibility=private&description=Reading+List+data';
-const TOKEN_LINK = 'https://github.com/settings/personal-access-tokens/new?name=Reading+List&description=Lets+Reading+List+save+to+one+private+repository&expires_in=366&contents=write';
+const REPO_LINK = 'https://github.com/new?name=paper-map-data&visibility=private&description=Paper+Map+data';
+const TOKEN_LINK = 'https://github.com/settings/personal-access-tokens/new?name=Paper+Map&description=Lets+Paper+Map+save+to+one+private+repository&expires_in=366&contents=write';
 function ghSectionHTML(){
   if(PREVIEW) return '<div class="set-section"><h3>GitHub sync</h3><p class="hint">Not available in the preview. Download the page to use it with your own list.</p></div>';
   const g = lsGet(GH_KEY) || {};
@@ -2394,13 +2481,13 @@ function ghSectionHTML(){
       '<li><a href="' + TOKEN_LINK + '" target="_blank" rel="noopener">Create a token</a>: under Repository access, choose <em>Only select repositories</em> and pick that repository. The only permission it needs, <em>Contents: Read and write</em>, is already filled in; remove anything else.</li>' +
       '<li>Paste the token below and click Connect.</li></ol>') +
     '<div class="form-grid">' +
-    '<label>Repository<input type="text" id="ghRepo" autocomplete="off" spellcheck="false" value="' + esc(g.repo || 'readinglist-data') + '"></label>' +
+    '<label>Repository<input type="text" id="ghRepo" autocomplete="off" spellcheck="false" value="' + esc(g.repo || 'paper-map-data') + '"></label>' +
     '<label>Token<input type="password" id="ghToken" autocomplete="off" spellcheck="false" placeholder="github_pat_…" value="' + esc(g.token || '') + '"></label>' +
     '</div>' +
     '<details class="gh-adv"><summary>Advanced</summary><div class="form-grid">' +
     '<label>GitHub username<input type="text" id="ghOwner" autocomplete="off" spellcheck="false" placeholder="found from the token" value="' + esc(g.owner || '') + '"></label>' +
     '<label>Branch<input type="text" id="ghBranch" autocomplete="off" spellcheck="false" value="' + esc(g.branch || 'main') + '"></label>' +
-    '<label class="full">File path<input type="text" id="ghPath" autocomplete="off" spellcheck="false" value="' + esc(g.path || 'data/readinglist.json') + '"></label>' +
+    '<label class="full">File path<input type="text" id="ghPath" autocomplete="off" spellcheck="false" value="' + esc(g.path || 'data/paper-map.json') + '"></label>' +
     '</div></details>' +
     '<div class="set-actions"><button type="button" class="btn primary" id="ghConnect">' + (has ? 'Save and reload' : 'Connect') + '</button>' +
     '<button type="button" class="btn" id="ghSaveNow"' + (has ? '' : ' disabled') + '>Save now</button>' +
@@ -2421,7 +2508,7 @@ function wireGhSection(b){
     const token = b.querySelector('#ghToken').value.trim();
     let owner = b.querySelector('#ghOwner').value.trim();
     const branch = b.querySelector('#ghBranch').value.trim() || 'main';
-    const path = b.querySelector('#ghPath').value.trim().replace(/^\/+/, '') || 'data/readinglist.json';
+    const path = b.querySelector('#ghPath').value.trim().replace(/^\/+/, '') || 'data/paper-map.json';
     if(!/^[A-Za-z0-9._-]{1,100}$/.test(repo)) return err('A repository name can contain only letters, numbers, dots, underscores and hyphens.');
     if(token.length < 20) return err('Paste the whole token.');
     if(!/\.json$/i.test(path) || /\.\./.test(path)) return err('The file path must end in .json.');
@@ -2451,7 +2538,7 @@ function wireGhSection(b){
 }
 async function exportBackup(){
   const payload = JSON.stringify(snapshot(), null, 1);
-  const fname = 'readinglist-' + new Date().toISOString().slice(0, 10) + '.json';
+  const fname = 'paper-map-' + new Date().toISOString().slice(0, 10) + '.json';
   {
     try{
       const url = URL.createObjectURL(new Blob([payload], {type:'application/json'}));
@@ -2762,7 +2849,7 @@ async function renderReaderPdf(){
     const url = await pdfUrl(e);
     if(reader.id !== id) return;
     const a = document.getElementById('pdfOpen'); if(a){ a.href = url; a.hidden = false; }
-    const fr = pane.querySelector('.pdf-frame'); if(fr) fr.innerHTML = '<iframe title="' + esc('PDF: ' + (e.t || '')) + '" src="' + url + '"></iframe>';
+    const fr = pane.querySelector('.pdf-frame'); if(fr) fr.innerHTML = '<iframe title="' + esc('PDF: ' + (e.t || '')) + '" src="' + url + '#view=FitH&amp;navpanes=0&amp;pagemode=none&amp;zoom=page-width"></iframe>';
   }catch(err){
     if(reader.id !== id) return;
     const fr = pane.querySelector('.pdf-frame');
@@ -2827,12 +2914,143 @@ readerEl.addEventListener('drop', ev => {
 });
 document.addEventListener('keydown', ev => { if(ev.key === 'Escape' && !ev.defaultPrevented && modal.root.hidden && !readerEl.hidden){ ev.preventDefault(); closeReader(); } });
 
+
+/* ---------- moving topics and subtopics: drag in Contents, or Inside in the subtopic form ----------
+   Nodes are {k:'t', id} for a topic or {k:'s', id} for a subtopic. Dropping in the middle of a row puts the node
+   inside it; near the top or bottom edge puts it before or after. A topic dropped into another becomes a subtopic;
+   a subtopic dropped between topics becomes a topic of its own. */
+function freshId(prefix){ let x; do{ x = rid(prefix); }while(lib.topics.some(t => t.id === x || t.subs.some(s => s.id === x))); return x; }
+function topicHolding(sid){ return lib.topics.find(t => t.subs.some(s => s.id === sid)); }
+function liveBelow(T, sid){ const out = []; const walk = id => T.subs.forEach(s => { if(s.parent === id){ out.push(s.id); walk(s.id); } }); walk(sid); return out; }
+function hasEntries(sid){ return Object.values(lib.entries).some(e => e.sub === sid); }
+function absorbHidden(T){ T.subs.filter(x => x.hidden).forEach(h => { if(hasEntries(h.id)){ delete h.hidden; h.name = 'Ungrouped'; } else T.subs = T.subs.filter(x => x !== h); }); }
+function detachNode(node){
+  if(node.k === 's'){
+    const A = topicHolding(node.id); if(!A) return null;
+    const ids = new Set([node.id].concat(liveBelow(A, node.id)));
+    const D = A.subs.filter(s => ids.has(s.id));
+    A.subs = A.subs.filter(s => !ids.has(s.id));
+    if(!A.subs.length) A.subs.push({id: freshId('s'), name: A.name, desc:'', groups:[], hidden:true});
+    return D;
+  }
+  const T = lib.topics.find(x => x.id === node.id); if(!T) return null;
+  const N = {id: freshId('s'), name: T.name, desc: T.desc || '', groups: []};
+  const D = [N];
+  T.subs.forEach(s => {
+    if(s.hidden){ Object.values(lib.entries).forEach(e => { if(e.sub === s.id) e.sub = N.id; }); N.groups = N.groups.concat(s.groups || []); return; }
+    if(!s.parent) s.parent = N.id;
+    D.push(s);
+  });
+  if(Array.isArray(settings.lanes) && T.subs.some(s => settings.lanes.includes(s.id))) settings.lanes.push(N.id);
+  lib.topics = lib.topics.filter(x => x !== T);
+  return D;
+}
+function attachSubtree(D, target, zone){
+  const R = D[0];
+  if(target.k === 't' && zone === 'inside'){
+    const X = lib.topics.find(x => x.id === target.id);
+    delete R.parent; absorbHidden(X); X.subs = X.subs.concat(D);
+    return;
+  }
+  if(target.k === 't'){
+    const kids = D.slice(1), T2 = {id: freshId('t'), name: R.name, desc: R.desc || '', subs: []};
+    kids.forEach(s => { if(s.parent === R.id) delete s.parent; });
+    delete R.parent;
+    if(!kids.length){ R.hidden = true; T2.subs = [R]; }
+    else{ T2.subs = kids; if(hasEntries(R.id)){ R.name = 'Ungrouped'; T2.subs.unshift(R); } }
+    const i = lib.topics.findIndex(x => x.id === target.id);
+    lib.topics.splice(zone === 'before' ? i : i + 1, 0, T2);
+    return;
+  }
+  const X = topicHolding(target.id), S2 = X.subs.find(s => s.id === target.id);
+  if(zone === 'inside') R.parent = S2.id; else if(S2.parent) R.parent = S2.parent; else delete R.parent;
+  const block = new Set([S2.id].concat(liveBelow(X, S2.id)));
+  let at = X.subs.indexOf(S2);
+  if(zone !== 'before') X.subs.forEach((s, i) => { if(block.has(s.id)) at = i + 1; });
+  X.subs.splice(at, 0, ...D);
+}
+function canDrop(node, target, zone){
+  if(!node || !target || (node.k === target.k && node.id === target.id)) return false;
+  if(target.k === 'e') return node.k === 's' ? !!topicHolding(node.id) : lib.topics.length > 1 && lib.topics[lib.topics.length - 1].id !== node.id;
+  if(target.k === 't' ? !lib.topics.some(x => x.id === target.id) : !topicHolding(target.id)) return false;
+  if(node.k === 't' ? !lib.topics.some(x => x.id === node.id) : !topicHolding(node.id)) return false;
+  if(node.k === 's'){
+    if(target.k === 's'){ const A = topicHolding(node.id); if(!A || liveBelow(A, node.id).includes(target.id)) return false; }
+    return true;
+  }
+  if(target.k === 's'){ const T = lib.topics.find(x => x.id === node.id); if(!T || T.subs.some(s => s.id === target.id)) return false; }
+  return lib.topics.length > 1;
+}
+function moveNode(node, target, zone){
+  if(target.k === 'e'){
+    if(node.k === 't'){ const T = lib.topics.find(x => x.id === node.id); lib.topics = lib.topics.filter(x => x !== T).concat([T]); return; }
+    const D = detachNode(node);
+    if(D) attachSubtree(D, {k:'t', id: lib.topics[lib.topics.length - 1].id}, 'after');
+    return;
+  }
+  if(node.k === 't' && target.k === 't' && zone !== 'inside'){
+    const T = lib.topics.find(x => x.id === node.id);
+    lib.topics = lib.topics.filter(x => x !== T);
+    const i = lib.topics.findIndex(x => x.id === target.id);
+    lib.topics.splice(zone === 'before' ? i : i + 1, 0, T);
+    return;
+  }
+  const D = detachNode(node);
+  if(D) attachSubtree(D, target, zone);
+}
+function nodeName(node){ const x = node.k === 't' ? IDX.topics[node.id] : IDX.subs[node.id]; return x ? x.name : ''; }
+function performMove(node, target, zone){
+  if(!canDrop(node, target, zone)) return;
+  const before = clone(lib), lanesBefore = clone(settings.lanes), name = nodeName(node);
+  moveNode(node, target, zone);
+  reindex(); touchAllTopics();
+  if(JSON.stringify(lanesBefore) !== JSON.stringify(settings.lanes)) persistSettings();
+  fixView();
+  if(node.k === 's' && IDX.subs[node.id]) openView(node.id, {scroll:false}); else renderAll();
+  toast('Moved “' + name + '”', () => { lib = before; settings.lanes = lanesBefore; persistSettings(); reindex(); touchAllTopics(); fixView(); renderAll(); toast('Undone'); });
+}
+const parseNode = v => ({k: v.slice(0, 1), id: v.slice(2)});
+let dnd = null, dndOver = null;
+function clearDrop(){ dndOver = null; tocBody.querySelectorAll('.drop-before,.drop-after,.drop-inside,.drop-end').forEach(x => x.classList.remove('drop-before', 'drop-after', 'drop-inside', 'drop-end')); }
+tocBody.addEventListener('dragstart', ev => {
+  const h = ev.target.closest && ev.target.closest('.toc-drag');
+  const row = h && h.closest('[data-node]');
+  if(!row || !ui.edit){ ev.preventDefault(); return; }
+  dnd = parseNode(row.dataset.node);
+  row.classList.add('dragging');
+  try{ ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', row.dataset.node); ev.dataTransfer.setDragImage(row, 16, 14); }catch(e){}
+});
+tocBody.addEventListener('dragover', ev => {
+  if(!dnd) return;
+  const row = ev.target.closest('[data-node]');
+  clearDrop();
+  if(!row) return;
+  const r = row.getBoundingClientRect(), f = (ev.clientY - r.top) / r.height, target = parseNode(row.dataset.node);
+  /* an open topic shows its subtopics right below it, so its lower edge means “inside”, not “after” */
+  const openTopic = target.k === 't' && IDX.topics[target.id] && tocExpanded(IDX.topics[target.id]) && visibleSubs(IDX.topics[target.id]).length;
+  const zone = target.k === 'e' ? 'end' : f < .28 ? 'before' : (f > .72 && !openTopic) ? 'after' : 'inside';
+  if(!canDrop(dnd, target, zone)) return;
+  ev.preventDefault();
+  try{ ev.dataTransfer.dropEffect = 'move'; }catch(e){}
+  row.classList.add('drop-' + zone);
+  dndOver = {target, zone};
+});
+tocBody.addEventListener('dragleave', ev => { if(!ev.relatedTarget || !tocBody.contains(ev.relatedTarget)) clearDrop(); });
+tocBody.addEventListener('drop', ev => {
+  if(!dnd || !dndOver) return;
+  ev.preventDefault();
+  const node = dnd, m = dndOver;
+  clearDrop(); dnd = null;
+  performMove(node, m.target, m.zone);
+});
+tocBody.addEventListener('dragend', () => { clearDrop(); dnd = null; tocBody.querySelectorAll('.dragging').forEach(x => x.classList.remove('dragging')); });
+
 /* ===================== events ===================== */
 function handleAct(act, el){
   if(act === 'new-topic') return openTopicForm(null);
   if(act === 'edit-topic') return openTopicForm(ui.topic);
   if(act === 'del-topic') return deleteTopic(ui.topic);
-  if(act === 'new-sub') return openSubForm(null, (el && el.dataset && el.dataset.topic) || ui.topic);
+  if(act === 'new-sub') return openSubForm(null, (el && el.dataset && el.dataset.topic) || ui.topic, el && el.dataset && el.dataset.parent);
   if(act === 'edit-sub') return openSubForm(el.dataset.sub || ui.sub);
   if(act === 'del-sub') return deleteSub(el.dataset.sub || ui.sub);
   if(act === 'new-entry') return openEntryForm(null);
@@ -2850,6 +3068,7 @@ tocBody.addEventListener('click', ev => {
   const tg = ev.target.closest('[data-toc-toggle]');
   if(tg){
     const id = tg.dataset.tocToggle, tp = IDX.topics[id];
+    if(IDX.subs[id]){ if(tocClosedSet.has(id)) tocClosedSet.delete(id); else tocClosedSet.add(id); renderTabs(); return; }
     if(tp && tocExpanded(tp)){ tocOpenSet.delete(id); tocClosedSet.add(id); } else { tocClosedSet.delete(id); tocOpenSet.add(id); }
     renderTabs(); return;
   }
@@ -2900,6 +3119,7 @@ infoEl.addEventListener('click', ev => {
   if(ev.target.closest('[data-clear-sel]')) select(null);
 });
 mainEl.addEventListener('click', ev => {
+  const nv = ev.target.closest('.nest-link[data-view]'); if(nv){ openView(nv.dataset.view, {scroll:true}); return; }
   const ta = ev.target.closest('[data-tagassign]'); if(ta){ openTagAssign(ta.dataset.tagassign); return; }
   if(commonClick(ev)) return;
   const ar = ev.target.closest('[data-add-reading]');

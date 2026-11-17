@@ -1,10 +1,10 @@
 {
- "app": "readinglist",
+ "app": "paper-map",
  "v": 1,
  "savedAt": 1794944565183,
  "lib": {
   "v": 1,
-  "title": "Reading List (preview)",
+  "title": "Paper Map",
   "topics": [
    {
     "id": "pile",
@@ -15,29 +15,32 @@
       "id": "psych",
       "name": "Psychology",
       "desc": "Why anyone does anything.",
-      "chain": "",
       "groups": []
      },
      {
       "id": "space",
       "name": "Space, roughly",
       "desc": "Big things, far away.",
-      "chain": "",
-      "groups": []
-     },
-     {
-      "id": "exams",
-      "name": "Exam season",
-      "desc": "Due on Tuesday. Probably.",
-      "chain": "",
       "groups": []
      },
      {
       "id": "dinner",
       "name": "Dinner",
       "desc": "Equally important.",
-      "chain": "",
       "groups": []
+     },
+     {
+      "id": "exams",
+      "name": "Exam season",
+      "desc": "Due on Tuesday. Probably.",
+      "groups": []
+     },
+     {
+      "id": "procrastination",
+      "name": "Procrastination",
+      "desc": "Also part of revising, apparently.",
+      "groups": [],
+      "parent": "exams"
      }
     ]
    }
@@ -150,6 +153,27 @@
     "n": "Heavy enough to have its own gravity.",
     "needs": [],
     "short": "Modern astrophysics"
+   },
+   "timetable2015": {
+    "id": "timetable2015",
+    "kind": "paper",
+    "topic": "pile",
+    "sub": "procrastination",
+    "group": "",
+    "y": 2017,
+    "au": "",
+    "t": "Colour-coding the revision timetable",
+    "v": "",
+    "l": "Other",
+    "p": 1,
+    "tags": [],
+    "d": [
+     "Revision"
+    ],
+    "f": "Took longer than the revision itself.",
+    "n": "Seven colours. Three highlighters ran out.",
+    "needs": [],
+    "short": "Colour-coded timetable"
    }
   },
   "links": [
@@ -176,6 +200,12 @@
     "cooking2017",
     "b",
     "still nothing"
+   ],
+   [
+    "chem2015",
+    "timetable2015",
+    "c",
+    "instead of reading it"
    ]
   ],
   "tags": [
