@@ -1,6 +1,6 @@
 # Reading List
 
-A family tree for the papers you read.
+A family tree for the papers that you read.
 
 ![Papers on a timeline, joined by hand-drawn lines](assets/preview.png)
 
