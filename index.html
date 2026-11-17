@@ -69,7 +69,6 @@ button{font:inherit;color:inherit}
 /* hero */
 .hero{padding-top:clamp(20px,4vw,40px)}
 h1{font-family:var(--serif);font-weight:900;font-size:clamp(2.2rem,6.6vw,3.8rem);line-height:1.1;letter-spacing:.06em;margin:0 0 .35em}
-.lede{max-width:50em;color:var(--muted);font-size:1.02rem;margin:0 0 1.1em}
 .cap{font-size:.86rem;color:var(--muted);max-width:56em;margin:10px 0 0}
 
 /* map toolbar */
@@ -511,7 +510,6 @@ textarea.backup{width:100%;min-height:220px;font-family:ui-monospace,Menlo,Conso
 
 <header class="hero wrap">
   <h1 id="appTitle">Reading List</h1>
-  <p class="lede">Lay out what you want to read on a map ordered by year. Each row is a topic or subtopic, each dot is a paper, and you draw the lines yourself: after reading a paper, open it in Modify mode and link the papers it builds on or responds to, so the network grows out of what you have actually read. Green marks “Read”, red marks “Want to read”. Open or close the Contents at the top left. Your data lives in your own private GitHub repository; this page holds no one’s content.</p>
 
   <div class="map-tools">
     <button type="button" class="btn" id="btnLanes" aria-expanded="false" aria-controls="lanePicker">Topics on the map</button>
@@ -2278,7 +2276,7 @@ function ghSectionHTML(){
     '<p class="hint">Recommended: the copy in this browser is lost if its data is cleared. This keeps your list in a private GitHub repository you own: each change is saved there within seconds, earlier versions stay in its history, and you can open the list on any device. The token stays in this browser only.</p>' +
     (has ? '' : '<ol class="gh-steps">' +
       '<li><a href="' + REPO_LINK + '" target="_blank" rel="noopener">Create a private repository</a>. The name is filled in; tick <em>Add a README file</em>.</li>' +
-      '<li><a href="' + TOKEN_LINK + '" target="_blank" rel="noopener">Create a token</a>: under Repository access, choose <em>Only select repositories</em> and pick that repository. Everything else is filled in.</li>' +
+      '<li><a href="' + TOKEN_LINK + '" target="_blank" rel="noopener">Create a token</a>: under Repository access, choose <em>Only select repositories</em> and pick that repository. The only permission it needs, <em>Contents: Read and write</em>, is already filled in; remove anything else.</li>' +
       '<li>Paste the token below and click Connect.</li></ol>') +
     '<div class="form-grid">' +
     '<label>Repository<input type="text" id="ghRepo" autocomplete="off" spellcheck="false" value="' + esc(g.repo || 'readinglist-data') + '"></label>' +
