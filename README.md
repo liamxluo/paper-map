@@ -63,9 +63,8 @@ On another computer, download `index.html` again and paste the token once more.
 ├── example/
 │   └── displaydata.json    the example shown in the live preview
 └── assets/
-    ├── preview.png         the map at the top of this page
-    ├── table.png           the list view below it
-    └── zoom.gif            zooming the timeline
+    ├── *.png         
+    └── *.gif           
 ```
 
 ## Good to know
