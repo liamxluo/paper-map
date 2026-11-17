@@ -6,6 +6,8 @@ A family tree for the papers you read.
 
 Papers sit on a timeline, one row per topic. Mark what you have read and what you want to read, tag things in your own colours, and draw the lines between papers yourself. It is one HTML file, with nothing to install.
 
+![Each topic as a table, with status, notes, tags and concept cards](assets/table.png)
+
 The live preview (link at the top right of this page) shows the made-up example in [`example/displaydata.json`](example/displaydata.json).
 
 ## Use it
@@ -42,7 +44,8 @@ On another computer, download `index.html` again and paste the token once more.
 ├── example/
 │   └── displaydata.json    the example shown in the live preview
 └── assets/
-    └── preview.png         the picture at the top of this page
+    ├── preview.png         the map at the top of this page
+    └── table.png           the list view below it
 ```
 
 ## Privacy
