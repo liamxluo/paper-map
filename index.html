@@ -74,6 +74,11 @@ h1{font-family:var(--serif);font-weight:900;font-size:clamp(2.2rem,6.6vw,3.8rem)
 /* map toolbar */
 .map-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:4px 0 10px}
 .zoom{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px}
+.zoom[hidden]{display:none}
+.years-toggle{font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:.5em}
+.years-toggle::after,.filter-toggle::after{content:'';width:5px;height:5px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .15s}
+.years-toggle[aria-expanded="true"]::after,.filter-toggle[aria-expanded="true"]::after{transform:translateY(1px) rotate(-135deg)}
+.filter-toggle{align-items:center;gap:.5em}
 .zoom .btn{min-width:2.2em;text-align:center}
 .range-label{font-size:.86rem;color:var(--muted);font-variant-numeric:tabular-nums;min-width:6.5em}
 .yr-in{width:4.6em;font:inherit;font-size:.88rem;padding:.28em .45em;border:1px solid var(--rule-strong);border-radius:4px;background:var(--surface);color:var(--ink)}
@@ -173,6 +178,14 @@ h1{font-family:var(--serif);font-weight:900;font-size:clamp(2.2rem,6.6vw,3.8rem)
 
 /* legends */
 .legend{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:.88rem;color:var(--muted);margin:12px 0 0;padding:0}
+.map-key{margin:12px 0 0;font-size:.88rem;color:var(--muted)}
+.map-key > summary{cursor:pointer;width:max-content;list-style:none;display:inline-flex;align-items:center;gap:.45em;padding:2px 0;color:var(--muted)}
+.map-key > summary::-webkit-details-marker{display:none}
+.map-key > summary::before{content:'';width:0;height:0;border-left:5px solid currentColor;border-top:4px solid transparent;border-bottom:4px solid transparent;transition:transform .15s}
+.map-key[open] > summary::before{transform:rotate(90deg)}
+.map-key > summary:hover{color:var(--ink)}
+.map-key > summary:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:3px}
+.map-key .map-hint{margin:12px 0 0}
 .legend span{display:inline-flex;align-items:center}
 .sw{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:.45em;flex:none}
 .sw.read{background:var(--green)} .sw.want{background:radial-gradient(circle,var(--bg) 0 2px,var(--red) 2.5px)}
@@ -221,7 +234,7 @@ button.tagchip[aria-pressed="true"]{border-color:var(--ink);font-weight:500}
 .edit-inner strong{font-weight:700;margin-right:6px}
 .edit-inner button{font-size:.84rem;background:transparent;border:1px solid currentColor;border-radius:4px;color:var(--bg);padding:.18em .7em;cursor:pointer}
 .edit-inner .sep{flex:1}
-.filter-toggle{display:none;flex:none;font-size:.88rem;padding:.32em .85em;border:1px solid var(--rule-strong);border-radius:4px;background:var(--surface);color:var(--ink);cursor:pointer;white-space:nowrap}
+.filter-toggle{display:inline-flex;flex:none;font-size:.88rem;padding:.32em .85em;border:1px solid var(--rule-strong);border-radius:4px;background:var(--surface);color:var(--ink);cursor:pointer;white-space:nowrap}
 
 /* table of contents (left drawer) */
 .toc{position:fixed;top:0;left:0;bottom:0;width:var(--toc-w);z-index:40;display:flex;flex-direction:column;background:var(--surface);border-right:1px solid var(--rule);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);transform:translateX(-100%);visibility:hidden;transition:transform .22s ease,visibility 0s linear .22s}
@@ -256,7 +269,8 @@ body.toc-open .toc{transform:none;visibility:visible;transition:transform .22s e
 .page{transition:margin-left .22s ease}
 @media (min-width:1000px){ body.toc-open .page{margin-left:var(--toc-w)} }
 @media (max-width:999px){ .toc{width:min(86vw,320px)} }
-.filters-row{border-top:1px solid var(--rule)}
+.filters-row{border-top:1px solid var(--rule);display:none}
+.filters-row.open{display:block}
 .controls-inner{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding-top:10px;padding-bottom:10px}
 .search input,.sel select{font:inherit;font-size:.92rem;padding:.3em .55em;border:1px solid var(--rule-strong);border-radius:4px;background:var(--surface);color:var(--ink)}
 .search input{width:min(15rem,100%)}
@@ -513,13 +527,13 @@ textarea.backup{width:100%;min-height:220px;font-family:ui-monospace,Menlo,Conso
 
   <div class="map-tools">
     <button type="button" class="btn" id="btnLanes" aria-expanded="false" aria-controls="lanePicker">Topics on the map</button>
-    <div class="zoom" role="group" aria-label="Zoom the timeline">
+    <button type="button" class="btn years-toggle" id="btnZoom" aria-expanded="false" aria-controls="zoomTools">Years: all</button>
+    <div class="zoom" id="zoomTools" role="group" aria-label="Zoom the timeline" hidden>
       <button type="button" class="btn" data-zoom="out" aria-label="Zoom out">−</button>
       <button type="button" class="btn" data-zoom="in" aria-label="Zoom in">+</button>
       <button type="button" class="btn" data-zoom="left" aria-label="Earlier">‹</button>
       <button type="button" class="btn" data-zoom="right" aria-label="Later">›</button>
       <button type="button" class="btn" data-zoom="reset">All years</button>
-      <span class="range-label" id="rangeLabel" aria-live="polite">All years</span>
       <label class="sr" for="y0">From year</label><input class="yr-in" id="y0" type="number" inputmode="numeric" placeholder="From">
       <label class="sr" for="y1">To year</label><input class="yr-in" id="y1" type="number" inputmode="numeric" placeholder="To">
       <button type="button" class="btn" id="btnRange">Show range</button>
@@ -533,25 +547,28 @@ textarea.backup{width:100%;min-height:220px;font-family:ui-monospace,Menlo,Conso
       <svg class="net" id="net" aria-label="Papers by topic and year, with the lines between them"></svg>
     </div>
   </div>
-  <p class="map-hint">Drag along the year axis to zoom into a period, double-click the map to zoom in on a point, and drag sideways to pan once zoomed in. Pinch or Ctrl + scroll also zooms. Over long spans the axis gives busy decades more room and sparse years less; once you zoom in, it is even.</p>
 
   <div class="info" id="info" aria-live="polite"></div>
 
-  <p class="legend">
-    <span><i class="sw read"></i>Read</span>
-    <span><i class="sw want"></i>Want to read</span>
-    <span><i class="sw none"></i>Unmarked</span>
-    <span><i class="sz p3"></i>★ Must read</span>
-    <span><i class="sz p2"></i>○ Optional</span>
-    <span><i class="sz p1"></i>· Background</span>
-  </p>
-  <p class="legend">
-    <span><svg class="lsw" width="28" height="8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4"></line></svg>Builds on</span>
-    <span><svg class="lsw c" width="28" height="8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4"></line></svg>Responds to</span>
-    <span><i class="cdot-sw"></i>Square: a concept you created</span>
-    <span><svg class="lsw p" width="28" height="8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4"></line></svg>When selected: prerequisite concepts</span>
-  </p>
-  <p class="legend" id="srcLegend" hidden></p>
+  <details class="map-key" id="mapKey">
+    <summary>Legend and map tips</summary>
+    <p class="legend">
+      <span><i class="sw read"></i>Read</span>
+      <span><i class="sw want"></i>Want to read</span>
+      <span><i class="sw none"></i>Unmarked</span>
+      <span><i class="sz p3"></i>★ Must read</span>
+      <span><i class="sz p2"></i>○ Optional</span>
+      <span><i class="sz p1"></i>· Background</span>
+    </p>
+    <p class="legend">
+      <span><svg class="lsw" width="28" height="8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4"></line></svg>Builds on</span>
+      <span><svg class="lsw c" width="28" height="8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4"></line></svg>Responds to</span>
+      <span><i class="cdot-sw"></i>Square: a concept you created</span>
+      <span><svg class="lsw p" width="28" height="8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4"></line></svg>When selected: prerequisite concepts</span>
+    </p>
+    <p class="legend" id="srcLegend" hidden></p>
+    <p class="map-hint">Drag along the year axis to zoom into a period, double-click the map to zoom in on a point, and drag sideways to pan once zoomed in. Pinch or Ctrl + scroll also zooms. Over long spans the axis gives busy decades more room and sparse years less; once you zoom in, it is even.</p>
+  </details>
 </header>
 
 <main id="main" class="wrap"></main>
@@ -1438,7 +1455,7 @@ function applyFocus(id){
 }
 function updateRangeUI(){
   const r = settings.range;
-  document.getElementById('rangeLabel').textContent = r ? Math.round(r[0]) + '–' + Math.round(r[1]) : 'All years';
+  document.getElementById('btnZoom').textContent = 'Years: ' + (r ? Math.round(r[0]) + '–' + Math.round(r[1]) : 'all');
 }
 function setRange(a, b){
   const full = MAP.full;
@@ -1507,6 +1524,8 @@ function infoHTML(id){
       '<p class="info-t">' + esc(e.t) + '</p>' +
       (e.what ? '<p class="info-f">' + esc(e.what) + '</p>' : '') + (e.why ? '<p class="info-note">' + esc(e.why) + '</p>' : '') +
       group('Prerequisites', IDX.cUp[e.id] || []) + group('Next', IDX.cDown[e.id] || []) + group('Papers that use it', users) +
+      relGroup('Builds on', (IDX.up[e.id] || []).filter(x => x[1] === 'b')) + relGroup('Responds to', (IDX.up[e.id] || []).filter(x => x[1] === 'c')) +
+      relGroup('Built on by', (IDX.down[e.id] || []).filter(x => x[1] === 'b')) + relGroup('Challenged by', (IDX.down[e.id] || []).filter(x => x[1] === 'c')) +
       '<p class="info-actions"><button type="button" class="linkbtn" data-card="' + e.id + '">Readings</button><button type="button" class="linkbtn" data-clear-sel="1">Clear selection</button></p></div></div>';
   }
   const up = IDX.up[id] || [], down = IDX.down[id] || [];
@@ -2580,12 +2599,16 @@ document.querySelectorAll('[data-prio]').forEach(b => b.addEventListener('click'
 document.getElementById('stSel').addEventListener('change', ev => { ui.st = ev.target.value; rerenderAfterFilter(); });
 document.getElementById('src').addEventListener('change', ev => { ui.tag = ev.target.value; rerenderAfterFilter(); });
 document.getElementById('dom').addEventListener('change', ev => { ui.dom = ev.target.value; rerenderAfterFilter(); });
-document.getElementById('filterToggle').addEventListener('click', () => {
-  const row = document.getElementById('filters');
-  const open = !row.classList.contains('open');
-  row.classList.toggle('open', open);
+function setFiltersOpen(open){
+  document.getElementById('filters').classList.toggle('open', open);
   document.getElementById('filterToggle').setAttribute('aria-expanded', String(open));
   updateFilterToggle(); setBarH();
+}
+document.getElementById('filterToggle').addEventListener('click', () => {
+  const open = !document.getElementById('filters').classList.contains('open');
+  setFiltersOpen(open);
+  settings.filtersOpen = open ? 'open' : null; persistSettings({remote:false});
+  if(open) setTimeout(() => document.getElementById('q').focus(), 0);
 });
 window.addEventListener('hashchange', () => {
   const v = resolveView(location.hash.slice(1));
@@ -2620,6 +2643,14 @@ const initView = resolveView(location.hash.slice(1) || pv.view || '');
 ui.topic = initView.topic; ui.sub = initView.sub;
 renderAll();
 if(pv.select && lib.entries[pv.select]) select(pv.select);
+const zoomTools = document.getElementById('zoomTools'), btnZoom = document.getElementById('btnZoom');
+function setZoomOpen(open){ zoomTools.hidden = !open; btnZoom.setAttribute('aria-expanded', String(open)); }
+setZoomOpen(settings.zoomOpen === 'open');
+btnZoom.addEventListener('click', () => { const open = zoomTools.hidden; setZoomOpen(open); settings.zoomOpen = open ? 'open' : null; persistSettings({remote:false}); });
+if(settings.filtersOpen === 'open') setFiltersOpen(true);
+const mapKey = document.getElementById('mapKey');
+mapKey.open = settings.mapKey === 'open';
+mapKey.addEventListener('toggle', () => { settings.mapKey = mapKey.open ? 'open' : null; persistSettings({remote:false}); });
 setToc(isWide() && settings.toc !== 'closed', false);
 updateSaveState();
 setBarH();
