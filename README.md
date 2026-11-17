@@ -16,7 +16,7 @@ The live preview (link at the top right of this page) shows the made-up example 
 
 To start from the example instead, use **Settings → Data → Import backup** and choose `displaydata.json`.
 
-## Sync with GitHub (optional)
+## Sync with GitHub (Suggested)
 
 Keep your list in a private repository of your own, with every change saved and every version kept.
 
