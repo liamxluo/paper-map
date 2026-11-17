@@ -5,7 +5,7 @@ Map how a research field grew: papers on a timeline, linked into a family tree b
 ![Papers on a timeline, joined by hand-drawn lines](assets/preview.png)
 
 - **Timeline:** papers by topic and year.
-- **Family tree:** you draw the lines between papers, what builds on what and what responds to what.
+- **Tree:** you draw the lines between papers, what builds on what and what responds to what.
 - **Notes:** each paper keeps its PDF and your Markdown notes, ready to export as Markdown or PDF.
 
 ![Each topic as a table, with status, notes, tags and concept cards](assets/table.png)
@@ -20,23 +20,24 @@ The live preview (link at the top right of this page) shows the made-up example 
 
 To start from the example instead, use **Settings → Data → Import backup** and choose `displaydata.json`.
 
+## Notes and PDFs
+
+![Opening a paper’s notes, attaching its PDF, writing Markdown notes beside it, exporting them](assets/notes.gif)
+
+PDFs need GitHub sync. To export every note at once, use **Settings → Data → Export notes**.
+
 ## Zoom the timeline
 
 ![Dragging along the years to zoom in, dragging sideways to move, double-clicking a point](assets/zoom.gif)
 
 ## Subtopics inside subtopics
 
-![Opening Exam season › Procrastination, adding a subtopic inside it, and seeing every level on the map](assets/subtopics.gif)
-
 ![Dragging a subtopic under another topic, then making it a topic of its own, then undoing](assets/drag.gif)
 
 Can't drag, on a phone say? Modify the subtopic and choose its new place under **Inside**.
 
-## Notes and PDFs
+![Opening Exam season › Procrastination, adding a subtopic inside it, and seeing every level on the map](assets/subtopics.gif)
 
-![Opening a paper’s notes, attaching its PDF, writing Markdown notes beside it, exporting them](assets/notes.gif)
-
-PDFs need GitHub sync. To export every note at once, use **Settings → Data → Export notes**.
 
 ## Sync with GitHub (recommended)
 
@@ -52,7 +53,9 @@ When you click **Connect**, the page creates `data/paper-map.json` in your priva
 
 Notes you write are copied into `notes/`, and PDFs you attach go into `pdfs/`. Edit notes in the page; the copies in `notes/` are for reading.
 
-If the page says the repository can't be found, the token doesn't include it yet: open the token on GitHub and add the repository under **Repository access**.
+If the page says the repository can't be found, the token doesn't include it yet: open the token on GitHub and add the repository under 
+
+**Repository access**.
 
 On another computer, download `index.html` again and paste the token once more.
 
