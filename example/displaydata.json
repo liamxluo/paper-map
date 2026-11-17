@@ -206,6 +206,12 @@
     "timetable2015",
     "c",
     "instead of reading it"
+   ],
+   [
+    "caffeine",
+    "cooking2017",
+    "r",
+    "coffee counts as dinner"
    ]
   ],
   "tags": [
@@ -234,7 +240,14 @@
     "map": true
    }
   ],
-  "updatedAt": 1
+  "updatedAt": 1,
+  "tlinks": [
+   [
+    "dinner",
+    "exams",
+    "brain food"
+   ]
+  ]
  },
  "status": {
   "map": {

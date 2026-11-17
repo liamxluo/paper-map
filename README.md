@@ -1,10 +1,14 @@
 ![Paper Map: papers on a timeline, joined by hand-drawn lines](assets/preview.png)
 
-Map how a research field grew: papers on a timeline, linked into a family tree by you, each with its PDF and notes. One HTML file, nothing to install.
+I built this because I wanted a better way to organise what I read and understand how ideas connect.
 
-- **Timeline:** papers by topic and year.
-- **Tree:** you draw the lines between papers, what builds on what and what responds to what.
-- **Notes:** each paper keeps its PDF and your Markdown notes, ready to export as Markdown or PDF.
+<table>
+  <tr>
+    <td align="center" valign="top" width="33%"><img src="assets/icon-structure.svg" width="30" alt=""><br><b>Structure</b><br><sub>Topics inside topics, to any depth</sub></td>
+    <td align="center" valign="top" width="33%"><img src="assets/icon-connect.svg" width="30" alt=""><br><b>Connect</b><br><sub>Lines between papers, concepts and topics</sub></td>
+    <td align="center" valign="top" width="33%"><img src="assets/icon-explore.svg" width="30" alt=""><br><b>Explore</b><br><sub>A field laid out over time</sub></td>
+  </tr>
+</table>
 
 ![Each topic as a table, with status, notes, tags and concept cards](assets/table.png)
 
@@ -12,7 +16,13 @@ The live preview (link at the top right of this page) shows the made-up example 
 
 ## Two structures, one map
 
-**Where it belongs:** topics and subtopics, as many levels deep as you need. **What it connects to:** lines between any two papers, across topics and levels, each with an optional note.
+Topics and subtopics say where something belongs, as many levels deep as you need. Lines say what it connects to:
+
+| Line | Joins |
+|---|---|
+| Builds on · Responds to · Related to | any two papers or concepts, each line with an optional note |
+| Needs | a paper and the concepts to know first; a concept and the ones before it |
+| Related topics | any two topics or subtopics |
 
 ![Linking a paper to one in another subtopic, then giving the line a note](assets/lines.gif)
 
@@ -35,6 +45,8 @@ If the page says the repository can't be found, the token doesn't include it yet
 On another computer, download `index.html` again and paste the token once more.
 
 ## Use it
+
+One HTML file, nothing to install.
 
 1. Download [`index.html`](index.html): open it and click **Download raw file**.
 2. Double-click it to open it in your browser.
@@ -71,7 +83,8 @@ Can't drag, on a phone say? Modify the subtopic and choose its new place under *
 │   └── displaydata.json    the example shown in the live preview
 └── assets/
     ├── *.png
-    └── *.gif
+    ├── *.gif
+    └── *.svg
 ```
 
 ## Good to know
