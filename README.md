@@ -89,16 +89,18 @@ Every topic also opens as a list, with status, notes, tags and concept cards
 
 ![Each topic as a table, with status, notes, tags and concept cards](assets/table.png)
 
-**One field at a time:** **Topics on the map → Current topic only**.
-
 </details>
 
 <details>
 <summary>Fancy another style?</summary>
 
-![Fancy more style?](assets/styles.png)
+![Contents in Mist, in Modify mode while hovering a row, in Warm white and in Dark](assets/styles.png)
+
+Pick Mist, Warm white or Pure white in **Settings → Paper**. Dark mode follows your system.
 
 </details>
+
+- **One field at a time:** **Topics on the map → Current topic only**.
 
 ---
 

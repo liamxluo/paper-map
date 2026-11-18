@@ -588,6 +588,34 @@ body.editing .toc-link{padding-right:34px}
 .map-labels .lt{line-height:1.15}
 .map-labels .lt + .nm{line-height:1.1}
 .map-labels .lt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- Contents: the open row sits up off the page on a small shadow ---------- */
+:root{--toc-bg:var(--bg);--raise:0 1px 2px rgba(28,35,48,.08),0 4px 12px rgba(28,35,48,.09)}
+:root[data-paper="white"]{--toc-bg:var(--bg);--raise:0 1px 2px rgba(26,31,39,.10),0 4px 14px rgba(26,31,39,.13)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--toc-bg:var(--bg);--raise:0 1px 2px rgba(0,0,0,.5),0 4px 12px rgba(0,0,0,.38)} }
+:root[data-theme="dark"]{--toc-bg:var(--bg);--raise:0 1px 2px rgba(0,0,0,.5),0 4px 12px rgba(0,0,0,.38)}
+.toc{background:var(--toc-bg)}
+.toc-body{padding:10px 8px 18px}
+.toc-row,.toc-subs > li{border-radius:9px;transition:background-color .12s ease,box-shadow .12s ease}
+.toc-link{border-left:0}
+.toc-link:hover,.toc-link.on{background:transparent}
+.toc-row:hover,.toc-subs > li:hover{background:color-mix(in srgb, var(--surface) 62%, transparent)}
+.toc-row:has(> .toc-link.on),.toc-subs > li:has(> .toc-link.on){background:var(--surface);box-shadow:var(--raise)}
+.toc-link.on{color:var(--ink);font-weight:700}
+.toc-link{padding-right:10px}
+body.editing .toc-link{padding-right:30px}
+.toc-caret,.toc-caret-sp{width:24px}
+.toc-subs .toc-sub > .toc-link{padding-left:calc(30px + var(--d,0) * 16px)}
+.toc-caret.sub{left:calc(7px + var(--d,0) * 16px)}
+.toc-subs > li > .toc-link,.toc-add .toc-link{padding-left:30px}
+/* in Modify mode the “+” takes the count's place while you hover, so names keep their full width */
+body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-link .n{opacity:0}
+.toc-plus{position:absolute;right:26px;top:50%;transform:translateY(-50%);z-index:2;width:24px;height:24px;border:0;border-radius:6px;background:none;color:var(--muted);font-size:17px;line-height:1;cursor:pointer;opacity:0;transition:opacity .12s ease}
+.toc-row:hover > .toc-plus,.toc-sub:hover > .toc-plus,.toc-plus:focus-visible{opacity:1}
+.toc-plus:hover{color:var(--ink);background:var(--band)}
+@media (hover:none){ .toc-plus{opacity:1} }
+/* keep the drag-and-drop highlights on top of the new look */
+.drop-inside > .toc-link,.drop-end .toc-link{background:var(--hl)}
 </style>
 </head>
 <body>
@@ -1180,6 +1208,7 @@ function tocLink(view, label, n, on, cls){
   return '<button type="button" class="toc-link' + (cls ? ' ' + cls : '') + (on ? ' on' : '') + (n ? '' : ' dim') + '" data-view="' + view + '"' + (on ? ' aria-current="page"' : '') + '><span>' + esc(label) + '</span><span class="n">' + n + '</span></button>';
 }
 const DRAG = '<span class="toc-drag" draggable="true" title="Drag to move" aria-hidden="true">⠿</span>';
+const tocPlus = (tid, parent, name) => '<button type="button" class="toc-plus" data-act="new-sub" data-topic="' + tid + '"' + (parent ? ' data-parent="' + parent + '"' : '') + ' title="Add a subtopic inside" aria-label="Add a subtopic inside “' + esc(name) + '”">+</button>';
 function renderTabs(){
   const ae = document.activeElement;
   let focusSel = null;
@@ -1195,7 +1224,7 @@ function renderTabs(){
     const topicOn = tp.id === ui.topic && !vis.length;
     h += '<li class="toc-topic"><div class="toc-row"' + (ui.edit ? ' data-node="t:' + tp.id + '"' : '') + '>' +
       (vis.length ? '<button type="button" class="toc-caret" data-toc-toggle="' + tp.id + '" aria-expanded="' + exp + '" aria-label="' + (exp ? 'Collapse “' : 'Expand “') + esc(tp.name) + '”">' + CARET + '</button>' : '<span class="toc-caret-sp" aria-hidden="true"></span>') +
-      tocLink(tp.id, tp.name, n, topicOn, 'topic') + (ui.edit ? DRAG : '') + '</div>';
+      tocLink(tp.id, tp.name, n, topicOn, 'topic') + (ui.edit ? tocPlus(tp.id, null, tp.name) + DRAG : '') + '</div>';
     const showSubs = exp || (ui.edit && tp.id === ui.topic);
     if(showSubs){
       h += '<ul class="toc-subs">';
@@ -1205,7 +1234,7 @@ function renderTabs(){
         const kn = (IDX.kids[s.id] || []).length, open = kn && !tocClosedSet.has(s.id);
         h += '<li class="toc-sub" style="--d:' + (IDX.depth[s.id] || 0) + '"' + (ui.edit ? ' data-node="s:' + s.id + '"' : '') + '>' +
           (kn ? '<button type="button" class="toc-caret sub" data-toc-toggle="' + s.id + '" aria-expanded="' + !!open + '" aria-label="' + (open ? 'Collapse “' : 'Expand “') + esc(s.name) + '”">' + CARET + '</button>' : '') +
-          tocLink(s.id, s.name, subCountDeep(s), s.id === ui.sub) + (ui.edit ? DRAG : '') + '</li>';
+          tocLink(s.id, s.name, subCountDeep(s), s.id === ui.sub) + (ui.edit ? tocPlus(tp.id, s.id, s.name) + DRAG : '') + '</li>';
       });
       if(vis.length > 1) h += '<li>' + tocLink(tp.id + '-all', 'All (by year)', n, tp.id === ui.topic && !ui.sub, 'all') + '</li>';
       if(ui.edit) h += '<li><button type="button" class="toc-link add" data-act="new-sub" data-topic="' + tp.id + '">+ New subtopic here</button></li>';
