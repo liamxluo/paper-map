@@ -89,9 +89,16 @@ Every topic also opens as a list, with status, notes, tags and concept cards
 
 ![Each topic as a table, with status, notes, tags and concept cards](assets/table.png)
 
+**One field at a time:** **Topics on the map → Current topic only**.
+
 </details>
 
-- **One field at a time:** **Topics on the map → Current topic only**.
+<details>
+<summary>Fancy another style?</summary>
+
+![Fancy more style?](assets/styles.png)
+
+</details>
 
 ---
 
