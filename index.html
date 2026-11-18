@@ -966,6 +966,33 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
 .ex-list-opts[hidden],.ex-list-hint[hidden]{display:none}
 .ex-list-opts label{display:inline-flex;align-items:center;gap:6px}
 .ex-list-hint{margin:.45em 0 0}
+
+/* ---------- arrowheads: drawn like their line, never dashed ---------- */
+.net .edge.arr{stroke-dasharray:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.4}
+.net .edge.arr.r{stroke-width:1.4}
+.set-arrows{display:flex;flex-direction:column;gap:4px;margin-top:.7em;font-size:.92rem}
+.set-arrows select{max-width:100%}
+
+.lsw .lsw-arr{fill:none;stroke:var(--edge);stroke-width:1.3;stroke-dasharray:none;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- a paper's lines, folded ---------- */
+.rel-fold{margin:.6em 0 0;border-top:1px solid var(--rule);padding-top:.45em}
+.rel-fold > summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;gap:8px;font-size:.86rem;color:var(--muted);padding:.15em 0}
+.rel-fold > summary::-webkit-details-marker{display:none}
+.rel-fold > summary::before{content:'▸';font-size:.75rem;color:var(--faint);transition:transform .15s;display:inline-block}
+.rel-fold[open] > summary::before{transform:rotate(90deg)}
+.rel-fold > summary .rel-k{margin:0}
+.rel-sum{color:var(--muted)}
+.rel-list{list-style:none;margin:.35em 0 .1em;padding:0;display:flex;flex-direction:column}
+.rel-list li{display:grid;grid-template-columns:7.2em minmax(0,1fr) auto;gap:2px 10px;align-items:baseline;padding:.32em 0;border-bottom:1px solid color-mix(in srgb, var(--rule) 70%, transparent);font-size:.86rem}
+.rel-list li:last-child{border-bottom:0}
+.rl-k{color:var(--faint);font-size:.78rem;white-space:nowrap}
+.rl-main{display:flex;flex-direction:column;min-width:0}
+.rl-t{border:0;background:none;padding:0;text-align:left;color:var(--ink);font:inherit;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.rl-t:hover{text-decoration:underline}
+.rl-note{font-style:italic;color:var(--muted);font-size:.82rem;line-height:1.35}
+.rl-y{color:var(--faint);font-variant-numeric:tabular-nums;font-size:.8rem}
+@media (max-width: 640px){ .rel-list li{grid-template-columns:6.2em minmax(0,1fr) auto} }
 </style>
 </head>
 <body>
@@ -1097,12 +1124,13 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
       <span><i class="sz p1"></i>· Background</span>
     </p>
     <p class="legend">
-      <span><svg class="lsw" width="28" height="8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4"></line></svg>Builds on</span>
-      <span><svg class="lsw c" width="28" height="8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4"></line></svg>Responds to</span>
-      <span><svg class="lsw r" width="28" height="8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4"></line></svg>Related to</span>
+      <span><svg class="lsw" width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="27" y2="5"></line><path class="lsw-arr" d="M23 2 L28 5 L23 8"></path></svg>Builds on</span>
+      <span><svg class="lsw c" width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="27" y2="5"></line><path class="lsw-arr" d="M23 2 L28 5 L23 8"></path></svg>Responds to</span>
+      <span><svg class="lsw r" width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="27" y2="5"></line><path class="lsw-arr" d="M23 2 L28 5 L23 8"></path></svg>Related to</span>
       <span><i class="cdot-sw"></i>Square: a concept you created</span>
       <span><svg class="lsw p" width="28" height="8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4"></line></svg>Prerequisite concepts (when selected, or always: Settings)</span>
     </p>
+    <p class="map-hint">Arrows point to the later paper, the way ideas flow; Settings → Map can point them at the paper each one builds on instead, or hide them.</p>
     <p class="legend" id="srcLegend" hidden></p>
     <p class="map-hint">Drag along the year axis to zoom into a period, double-click the map to zoom in on a point, and drag sideways to pan once zoomed in. Pinch or Ctrl + scroll also zooms. Over long spans the axis gives busy decades more room and sparse years less; once you zoom in, it is even.</p>
   </details>
@@ -1322,6 +1350,8 @@ function normalizeSettings(S){
   if(![1, 2, 3, 'all'].includes(S.focusDepth)) S.focusDepth = 1;
   S.showConcepts = S.showConcepts !== false;
   S.showRelated = S.showRelated !== false;
+  S.relOpen = !!S.relOpen;
+  if(!['flow', 'cite', 'off'].includes(S.arrows)) S.arrows = 'flow';
   if(!['all', 'up', 'down', 'lineage'].includes(S.focusDir)) S.focusDir = 'all';
   S.hfOpen = !!S.hfOpen;
   S.hiddenBranches = Array.isArray(S.hiddenBranches) ? S.hiddenBranches.filter(x => typeof x === 'string') : [];
@@ -3319,6 +3349,19 @@ function buildScale(left, inner, years){
   f.ticks = kept.sort((p, q) => p - q);
   return f;
 }
+/* an arrowhead at one end of a line, sitting on the edge of that end's dot.
+   'flow': it points at the later paper, the way ideas travel; 'cite': it points at the paper being built on. */
+function edgeArrow(p, q, atEnd, rDot){
+  const same = Math.abs(p.y - q.y) < 1, mx = (p.x + q.x) / 2;
+  let tip, ux, uy;
+  if(same){ const h = Math.min(20, 6 + Math.abs(q.x - p.x) * 0.08); if(atEnd){ tip = q; ux = q.x - mx; uy = h; } else { tip = p; ux = p.x - mx; uy = h; } }
+  else if(Math.abs(q.x - p.x) > 2){ tip = atEnd ? q : p; ux = atEnd ? q.x - mx : p.x - mx; uy = 0; }
+  else { tip = atEnd ? q : p; ux = 0; uy = atEnd ? q.y - p.y : p.y - q.y; }
+  const L = Math.hypot(ux, uy) || 1; ux /= L; uy /= L;
+  const tx = tip.x - ux * (rDot + 1.6), ty = tip.y - uy * (rDot + 1.6), back = 6.2, wide = 3.4;
+  const bx = tx - ux * back, by = ty - uy * back;
+  return 'M' + (bx - uy * wide).toFixed(1) + ' ' + (by + ux * wide).toFixed(1) + ' L' + tx.toFixed(1) + ' ' + ty.toFixed(1) + ' L' + (bx + uy * wide).toFixed(1) + ' ' + (by - ux * wide).toFixed(1);
+}
 function edgePath(p, q){
   if(Math.abs(p.y - q.y) < 1){
     const h = Math.min(20, 6 + Math.abs(q.x - p.x) * 0.08);
@@ -3344,6 +3387,7 @@ function rekeyTl(oldId, newId){
 }
 function tlOf(ln){ const id = tlIdOf(ln); return (lib.tlinks || []).filter(l => l[0] === id || l[1] === id).map(l => l[0] === id ? l[1] : l[0]); }
 function topicLinkArcs(){ return ''; }
+document.addEventListener('toggle', ev => { const d = ev.target; if(d && d.matches && d.matches('[data-rel-fold]')){ settings.relOpen = d.open; persistSettings({remote:false}); } }, true);
 function clearTlHover(){ mapLabels.querySelectorAll('.tl-hover').forEach(x => { x.classList.remove('tl-hover', 'tl-hover-multi'); x.style.removeProperty('--tlh'); x.style.removeProperty('--tlhg'); }); }
 mapLabels.addEventListener('mouseover', ev => {
   clearTlHover();
@@ -3480,6 +3524,10 @@ function renderMap(force){
     const muted = (!ok[a] || !ok[b]) && t !== 'o' ? ' muted' : '';
     const brId = lib.lineBranch[a + '|' + b + '|' + t], br = brId && lib.branches.find(x => x.id === brId);
     s += '<path class="edge ' + t + muted + (br ? ' br' : '') + '"' + (br ? ' style="--br:' + br.color + '" data-br="' + br.id + '"' : '') + ' data-a="' + a + '" data-b="' + b + '" d="' + edgePath(p, q) + '"></path>';
+    if(settings.arrows !== 'off' && (t === 'b' || t === 'c' || t === 'r')){
+      const toEnd = settings.arrows !== 'cite', target = lib.entries[toEnd ? b : a];
+      s += '<path class="edge arr ' + t + muted + (br ? ' br' : '') + '"' + (br ? ' style="--br:' + br.color + '" data-br="' + br.id + '"' : '') + ' data-a="' + a + '" data-b="' + b + '" d="' + edgeArrow(p, q, toEnd, target ? dotR(target, narrow) : 5) + '"></path>';
+    }
     if(note){
       const same = Math.abs(p.y - q.y) < 1;
       const nx = (p.x + q.x) / 2, ny = same ? p.y - Math.min(20, 6 + Math.abs(q.x - p.x) * 0.08) / 2 - 4 : (p.y + q.y) / 2 - 3;
@@ -3772,6 +3820,23 @@ document.addEventListener('click', ev => {
   const hd = ev.target.closest('[data-hf-dir]'); if(hd){ settings.focusDir = hd.dataset.hfDir; persistSettings({remote:false}); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); return; }
   const dp = ev.target.closest('[data-depth]'); if(dp){ ui.depth = dp.dataset.depth === 'all' ? 'all' : +dp.dataset.depth; settings.focusDepth = ui.depth; persistSettings({remote:false}); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); }
 });
+/* a paper's lines, folded: one line per related paper, with its note in full */
+function linesFoldHTML(id, e){
+  const up = IDX.up[id] || [], down = IDX.down[id] || [], rows = [];
+  const add = (label, arr) => arr.filter(x => lib.entries[x[0]]).forEach(x => rows.push({label, id: x[0], note: x[2] || ''}));
+  add('Builds on', up.filter(x => x[1] === 'b'));
+  add('Responds to', up.filter(x => x[1] === 'c'));
+  add('Built on by', down.filter(x => x[1] === 'b'));
+  add('Challenged by', down.filter(x => x[1] === 'c'));
+  add('Related to', up.filter(x => x[1] === 'r').concat(down.filter(x => x[1] === 'r')));
+  (e.needs || []).filter(c => lib.entries[c]).forEach(c => rows.push({label: 'Needs', id: c, note: ''}));
+  if(!rows.length) return '';
+  const counts = {}; rows.forEach(r => { counts[r.label] = (counts[r.label] || 0) + 1; });
+  const sum = Object.entries(counts).map(([k, n]) => n + ' ' + k.toLowerCase()).join(' · ');
+  return '<details class="rel-fold" data-rel-fold="1"' + (settings.relOpen ? ' open' : '') + '><summary><span class="rel-k">Lines</span><span class="rel-sum">' + esc(sum) + '</span></summary><ul class="rel-list">' +
+    rows.map(r => { const o = lib.entries[r.id]; return '<li><span class="rl-k">' + r.label + '</span><span class="rl-main"><button type="button" class="rl-t" data-select="' + r.id + '" title="' + esc(o.t) + '">' + esc(o.kind === 'concept' ? (o.short || o.t) : (o.au ? shortAu(o.au) + ' · ' : '') + o.t) + '</button>' + (r.note ? '<span class="rl-note">' + esc(r.note) + '</span>' : '') + '</span><span class="rl-y">' + esc(o.y || '') + '</span></li>'; }).join('') +
+    '</ul></details>';
+}
 function relGroup(title, items){
   items = items.filter(x => lib.entries[x[0]]);
   return items.length ? '<p class="rel"><span class="rel-k">' + title + '</span>' + items.map(x => relChip(x[0]) + (x[2] ? '<span class="rel-note">' + esc(x[2]) + '</span>' : '')).join('') + '</p>' : '';
@@ -3795,13 +3860,7 @@ function infoHTML(id){
       (ui.edit ? editLinksHTML(e.id) + '<p class="info-actions"><button type="button" class="btn" data-link-add="b" data-id="' + e.id + '">+ It builds on…</button><button type="button" class="btn" data-link-add="c" data-id="' + e.id + '">+ It responds to…</button><button type="button" class="btn" data-link-add="r" data-id="' + e.id + '">+ Related to…</button></p>' : '') +
       '<p class="info-actions"><button type="button" class="linkbtn" data-card="' + e.id + '">Readings</button><button type="button" class="linkbtn" data-reader="' + e.id + '">Notes</button><button type="button" class="linkbtn" data-clear-sel="1">Clear selection</button></p></div></div>';
   }
-  const up = IDX.up[id] || [], down = IDX.down[id] || [];
-  let rels = relGroup('Builds on', up.filter(x => x[1] === 'b')) +
-    relGroup('Responds to', up.filter(x => x[1] === 'c')) +
-    relGroup('Built on by', down.filter(x => x[1] === 'b')) +
-    relGroup('Challenged by', down.filter(x => x[1] === 'c')) +
-    relGroup('Related to', up.filter(x => x[1] === 'r').concat(down.filter(x => x[1] === 'r'))) +
-    group('Prerequisites', e.needs || []);
+  let rels = linesFoldHTML(id, e);
   rels += focusNoteHTML(id);
   if(ui.edit) rels += editLinksHTML(id) + '<p class="info-actions"><button type="button" class="btn" data-link-add="b" data-id="' + e.id + '">+ It builds on…</button><button type="button" class="btn" data-link-add="c" data-id="' + e.id + '">+ It responds to…</button><button type="button" class="btn" data-link-add="r" data-id="' + e.id + '">+ Related to…</button></p>';
   else if(!rels) rels = '<p class="info-note">No lines yet. After reading it, turn on Modify mode to link the papers it builds on.</p>';
@@ -4985,7 +5044,7 @@ function openSettings(){
       '<div class="color-row"><label><input type="color" id="cGreen" value="' + esc(c.green || DEFAULT_COLORS.green) + '"> Read</label><label><input type="color" id="cRed" value="' + esc(c.red || DEFAULT_COLORS.red) + '"> Want to read</label><button type="button" class="btn" id="cReset">Reset to defaults</button></div></div>' +
       '<div class="set-section"><h3>Paper</h3><div class="form-grid"><fieldset class="full"><legend>Light or dark</legend>' + [['auto', 'Match my system'], ['light', 'Light'], ['dark', 'Dark']].map(p => '<label><input type="radio" name="theme" value="' + p[0] + '"' + ((settings.theme || 'auto') === p[0] ? ' checked' : '') + '> ' + p[1] + '</label>').join('') + '</fieldset><fieldset class="full"><legend>Page background in light mode</legend>' +
         [['mist','Mist (cool, default)'],['warm','Warm white'],['white','Pure white']].map(p => '<label><input type="radio" name="paper" value="' + p[0] + '"' + ((settings.paper || 'mist') === p[0] ? ' checked' : '') + '> ' + p[1] + '</label>').join('') + '</fieldset></div></div>' +
-      '<div class="set-section"><h3>Map</h3><label style="display:flex;gap:.5em;align-items:center"><input type="checkbox" id="srcColors"' + (settings.mapColor !== 'plain' ? ' checked' : '') + '> Colour unmarked dots by tag</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.4em"><input type="checkbox" id="setShowPre"' + (settings.showPre ? ' checked' : '') + '> Always show prerequisite lines</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.4em"><input type="checkbox" id="setShowRel"' + (settings.showRelated !== false ? ' checked' : '') + '> Show Related-to lines (dotted)</label><div class="set-actions"><button type="button" class="btn" id="setTags">Manage tags &amp; colours</button></div></div>' +
+      '<div class="set-section"><h3>Map</h3><label style="display:flex;gap:.5em;align-items:center"><input type="checkbox" id="srcColors"' + (settings.mapColor !== 'plain' ? ' checked' : '') + '> Colour unmarked dots by tag</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.4em"><input type="checkbox" id="setShowPre"' + (settings.showPre ? ' checked' : '') + '> Always show prerequisite lines</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.4em"><input type="checkbox" id="setShowRel"' + (settings.showRelated !== false ? ' checked' : '') + '> Show Related-to lines (dotted)</label><label class="set-arrows">Arrows on lines<select id="setArrows"><option value="flow"' + (settings.arrows === 'flow' ? ' selected' : '') + '>Point to the later paper: how ideas flow</option><option value="cite"' + (settings.arrows === 'cite' ? ' selected' : '') + '>Point to the paper it builds on: how citations go</option><option value="off"' + (settings.arrows === 'off' ? ' selected' : '') + '>Don’t show arrows</option></select></label><div class="set-actions"><button type="button" class="btn" id="setTags">Manage tags &amp; colours</button></div></div>' +
       '<div class="set-section"><h3>Modify</h3><label style="display:flex;gap:.5em;align-items:center"><input type="checkbox" id="setAskEdit"' + (settings.skipModifyConfirm ? '' : ' checked') + '> Ask before turning on Modify mode</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.5em">Undo stays available for <select id="setUndoWin">' + [[5, '5 minutes'], [10, '10 minutes'], [30, '30 minutes'], [0, 'until my next change']].map(o => '<option value="' + o[0] + '"' + (undoMinutes() === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label><p class="hint" style="margin:.4em 0 0">Undo always covers your last change, until you make another one. ' + (ghCfg() ? 'Every version saved before that stays in <a href="https://github.com/' + encodeURIComponent(ghCfg().owner) + '/' + encodeURIComponent(ghCfg().repo) + '/commits/' + encodeURIComponent(ghCfg().branch || 'main') + '/' + ghCfg().path.split('/').map(encodeURIComponent).join('/') + '" target="_blank" rel="noopener">your repository’s history</a>.' : 'With sync, earlier versions are kept too: Settings → Sync → Earlier versions.') + '</p><div class="set-actions"><button type="button" class="btn" id="setEdit">' + (ui.edit ? 'Turn off Modify mode' : 'Turn on Modify mode') + '</button></div></div>' +
       '<div class="set-section"><h3>Colour lines</h3><p class="hint">Named paths of ideas, with their colours. Add, rename, recolour or hide them, and see what is on each.</p><div class="set-actions"><button type="button" class="btn" id="setBrManage">Manage colour lines</button></div></div>' +
       syncSectionHTML() +
@@ -5002,6 +5061,7 @@ function openSettings(){
       b.querySelector('#setTitle').addEventListener('change', ev => { lib.title = ev.target.value.trim(); applyTitle(); touchLib([]); });
       b.querySelector('#srcColors').addEventListener('change', ev => { settings.mapColor = ev.target.checked ? 'source' : 'plain'; persistSettings(); renderMap(true); });
       b.querySelector('#setShowPre').addEventListener('change', ev => { settings.showPre = ev.target.checked; persistSettings(); renderMap(true); });
+      b.querySelector('#setArrows').addEventListener('change', ev => { settings.arrows = ev.target.value; persistSettings(); renderMap(true); });
       showLatest();
       const inst = b.querySelector('#setInstall');
       if(inst) inst.addEventListener('click', () => { closeModal(); runInstall(); });
