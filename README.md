@@ -2,13 +2,7 @@
 
 I built this because I wanted a better way to organise what I read and understand how ideas connect.
 
-<table>
-  <tr>
-    <td align="center" valign="top" width="33%"><img src="assets/icon-structure.svg" width="30" alt=""><br><b>Structure</b><br><sub>Topics inside topics, to any depth</sub></td>
-    <td align="center" valign="top" width="33%"><img src="assets/icon-connect.svg" width="30" alt=""><br><b>Connect</b><br><sub>Lines between papers, concepts and topics</sub></td>
-    <td align="center" valign="top" width="33%"><img src="assets/icon-explore.svg" width="30" alt=""><br><b>Explore</b><br><sub>A field laid out over time</sub></td>
-  </tr>
-</table>
+![Structure: topics inside topics, to any depth. Connect: lines between papers, concepts and topics. Explore: a field laid out over time.](assets/features.svg)
 
 ![Each topic as a table, with status, notes, tags and concept cards](assets/table.png)
 
