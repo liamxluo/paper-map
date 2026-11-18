@@ -2,11 +2,11 @@
 
 I built this simply because I wanted a better way to organise what I read and understand how ideas connect
 
-**[How it works](#how-it-works)** · **[Get started](#get-started)** · **[Good to know](#good-to-know)**
+**[Get the app →](https://liamxluo.github.io/paper-map/)** · **[How it works](#how-it-works)** · **[Get started](#get-started)** · **[Good to know](#good-to-know)**
 
 ![Structure: topics inside topics, to any depth. Connect: lines between papers, concepts and topics. Explore: a field laid out over time.](assets/features.svg)
 
-The live preview (link at the top right of this page) shows a made-up example.
+The website shows a made-up example. Install the app from there with one click, in Chrome or Edge.
 
 ---
 
@@ -18,11 +18,11 @@ The live preview (link at the top right of this page) shows a made-up example.
 
 ![Linking a paper to one in another subtopic, giving the line a note and the Main line colour, seeing the whole colour line light up, then How far → Whole line](assets/lines.gif)
 
-Click a paper and it lights up one step around it; notes on lines show only on the lines that light up, so an untouched map stays clean. **How far** in its panel goes further, up to **Whole line**: every paper connected to it, in any direction, and **Related to** there shows or hides the dotted lines. Give a main line of thought its own colour from a line's ✎: click any paper on a colour line and the whole line lights up, end to end.
+Click a paper and it lights up one step around it; notes on lines show only on the lines that light up, so an untouched map stays clean. **How far** in its panel goes further, up to **Whole line**: every paper connected to it, in any direction, and **Related to** there shows or hides the dotted lines. Give a main line of thought its own colour from a line's ✎: click any paper on a colour line and the whole line lights up, end to end. **Colour lines** above the map keeps them all in one place: name a path (Monetary Policy, say), see every connection on it, or hide a whole path for a while.
 
 ### Topics
 
-Top-level topics are for big areas, such as a field or a project. Links between them are drawn with lines, colour lines and Related topics, and the map shows them all. Related topics carry ⇄ beside their names and light up together; give a link a colour from its ✎ to say which path it belongs to.
+Top-level topics are for big areas, such as a field or a project. Links between them are drawn with lines, colour lines and Related topics, and the map shows them all. Related topics carry ⇄ beside their names and light up together; give a link a colour from its ✎ to say which path it belongs to. A path's name shows in lists and tooltips, never on the map.
 
 ### Concepts
 
@@ -32,15 +32,22 @@ A topic is where a paper lives; a concept is an idea it needs, with the year the
 
 ## Get started
 
-### I. Open it
+### I. Get the app
 
-One HTML file, nothing to install.
+1. Open **[liamxluo.github.io/paper-map](https://liamxluo.github.io/paper-map/)** in Chrome or Edge.
+2. Click **Install** in the card at the top right. Folded it away? The small **Install app** pill in the same corner does the same.
+
+Paper Map gets its own icon and window, opens even when you are offline, and updates itself whenever the website does. Add papers with **+ New paper**, and topics with **Modify**.
+
+<details>
+<summary>No Chrome or Edge? Keep it as a file instead</summary>
 
 1. Download [`index.html`](index.html): open it and click **Download raw file**.
-2. Double-click it to open it in your browser.
-3. Add papers with **+ New paper**, and topics with **Modify**. Everything is saved in that browser.
+2. Double-click it to open it in any browser.
 
-To start from the example instead, use **Settings → Data → Import backup** and choose `displaydata.json`.
+The app and the file keep separate lists. To use the same list in both, connect GitHub sync (below) in each, or move it with **Settings → Data → Export backup** and **Import backup**. To start from the example, import `displaydata.json`.
+
+</details>
 
 ### II. Sync with GitHub (highly recommended)
 
@@ -109,6 +116,13 @@ Every topic also opens as a list, with status, notes, tags and the concepts its 
 </details>
 
 <details>
+<summary>Colour lines, all in one place</summary>
+
+![The Colour lines manager: each path with its colour and what uses it, Hide or Show, Rename or recolour, the connections on Main line, and two paths named in advance](assets/colour-lines.png)
+
+</details>
+
+<details>
 <summary>Fancy another style?</summary>
 
 ![Contents in Mist, in Modify mode while hovering a row, in Warm white and in Dark](assets/styles.png)
@@ -144,6 +158,9 @@ Pick Mist, Warm white or Pure white in **Settings → Paper**. In the same place
 ```
 /
 ├── index.html              the whole app
+├── manifest.webmanifest    lets browsers install it as an app
+├── sw.js                   keeps the app working offline (never stores your data)
+├── icons/                  the app icon, in each size
 ├── README.md
 ├── .gitignore
 ├── example/

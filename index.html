@@ -5,9 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <title>Paper Map</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Paper Map">
+<meta name="application-name" content="Paper Map">
+<meta name="theme-color" content="#F5F6F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12161C" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;900&display=swap">
 <style>
 :root{
   color-scheme: light;
@@ -18,8 +26,8 @@
   --green-a:rgba(0,148,115,.12); --red-a:rgba(227,66,52,.11);
   --green-ink:#00694F; --red-ink:#B02A1F;
   --toc-w:272px;
-  --serif:"Noto Serif SC","Songti SC","STSong","SimSun",serif;
-  --sans:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  --serif:"Source Serif 4","Noto Serif SC","Songti SC","STSong","SimSun",serif;
+  --sans:"Source Sans 3","Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
@@ -769,6 +777,43 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
 .map-labels button.tl-rel.tl-multi.tl-hover:not(.tl-hover-multi){box-shadow:inset 3px 0 0 var(--tlh, var(--focus));background:color-mix(in srgb, var(--tlh, var(--focus)) 10%, transparent)}
 
 .set-version{margin:1.2em 0 0;text-align:right;font-size:.78rem}
+
+/* ---------- colour lines manager ---------- */
+#btnBranches.has-hidden{color:var(--muted)}
+.bm-list{display:flex;flex-direction:column;gap:8px;margin:.6em 0}
+.bm-row{border:1px solid var(--rule);border-radius:10px;padding:.55em .7em;background:var(--bg)}
+.bm-row.is-hidden .bm-name,.bm-row.is-hidden .br-dot{opacity:.45}
+.bm-head{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px}
+.bm-name{font-weight:600}
+.bm-acts{margin-left:auto;display:flex;gap:6px}
+.btn.small{padding:.25em .65em;font-size:.82rem}
+.bm-conns{margin-top:.4em}
+.bm-conns summary{cursor:pointer;font-size:.84rem;color:var(--muted)}
+.bm-conns ul{margin:.35em 0 0;padding-left:1.1em;display:flex;flex-direction:column;gap:3px;font-size:.88rem}
+.bm-new{display:flex;flex-direction:column;gap:8px;border:1px dashed var(--rule-strong);border-radius:10px;padding:.7em}
+.bm-new label{display:flex;flex-direction:column;gap:3px}
+.tl-path{font-size:.78rem;color:var(--tlc);margin:0 .5em 0 .25em;font-weight:600}
+
+.bm-new[hidden],.bm-add[hidden]{display:none}
+
+.warn-line{color:var(--danger, #B3261E)}
+
+/* ---------- install card, top right ---------- */
+.install-card{position:fixed;top:calc(var(--bar-h, 58px) + 10px);right:16px;z-index:60;display:flex;align-items:center;gap:12px;padding:10px 10px 10px 12px;border-radius:14px;background:var(--surface);border:1px solid var(--rule-strong);box-shadow:0 10px 30px rgba(28,35,48,.14);max-width:calc(100vw - 32px)}
+.install-card[hidden]{display:none}
+.install-card > img{border-radius:9px;flex:none}
+.install-card .ic-text{display:flex;flex-direction:column;gap:1px;font-size:.86rem;line-height:1.3}
+.install-card .ic-text b{font-size:.92rem}
+.install-card .ic-text span{color:var(--muted)}
+.install-card .ic-fold{border:0;background:transparent;color:var(--muted);font-size:1.15rem;line-height:1;padding:4px 6px;cursor:pointer;border-radius:6px}
+.install-card .ic-fold:hover{background:color-mix(in srgb, var(--ink) 7%, transparent);color:var(--ink)}
+.install-card .ic-pill{display:none}
+.install-card.folded{padding:0;border-radius:999px;gap:0;box-shadow:0 4px 14px rgba(28,35,48,.12)}
+.install-card.folded > img,.install-card.folded .ic-text,.install-card.folded #icInstall,.install-card.folded .ic-fold{display:none}
+.install-card.folded .ic-pill{display:inline-flex;align-items:center;gap:7px;border:0;background:transparent;color:var(--ink);font:600 .84rem/1 var(--sans);padding:7px 13px 7px 8px;border-radius:999px;cursor:pointer}
+.install-card.folded .ic-pill img{border-radius:5px}
+.install-card.folded .ic-pill:hover{background:color-mix(in srgb, var(--ink) 6%, transparent)}
+@media (max-width: 560px){ .install-card:not(.folded) .ic-text span{display:none} }
 </style>
 </head>
 <body>
@@ -795,8 +840,15 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
       <button type="button" class="btn" id="btnSettings">Settings</button>
     </div>
   </div>
+  <div class="install-card" id="installCard" hidden>
+    <img src="icons/icon-192.png" alt="" width="36" height="36">
+    <div class="ic-text"><b>Get the Paper Map app</b><span>Its own icon and window. Works offline.</span></div>
+    <button type="button" class="btn primary" id="icInstall">Install</button>
+    <button type="button" class="ic-fold" id="icFold" title="Fold this away" aria-label="Fold this away">‹</button>
+    <button type="button" class="ic-pill" id="icPill" title="Install the Paper Map app"><img src="icons/icon-192.png" alt="" width="20" height="20">Install app</button>
+  </div>
   <div class="preview-banner" id="previewBanner" hidden>
-    <div class="wrap preview-inner">This is a preview with example data. Nothing you change here is saved. <a href="index.html" download="index.html">Download the page</a> to make your own.</div>
+    <div class="wrap preview-inner">This is a preview with example data. Nothing you change here is saved. To start your own, install the app (top right, in Chrome or Edge), <a href="./?app">open it here</a>, or <a href="index.html" download="index.html">download the page</a>.</div>
   </div>
   <div class="edit-banner" id="editBanner" hidden>
     <div class="wrap edit-inner">
@@ -842,6 +894,7 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
   <div class="map-tools">
     <button type="button" class="btn" id="btnLanes" aria-expanded="false" aria-controls="lanePicker">Topics on the map</button>
     <button type="button" class="btn years-toggle" id="btnZoom" aria-expanded="false" aria-controls="zoomTools">Years: all</button>
+    <button type="button" class="btn" id="btnBranches" title="Name, colour, show or hide your colour lines">Colour lines</button>
     <div class="br-row" id="branchRow" hidden></div>
     <div class="zoom" id="zoomTools" role="group" aria-label="Zoom the timeline" hidden>
       <button type="button" class="btn" data-zoom="out" aria-label="Zoom out">−</button>
@@ -945,7 +998,67 @@ const PRIO_LABEL = {3:'★ Must read', 2:'○ Optional', 1:'· Background'};
 const DEFAULT_COLORS = {green:'#009473', red:'#E34234'};
 const PREVIEW_DATA = 'example/displaydata.json';
 let PREVIEW = false;
-const APP_VERSION = '1.4.0';
+const APP_VERSION = '1.5.0';
+/* Installed as an app (or installable): only when the page comes from a website, never from a downloaded file */
+const SERVED = /^https?:$/.test(location.protocol);
+const STANDALONE = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+let installPrompt = null;
+/* the install card: Chrome and Edge only (they are the browsers that can install with one click) */
+function showInstallCard(on){
+  const c = document.getElementById('installCard'); if(!c) return;
+  c.hidden = !on || STANDALONE;
+  let folded = false; try{ folded = localStorage.getItem('rl:installFold') === '1'; }catch(e){}
+  c.classList.toggle('folded', folded);
+}
+window.addEventListener('beforeinstallprompt', ev => { ev.preventDefault(); installPrompt = ev; showInstallCard(true); });
+window.addEventListener('appinstalled', () => { installPrompt = null; showInstallCard(false); try{ toast('Paper Map is installed. Open it from your Dock, Start menu or home screen.'); }catch(e){} });
+async function runInstall(){
+  if(installPrompt){ const p = installPrompt; p.prompt(); let ok = false; try{ ok = (await p.userChoice).outcome === 'accepted'; }catch(e){} if(ok){ installPrompt = null; showInstallCard(false); } return; }
+  openInstallHelp();
+}
+document.addEventListener('click', ev => {
+  if(ev.target.closest('#icInstall, #icPill')){ runInstall(); return; }
+  if(ev.target.closest('#icFold')){ try{ localStorage.setItem('rl:installFold', '1'); }catch(e){} showInstallCard(true); }
+});
+/* which browser this is, for install steps */
+function browserKind(){
+  const ua = navigator.userAgent;
+  if(/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'ios';
+  if(/Edg\//.test(ua)) return 'edge';
+  if(/Firefox\//.test(ua)) return 'firefox';
+  if(/Chrome\/|Chromium\//.test(ua)) return 'chrome';
+  if(/Safari\//.test(ua) && /Macintosh/.test(ua)) return 'safari';
+  return 'other';
+}
+async function installChecks(){
+  const out = {https: location.protocol === 'https:' || location.hostname === 'localhost', manifest: false, worker: false};
+  try{ const r = await fetch('manifest.webmanifest', {cache: 'no-cache'}); out.manifest = r.ok && !!(await r.json()).name; }catch(e){}
+  try{ out.worker = !!(navigator.serviceWorker && await navigator.serviceWorker.getRegistration()); }catch(e){}
+  return out;
+}
+async function openInstallHelp(){
+  const k = browserKind(), c = SERVED ? await installChecks() : null;
+  const steps = {
+    chrome: 'In Chrome, click the install icon at the right end of the address bar, or open the ⋮ menu → <b>Cast, save and share</b> → <b>Install page as app</b>.',
+    edge: 'In Edge, click the install icon at the right end of the address bar, or open the … menu → <b>Apps</b> → <b>Install this site as an app</b>.',
+    safari: 'In Safari, choose <b>File → Add to Dock</b> (macOS Sonoma or later). Safari has no install button inside pages, so this menu is the way.',
+    ios: 'Tap <b>Share</b>, then <b>Add to Home Screen</b>.',
+    firefox: 'Firefox on a computer cannot install web apps. Open this page in Chrome, Edge or Safari to install it.',
+    other: 'Use your browser’s menu to install this page as an app, or add it to your home screen.'
+  }[k];
+  let body;
+  if(!SERVED) body = '<p>This copy is a file on your computer, which browsers cannot install. Open the website version with <b>?app</b> at the end (the README links to it) and install it from there.</p>';
+  else{
+    const missing = [];
+    if(!c.manifest) missing.push('<code>manifest.webmanifest</code>');
+    if(!c.worker) missing.push('<code>sw.js</code>');
+    body = '<p>' + steps + '</p>' +
+      (missing.length ? '<p class="warn-line">This website is missing ' + missing.join(' and ') + '. Upload them, with the <code>icons</code> folder, next to <code>index.html</code> in your repository, wait a minute for GitHub Pages, then reload.</p>' : '<p class="hint">The app files are in place on this website (version ' + APP_VERSION + ').</p>') +
+      '<p class="hint">Already installed? Open Paper Map from your Dock, Applications or home screen; browsers stop offering to install once it is there.</p>';
+  }
+  openModal({title: 'Install Paper Map', body, actions: [{label: 'OK', primary: true}]});
+}
+if(SERVED && 'serviceWorker' in navigator) window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').then(r => r.update()).catch(() => {}); });
 const BRANCH_PALETTE = ['#E34234', '#7058A3', '#009473', '#38A1DB', '#E7609E', '#8B5E3C', '#E2A72E'];
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
@@ -1014,6 +1127,7 @@ function normalizeSettings(S){
   if(![1, 2, 3, 'all'].includes(S.focusDepth)) S.focusDepth = 1;
   S.showConcepts = S.showConcepts !== false;
   S.showRelated = S.showRelated !== false;
+  S.hiddenBranches = Array.isArray(S.hiddenBranches) ? S.hiddenBranches.filter(x => typeof x === 'string') : [];
   S.undoWindow = [0, 5, 10, 30].includes(S.undoWindow) ? S.undoWindow : 10;
   return S;
 }
@@ -1758,7 +1872,7 @@ function tlStyle(cols, v){
   const n = cols.length;
   return v + 'g:linear-gradient(to bottom,' + cols.map((c, i) => c + ' ' + (i * 100 / n).toFixed(2) + '% ' + ((i + 1) * 100 / n).toFixed(2) + '%').join(',') + ')';
 }
-function tlRelsOf(id){ return (lib.tlinks || []).filter(l => l[0] === id || l[1] === id).map(l => { const br = tlBranch(l); return {o: l[0] === id ? l[1] : l[0], bid: br ? br.id : '', color: br ? br.color : '', name: br ? br.name : ''}; }); }
+function tlRelsOf(id){ return (lib.tlinks || []).filter(l => (l[0] === id || l[1] === id) && !brHidden((lib.tlinkColor || {})[l[0] + '|' + l[1]])).map(l => { const br = tlBranch(l); return {o: l[0] === id ? l[1] : l[0], bid: br ? br.id : '', color: br ? br.color : '', name: br ? br.name : ''}; }); }
 function rekeyTl(oldId, newId){
   const m = lib.tlinkColor || {};
   Object.keys(m).forEach(k => { const [a, b] = k.split('|'); if(a === oldId || b === oldId){ const nk = (a === oldId ? newId : a) + '|' + (b === oldId ? newId : b); m[nk] = m[k]; delete m[k]; } });
@@ -1793,7 +1907,8 @@ function renderMapLabels(lanes, laneH){
   document.documentElement.style.setProperty('--lab-extra', ((maxD ? Math.min(90, 14 + maxD * 14) : 0) + (arcsSvg ? 12 : 0)) + 'px');
   /* the row you are in, and every row related to it, light up together (in the link's colour) */
   const litTl = {};
-  const here = ui.page !== 'concepts' ? (ui.sub || ui.topic) : null;
+  const here = ui.page !== 'concepts' && !ui.branch ? (ui.sub || ui.topic) : null;
+  if(ui.branch && !brHidden(ui.branch)){ const br = lib.branches.find(x => x.id === ui.branch); if(br) branchTlinks(br.id).forEach(l => { litTl[l[0]] = [br.color]; litTl[l[1]] = [br.color]; }); }
   if(here){ const hr = tlRelsOf(here); if(hr.length){ litTl[here] = tlColours(hr); hr.forEach(r => { litTl[r.o] = [r.color || 'var(--focus)']; }); } }
   mapLabels.innerHTML = lanes.map((ln, i) => {
     if(ln.concepts) return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + ' lane-concepts' + (ui.page === 'concepts' ? ' on' : '') + '" data-view="__concepts" style="--d:0" title="Open the Concepts page"><span class="lab-in"><span class="full"><span class="nm"><i class="sq" aria-hidden="true"></i>Concepts</span></span><span class="short">Ideas</span></span></button>';
@@ -1892,6 +2007,7 @@ function renderMap(force){
     const p = P[a], q = P[b];
     if(!p || !q) return;
     if(t === 'r' && settings.showRelated === false) return;
+    if(lineHidden(a, b, t)) return;
     const muted = (!ok[a] || !ok[b]) && t !== 'o' ? ' muted' : '';
     const brId = lib.lineBranch[a + '|' + b + '|' + t], br = brId && lib.branches.find(x => x.id === brId);
     s += '<path class="edge ' + t + muted + (br ? ' br' : '') + '"' + (br ? ' style="--br:' + br.color + '" data-br="' + br.id + '"' : '') + ' data-a="' + a + '" data-b="' + b + '" d="' + edgePath(p, q) + '"></path>';
@@ -1968,13 +2084,14 @@ function renderMap(force){
 const EK = (a, b) => a + '|' + b;
 function oneStep(id){
   const F = {nodes: new Set([id]), edges: new Set(), far: new Set(), soft: new Set(), softNodes: new Set(), self: id};
-  lib.links.forEach(l => { if(l[2] === 'r' && settings.showRelated === false) return; if(l[0] === id || l[1] === id){ F.edges.add(EK(l[0], l[1])); F.nodes.add(l[0]); F.nodes.add(l[1]); } });
+  lib.links.forEach(l => { if(l[2] === 'r' && settings.showRelated === false) return; if(lineHidden(l[0], l[1], l[2])) return; if(l[0] === id || l[1] === id){ F.edges.add(EK(l[0], l[1])); F.nodes.add(l[0]); F.nodes.add(l[1]); } });
   const e = lib.entries[id];
   if(e && e.kind === 'concept') (IDX.users[id] || []).forEach(p => { F.edges.add(EK(id, p)); F.nodes.add(p); });
   else if(e) (e.needs || []).forEach(c => { if(lib.entries[c]){ F.edges.add(EK(c, id)); F.nodes.add(c); } });
   return F;
 }
 function branchSets(bid, F, soft){
+  if(brHidden(bid)) return;
   (IDX.branchLines[bid] || []).forEach(k => {
     const [a, b] = k.split('|'), ek = EK(a, b);
     if(soft){ if(!F.edges.has(ek)){ F.soft.add(ek); [a, b].forEach(n => { if(!F.nodes.has(n)) F.softNodes.add(n); }); } }
@@ -1995,8 +2112,8 @@ function depthWalk(id, depth, F){
     const next = [];
     const step = (o, ek, t) => { if(t === 'r' && !showR) return; F.edges.add(ek); F.nodes.add(o); if(lv > 1) F.far.add(ek); if(!seen.has(o)){ seen.add(o); next.push(o); } };
     frontier.forEach(x => {
-      (IDX.up[x] || []).forEach(([o, t]) => step(o, EK(o, x), t));
-      (IDX.down[x] || []).forEach(([o, t]) => step(o, EK(x, o), t));
+      (IDX.up[x] || []).forEach(([o, t]) => { if(!lineHidden(o, x, t)) step(o, EK(o, x), t); });
+      (IDX.down[x] || []).forEach(([o, t]) => { if(!lineHidden(x, o, t)) step(o, EK(x, o), t); });
     });
     frontier = next;
   }
@@ -2102,24 +2219,31 @@ function branchInfoHTML(bid){
   const b = lib.branches.find(x => x.id === bid); if(!b) return infoHTML(null);
   const ids = new Set(); (IDX.branchLines[bid] || []).forEach(k => { const [x, y] = k.split('|'); ids.add(x); ids.add(y); });
   const es = [...ids].map(i => lib.entries[i]).filter(Boolean).sort(byYear);
+  const tls = branchTlinks(bid);
   return '<div class="info-grid"><p class="info-year"><span class="br-dot" style="--br:' + b.color + '"></span></p><div><p class="info-meta">Colour line</p><h3 class="info-title">' + esc(b.name) + '</h3>' +
-    '<p class="rel"><span class="rel-k">' + es.length + ' on it</span>' + es.map(e => relChip(e.id)).join('') + '</p>' +
-    '<p class="info-actions"><button type="button" class="btn" data-branch-edit="' + b.id + '">Rename or recolour</button><button type="button" class="linkbtn" data-clear-sel="1">Clear</button></p></div></div>';
+    (es.length ? '<p class="rel"><span class="rel-k">' + es.length + ' on it</span>' + es.map(e => relChip(e.id)).join('') + '</p>' : '') +
+    (tls.length ? '<p class="rel"><span class="rel-k">Topics</span>' + tls.map(l => '<button type="button" class="relchip" data-view="' + esc(topicNodeView(l[0])) + '">' + esc(topicNodeName(l[0])) + '</button><span class="hint">⇄</span><button type="button" class="relchip" data-view="' + esc(topicNodeView(l[1])) + '">' + esc(topicNodeName(l[1])) + '</button>').join('<span class="hint"> · </span>') + '</p>' : '') +
+    (!es.length && !tls.length ? '<p class="hint">Nothing uses it yet: choose it in a line’s or a related topic’s ✎.</p>' : '') +
+    '<p class="info-actions"><button type="button" class="btn" data-branch-edit="' + b.id + '">Rename or recolour</button><button type="button" class="btn" data-branch-hide="' + b.id + '">Hide on the map</button><button type="button" class="linkbtn" data-branch-manage="1">All colour lines</button><button type="button" class="linkbtn" data-clear-sel="1">Clear</button></p></div></div>';
 }
-function focusBranch(bid){ ui.selected = null; ui.branch = bid; mapSvg.querySelectorAll('.node.sel').forEach(n => n.classList.remove('sel')); infoEl.innerHTML = branchInfoHTML(bid); applyFocus(null); renderBranchRow(); }
+function focusBranch(bid){ ui.selected = null; ui.branch = bid; renderMap(true); mapSvg.querySelectorAll('.node.sel').forEach(n => n.classList.remove('sel')); infoEl.innerHTML = branchInfoHTML(bid); applyFocus(null); renderBranchRow(); }
 document.addEventListener('dblclick', ev => { const c = ev.target.closest('#branchRow [data-branch-focus]'); if(c){ ev.preventDefault(); openBranchForm(c.dataset.branchFocus); } });
 function renderBranchRow(){
   const row = document.getElementById('branchRow'); if(!row) return;
-  const used = lib.branches.filter(b => (IDX.branchLines[b.id] || []).length);
+  const used = lib.branches.filter(b => branchUses(b.id) && !brHidden(b.id));
   row.hidden = !used.length;
   /* keep the same buttons when nothing about them changed, so a double-click lands on one button */
   const sig = used.map(b => b.id + ':' + b.name + ':' + b.color).join('|');
   if(row.dataset.sig !== sig){ row.dataset.sig = sig; row.innerHTML = used.map(b => branchChip(b.id)).join(''); }
+  const mb = document.getElementById('btnBranches');
+  if(mb){ const h = lib.branches.filter(b => brHidden(b.id)).length; mb.textContent = 'Colour lines' + (h ? ' · ' + h + ' hidden' : ''); mb.classList.toggle('has-hidden', !!h); }
   row.querySelectorAll('.br-chip').forEach(c => c.classList.toggle('on', c.dataset.branchFocus === ui.branch));
 }
 document.addEventListener('click', ev => {
   const be = ev.target.closest('[data-branch-edit]'); if(be){ openBranchForm(be.dataset.branchEdit); return; }
-  const bf = ev.target.closest('[data-branch-focus]'); if(bf){ ev.preventDefault(); if(ui.branch === bf.dataset.branchFocus){ ui.branch = null; select(null); renderBranchRow(); } else focusBranch(bf.dataset.branchFocus); return; }
+  if(ev.target.closest('#btnBranches, [data-branch-manage], #setBrManage')){ if(ev.target.closest('#setBrManage')) closeModal(); openBranchManager(); return; }
+  const bh = ev.target.closest('[data-branch-hide]'); if(bh){ setBranchHidden(bh.dataset.branchHide, true); toast('Hidden on the map. Show it again from Colour lines.'); return; }
+  const bf = ev.target.closest('[data-branch-focus]'); if(bf){ ev.preventDefault(); if(ui.branch === bf.dataset.branchFocus){ ui.branch = null; select(null); renderMap(true); renderBranchRow(); } else focusBranch(bf.dataset.branchFocus); return; }
   const rt = ev.target.closest('[data-rel-toggle]'); if(rt){ setShowRelated(settings.showRelated === false); return; }
   const dp = ev.target.closest('[data-depth]'); if(dp){ ui.depth = dp.dataset.depth === 'all' ? 'all' : +dp.dataset.depth; settings.focusDepth = ui.depth; persistSettings({remote:false}); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); }
 });
@@ -2183,6 +2307,15 @@ function branchListHTML(){
   if(!lib.branches.length) return '<p class="hint">No colour lines yet.</p>';
   return lib.branches.map(x => '<div class="br-set" data-br-row="' + x.id + '"><input type="color" value="' + x.color + '" aria-label="Colour"><input type="text" value="' + esc(x.name) + '" maxlength="40" aria-label="Name"><span class="hint">' + (IDX.branchLines[x.id] || []).length + ' lines</span><button type="button" class="linkbtn danger" data-br-del="' + x.id + '">Remove</button></div>').join('');
 }
+function brHidden(bid){ return !!bid && (settings.hiddenBranches || []).includes(bid); }
+function lineHidden(a, b, t){ return brHidden(lib.lineBranch[a + '|' + b + '|' + t]); }
+function setBranchHidden(bid, hide){
+  const s = new Set(settings.hiddenBranches || []); if(hide) s.add(bid); else s.delete(bid);
+  settings.hiddenBranches = [...s]; persistSettings({remote:false});
+  if(hide && ui.branch === bid){ ui.branch = null; }
+  renderMap(true); infoEl.innerHTML = ui.branch ? branchInfoHTML(ui.branch) : infoHTML(ui.selected); applyFocus(ui.selected);
+}
+function branchTlinks(bid){ return (lib.tlinks || []).filter(l => (lib.tlinkColor || {})[l[0] + '|' + l[1]] === bid); }
 function branchUses(bid){ return (IDX.branchLines[bid] || []).length + Object.values(lib.tlinkColor || {}).filter(v => v === bid).length; }
 function swatchesHTML(cur, idSuffix){
   return '<div class="swatches" data-swatches="' + idSuffix + '">' + BRANCH_PALETTE.map(c => '<button type="button" class="sw' + (String(cur).toLowerCase() === c.toLowerCase() ? ' on' : '') + '" data-sw="' + c + '" style="--c:' + c + '" aria-label="Colour ' + c + '" title="' + c + '"></button>').join('') +
@@ -2195,11 +2328,12 @@ function bindSwatches(box){
     input.addEventListener('input', () => sw.querySelectorAll('.sw').forEach(x => x.classList.toggle('on', x.dataset.sw.toLowerCase() === input.value.toLowerCase())));
   });
 }
-function openBranchForm(bid){
+function openBranchForm(bid, back){
   const b = lib.branches.find(x => x.id === bid); if(!b) return;
   const n = branchUses(bid);
   openModal({
     title: 'Colour line',
+    onClose: back ? () => setTimeout(back, 0) : null,
     body: '<div class="form-grid"><label class="full">Name<input type="text" id="bfName" maxlength="40" value="' + esc(b.name) + '"></label>' +
       '<div class="full"><span class="field-k">Colour</span>' + swatchesHTML(b.color, 'bf') + '</div>' +
       '<p class="hint full">' + n + (n === 1 ? ' line uses' : ' lines use') + ' this colour line. A new name or colour changes all of them.</p>' +
@@ -2222,6 +2356,61 @@ function openBranchForm(bid){
         reindex(); touchLib([]); closeModal(); renderAll();
         toast('Removed colour line “' + b.name + '”', () => { lib = before; reindex(); touchLib([]); renderAll(); toast('Undone'); });
       });
+    }
+  });
+}
+function appSectionHTML(){
+  let body;
+  if(STANDALONE) body = '<p class="hint">You are using Paper Map as an app. It opens in its own window and works offline; your list is saved in this app and, if you connect it, in your GitHub repository.</p>';
+  else if(!SERVED) body = '<p class="hint">This copy is a file on your computer. To install Paper Map as an app, open its website with <b>?app</b> at the end (the README links to it) and install it from there.</p>';
+  else body = '<div class="set-actions"><button type="button" class="btn primary" id="setInstall">Install Paper Map</button></div>' +
+    '<p class="hint">It opens in its own window, with its own icon, and works offline. The app keeps its own copy of your list: connect GitHub sync, or export a backup here and import it there, to bring your papers across.</p>';
+  return '<div class="set-section"><h3>App</h3>' + body + '</div>';
+}
+function branchManagerHTML(){
+  const rows = lib.branches.map(b => {
+    const lines = (IDX.branchLines[b.id] || []), tls = branchTlinks(b.id), hid = brHidden(b.id);
+    const count = [lines.length ? lines.length + (lines.length === 1 ? ' line' : ' lines') : '', tls.length ? tls.length + (tls.length === 1 ? ' topic link' : ' topic links') : ''].filter(Boolean).join(' · ') || 'not used yet';
+    const conns = lines.map(k => { const [a, c, ty] = k.split('|'), A = lib.entries[a], C = lib.entries[c]; if(!A || !C) return '';
+        return '<li><button type="button" class="linkbtn" data-bm-pick="' + c + '">' + esc(mapLabel(C) + ' ' + (C.y || '')) + '</button> <span class="hint">' + (ty === 'r' ? 'is related to' : ty === 'c' ? 'responds to' : 'builds on') + '</span> <button type="button" class="linkbtn" data-bm-pick="' + a + '">' + esc(mapLabel(A) + ' ' + (A.y || '')) + '</button></li>'; }).join('') +
+      tls.map(l => '<li><button type="button" class="linkbtn" data-bm-view="' + esc(topicNodeView(l[0])) + '">' + esc(topicNodeName(l[0])) + '</button> <span class="hint">⇄</span> <button type="button" class="linkbtn" data-bm-view="' + esc(topicNodeView(l[1])) + '">' + esc(topicNodeName(l[1])) + '</button></li>').join('');
+    return '<div class="bm-row' + (hid ? ' is-hidden' : '') + '" data-bm-row="' + b.id + '">' +
+      '<div class="bm-head"><span class="br-dot" style="--br:' + b.color + '"></span><b class="bm-name">' + esc(b.name) + '</b><span class="hint">' + count + (hid ? ' · hidden on the map' : '') + '</span>' +
+      '<span class="bm-acts"><button type="button" class="btn small" data-bm-toggle="' + b.id + '">' + (hid ? 'Show' : 'Hide') + '</button><button type="button" class="btn small" data-bm-edit="' + b.id + '">Rename or recolour</button></span></div>' +
+      (conns ? '<details class="bm-conns"><summary>What is on it</summary><ul>' + conns + '</ul></details>' : '') + '</div>';
+  }).join('');
+  return '<p class="hint">A colour line is a named path of ideas, such as Monetary Policy or Historical Development. Use it on lines between papers and on links between topics: open a line’s or a related topic’s ✎ and choose it. Names appear here, in panels and in tooltips, never on the map. Hiding a path only affects this device.</p>' +
+    '<div class="bm-list">' + (rows || '<p class="hint">No colour lines yet.</p>') + '</div>' +
+    '<div class="bm-new" hidden><div class="form-grid"><label class="full">Name<input type="text" id="bmName" maxlength="40" placeholder="Monetary Policy"></label></div><div><span class="field-k">Colour</span>' + swatchesHTML(nextBranchColor(), 'bm') + '</div><div class="set-actions"><button type="button" class="btn primary" id="bmCreate">Add it</button><button type="button" class="linkbtn" id="bmCancel">Cancel</button></div></div>' +
+    '<div class="set-actions bm-add"><button type="button" class="btn" id="bmAdd">+ New colour line</button></div>';
+}
+function openBranchManager(){
+  openModal({
+    title: 'Colour lines',
+    body: '<div id="bmBody">' + branchManagerHTML() + '</div>',
+    actions: [{label:'Done', primary:true}],
+    onOpen: bd => {
+      const box = bd.querySelector('#bmBody');
+      const redraw = () => { const open = [...box.querySelectorAll('details[open]')].map(d => d.closest('[data-bm-row]').dataset.bmRow); box.innerHTML = branchManagerHTML(); bindSwatches(box); open.forEach(id => { const d = box.querySelector('[data-bm-row="' + id + '"] details'); if(d) d.open = true; }); };
+      bindSwatches(box);
+      box.addEventListener('click', ev => {
+        const tg = ev.target.closest('[data-bm-toggle]'); if(tg){ setBranchHidden(tg.dataset.bmToggle, !brHidden(tg.dataset.bmToggle)); redraw(); return; }
+        const ed = ev.target.closest('[data-bm-edit]'); if(ed){ openBranchForm(ed.dataset.bmEdit, openBranchManager); return; }
+        const pk = ev.target.closest('[data-bm-pick]'); if(pk){ closeModal(); select(pk.dataset.bmPick); return; }
+        const vw = ev.target.closest('[data-bm-view]'); if(vw){ closeModal(); location.hash = vw.dataset.bmView; return; }
+        if(ev.target.closest('#bmAdd')){ box.querySelector('.bm-new').hidden = false; box.querySelector('.bm-add').hidden = true; box.querySelector('#bmName').focus(); return; }
+        if(ev.target.closest('#bmCancel')){ box.querySelector('.bm-new').hidden = true; box.querySelector('.bm-add').hidden = false; return; }
+        if(ev.target.closest('#bmCreate')){
+          const name = box.querySelector('#bmName').value.trim(), col = box.querySelector('[data-swatches="bm"] .sw-input').value;
+          if(!name){ box.querySelector('#bmName').focus(); return; }
+          const before = clone(lib);
+          let id; do{ id = rid('b'); }while(lib.branches.some(x => x.id === id));
+          lib.branches.push({id, name: name.slice(0, 40), color: HEX_RE.test(col) ? col : nextBranchColor()});
+          reindex(); touchLib([]); renderMap(true); redraw();
+          toast('Added colour line “' + name + '”', () => { lib = before; reindex(); touchLib([]); renderAll(); toast('Undone'); });
+        }
+      });
+      box.addEventListener('keydown', ev => { if(ev.key === 'Enter' && ev.target.id === 'bmName'){ ev.preventDefault(); box.querySelector('#bmCreate').click(); } });
     }
   });
 }
@@ -3104,10 +3293,11 @@ function openSettings(){
         [['mist','Mist (cool, default)'],['warm','Warm white'],['white','Pure white']].map(p => '<label><input type="radio" name="paper" value="' + p[0] + '"' + ((settings.paper || 'mist') === p[0] ? ' checked' : '') + '> ' + p[1] + '</label>').join('') + '</fieldset></div></div>' +
       '<div class="set-section"><h3>Map</h3><label style="display:flex;gap:.5em;align-items:center"><input type="checkbox" id="srcColors"' + (settings.mapColor !== 'plain' ? ' checked' : '') + '> Colour unmarked dots by tag</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.4em"><input type="checkbox" id="setShowPre"' + (settings.showPre ? ' checked' : '') + '> Always show prerequisite lines</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.4em"><input type="checkbox" id="setShowRel"' + (settings.showRelated !== false ? ' checked' : '') + '> Show Related-to lines (dotted)</label><div class="set-actions"><button type="button" class="btn" id="setTags">Manage tags &amp; colours</button></div></div>' +
       '<div class="set-section"><h3>Modify</h3><label style="display:flex;gap:.5em;align-items:center"><input type="checkbox" id="setAskEdit"' + (settings.skipModifyConfirm ? '' : ' checked') + '> Ask before turning on Modify mode</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.5em">Undo stays available for <select id="setUndoWin">' + [[5, '5 minutes'], [10, '10 minutes'], [30, '30 minutes'], [0, 'until my next change']].map(o => '<option value="' + o[0] + '"' + (undoMinutes() === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label><p class="hint" style="margin:.4em 0 0">Undo always covers your last change, until you make another one. ' + (ghCfg() ? 'Every version saved before that stays in <a href="https://github.com/' + encodeURIComponent(ghCfg().owner) + '/' + encodeURIComponent(ghCfg().repo) + '/commits/' + encodeURIComponent(ghCfg().branch || 'main') + '/' + ghCfg().path.split('/').map(encodeURIComponent).join('/') + '" target="_blank" rel="noopener">your repository’s history</a>.' : 'With GitHub sync, every saved version also stays in your repository’s history.') + '</p><div class="set-actions"><button type="button" class="btn" id="setEdit">' + (ui.edit ? 'Turn off Modify mode' : 'Turn on Modify mode') + '</button></div></div>' +
-      '<div class="set-section"><h3>Colour lines</h3><p class="hint">Give a main line of thought a colour: open a line’s ✎ in Modify mode and choose one. Rename or recolour them here.</p><div id="brList">' + branchListHTML() + '</div><div class="set-actions"><button type="button" class="btn" id="brAdd">Add a colour line</button></div></div>' +
+      '<div class="set-section"><h3>Colour lines</h3><p class="hint">Named paths of ideas, with their colours. Add, rename, recolour or hide them, and see what is on each.</p><div class="set-actions"><button type="button" class="btn" id="setBrManage">Manage colour lines</button></div></div>' +
       ghSectionHTML() +
       '<div class="set-section"><h3>Data</h3><p class="hint">Saving status: <span data-save-state>' + esc(saveStateText()) + '</span>. A backup is one JSON file with all your topics, papers, lines and marks, in the same format as the data file in your repository.</p>' +
       '<div class="set-actions"><button type="button" class="btn" id="setExport">Export backup</button><button type="button" class="btn" id="setImport">Import backup</button><button type="button" class="btn" id="setNotes">Export notes</button><button type="button" class="btn" id="setReset">Start over</button>' + '</div></div>' +
+      appSectionHTML() +
       '<p class="hint set-version">Paper Map ' + APP_VERSION + '</p>',
     actions:[{label:'Done', primary:true}],
     onOpen: b => {
@@ -3118,12 +3308,9 @@ function openSettings(){
       b.querySelector('#setTitle').addEventListener('change', ev => { lib.title = ev.target.value.trim(); applyTitle(); touchLib([]); });
       b.querySelector('#srcColors').addEventListener('change', ev => { settings.mapColor = ev.target.checked ? 'source' : 'plain'; persistSettings(); renderMap(true); });
       b.querySelector('#setShowPre').addEventListener('change', ev => { settings.showPre = ev.target.checked; persistSettings(); renderMap(true); });
+      const inst = b.querySelector('#setInstall');
+      if(inst) inst.addEventListener('click', () => { closeModal(); runInstall(); });
       b.querySelector('#setShowRel').addEventListener('change', ev => { settings.showRelated = ev.target.checked; persistSettings({remote:false}); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); });
-      const brList = b.querySelector('#brList');
-      const brSave = () => { reindex(); touchLib(); renderMap(true); infoEl.innerHTML = ui.branch ? branchInfoHTML(ui.branch) : infoHTML(ui.selected); };
-      brList.addEventListener('change', ev => { const row = ev.target.closest('[data-br-row]'); if(!row) return; const x = lib.branches.find(y => y.id === row.dataset.brRow); if(!x) return; if(ev.target.type === 'color' && HEX_RE.test(ev.target.value)) x.color = ev.target.value; if(ev.target.type === 'text') x.name = ev.target.value.trim().slice(0, 40) || x.name; brSave(); });
-      brList.addEventListener('click', ev => { const d = ev.target.closest('[data-br-del]'); if(!d) return; const before = clone(lib); lib.branches = lib.branches.filter(y => y.id !== d.dataset.brDel); if(ui.branch === d.dataset.brDel) ui.branch = null; brSave(); brList.innerHTML = branchListHTML(); toast('Colour line removed', () => { lib = before; reindex(); touchLib(); renderAll(); toast('Undone'); }); });
-      b.querySelector('#brAdd').addEventListener('click', () => { let id; do{ id = rid('b'); }while(lib.branches.some(y => y.id === id)); lib.branches.push({id, name: 'Colour line ' + (lib.branches.length + 1), color: nextBranchColor()}); brSave(); brList.innerHTML = branchListHTML(); });
       b.querySelector('#setUndoWin').addEventListener('change', ev => { settings.undoWindow = +ev.target.value; persistSettings({remote:false}); renderUndo(); });
       b.querySelectorAll('input[name=paper]').forEach(rb => rb.addEventListener('change', () => { if(rb.checked){ settings.paper = rb.value; applyColors(); persistSettings(); renderMap(true); } }));
       b.querySelectorAll('input[name=theme]').forEach(rb => rb.addEventListener('change', () => { if(rb.checked){ settings.theme = rb.value; applyColors(); persistSettings({remote:false}); renderMap(true); } }));
@@ -3726,7 +3913,7 @@ function topicNodeView(id){ return IDX.topics[id] ? id + '-all' : id; }
 function relatedTopicsHTML(id){
   const L = IDX.tlinksOf[id] || [];
   if(!L.length && !ui.edit) return '';
-  const chips = L.map(([o, note, l]) => '<span class="tl-item"><button type="button" class="relchip" data-view="' + esc(topicNodeView(o)) + '">' + (tlBranch(l) ? '<i class="tl-dot" style="--tlc:' + tlBranch(l).color + '" aria-hidden="true"></i>' : '') + esc(topicNodeName(o)) + '</button>' + (note ? '<span class="rel-note">' + esc(note) + '</span>' : '') +
+  const chips = L.map(([o, note, l]) => '<span class="tl-item"><button type="button" class="relchip" data-view="' + esc(topicNodeView(o)) + '">' + (tlBranch(l) ? '<i class="tl-dot" style="--tlc:' + tlBranch(l).color + '" aria-hidden="true"></i>' : '') + esc(topicNodeName(o)) + '</button>' + (tlBranch(l) ? '<span class="tl-path" style="--tlc:' + tlBranch(l).color + '">' + esc(tlBranch(l).name) + '</span>' : '') + (note ? '<span class="rel-note">' + esc(note) + '</span>' : '') +
     (ui.edit ? '<button type="button" class="tl-x" data-tlink-note="' + esc(l[0] + '|' + l[1]) + '" title="Note and colour" aria-label="Note and colour of this link">✎</button><button type="button" class="tl-x" data-tlink-del="' + esc(l[0] + '|' + l[1]) + '" aria-label="Remove this link">×</button>' : '') + '</span>').join('');
   return '<p class="rel tl-row"><span class="rel-k">Related topics</span>' + chips + (ui.edit ? '<button type="button" class="linkbtn" data-tlink-add="' + esc(id) + '">+ Related topic…</button>' : '') + '</p>';
 }
@@ -3778,7 +3965,7 @@ function openTopicLinkNote(key){
   openModal({
     title:'This link',
     body:'<div class="form-grid"><label class="full">Note, shown next to the link<input type="text" id="tlNote" maxlength="60" value="' + esc(l[2] || '') + '"></label>' +
-      '<label class="full">Colour line<select id="tlBranch"><option value="">None: the default blue</option>' + (lib.branches || []).map(x => '<option value="' + x.id + '"' + (x.id === cur ? ' selected' : '') + '>' + esc(x.name) + '</option>').join('') + '<option value="__new">New colour line…</option></select><span class="hint">Use a colour to say which path this link belongs to. One topic can have links in several colours.</span></label>' +
+      '<label class="full">Path (a colour line)<select id="tlBranch"><option value="">None: the default blue</option>' + (lib.branches || []).map(x => '<option value="' + x.id + '"' + (x.id === cur ? ' selected' : '') + '>' + esc(x.name) + '</option>').join('') + '<option value="__new">New colour line…</option></select><span class="hint">Name the path this link belongs to, such as Historical Development. The name shows in lists and tooltips, never on the map.</span></label>' +
       '<div class="full ln-new" hidden><label class="ln-name">Name of this colour line<input type="text" id="tlBrName" maxlength="40" placeholder="Main line"></label><div class="ln-col"><span class="field-k">Colour</span>' + swatchesHTML(nextBranchColor(), 'tl') + '</div></div></div>',
     actions:[{label:'Cancel'}, {label:'Save', primary:true, onClick: bd => {
       const before = clone(lib);
