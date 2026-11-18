@@ -1,12 +1,12 @@
 ![Paper Map: papers on a timeline, joined by hand-drawn lines](assets/preview.png)
 
-I built this because I wanted a better way to organise what I read and understand how ideas connect.
-
-![Structure: topics inside topics, to any depth. Connect: lines between papers, concepts and topics. Explore: a field laid out over time.](assets/features.svg)
+I built this simply because I wanted a better way to organise what I read and understand how ideas connect
 
 **[How it works](#how-it-works)** · **[Get started](#get-started)** · **[Good to know](#good-to-know)**
 
-The live preview (link at the top right of this page) shows the made-up example in [`example/displaydata.json`](example/displaydata.json).
+![Structure: topics inside topics, to any depth. Connect: lines between papers, concepts and topics. Explore: a field laid out over time.](assets/features.svg)
+
+The live preview (link at the top right of this page) shows a made-up example.
 
 ---
 
@@ -18,29 +18,11 @@ The live preview (link at the top right of this page) shows the made-up example 
 
 ![Linking a paper to one in another subtopic, then giving the line a note](assets/lines.gif)
 
-### Zoom the timeline
-
-![Dragging along the years to zoom in, dragging sideways to move, double-clicking a point](assets/zoom.gif)
-
-### Subtopics inside subtopics
-
-![Dragging a subtopic under another topic, then making it a topic of its own, then undoing](assets/drag.gif)
-
-Can't drag, on a phone say? Modify the subtopic and choose its new place under **Inside**.
-
-![Opening Exam season › Procrastination, adding a subtopic inside it, and seeing every level on the map](assets/subtopics.gif)
-
-### Lists
-
-Every topic also opens as a list, with status, notes, tags and concept cards.
-
-![Each topic as a table, with status, notes, tags and concept cards](assets/table.png)
-
 ---
 
 ## Get started
 
-### 1. Open it
+### I. Open it
 
 One HTML file, nothing to install.
 
@@ -50,7 +32,7 @@ One HTML file, nothing to install.
 
 To start from the example instead, use **Settings → Data → Import backup** and choose `displaydata.json`.
 
-### 2. Sync with GitHub (highly recommended)
+### II. Sync with GitHub (highly recommended)
 
 The copy in your browser is lost if its data is cleared. A private repository of your own keeps every change and every earlier version, and works on any computer.
 
@@ -59,29 +41,57 @@ The copy in your browser is lost if its data is cleared. A private repository of
 3. In the page, open **Settings → GitHub sync**, paste the token and click **Connect**.
 
 <details>
-<summary>First time, and other computers</summary>
+<summary>Still confused? For first time users, and on another computers</summary>
 
-When you click **Connect**, the page creates `data/paper-map.json` in your private repository. That one file is your whole list, so you don't need to make it yourself. Already have a backup? Import it first (**Settings → Data → Import backup**), then connect, and the backup becomes that file.
+4. When you click **Connect**, the page creates `data/paper-map.json` in your private repository. That one file is your whole list, so you don't need to make it yourself. Already have a backup? Import it first (**Settings → Data → Import backup**), then connect, and the backup becomes that file.
 
-Notes you write are copied into `notes/`, and PDFs you attach go into `pdfs/`. Edit notes in the page; the copies in `notes/` are for reading.
+5. Notes you write are copied into `notes/`, and PDFs you attach go into `pdfs/`. Edit notes in the page; the copies in `notes/` are for reading.
 
-If the page says the repository can't be found, the token doesn't include it yet: open the token on GitHub and add the repository under **Repository access**.
+6. If the page says the repository can't be found, the token doesn't include it yet: open the token on GitHub and add the repository under **Repository access**.
 
-On another computer, download `index.html` again and paste the token once more.
+7. On another computer, download `index.html` again and paste the token once more.
 
 </details>
 
-### 3. Notes and PDFs
+### III. Taking Notes and Upload PDFs
 
 ![Opening a paper’s notes, attaching its PDF, writing Markdown notes beside it, exporting them](assets/notes.gif)
 
 PDFs need GitHub sync. To export every note at once, use **Settings → Data → Export notes**.
 
-### Tips
+### IV. Some More Easy Operations you might want to know
 
-- **Zoom:** drag along the year axis to zoom into a period, drag sideways to move, and double-click the map to zoom in on a point.
-- **Move a subtopic:** in Modify mode, drag its ⠿ handle in Contents. On a phone, modify the subtopic and choose its new place under **Inside**.
-- **One field at a time:** **Topics on the map → Current topic only**.
+<details>
+<summary>Zoom the timeline</summary>
+
+![Dragging along the years to zoom in, dragging sideways to move, double-clicking a point](assets/zoom.gif)
+
+</details>
+
+<details>
+<summary>Subtopics inside subtopics</summary>
+
+![Dragging a subtopic under another topic, then making it a topic of its own, then undoing](assets/drag.gif)
+
+</details>
+
+<details>
+<summary>Can't drag, on a phone say? Modify the subtopic and choose its new place under "Inside".</summary>
+
+![Opening Exam season › Procrastination, adding a subtopic inside it, and seeing every level on the map](assets/subtopics.gif)
+
+</details>
+
+<details>
+<summary>Lists</summary>
+
+Every topic also opens as a list, with status, notes, tags and concept cards
+
+![Each topic as a table, with status, notes, tags and concept cards](assets/table.png)
+
+</details>
+
+**One field at a time:** **Topics on the map → Current topic only**.
 
 ---
 
@@ -100,7 +110,7 @@ PDFs need GitHub sync. To export every note at once, use **Settings → Data →
 **Credits.** The interface and code were built with help from Claude, an AI model made by Anthropic.
 
 <details>
-<summary>What's in this repository</summary>
+<summary>Repository Structure</summary>
 
 ```
 /
