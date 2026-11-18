@@ -25,7 +25,7 @@ I built this simply because I wanted a better way to organise what I read and un
 
 ![Linking a paper to one in another subtopic, giving the line a note and the Main line colour, seeing the whole colour line light up, then How far → Whole line](assets/lines.gif)
 
-Click a paper to light up the lines around it; notes on lines appear only then, so the map stays clean. **How far** in its panel goes further, up to **Whole line**: every paper connected to it.
+Click a paper to light up the lines around it; notes on lines appear only then, so the map stays clean. **How far** in its panel goes further, up to **Whole line**; the further away a paper is, the fainter it looks, and a count says how much is lit. **Options** there limits it to what came earlier or later.
 
 Give a main line of thought its own colour from a line's ✎. **Colour lines** above the map keeps them in one place: name a path, see what is on it, or hide it for a while.
 
@@ -54,24 +54,30 @@ It opens in its own window, works offline, and updates itself with every release
 1. Download [`index.html`](index.html): open it and click **Download raw file**.
 2. Double-click it to open it in any browser.
 
-The app and the file keep separate lists. Connect GitHub sync in both to share one list, or move it with **Settings → Data → Export backup** and **Import backup**.
+The app and the file keep separate lists. Connect sync in both to share one list, or move it with **Settings → Data → Export backup** and **Import backup**.
 
 </details>
 
-### II. Sync with GitHub (recommended)
+### II. Sync (recommended)
 
-A private repository of your own keeps your list safe, keeps every earlier version, and brings it to any computer.
+Your list lives in the app until you connect sync; then it is safe, keeps earlier versions, and follows you to every device. Open **Settings → Sync** and choose one.
 
+**GitHub, the most reliable.** Every save is kept for good, and it works on phones too.
 1. [Create a private repository](https://github.com/new?name=paper-map-data&visibility=private) and tick **Add a README file**.
 2. [Create a token](https://github.com/settings/personal-access-tokens/new?name=Paper+Map&expires_in=366&contents=write): under Repository access choose **Only select repositories** and pick that repository. The link already sets the one permission it needs, **Contents: Read and write**.
-3. In the app, open **Settings → GitHub sync**, paste the token and click **Connect**.
+3. Paste the token under **Settings → Sync → GitHub** and click **Connect**. Paper Map asks when the token expires, then reminds you two weeks before, with the steps to renew it.
+
+**An iCloud Drive, Dropbox or OneDrive folder.** Under **Settings → Sync → iCloud / Dropbox folder**, click **Choose a folder** and pick one inside iCloud Drive, Dropbox or OneDrive: that app copies it to your other computers and keeps its own history, and Paper Map keeps earlier copies in `data/backups`. No account or token needed. Works in Chrome and Edge on a computer; on a phone, use GitHub.
 
 <details>
-<summary>Still confused? First time, or on another computer</summary>
+<summary>Still confused? First time, or on another device</summary>
 
-- Connecting creates `data/paper-map.json` in your repository. That one file is your whole list. Notes are copied into `notes/` for reading, and PDFs go into `pdfs/`.
-- On another computer, install the app and connect with the same token: your list loads from GitHub.
-- If the repository can't be found, the token doesn't include it yet: open the token on GitHub and add the repository under **Repository access**.
+- Your whole list is one file, `data/paper-map.json`. Notes are copied into `notes/` for reading, and PDFs go into `pdfs/`.
+- On another device, install the app and connect the same way: your list loads from there.
+- Changed things on two devices? Paper Map combines them. It only asks about something changed on both, such as the same paper.
+- If iCloud Drive, Dropbox or OneDrive ever makes a second copy of the file (two computers at once), Paper Map notices it and offers to combine it into your list.
+- A new or empty page never saves over your list: it loads it instead. **Earlier versions** brings back any past save.
+- GitHub says the repository can't be found? The token doesn't include it yet: open the token on GitHub and add the repository under **Repository access**.
 
 </details>
 
@@ -79,7 +85,7 @@ A private repository of your own keeps your list safe, keeps every earlier versi
 
 ![Opening a paper’s notes, attaching its PDF, writing Markdown notes beside it, exporting them](assets/notes.gif)
 
-PDFs need GitHub sync. **Settings → Data → Export notes** exports every note at once.
+PDFs need sync. **Settings → Data → Export notes** exports every note at once.
 
 ### IV. More you might want to know
 
@@ -110,6 +116,29 @@ Modify the subtopic and choose its new place under **Inside**.
 <summary>Move a paper, or hide rows for a while</summary>
 
 Drag a paper's dot up or down to another row, or drag its year in the list onto a topic in Contents. To hide rows, untick them in **Topics on the map**; **Show all** brings them back.
+
+</details>
+
+<details>
+<summary>Import papers from Zotero, a CSV, BibTeX or RIS file</summary>
+
+Choose **+ New paper ▾ → Import papers** (on a phone, **⋯ → Import papers**). In Zotero, right-click a collection, choose **Export Collection…** and pick CSV or BibTeX; any spreadsheet saved as CSV works too, and you can say which column is which. Before anything is added you choose the topic and subtopic, see every paper with a tick box, and keep or drop their tags and notes. Papers already in your map are recognised by DOI or by title and year, and left unticked. Undo puts everything back.
+
+</details>
+
+<details>
+<summary>Fill in a paper from its DOI</summary>
+
+Paste the DOI (or a doi.org link) at the top of **New paper** and click **Fill from DOI**: the title, authors, year and source come from Crossref, DataCite or the other DOI agencies. Anything you already typed stays as it is.
+
+</details>
+
+<details>
+<summary>Export a map as PNG or PDF</summary>
+
+**Export**, next to Colour lines, lets you tick the topics to include. It shows which topics outside your choice are linked, and how many lines go there: add them, or leave them out and those lines are dropped (a colour line keeps the part inside your choice). Show all lines, only colour lines, or just the papers; a note on the picture says the lines are your own reading, not a citation network. Save it wherever you like, a Dropbox or iCloud Drive folder included.
+
+![An exported map: a title, the chosen topics with their lines, a legend, and a note that the lines are the author’s own reading](assets/export.png)
 
 </details>
 
@@ -149,17 +178,17 @@ Pick Mist, Warm white or Pure white in **Settings → Paper**, and Light, Dark o
 
 **Updates.** The app updates itself: each new release reaches it the next time you open it, with a note saying what's new. **Settings** shows which version you have.
 
-**Your data.** Without GitHub sync your list lives only in this browser, and clearing its data deletes it. With sync, a new or empty page loads your list from GitHub rather than saving over it, and **Settings → GitHub sync → Earlier versions** brings back any past save.
+**Your data.** Without sync your list lives only in this browser, and clearing its data deletes it. With sync, a new or empty page loads your list rather than saving over it, and **Settings → Sync → Earlier versions** brings back any past save.
 
 **Undo.** After a change, Undo stays in the top bar for 10 minutes or until your next change (Ctrl or Cmd + Z works too). Every delete says in red how many papers go with it.
 
 **Not a reference manager.** It maps and annotates what you read; it doesn't look up DOIs or format citations the way Zotero does.
 
-**Your token.** It stays in the browser where you enter it. Give it one private repository and **Contents: Read and write** only, and don't connect on shared computers.
+**Your token.** It stays in the browser where you connect. Give it one private repository and **Contents: Read and write** only, and don't connect on shared computers.
 
 **PDFs and copyright.** Attached PDFs are stored in your own repository. Keep it private, and only add papers you may keep a copy of.
 
-**Privacy.** Paper Map connects to nothing except your own repository, and only once you set one up.
+**Privacy.** Paper Map connects only to what you choose: your sync (GitHub or a folder), and Crossref or DataCite when you press **Fill from DOI**.
 
 **Credits.** The interface and code were built with help from Claude, an AI model made by Anthropic.
 

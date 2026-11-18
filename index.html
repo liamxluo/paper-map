@@ -862,6 +862,90 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
 
 .pb-short{display:none}
 @media (max-width: 640px){ .pb-long{display:none} .pb-short{display:inline} }
+
+/* ---------- How far ---------- */
+.depth-ctl{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.hf-count{font-size:.84rem;color:var(--muted);margin-left:4px;white-space:nowrap}
+.hf-more{border:0;background:transparent;color:var(--muted);font:500 .84rem var(--sans);padding:.3em .5em;border-radius:6px;cursor:pointer}
+.hf-more:hover{color:var(--ink);background:color-mix(in srgb, var(--ink) 6%, transparent)}
+.hf-more.changed{color:var(--focus);font-weight:600}
+.hf-opts{flex-basis:100%;display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:.45em .55em;margin-top:2px;border-radius:10px;background:color-mix(in srgb, var(--ink) 4%, transparent)}
+.hf-opts[hidden]{display:none}
+.hf-k{font-size:.8rem;color:var(--muted);margin-right:2px}
+.dchip.small{font-size:.8rem;padding:.22em .7em}
+.dchip[disabled]{opacity:.45;cursor:not-allowed}
+.net.focus .node.hot.lv2,.net.focus .lbl.hot.lv2{opacity:.82}
+.net.focus .node.hot.lv3,.net.focus .lbl.hot.lv3{opacity:.66}
+.net.focus .node.hot.lv4,.net.focus .lbl.hot.lv4{opacity:.52}
+.net.focus .node.hot.lv5,.net.focus .lbl.hot.lv5{opacity:.4}
+.net.focus .edge.hot.lv2,.net.focus .edge-note.hot.lv2{opacity:.72}
+.net.focus .edge.hot.lv3,.net.focus .edge-note.hot.lv3{opacity:.55}
+.net.focus .edge.hot.lv4,.net.focus .edge-note.hot.lv4{opacity:.42}
+.net.focus .edge.hot.lv5,.net.focus .edge-note.hot.lv5{opacity:.32}
+/* ---------- DOI ---------- */
+.doi-field label{display:block;margin-bottom:4px}
+.doi-row{display:flex;gap:8px}
+.doi-row input{flex:1;min-width:0}
+.doi-msg{margin:.35em 0 0;min-height:1em}
+.doi-msg:empty{display:none}
+.just-filled{box-shadow:0 0 0 3px color-mix(in srgb, var(--focus) 35%, transparent) !important;transition:box-shadow .4s}
+.info-src{margin:.1em 0 .4em;font-size:.88rem;color:var(--muted)}
+.info-src a{color:inherit}
+
+/* ---------- export ---------- */
+.modal-wide{max-width:min(1040px, 96vw) !important;width:min(1040px, 96vw) !important}
+.ex-wrap{display:grid;grid-template-columns:minmax(220px, 300px) minmax(0, 1fr);gap:22px}
+.ex-h{margin:.2em 0 .45em;font-weight:600;font-size:.9rem}
+.ex-tree{max-height:46vh;overflow:auto;border:1px solid var(--rule);border-radius:10px;padding:.5em .6em;background:var(--bg)}
+.ex-group + .ex-group{margin-top:.45em;padding-top:.45em;border-top:1px solid var(--rule)}
+.ex-topic,.ex-sub{display:flex;align-items:center;gap:6px;padding:.18em 0;font-size:.9rem}
+.ex-sub{padding-left:calc(14px + var(--d,0) * 14px)}
+.ex-sugs{display:flex;flex-wrap:wrap;gap:6px}
+.ex-sug{border:1px dashed var(--rule-strong);background:transparent;border-radius:999px;padding:.3em .75em;font:500 .84rem var(--sans);color:var(--ink);cursor:pointer}
+.ex-sug:hover{border-style:solid;background:color-mix(in srgb, var(--ink) 5%, transparent)}
+.ex-prev{border:1px solid var(--rule);border-radius:10px;background:#fff;min-height:160px;max-height:42vh;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:6px;margin-bottom:.6em}
+.ex-prev img{max-width:100%;height:auto;display:block}
+.ex-opts,.ex-fmt{display:flex;flex-wrap:wrap;gap:6px 16px;margin:.5em 0;font-size:.9rem}
+.ex-opts label,.ex-fmt label{display:inline-flex;align-items:center;gap:6px}
+@media (max-width: 760px){ .ex-wrap{grid-template-columns:1fr} .ex-tree{max-height:30vh} }
+
+/* ---------- sync tabs ---------- */
+.sync-tabs{display:flex;gap:4px;margin:.4em 0 .8em;border-bottom:1px solid var(--rule)}
+.sync-tab{border:0;background:transparent;font:600 .9rem var(--sans);color:var(--muted);padding:.5em .85em;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.sync-tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green, #009473);display:inline-block}
+.sync-pane[hidden]{display:none}
+
+/* ---------- combining changes, token date ---------- */
+.mg-list{display:flex;flex-direction:column;gap:6px;max-height:46vh;overflow:auto;margin:.6em 0}
+.mg-row{display:grid;grid-template-columns:minmax(0,1.4fr) auto auto;gap:6px 14px;align-items:center;padding:.4em .55em;border:1px solid var(--rule);border-radius:8px;font-size:.9rem}
+.mg-what{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mg-row label{display:inline-flex;gap:5px;align-items:center;white-space:nowrap;color:var(--muted)}
+.mg-quick{font-size:.88rem}
+@media (max-width: 640px){ .mg-row{grid-template-columns:1fr} }
+.tok-opts{display:flex;flex-direction:column;gap:10px;margin:.6em 0}
+.tok-opts label{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ex-opts select{margin-left:6px}
+
+/* ---------- import ---------- */
+.imp-drop{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border:1.5px dashed var(--rule-strong);border-radius:12px;padding:1.1em 1em;margin:.4em 0 .8em;background:var(--bg)}
+.imp-drop.over{border-color:var(--focus);background:color-mix(in srgb, var(--focus) 6%, var(--bg))}
+.imp-help{margin:.3em 0;font-size:.9rem}
+.imp-help ol{margin:.4em 0 .2em 1.2em;padding:0}
+.imp-help textarea{width:100%;box-sizing:border-box;font:400 .85rem/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;margin-top:.4em}
+.imp-cols{margin:.4em 0 .6em}
+.imp-colgrid{display:grid;grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));gap:6px 12px;margin-top:.4em}
+.imp-colgrid label{display:flex;flex-direction:column;gap:2px;font-size:.82rem;color:var(--muted)}
+.imp-list{max-height:40vh;overflow:auto;border:1px solid var(--rule);border-radius:10px;margin-top:.5em}
+.imp-row{display:grid;grid-template-columns:auto 3.4em minmax(0,1fr);gap:10px;align-items:start;padding:.45em .65em;border-bottom:1px solid var(--rule);font-size:.9rem;cursor:pointer}
+.imp-row:last-child{border-bottom:0}
+.imp-row.dup{opacity:.6}
+.imp-y{font-variant-numeric:tabular-nums;color:var(--muted)}
+.imp-t{display:flex;flex-direction:column;gap:1px;min-width:0}
+.imp-t b{font-weight:600}
+.add-menu [data-add="import"]{border-top:1px solid var(--rule)}
+
+.fs-tips{margin:.4em 0 .2em 1.1em;padding:0;display:flex;flex-direction:column;gap:4px;font-size:.88rem;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -882,15 +966,17 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
     <span class="save-state" data-save-state></span>
     <div class="appbar-actions">
       <span class="add-split"><button type="button" class="btn add-paper" id="btnAddPaper" title="Add a paper"><span aria-hidden="true">+</span><span class="add-label"> New paper</span></button><button type="button" class="btn add-more" id="btnAddMore" aria-haspopup="true" aria-expanded="false" aria-controls="addMenu" title="Add something else"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <span class="add-menu" id="addMenu" hidden><button type="button" data-add="paper"><b>Paper</b><span>a reading, placed on the map by its year</span></button><button type="button" data-add="concept"><b>Concept</b><span>one idea papers rely on, with the year it appeared</span></button></span></span>
+        <span class="add-menu" id="addMenu" hidden><button type="button" data-add="paper"><b>Paper</b><span>a reading, placed on the map by its year</span></button><button type="button" data-add="concept"><b>Concept</b><span>one idea papers rely on, with the year it appeared</span></button><button type="button" data-add="import"><b>Import papers</b><span>from Zotero, or a CSV, BibTeX or RIS file</span></button></span></span>
       <button type="button" class="filter-toggle" id="filterToggle" aria-expanded="false" aria-controls="filters">Filters</button>
       <button type="button" class="btn" id="btnEdit">Modify</button>
       <button type="button" class="btn" id="btnSettings">Settings</button>
       <span class="more-wrap"><button type="button" class="btn" id="btnMore" aria-haspopup="true" aria-expanded="false" aria-controls="moreMenu" aria-label="More">⋯</button>
         <span class="more-menu" id="moreMenu" hidden>
           <button type="button" data-more="concept">New concept</button>
+          <button type="button" data-more="import">Import papers</button>
           <button type="button" data-more="filters">Filters</button>
           <button type="button" data-more="modify"><span class="mm-modify">Modify</span></button>
+          <button type="button" data-more="export">Export map</button>
           <button type="button" data-more="settings">Settings</button>
         </span></span>
     </div>
@@ -950,6 +1036,7 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
     <button type="button" class="btn" id="btnLanes" aria-expanded="false" aria-controls="lanePicker">Topics on the map</button>
     <button type="button" class="btn years-toggle" id="btnZoom" aria-expanded="false" aria-controls="zoomTools">Years: all</button>
     <button type="button" class="btn" id="btnBranches" title="Name, colour, show or hide your colour lines">Colour lines</button>
+    <button type="button" class="btn" id="btnExport" title="Save chosen topics as a PNG or PDF">Export</button>
     <div class="br-row" id="branchRow" hidden></div>
     <div class="zoom" id="zoomTools" role="group" aria-label="Zoom the timeline" hidden>
       <button type="button" class="btn" data-zoom="out" aria-label="Zoom out">−</button>
@@ -1054,7 +1141,7 @@ const DEFAULT_COLORS = {green:'#009473', red:'#E34234'};
 const PREVIEW_DATA = 'example/displaydata.json';
 let PREVIEW = false;
 /* Set this to the tag of the GitHub release you are about to publish (v1.3.0, v1.3.1, …). */
-const APP_VERSION = 'v1.3.1';
+const APP_VERSION = 'v1.3.2';
 const APP_REPO = 'liamxluo/paper-map';
 const RELEASES_URL = 'https://github.com/' + APP_REPO + '/releases';
 /* Installed as an app (or installable): only when the page comes from a website, never from a downloaded file */
@@ -1212,6 +1299,8 @@ function normalizeSettings(S){
   if(![1, 2, 3, 'all'].includes(S.focusDepth)) S.focusDepth = 1;
   S.showConcepts = S.showConcepts !== false;
   S.showRelated = S.showRelated !== false;
+  if(!['all', 'up', 'down', 'lineage'].includes(S.focusDir)) S.focusDir = 'all';
+  S.hfOpen = !!S.hfOpen;
   S.hiddenBranches = Array.isArray(S.hiddenBranches) ? S.hiddenBranches.filter(x => typeof x === 'string') : [];
   S.undoWindow = [0, 5, 10, 30].includes(S.undoWindow) ? S.undoWindow : 10;
   return S;
@@ -1335,7 +1424,19 @@ function persistSettings(opts){ settings.updatedAt = Date.now(); lsSet(LS.settin
 const GH_KEY = 'rl:github';
 const GH_DELAY = 4000;
 const gh = {st:'off', msg:'', when:'', busy:false, again:false, rev:0, timer:null};
-function ghCfg(){ if(PREVIEW) return null; const c = lsGet(GH_KEY); return c && c.owner && c.repo && c.token ? Object.assign({branch:'main', path:'data/paper-map.json'}, c) : null; }
+function ghCfg(){
+  if(PREVIEW) return null;
+  const c = lsGet(GH_KEY); if(!c) return null;
+  const kind = c.kind || 'github';
+  if(kind === 'dropbox') return null;   /* Dropbox sign-in is switched off */
+  if(kind === 'folder') return fsDir ? Object.assign({path: 'data/paper-map.json'}, c, {kind}) : null;
+  return c.owner && c.repo && c.token ? Object.assign({branch: 'main', path: 'data/paper-map.json'}, c, {kind: 'github'}) : null;
+}
+function syncKind(){ const c = lsGet(GH_KEY); return c ? (c.kind || 'github') : null; }
+function syncName(){ const k = syncKind(); return k === 'dropbox' ? 'Dropbox' : k === 'folder' ? 'your folder' : 'GitHub'; }
+function syncWhere(){ const k = syncKind(); return k === 'dropbox' ? 'In Dropbox' : k === 'folder' ? 'In your folder' : 'On GitHub'; }
+function syncIn(){ const k = syncKind(); return k === 'dropbox' ? 'in Dropbox' : k === 'folder' ? 'in your folder' : 'on GitHub'; }
+function syncShort(){ const k = syncKind(); return k === 'dropbox' ? 'Dropbox' : k === 'folder' ? 'folder’s' : 'GitHub'; }
 function ghStore(c){ lsSet(GH_KEY, c); }
 function ghApi(c){ return 'https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + '/contents/' + String(c.path).split('/').filter(Boolean).map(encodeURIComponent).join('/'); }
 function ghHeaders(c, extra){ return Object.assign({'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + c.token}, extra || {}); }
@@ -1348,20 +1449,36 @@ function stampText(ts){ const d = new Date(ts); return d.getFullYear() + '-' + S
 function saveStateText(){
   if(PREVIEW) return 'Preview: changes aren’t saved';
   if(ghCfg()){
-    if(gh.st === 'saved') return 'Saved to GitHub' + (gh.when ? ' · ' + gh.when : '');
+    if(gh.st === 'saved') return 'Saved to ' + syncName() + (gh.when ? ' · ' + gh.when : '');
     if(gh.st === 'pending') return 'Unsaved changes, saving shortly';
-    if(gh.st === 'saving') return 'Saving to GitHub';
-    if(gh.st === 'loading') return 'Loading from GitHub';
+    if(gh.st === 'saving') return 'Saving to ' + syncName();
+    if(gh.st === 'loading') return 'Loading from ' + syncName();
     if(gh.st === 'error') return gh.msg;
-    return 'Connected to GitHub';
+    return 'Connected to ' + syncName();
   }
+  if(syncKind() === 'folder') return 'Folder needs permission again: Settings → Sync';
   return 'Saved in this browser only';
 }
 function updateSaveState(){ const txt = saveStateText(); document.querySelectorAll('[data-save-state]').forEach(el => { el.textContent = txt; }); }
 function setGh(st, msg){ gh.st = st; gh.msg = msg || ''; updateSaveState(); }
 function ghErr(e){
-  const s = e && e.status;
-  if(s === 401) return 'The GitHub token is invalid or has expired. Enter it again in Settings.';
+  const s = e && e.status, k = syncKind();
+//   if(k === 'dropbox'){
+//     if(s === 401) return 'Dropbox needs you to connect again (Settings → Sync → Dropbox).';
+//     if(s === 409) return 'The file in Dropbox was just changed elsewhere, so this save didn’t go through.';
+//     if(s === 429) return 'Dropbox asked Paper Map to slow down. It will try again shortly.';
+//     if(s === 507) return 'Your Dropbox is full, so the list couldn’t be saved there.';
+//     if(e instanceof SyntaxError) return 'The data file in Dropbox isn’t valid JSON, so it wasn’t loaded.';
+//     if(e instanceof TypeError) return 'Can’t reach Dropbox. Check your connection and try again.';
+//     return 'Saving to Dropbox failed' + (s ? ' (error ' + s + ')' : '') + '.';
+//   }
+  if(k === 'folder'){
+    if(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) return 'Paper Map lost permission to your folder. Reconnect it in Settings → Sync.';
+    if(s === 409) return 'The file in your folder was just changed elsewhere, so this save didn’t go through.';
+    if(e instanceof SyntaxError) return 'The data file in your folder isn’t valid JSON, so it wasn’t loaded.';
+    return 'Saving to your folder failed' + (e && e.message ? ': ' + e.message : '') + '.';
+  }
+  if(s === 401) return 'The GitHub token is invalid or has expired. Renew it (Settings → Sync → GitHub → How to renew) and paste the new one.';
   if(s === 403) return 'This token can’t write to the repository (it needs Contents: Read and write), or there were too many requests.';
   if(s === 404) return 'Repository or branch not found. Check the username, the repository name, and that the token includes this repository.';
   if(s === 409 || s === 422) return 'The file on GitHub was just changed elsewhere, so this save didn’t go through.';
@@ -1371,6 +1488,8 @@ function ghErr(e){
   return 'Saving to GitHub failed' + (s ? ' (error ' + s + ')' : '') + '.';
 }
 async function ghGetFile(c){
+//   if(c.kind === 'dropbox') return dbxGetFile(c, c.path);
+  if(c.kind === 'folder') return fsGetFile(c.path);
   const url = ghApi(c) + '?ref=' + encodeURIComponent(c.branch) + '&_=' + Date.now();
   const res = await fetch(url, {headers: ghHeaders(c)});
   if(res.status === 404){
@@ -1390,13 +1509,15 @@ async function ghGetFile(c){
   return {sha: j.sha, data: JSON.parse(text)};
 }
 function ghPut(c, content, message, sha){
+  if(c.kind === 'dropbox' || c.kind === 'folder') return remotePut(c, c.path, b64ToBytes(content), sha, true);
   const body = {message, content, branch: c.branch};
   if(sha) body.sha = sha;
   return fetch(ghApi(c), {method:'PUT', headers: ghHeaders(c, {'Content-Type':'application/json'}), body: JSON.stringify(body)});
 }
 function ghMark(){
   const c = ghCfg();
-  if(!c) return;
+  /* a folder waiting for permission again: remember there are changes, so they are saved (or combined) once it is allowed */
+  if(!c){ const raw = lsGet(GH_KEY); if(raw && raw.kind === 'folder' && !raw.dirty){ raw.dirty = true; ghStore(raw); } return; }
   gh.rev++;
   if(!c.dirty){ c.dirty = true; ghStore(c); }
   if(!gh.busy) setGh('pending');
@@ -1415,10 +1536,108 @@ function adoptSnapshot(obj){
   fixView(); renderAll();
   return true;
 }
+
+/* ---------- combining two devices' changes ----------
+   After every successful load or save, the list as it was then is kept as the “base”.
+   When both sides changed since, each paper, line, topic, tag and colour line is compared on its own:
+   changed on one side only → that change is taken; changed on both sides → you choose, item by item. */
+function syncId(c){ return c ? (c.kind || 'github') + ':' + (c.kind === 'github' || !c.kind ? c.owner + '/' + c.repo + '@' + c.branch : c.name || '') + ':' + c.path : ''; }
+function saveBase(c, data){ try{ localStorage.setItem('rl:base', JSON.stringify({id: syncId(c), lib: data.lib, status: (data.status && data.status.map) || data.status || {}})); }catch(e){ try{ localStorage.removeItem('rl:base'); }catch(e2){} } }
+function loadBase(c){ try{ const b = JSON.parse(localStorage.getItem('rl:base') || 'null'); return b && b.id === syncId(c) && validLib(b.lib) ? b : null; }catch(e){ return null; } }
+const stableJSON = v => JSON.stringify(v === undefined ? null : v, (k, x) => x && typeof x === 'object' && !Array.isArray(x) ? Object.keys(x).sort().reduce((o, kk) => (o[kk] = x[kk], o), {}) : x);
+function byKey(arr, key){ const m = {}; (arr || []).forEach(x => { m[key(x)] = x; }); return m; }
+function mergeMaps(B, L, R, kind, label, out){
+  const res = {};
+  new Set([...Object.keys(B), ...Object.keys(L), ...Object.keys(R)]).forEach(id => {
+    const b = stableJSON(B[id]), l = stableJSON(L[id]), r = stableJSON(R[id]);
+    let v;
+    if(l === r) v = L[id];
+    else if(l === b){ v = R[id]; out.fromThere++; }
+    else if(r === b){ v = L[id]; out.fromHere++; }
+    else { out.conflicts.push({kind, id, here: L[id], there: R[id], label: label(L[id] || R[id] || B[id], id)}); v = L[id]; }
+    if(v !== undefined) res[id] = v;
+  });
+  return res;
+}
+function orderLike(map, localArr, remoteArr, key){
+  const out = [], seen = new Set();
+  (localArr || []).concat(remoteArr || []).forEach(x => { const k = key(x); if(map[k] !== undefined && !seen.has(k)){ seen.add(k); out.push(map[k]); } });
+  Object.keys(map).forEach(k => { if(!seen.has(k)) out.push(map[k]); });
+  return out;
+}
+function mergeLibs(base, here, there){
+  const N = L => normalizeLib(clone(L));
+  const B = N(base.lib), Lh = N(here.lib), Rt = N(there.lib);
+  const out = {conflicts: [], fromHere: 0, fromThere: 0};
+  const lk = l => l[0] + '|' + l[1] + '|' + l[2], tk = l => l[0] + '|' + l[1], idk = x => x.id;
+  const entryLabel = e => e ? (e.kind === 'concept' ? 'Concept: ' : '') + (e.t || e.id) + (e.y ? ' (' + e.y + ')' : '') : '';
+  const maps = {
+    entries: mergeMaps(B.entries, Lh.entries, Rt.entries, 'entry', entryLabel, out),
+    links: mergeMaps(byKey(B.links, lk), byKey(Lh.links, lk), byKey(Rt.links, lk), 'link', (l, k) => { const [a, b] = k.split('|'); const ea = Lh.entries[a] || Rt.entries[a], eb = Lh.entries[b] || Rt.entries[b]; return 'Line: ' + (ea ? ea.t : a) + ' → ' + (eb ? eb.t : b); }, out),
+    topics: mergeMaps(byKey(B.topics, idk), byKey(Lh.topics, idk), byKey(Rt.topics, idk), 'topic', tp => 'Topic: ' + (tp ? tp.name : ''), out),
+    tags: mergeMaps(byKey(B.tags, idk), byKey(Lh.tags, idk), byKey(Rt.tags, idk), 'tag', x => 'Tag: ' + (x ? x.name : ''), out),
+    branches: mergeMaps(byKey(B.branches, idk), byKey(Lh.branches, idk), byKey(Rt.branches, idk), 'branch', x => 'Colour line: ' + (x ? x.name : ''), out),
+    lineBranch: mergeMaps(B.lineBranch || {}, Lh.lineBranch || {}, Rt.lineBranch || {}, 'lineBranch', () => 'A line’s colour', out),
+    tlinks: mergeMaps(byKey(B.tlinks, tk), byKey(Lh.tlinks, tk), byKey(Rt.tlinks, tk), 'tlink', () => 'Related topics', out),
+    tlinkColor: mergeMaps(B.tlinkColor || {}, Lh.tlinkColor || {}, Rt.tlinkColor || {}, 'tlinkColor', () => 'A related-topic colour', out),
+    status: mergeMaps(base.status || {}, here.status || {}, there.status || {}, 'status', (v, k) => 'Read mark', {conflicts: [], fromHere: 0, fromThere: 0})
+  };
+  const build = () => {
+    const L = Object.assign({}, Lh);
+    L.entries = maps.entries;
+    L.links = orderLike(maps.links, Lh.links, Rt.links, lk);
+    L.topics = orderLike(maps.topics, Lh.topics, Rt.topics, idk);
+    L.tags = orderLike(maps.tags, Lh.tags, Rt.tags, idk);
+    L.branches = orderLike(maps.branches, Lh.branches, Rt.branches, idk);
+    L.lineBranch = maps.lineBranch; L.tlinks = orderLike(maps.tlinks, Lh.tlinks, Rt.tlinks, tk); L.tlinkColor = maps.tlinkColor;
+    if(stableJSON(Lh.title) === stableJSON(B.title)) L.title = Rt.title;
+    return L;
+  };
+  const mapOf = {entry: 'entries', link: 'links', topic: 'topics', tag: 'tags', branch: 'branches', lineBranch: 'lineBranch', tlink: 'tlinks', tlinkColor: 'tlinkColor'};
+  const choose = (cf, side) => { const m = maps[mapOf[cf.kind]], v = side === 'there' ? cf.there : cf.here; if(v === undefined) delete m[cf.id]; else m[cf.id] = v; };
+  return {conflicts: out.conflicts, fromHere: out.fromHere, fromThere: out.fromThere, build, choose, status: maps.status};
+}
+function mergeSummary(cf){
+  const d = x => x === undefined ? 'deleted' : 'changed';
+  return {here: d(cf.here) + ' on this device', there: d(cf.there) + ' on the other'};
+}
+async function ghMergeOrAsk(f, title, text){
+  const c = ghCfg(); const base = c && loadBase(c);
+  if(!base || !f.data || !validLib(f.data.lib)) return ghAskWhich(f, title, text);
+  let res;
+  try{ res = mergeLibs(base, {lib, status}, {lib: f.data.lib, status: (f.data.status && f.data.status.map) || {}}); }catch(e){ return ghAskWhich(f, title, text); }
+  if(!res.conflicts.length) return applyMerge(f, res);
+  pickConflicts(res, 'Since the last sync, this device and another one both changed your list.', () => applyMerge(f, res));
+}
+function pickConflicts(res, intro, then){
+  setGh('error', 'Waiting for you to combine the changes');
+  const rows = res.conflicts.slice(0, 40).map((cf, i) => { const s = mergeSummary(cf); return '<div class="mg-row"><span class="mg-what">' + esc(cf.label) + '</span><label><input type="radio" name="mg' + i + '" value="here" checked> ' + esc(s.here) + '</label><label><input type="radio" name="mg' + i + '" value="there"> ' + esc(s.there) + '</label></div>'; }).join('');
+  openModal({
+    title: 'Changed in both places',
+    body: '<p>' + esc(intro) + ' ' + (res.fromHere + res.fromThere) + ' changes don’t clash and are combined automatically. For ' + (res.conflicts.length === 1 ? 'this one, which was' : 'these ' + res.conflicts.length + ', which were') + ' changed in both, choose which to keep:</p>' +
+      '<div class="mg-quick"><button type="button" class="linkbtn" data-mg-all="here">All from this device</button> · <button type="button" class="linkbtn" data-mg-all="there">All from the other</button></div>' +
+      '<div class="mg-list">' + rows + '</div>' + (res.conflicts.length > 40 ? '<p class="hint">The other ' + (res.conflicts.length - 40) + ' keep this device’s version.</p>' : '') +
+      '<p class="hint">Whatever you don’t keep stays in Earlier versions.</p>',
+    actions: [{label: 'Combine', primary: true, onClick: bd => { res.conflicts.slice(0, 40).forEach((cf, i) => { const r = bd.querySelector('input[name="mg' + i + '"]:checked'); res.choose(cf, r ? r.value : 'here'); }); then(); }}],
+    onOpen: bd => bd.addEventListener('click', ev => { const a = ev.target.closest('[data-mg-all]'); if(a) bd.querySelectorAll('.mg-row input[value="' + a.dataset.mgAll + '"]').forEach(x => { x.checked = true; }); })
+  });
+}
+function applyMerge(f, res){
+  const before = snapshot();
+  const merged = res.build();
+  if(!adoptSnapshot({lib: merged, status: {map: res.status, updatedAt: Date.now()}})){ ghAskWhich(f, 'Couldn’t combine the changes', 'Which version do you want to keep?'); return; }
+  const c = ghCfg(); if(!c) return;
+  c.sha = f.sha; c.dirty = true; ghStore(c); gh.rev++;
+  saveBase(c, f.data);
+  ghSave();
+  toast('Combined the changes: ' + res.fromThere + ' from the other device, ' + res.fromHere + ' from this one', () => { adoptSnapshot(before); ghMark(); toast('Undone'); });
+}
+
 function ghAdopt(f){
   const c = ghCfg(); if(!c) return;
-  if(!adoptSnapshot(f.data)){ setGh('error', 'The data file on GitHub has the wrong format, so it wasn’t loaded.'); return; }
+  if(!adoptSnapshot(f.data)){ setGh('error', 'The data file ' + syncIn() + ' has the wrong format, so it wasn’t loaded.'); return; }
   c.sha = f.sha; c.dirty = false; c.lastSyncedAt = (f.data && f.data.savedAt) || Date.now(); c.remoteCount = libCounts(f.data && f.data.lib).all; ghStore(c);
+  saveBase(c, f.data);
   gh.when = hhmm(c.lastSyncedAt); setGh('saved');
 }
 function libCounts(L){ const es = Object.values((L && L.entries) || {}); const c = es.filter(e => e.kind === 'concept').length; return {papers: es.length - c, concepts: c, topics: ((L && L.topics) || []).length, all: es.length}; }
@@ -1429,7 +1648,7 @@ function remoteText(data){ return syncCountText(libCounts(data && data.lib)) + (
 function ghUseRemote(f, how){
   const before = snapshot();
   ghAdopt(f);
-  toast((how || 'Loaded from GitHub') + ': ' + syncCountText(libCounts(lib)), () => { adoptSnapshot(before); toast('Undone'); });
+  toast((how || 'Loaded from ' + syncName()) + ': ' + syncCountText(libCounts(lib)), () => { adoptSnapshot(before); toast('Undone'); });
 }
 function ghAskWhich(f, title, text, preferLocal){
   const R = libCounts(f.data && f.data.lib), L = libCounts(lib);
@@ -1437,12 +1656,12 @@ function ghAskWhich(f, title, text, preferLocal){
   openModal({
     title,
     body:'<p>' + esc(text) + '</p>' +
-      '<div class="ver-cmp"><div><b>On GitHub</b><span>' + esc(remoteText(f.data)) + '</span></div><div><b>In this browser</b><span>' + esc(syncCountText(L)) + '</span></div></div>' +
+      '<div class="ver-cmp"><div><b>' + syncWhere() + '</b><span>' + esc(remoteText(f.data)) + '</span></div><div><b>In this browser</b><span>' + esc(syncCountText(L)) + '</span></div></div>' +
       (R.all < L.all ? '<p class="warn-line">Using the GitHub version replaces ' + L.all + ' items in this browser with ' + R.all + '. You can undo straight away.</p>' : '') +
-      (L.all < R.all ? '<p class="warn-line">Keeping this browser’s version replaces ' + R.all + ' items on GitHub with ' + L.all + '. The old version stays in the history (Settings → GitHub sync → Earlier versions).</p>' : '<p class="hint">Whichever you don’t keep stays in the GitHub history.</p>'),
+      (L.all < R.all ? '<p class="warn-line">Keeping this browser’s version replaces ' + R.all + ' items ' + syncIn() + ' with ' + L.all + '. The old version stays in the history (Settings → Sync → Earlier versions).</p>' : '<p class="hint">Whichever you don’t keep stays in the GitHub history.</p>'),
     actions:[
       {label:'Keep this browser’s (' + L.papers + ')', primary: !!preferLocal, onClick: () => { const c = ghCfg(); if(!c) return; c.sha = f.sha; c.dirty = true; ghStore(c); gh.force = true; ghSave(); }},
-      {label:'Use the GitHub version (' + R.papers + ')', primary: !preferLocal, onClick: () => ghUseRemote(f, 'Switched to the GitHub version')}
+      {label:'Use the ' + syncShort() + ' version (' + R.papers + ')', primary: !preferLocal, onClick: () => ghUseRemote(f, 'Switched to the ' + syncShort() + ' version')}
     ]
   });
 }
@@ -1456,17 +1675,18 @@ async function ghMissing(c){
     setGh('error', 'Waiting for you to choose a file');
     openModal({
       title: 'Your data may be in another file',
-      body: '<p>There is no <code>' + esc(c.path) + '</code> in ' + esc(c.owner + '/' + c.repo) + ', but it has ' + others.map(p => '<code>' + esc(p) + '</code>').join(', ') + '.</p><p class="hint">Choose one to load it. Nothing is written to GitHub until you do.</p>',
+      body: '<p>There is no <code>' + esc(c.path) + '</code> in ' + esc(c.kind === 'github' ? c.owner + '/' + c.repo : syncName()) + ', but it has ' + others.map(p => '<code>' + esc(p) + '</code>').join(', ') + '.</p><p class="hint">Choose one to load it. Nothing is written until you do.</p>',
       actions: others.slice(0, 3).map((p, i) => ({label: 'Use ' + p.split('/').pop(), primary: i === 0, onClick: () => { const c2 = ghCfg(); if(!c2) return; c2.path = p; c2.sha = null; c2.dirty = false; ghStore(c2); ghLoad(); }})).concat([{label: 'Not now'}])
     });
     return;
   }
   c.sha = null; ghStore(c);
-  if(localEmpty()){ c.dirty = false; ghStore(c); gh.when = ''; setGh('saved'); toast('Connected. Nothing is saved on GitHub yet; your first paper will be.'); return; }
+  if(localEmpty()){ c.dirty = false; ghStore(c); gh.when = ''; setGh('saved'); toast('Connected. Nothing is saved ' + syncIn() + ' yet; your first paper will be.'); return; }
   c.dirty = true; ghStore(c); return ghSave();
 }
 async function ghLoad(){
   const c = ghCfg();
+  if(c && c.kind === 'folder') fsCheckCopiesSoon();
   if(!c){ updateSaveState(); return; }
   if(gh.busy) return;
   gh.busy = true; setGh('loading');
@@ -1478,26 +1698,26 @@ async function ghLoad(){
   const remoteChanged = f.sha !== c.sha;
   if(!remoteChanged){ if(c.dirty) return ghSave(); gh.when = hhmm(c.lastSyncedAt); setGh('saved'); return; }
   const localHasData = !localEmpty();
-  if(!localHasData) return ghUseRemote(f, 'Loaded from GitHub');
+  if(!localHasData) return ghUseRemote(f, 'Loaded from ' + syncName());
   if(!c.sha){
-    return ghAskWhich(f, 'The repository already has data', 'This repository already holds reading-list data, and this browser has changes of its own. Which one do you want to keep?');
+    return ghAskWhich(f, (syncKind() === 'github' ? 'The repository' : syncName().charAt(0).toUpperCase() + syncName().slice(1)) + ' already has data', (syncKind() === 'github' ? 'This repository' : syncName().charAt(0).toUpperCase() + syncName().slice(1)) + ' already holds a Paper Map list, and this browser has one of its own. Which one do you want to keep?');
   }
-  if(c.dirty) return ghAskWhich(f, 'GitHub has a newer version', 'This data was changed on another device or directly on GitHub, and this browser has unsaved changes too. Which one do you want to keep?');
+  if(c.dirty) return ghMergeOrAsk(f, syncName().charAt(0).toUpperCase() + syncName().slice(1) + ' has a newer version', 'This data was changed on another device or directly ' + syncIn() + ', and this browser has unsaved changes too. Which one do you want to keep?');
   { const R = libCounts(f.data && f.data.lib).all, L = libCounts(lib).all;
-    if(L > R && (R === 0 || (L >= 10 && R < L / 2))) return ghAskWhich(f, 'GitHub has less than this browser', 'The copy on GitHub holds much less than this browser. If something emptied it by mistake, keep this browser’s list: it is saved back to GitHub.', true); }
+    if(L > R && (R === 0 || (L >= 10 && R < L / 2))) return ghAskWhich(f, syncName().charAt(0).toUpperCase() + syncName().slice(1) + ' has less than this browser', 'The copy ' + syncIn() + ' holds much less than this browser. If something emptied it by mistake, keep this browser’s list: it is saved back.', true); }
   ghAdopt(f);
-  toast('Loaded the latest data from GitHub');
+  toast('Loaded the latest data from ' + syncName());
 }
 function ghSave(){ return ghSerial(ghSaveNow); }
 function ghGuard(f, mine, theirs){
   setGh('error', 'Not saved: waiting for you to choose');
   openModal({
-    title: 'GitHub has more than this browser',
-    body: '<div class="ver-cmp"><div><b>On GitHub</b><span>' + esc(remoteText(f.data)) + '</span></div><div><b>In this browser</b><span>' + esc(syncCountText(libCounts(lib))) + '</span></div></div>' +
-      '<p class="warn-line">Saving now would replace ' + theirs + ' items on GitHub with ' + mine + '. Nothing has been saved.</p>',
+    title: syncName().charAt(0).toUpperCase() + syncName().slice(1) + ' has more than this browser',
+    body: '<div class="ver-cmp"><div><b>' + syncWhere() + '</b><span>' + esc(remoteText(f.data)) + '</span></div><div><b>In this browser</b><span>' + esc(syncCountText(libCounts(lib))) + '</span></div></div>' +
+      '<p class="warn-line">Saving now would replace ' + theirs + ' items ' + syncIn() + ' with ' + mine + '. Nothing has been saved.</p>',
     actions: [
       {label: 'Save this browser’s anyway', onClick: () => { const c = ghCfg(); if(!c) return; c.sha = f.sha; c.dirty = true; ghStore(c); gh.force = true; ghSave(); }},
-      {label: 'Load from GitHub', primary: true, onClick: () => ghUseRemote(f, 'Loaded from GitHub')}
+      {label: 'Load from ' + syncName(), primary: true, onClick: () => ghUseRemote(f, 'Loaded from ' + syncName())}
     ]
   });
 }
@@ -1509,9 +1729,9 @@ async function ghPullNow(){
   if(f.missing){ updateSaveState(); return ghMissing(c); }
   setGh('saved');
   openModal({
-    title: 'Load from GitHub',
-    body: '<div class="ver-cmp"><div><b>On GitHub</b><span>' + esc(remoteText(f.data)) + '</span></div><div><b>In this browser</b><span>' + esc(syncCountText(libCounts(lib))) + '</span></div></div><p class="hint">This browser’s list is replaced by GitHub’s. You can undo straight away.</p>',
-    actions: [{label: 'Cancel'}, {label: 'Load it', primary: true, onClick: () => ghUseRemote(f, 'Loaded from GitHub')}]
+    title: 'Load from ' + syncName(),
+    body: '<div class="ver-cmp"><div><b>' + syncWhere() + '</b><span>' + esc(remoteText(f.data)) + '</span></div><div><b>In this browser</b><span>' + esc(syncCountText(libCounts(lib))) + '</span></div></div><p class="hint">This browser’s list is replaced by GitHub’s. You can undo straight away.</p>',
+    actions: [{label: 'Cancel'}, {label: 'Load it', primary: true, onClick: () => ghUseRemote(f, 'Loaded from ' + syncName())}]
   });
 }
 /* Earlier versions: every save is a commit, so any of them can come back */
@@ -1519,13 +1739,16 @@ async function ghHistory(){
   const c = ghCfg(); if(!c) return;
   let list = [];
   try{
-    const r = await fetch('https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + '/commits?path=' + encodeURIComponent(c.path) + '&sha=' + encodeURIComponent(c.branch) + '&per_page=40&_=' + Date.now(), {headers: ghHeaders(c)});
-    if(!r.ok) throw {status: r.status};
-    list = await r.json();
+    if(c.kind === 'dropbox' || c.kind === 'folder') list = await remoteHistory(c);
+    else{
+      const r = await fetch('https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + '/commits?path=' + encodeURIComponent(c.path) + '&sha=' + encodeURIComponent(c.branch) + '&per_page=40&_=' + Date.now(), {headers: ghHeaders(c)});
+      if(!r.ok) throw {status: r.status};
+      list = await r.json();
+    }
   }catch(e){ toast(ghErr(e)); return; }
   openModal({
-    title: 'Earlier versions on GitHub',
-    body: '<p class="hint">Every save is kept. Look at one to see what it holds, then restore it: it becomes your list here and is saved to GitHub as the newest version.</p>' +
+    title: 'Earlier versions in ' + syncName(),
+    body: '<p class="hint">' + (c.kind === 'folder' ? 'Paper Map keeps the list as it was before each day’s first save, and before any replace, in the folder’s <code>data/backups</code>.' : c.kind === 'dropbox' ? 'Dropbox keeps earlier versions of the file (for 30 days on a free account).' : 'Every save is kept.') + ' Look at one to see what it holds, then restore it: it becomes your list here and is saved as the newest version.</p>' +
       '<div class="hist-list">' + (list.length ? list.map(x => '<div class="hist-row" data-hist="' + esc(x.sha) + '"><span class="hist-when">' + esc(new Date((x.commit && x.commit.author && x.commit.author.date) || 0).toLocaleString([], {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})) + '</span><span class="hist-what hint"></span><button type="button" class="btn small" data-hist-look="' + esc(x.sha) + '">Look</button></div>').join('') : '<p class="hint">No versions yet.</p>') + '</div>',
     actions: [{label: 'Close'}],
     onOpen: bd => {
@@ -1535,9 +1758,13 @@ async function ghHistory(){
         if(lk){
           const row = lk.closest('[data-hist]'); lk.disabled = true; lk.textContent = '…';
           try{
-            const r = await fetch(ghApi(c) + '?ref=' + encodeURIComponent(lk.dataset.histLook), {headers: ghHeaders(c, {'Accept':'application/vnd.github.raw+json'})});
-            if(!r.ok) throw {status: r.status};
-            const data = JSON.parse(await r.text());
+            let data;
+            if(c.kind === 'dropbox' || c.kind === 'folder') data = await remoteVersion(c, lk.dataset.histLook);
+            else{
+              const r = await fetch(ghApi(c) + '?ref=' + encodeURIComponent(lk.dataset.histLook), {headers: ghHeaders(c, {'Accept':'application/vnd.github.raw+json'})});
+              if(!r.ok) throw {status: r.status};
+              data = JSON.parse(await r.text());
+            }
             row._data = data;
             row.querySelector('.hist-what').textContent = syncCountText(libCounts(data.lib));
             lk.outerHTML = '<button type="button" class="btn small primary" data-hist-restore="1">Restore</button>';
@@ -1550,7 +1777,7 @@ async function ghHistory(){
           if(!adoptSnapshot(data)){ toast('That version has the wrong format'); return; }
           closeModal();
           const c2 = ghCfg(); if(c2){ c2.dirty = true; ghStore(c2); } gh.force = true; gh.rev++; ghSave();
-          toast('Restored: ' + syncCountText(libCounts(lib)) + '. Saving it to GitHub.', () => { adoptSnapshot(before); ghMark(); toast('Undone'); });
+          toast('Restored: ' + syncCountText(libCounts(lib)) + '. Saving it to ' + syncName() + '.', () => { adoptSnapshot(before); ghMark(); toast('Undone'); });
         }
       });
     }
@@ -1573,7 +1800,7 @@ async function ghSaveNow(){
       }
     }
   }
-  gh.force = false;
+  gh.replacing = !!gh.force; gh.force = false;
   const snap = snapshot();
   const content = b64encode(JSON.stringify(snap, null, 1));
   const message = appTitle() + ' autosave ' + stampText(snap.savedAt);
@@ -1583,13 +1810,13 @@ async function ghSaveNow(){
     if(res.status === 409 || res.status === 422){
       const f = await ghGetFile(c);
       if(f.missing){ res = await ghPut(c, content, message, null); if(res.status === 409) throw {status:'empty'}; }
-      else if(f.sha !== c.sha){ asked = true; gh.busy = false; ghAskWhich(f, 'GitHub has a newer version', 'While saving, the file on GitHub turned out to have changed elsewhere. Which one do you want to keep?'); return; }
+      else if(f.sha !== c.sha){ asked = true; gh.busy = false; ghMergeOrAsk(f, syncName().charAt(0).toUpperCase() + syncName().slice(1) + ' has a newer version', 'While saving, the file ' + syncIn() + ' turned out to have changed elsewhere. Which one do you want to keep?'); return; }
       else res = await ghPut(c, content, message, f.sha);
     }
     if(!res.ok) throw {status: res.status};
     const j = await res.json();
     const c2 = ghCfg();
-    if(c2){ c2.sha = j && j.content && j.content.sha; c2.lastSyncedAt = snap.savedAt; c2.remoteCount = libCounts(snap.lib).all; c2.dirty = gh.rev !== rev; ghStore(c2); }
+    if(c2){ c2.sha = j && j.content && j.content.sha; c2.lastSyncedAt = snap.savedAt; c2.remoteCount = libCounts(snap.lib).all; c2.dirty = gh.rev !== rev; ghStore(c2); saveBase(c2, snap); }
     ok = true;
     gh.when = hhmm(snap.savedAt); setGh(c2 && c2.dirty ? 'pending' : 'saved');
   }catch(e){ setGh('error', ghErr(e)); }
@@ -1598,11 +1825,753 @@ async function ghSaveNow(){
   if(ok && (gh.again || (c3 && c3.dirty))){ gh.again = false; clearTimeout(gh.timer); gh.timer = setTimeout(ghSave, 1200); }
   else gh.again = false;
   if(ok) ghNotesSoon();
+  if(ok && c.kind === 'folder') fsCheckCopiesSoon();
 }
 function ghForget(){
   clearTimeout(gh.timer);
   try{ localStorage.removeItem(GH_KEY); }catch(e){}
   setGh('off');
+}
+
+
+
+/* ===================== folder sync, and helpers it shares ===================== */
+let fsDir = null, fsPending = null;
+function b64ToBytes(b64){ const s = atob(b64); const u = new Uint8Array(s.length); for(let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; }
+const utf8 = s => new TextEncoder().encode(s);
+async function hexDigest(alg, bytes){ const h = await crypto.subtle.digest(alg, bytes); return Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join(''); }
+async function remoteHash(c, text){
+  // if(c.kind === 'dropbox') return dbxContentHash(utf8(text));
+  if(c.kind === 'folder') return hexDigest('SHA-1', utf8(text));
+  return gitBlobSha(text);
+}
+const fakeRes = (status, body) => ({ok: status >= 200 && status < 300, status, json: async () => body || {}});
+/* ---------- Dropbox sign-in: SWITCHED OFF ----------
+   Connecting a Dropbox account needed a registered app key, a sign-in redirect and a long-lived sign-in kept in the
+   browser, and it was never tested against the real Dropbox. It is kept below only as // comments, so none of it can
+   run. To use Dropbox, choose a folder inside Dropbox under Settings → Sync instead. */
+// /* Dropbox needs Paper Map itself to be registered once (free) to get an app key; each person then connects
+//    their own (free) Dropbox account. Put the key here, or paste it under Settings → Sync → Dropbox → Advanced. */
+// const DROPBOX_APP_KEY = '';
+// function dbxKey(){ try{ return localStorage.getItem('rl:dbxKey') || DROPBOX_APP_KEY; }catch(e){ return DROPBOX_APP_KEY; } }
+// function dbxRedirect(){ return location.origin + location.pathname; }
+// async function dbxContentHash(bytes){
+//   const B = 4 * 1024 * 1024, parts = [];
+//   for(let i = 0; i < bytes.length; i += B) parts.push(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes.subarray(i, i + B))));
+//   const all = new Uint8Array(parts.length * 32); parts.forEach((p, i) => all.set(p, i * 32));
+//   return hexDigest('SHA-256', all);
+// }
+// /* ---------- Dropbox ---------- */
+// const DBX_API = 'https://api.dropboxapi.com/2/', DBX_CONTENT = 'https://content.dropboxapi.com/2/';
+// const dbxArg = o => JSON.stringify(o).replace(/[\u007f-\uffff]/g, ch => '\\u' + ('000' + ch.charCodeAt(0).toString(16)).slice(-4));
+// function randomString(n){ const a = new Uint8Array(n); crypto.getRandomValues(a); return Array.from(a, x => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'[x % 66]).join(''); }
+// function b64url(bytes){ let s = ''; new Uint8Array(bytes).forEach(b => { s += String.fromCharCode(b); }); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+// async function dbxConnect(){
+//   const key = dbxKey(); if(!key){ toast('Dropbox isn’t set up for this copy of Paper Map yet'); return; }
+//   const verifier = randomString(64), state = randomString(24);
+//   const challenge = b64url(await crypto.subtle.digest('SHA-256', utf8(verifier)));
+//   try{ localStorage.setItem('rl:dbxAuth', JSON.stringify({verifier, state, at: Date.now()})); }catch(e){}
+//   location.href = 'https://www.dropbox.com/oauth2/authorize?' + new URLSearchParams({client_id: key, response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256', token_access_type: 'offline', redirect_uri: dbxRedirect(), state});
+// }
+// /* back from Dropbox with ?code=…: finish connecting, then tidy the address */
+// async function dbxFinish(){
+//   const q = new URLSearchParams(location.search);
+//   if(!q.has('state') || !(q.has('code') || q.has('error'))) return false;
+//   let a = null; try{ a = JSON.parse(localStorage.getItem('rl:dbxAuth') || 'null'); localStorage.removeItem('rl:dbxAuth'); }catch(e){}
+//   history.replaceState(null, '', location.pathname + '?app' + location.hash);
+//   if(!a || a.state !== q.get('state')) return false;
+//   if(q.has('error')){ setTimeout(() => toast('Dropbox wasn’t connected'), 800); return true; }
+//   try{
+//     const r = await fetch('https://api.dropboxapi.com/oauth2/token', {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: new URLSearchParams({code: q.get('code'), grant_type: 'authorization_code', client_id: dbxKey(), code_verifier: a.verifier, redirect_uri: dbxRedirect()})});
+//     if(!r.ok) throw {status: r.status};
+//     const j = await r.json();
+//     const old = lsGet(GH_KEY) || {};
+//     const keepSha = old.kind === 'dropbox' ? old.sha : null;
+//     ghStore({kind: 'dropbox', refresh: j.refresh_token, access: j.access_token, accessExp: Date.now() + ((j.expires_in || 14400) - 60) * 1000, account: j.account_id || '', sha: keepSha || null, dirty: false, lastSyncedAt: 0});
+//     try{
+//       const me = await fetch(DBX_API + 'users/get_current_account', {method: 'POST', headers: {'Authorization': 'Bearer ' + j.access_token}});
+//       if(me.ok){ const mj = await me.json(); const c2 = lsGet(GH_KEY); c2.who = (mj.email || (mj.name && mj.name.display_name) || ''); ghStore(c2); }
+//     }catch(e){}
+//     setTimeout(() => toast('Dropbox connected'), 800);
+//   }catch(e){ setTimeout(() => toast('Dropbox couldn’t be connected (error ' + (e && e.status || '?') + ')'), 800); }
+//   return true;
+// }
+// async function dbxToken(force){
+//   const cur = lsGet(GH_KEY) || {};
+//   if(!force && cur.access && cur.accessExp > Date.now() + 30000) return cur.access;
+//   const r = await fetch('https://api.dropboxapi.com/oauth2/token', {method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: new URLSearchParams({grant_type: 'refresh_token', refresh_token: cur.refresh || '', client_id: dbxKey()})});
+//   if(!r.ok) throw {status: 401};
+//   const j = await r.json();
+//   const c2 = lsGet(GH_KEY) || {}; c2.access = j.access_token; c2.accessExp = Date.now() + ((j.expires_in || 14400) - 60) * 1000; ghStore(c2);
+//   return c2.access;
+// }
+// async function dbxFetch(url, opts){
+//   const go = tok => fetch(url, Object.assign({method: 'POST'}, opts, {headers: Object.assign({'Authorization': 'Bearer ' + tok}, (opts && opts.headers) || {})}));
+//   let r = await go(await dbxToken(false));
+//   if(r.status === 401) r = await go(await dbxToken(true));
+//   return r;
+// }
+// async function dbxSummary(r){ try{ const j = await r.clone().json(); return j.error_summary || ''; }catch(e){ try{ return await r.text(); }catch(e2){ return ''; } } }
+// const dbxRpc = (ep, args) => dbxFetch(DBX_API + ep, {headers: {'Content-Type': 'application/json'}, body: JSON.stringify(args)});
+// async function dbxDownload(path){
+//   const r = await dbxFetch(DBX_CONTENT + 'files/download', {headers: {'Dropbox-API-Arg': dbxArg({path})}});
+//   if(r.status === 409){ if(/not_found/.test(await dbxSummary(r))) return null; throw {status: 409}; }
+//   if(!r.ok) throw {status: r.status};
+//   let meta = null; try{ meta = JSON.parse(r.headers.get('Dropbox-API-Result') || 'null'); }catch(e){}
+//   const bytes = new Uint8Array(await r.arrayBuffer());
+//   if(!meta || !meta.rev){ const m = await dbxRpc('files/get_metadata', {path}); if(m.ok) meta = await m.json(); }
+//   return {bytes, rev: meta && meta.rev};
+// }
+// async function dbxGetFile(c, path){
+//   const d = await dbxDownload('/' + path);
+//   if(!d) return {missing: true};
+//   return {sha: d.rev, data: JSON.parse(new TextDecoder().decode(d.bytes))};
+// }
+
+/* ---------- a folder on this computer ---------- */
+function idbOpen(){ return new Promise((res, rej) => { const r = indexedDB.open('paper-map', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+async function idbDo(mode, fn){ const db = await idbOpen(); return new Promise((res, rej) => { const tx = db.transaction('kv', mode); const q = fn(tx.objectStore('kv')); tx.oncomplete = () => res(q && q.result); tx.onerror = () => rej(tx.error); }); }
+const idbGet = k => idbDo('readonly', s => s.get(k)), idbSet = (k, v) => idbDo('readwrite', s => s.put(v, k)), idbDel = k => idbDo('readwrite', s => s.delete(k));
+async function fsParent(path, create){ const segs = String(path).split('/').filter(Boolean); const name = segs.pop(); let d = fsDir; for(const s of segs) d = await d.getDirectoryHandle(s, {create}); return [d, name]; }
+const notFound = e => e && (e.name === 'NotFoundError' || e.name === 'TypeMismatchError');
+async function fsRead(path){
+  try{ const [d, n] = await fsParent(path, false); const f = await (await d.getFileHandle(n)).getFile(); return new Uint8Array(await f.arrayBuffer()); }
+  catch(e){ if(notFound(e)) return null; throw e; }
+}
+async function fsWrite(path, bytes){ const [d, n] = await fsParent(path, true); const w = await (await d.getFileHandle(n, {create: true})).createWritable(); await w.write(bytes); await w.close(); }
+async function fsGetFile(path){
+  const b = await fsRead(path); if(!b) return {missing: true};
+  return {sha: await hexDigest('SHA-1', b), data: JSON.parse(new TextDecoder().decode(b))};
+}
+/* keeps the list as it was before the day's first save (and, separately, before you replace a newer copy) */
+async function fsBackup(prev, replacing){
+  const now = new Date(), day = now.toISOString().slice(0, 10);
+  if(replacing) await fsWrite('data/backups/paper-map-' + day + '-' + String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0') + '-before-replace.json', prev);
+  else if(!(await fsRead('data/backups/paper-map-' + day + '.json'))) await fsWrite('data/backups/paper-map-' + day + '.json', prev);
+  try{
+    const [d] = await fsParent('data/backups/x', false), names = [];
+    for await (const [n, h] of d.entries()) if(h.kind === 'file' && /^paper-map-\d{4}-\d\d-\d\d(-\d{4}-before-replace)?\.json$/.test(n)) names.push(n);
+    names.sort().slice(0, Math.max(0, names.length - 40)).forEach(n => d.removeEntry(n).catch(() => {}));
+  }catch(e){}
+}
+/* ---------- the same few operations for both ---------- */
+async function remotePut(c, path, bytes, sha, strict){
+//   if(c.kind === 'dropbox'){
+//     const mode = strict ? (sha ? {'.tag': 'update', update: sha} : 'add') : 'overwrite';
+//     const r = await dbxFetch(DBX_CONTENT + 'files/upload', {headers: {'Dropbox-API-Arg': dbxArg({path: '/' + path, mode, autorename: false, mute: true, strict_conflict: !!strict}), 'Content-Type': 'application/octet-stream'}, body: bytes});
+//     if(r.status === 409) return fakeRes(409);
+//     if(!r.ok) return fakeRes(r.status);
+//     const j = await r.json();
+//     return fakeRes(200, {content: {sha: j.rev}});
+//   }
+  if(strict){
+    const cur = await fsRead(path);
+    if(cur && (!sha || await hexDigest('SHA-1', cur) !== sha)) return fakeRes(409);
+    if(cur) await fsBackup(cur, gh.replacing).catch(() => {});
+  }
+  await fsWrite(path, bytes);
+  return fakeRes(200, {content: {sha: await hexDigest('SHA-1', bytes)}});
+}
+async function remoteDelete(c, path){
+//   if(c.kind === 'dropbox'){ const r = await dbxRpc('files/delete_v2', {path: '/' + path}); return fakeRes(r.status === 409 ? 404 : r.status); }
+  try{ const [d, n] = await fsParent(path, false); await d.removeEntry(n); return fakeRes(200); }catch(e){ return fakeRes(notFound(e) ? 404 : 500); }
+}
+async function remoteList(c, dir){
+//   if(c.kind === 'dropbox'){
+//     let r = await dbxRpc('files/list_folder', {path: '/' + dir});
+//     if(r.status === 409) return [];
+//     if(!r.ok) throw {status: r.status};
+//     let j = await r.json(), out = [];
+//     const add = j2 => j2.entries.forEach(x => out.push({type: x['.tag'] === 'file' ? 'file' : 'dir', name: x.name, path: String(x.path_display || x.path_lower).replace(/^\//, ''), sha: x.content_hash}));
+//     add(j);
+//     while(j.has_more){ r = await dbxRpc('files/list_folder/continue', {cursor: j.cursor}); if(!r.ok) break; j = await r.json(); add(j); }
+//     return out;
+//   }
+  let d; try{ [d] = await fsParent(dir + '/x', false); }catch(e){ if(notFound(e)) return []; throw e; }
+  const out = [];
+  for await (const [n, h] of d.entries()){
+    if(h.kind !== 'file') continue;
+    const b = new Uint8Array(await (await h.getFile()).arrayBuffer());
+    out.push({type: 'file', name: n, path: dir + '/' + n, sha: await hexDigest('SHA-1', b)});
+  }
+  return out;
+}
+async function remoteMeta(c, path){
+//   if(c.kind === 'dropbox'){ const r = await dbxRpc('files/get_metadata', {path: '/' + path}); if(r.status === 409) return null; if(!r.ok) throw {status: r.status}; return (await r.json()).rev || null; }
+  const b = await fsRead(path); return b ? hexDigest('SHA-1', b) : null;
+}
+async function remoteBytes(c, path){
+//   if(c.kind === 'dropbox'){ const d = await dbxDownload('/' + path); return d && d.bytes; }
+  return fsRead(path);
+}
+async function remoteHistory(c){
+//   if(c.kind === 'dropbox'){
+//     const r = await dbxRpc('files/list_revisions', {path: '/' + c.path, mode: 'path', limit: 40});
+//     if(r.status === 409) return [];
+//     if(!r.ok) throw {status: r.status};
+//     return ((await r.json()).entries || []).map(x => ({sha: x.rev, commit: {author: {date: x.server_modified}}}));
+//   }
+  const out = [];
+  try{
+    const [d] = await fsParent('data/backups/x', false);
+    for await (const [n, h] of d.entries()){ const m = /^paper-map-(\d{4}-\d\d-\d\d)(?:-(\d\d)(\d\d)-before-replace)?\.json$/.exec(n); if(h.kind === 'file' && m) out.push({sha: n, commit: {author: {date: m[1] + 'T' + (m[2] ? m[2] + ':' + m[3] : '00:00') + ':00'}}}); }
+  }catch(e){}
+  return out.sort((a, b) => b.sha.localeCompare(a.sha));
+}
+async function remoteVersion(c, id){
+//   if(c.kind === 'dropbox'){ const d = await dbxDownload('rev:' + id); if(!d) throw {status: 404}; return JSON.parse(new TextDecoder().decode(d.bytes)); }
+  const b = await fsRead('data/backups/' + id); if(!b) throw {status: 404}; return JSON.parse(new TextDecoder().decode(b));
+}
+/* ---------- connecting a folder ---------- */
+const FS_OK = typeof window.showDirectoryPicker === 'function';
+/* Dropbox, iCloud Drive and OneDrive save a second copy when two computers change the file at once,
+   e.g. “paper-map (Liam's conflicted copy 2026-11-18).json”, “paper-map 2.json” or “paper-map-LAPTOP.json”. */
+const fsCopyAsked = new Set();
+async function fsFindCopies(){
+  if(syncKind() !== 'folder' || !fsDir) return [];
+  let d; try{ [d] = await fsParent('data/x', false); }catch(e){ return []; }
+  const out = [];
+  for await (const [n, h] of d.entries()) if(h.kind === 'file' && n !== 'paper-map.json' && /^paper-map.*\.json$/i.test(n)) out.push(n);
+  return out.sort();
+}
+function fsCheckCopiesSoon(){ clearTimeout(fsCheckCopiesSoon.t); fsCheckCopiesSoon.t = setTimeout(() => fsCheckCopies().catch(() => {}), 1500); }
+async function fsCheckCopies(){
+  if(!modal.root.hidden) return fsCheckCopiesSoon();
+  const n = (await fsFindCopies()).find(x => !fsCopyAsked.has(x)); if(!n) return;
+  fsCopyAsked.add(n);
+  let data; try{ data = JSON.parse(new TextDecoder().decode(await fsRead('data/' + n))); }catch(e){ return; }
+  if(!data || !validLib(data.lib)) return;
+  openModal({title: 'Another copy of your list',
+    body: '<p>Your sync app made a second copy, <code>' + esc(n) + '</code>, usually because the list was changed on two computers at the same time.</p>' +
+      '<div class="ver-cmp"><div><b>That copy</b><span>' + esc(syncCountText(libCounts(data.lib))) + (data.savedAt ? ' · saved ' + esc(stampText(data.savedAt)) : '') + '</span></div><div><b>Your list</b><span>' + esc(syncCountText(libCounts(lib))) + '</span></div></div>' +
+      '<p class="hint">Combining keeps everything that is only in one of them, and asks you about anything that differs. The copy then moves to <code>data/backups</code>.</p>',
+    actions: [{label: 'Not now'}, {label: 'Combine', primary: true, onClick: () => { setTimeout(() => fsCombineCopy(n, data), 0); }}]});
+}
+async function fsCombineCopy(name, data){
+  const c = ghCfg(); if(!c) return;
+  const here = {lib, status};
+  /* A copy branched off at some unknown earlier point, so there is no safe common starting point:
+     anything only on one side is kept, and anything that differs between the two is shown to you. Nothing is overwritten silently. */
+  const base = {lib: Object.assign(clone(lib), {entries: {}, links: [], tlinks: [], lineBranch: {}, tlinkColor: {}, topics: [], tags: [], branches: []}), status: {}};
+  let res; try{ res = mergeLibs(base, here, {lib: data.lib, status: (data.status && data.status.map) || {}}); }catch(e){ toast('That copy couldn’t be combined'); return; }
+  const apply = async () => {
+    const before = snapshot();
+    if(!adoptSnapshot({lib: res.build(), status: {map: res.status, updatedAt: Date.now()}})) return;
+    const c2 = ghCfg(); if(c2){ c2.dirty = true; ghStore(c2); } gh.rev++; ghSave();
+    try{ const b = await fsRead('data/' + name); if(b){ await fsWrite('data/backups/' + name.replace(/\.json$/i, '') + ' · combined ' + new Date().toISOString().slice(0, 10) + '.json', b); const [d] = await fsParent('data/' + name, false); await d.removeEntry(name); } }catch(e){}
+    toast('Combined the copy: ' + res.fromThere + ' changes from it, ' + res.fromHere + ' kept from your list', () => { adoptSnapshot(before); ghMark(); toast('Undone'); });
+    fsCheckCopiesSoon();
+  };
+  if(!res.conflicts.length) return apply();
+  pickConflicts(res, 'Your list and the copy differ in a few places, and there is no way to tell which is newer.', apply);
+}
+async function fsConnect(){
+  if(!FS_OK){ toast('Choosing a folder works in Chrome and Edge on a computer'); return; }
+  let dir;
+  try{ dir = await window.showDirectoryPicker({id: 'paper-map', mode: 'readwrite'}); }catch(e){ return; }
+  if(dir.requestPermission && (await dir.requestPermission({mode: 'readwrite'})) !== 'granted'){ toast('Paper Map needs permission to save in that folder'); return; }
+  await idbSet('dir', dir).catch(() => {});
+  fsDir = dir; fsPending = null;
+  const old = lsGet(GH_KEY) || {};
+  ghStore({kind: 'folder', name: dir.name, sha: old.kind === 'folder' ? old.sha || null : null, dirty: false, lastSyncedAt: 0});
+  toast('Saving to the folder “' + dir.name + '”');
+  updateSaveState(); ghLoad();
+}
+async function fsReconnect(){
+  const h = fsPending || await idbGet('dir').catch(() => null);
+  if(!h){ fsConnect(); return; }
+  try{ if(h.requestPermission && (await h.requestPermission({mode: 'readwrite'})) !== 'granted') return; }catch(e){ return; }
+  fsDir = h; fsPending = null; updateSaveState(); ghLoad();
+}
+/* on start: get the folder back; browsers ask again after a restart, which needs a click */
+async function fsRestore(){
+  if(syncKind() !== 'folder' || PREVIEW) return;
+  const h = await idbGet('dir').catch(() => null); if(!h) return;
+  let p = 'granted'; try{ if(h.queryPermission) p = await h.queryPermission({mode: 'readwrite'}); }catch(e){ p = 'prompt'; }
+  if(p === 'granted'){ fsDir = h; return; }
+  fsPending = h; updateSaveState();
+  setTimeout(() => {
+    const el = document.getElementById('toast'); if(!el) return;
+    el.innerHTML = '<span>To keep saving to “' + esc((lsGet(GH_KEY) || {}).name || 'your folder') + '”, allow Paper Map to use it again.</span><button type="button" data-fs-reconnect="1">Allow</button>';
+    el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 20000);
+  }, 1500);
+}
+function syncForget(){
+  const k = syncKind();
+//   if(k === 'dropbox'){ const c = lsGet(GH_KEY) || {}; if(c.access) fetch(DBX_API + 'auth/token/revoke', {method: 'POST', headers: {'Authorization': 'Bearer ' + c.access}}).catch(() => {}); }
+  if(k === 'folder'){ idbDel('dir').catch(() => {}); fsDir = null; fsPending = null; }
+  ghForget();
+}
+
+
+/* ===================== importing papers from Zotero, CSV, BibTeX, RIS or CSL JSON ===================== */
+function guessDelim(text){ const line = (text.split('\n')[0] || ''); const n = ch => line.split(ch).length - 1; return ['\t', ';', ','].reduce((a, b) => n(b) > n(a) ? b : a, ','); }
+function parseCSV(text){
+  text = text.replace(/^\uFEFF/, ''); const d = guessDelim(text), rows = []; let row = [], f = '', q = false;
+  for(let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if(q){ if(ch === '"'){ if(text[i + 1] === '"'){ f += '"'; i++; } else q = false; } else f += ch; continue; }
+    if(ch === '"' && f === '') q = true;
+    else if(ch === d){ row.push(f); f = ''; }
+    else if(ch === '\n'){ row.push(f); rows.push(row); row = []; f = ''; }
+    else if(ch !== '\r') f += ch;
+  }
+  if(f !== '' || row.length){ row.push(f); rows.push(row); }
+  return rows.filter(r => r.some(x => String(x).trim() !== ''));
+}
+const TEX_MARK = {"'": '\u0301', '`': '\u0300', '^': '\u0302', '"': '\u0308', '~': '\u0303', '=': '\u0304', '.': '\u0307', u: '\u0306', v: '\u030C', H: '\u030B', c: '\u0327', k: '\u0328'};
+function cleanTex(v){
+  return String(v)
+    .replace(/\\([`'^"~=.uvHck])\s*\{?\s*\\?([a-zA-Z])\s*\}?/g, (m, a, ch) => (ch + TEX_MARK[a]).normalize('NFC'))
+    .replace(/\\(ss|o|O|aa|AA|ae|AE|oe|OE|l|L|i)\b\s*\{?\}?/g, (m, a) => ({ss: 'ß', o: 'ø', O: 'Ø', aa: 'å', AA: 'Å', ae: 'æ', AE: 'Æ', oe: 'œ', OE: 'Œ', l: 'ł', L: 'Ł', i: 'ı'})[a])
+    .replace(/\\([&%$#_])/g, '$1').replace(/\\[a-zA-Z]+\*?\s*\{([^{}]*)\}/g, '$1').replace(/\\[a-zA-Z]+\*?/g, '')
+    .replace(/``/g, '“').replace(/''/g, '”').replace(/---/g, '—').replace(/--/g, '–').replace(/[{}]/g, '').replace(/~/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function bibSkip(s, at){ const open = s[at], close = open === '(' ? ')' : '}'; let d = 0; for(let i = at; i < s.length; i++){ if(s[i] === open) d++; else if(s[i] === close && --d === 0) return i + 1; } return s.length; }
+function parseBib(text){
+  const out = []; let i = 0;
+  while((i = text.indexOf('@', i)) !== -1){
+    const m = /^@\s*([A-Za-z]+)\s*([{(])/.exec(text.slice(i, i + 80)); if(!m){ i++; continue; }
+    const type = m[1].toLowerCase(), at = i + m[0].length - 1, end = bibSkip(text, at);
+    const body = text.slice(at + 1, end - 1); i = end;
+    if(type === 'comment' || type === 'string' || type === 'preamble') continue;
+    const comma = body.indexOf(','); if(comma < 0) continue;
+    const fields = {}; let k = comma + 1;
+    while(k < body.length){
+      const fm = /^\s*([A-Za-z][\w:-]*)\s*=\s*/.exec(body.slice(k)); if(!fm) break;
+      const name = fm[1].toLowerCase(); k += fm[0].length; let val = '';
+      for(;;){
+        const ch = body[k];
+        if(ch === '{'){ const e = bibSkip(body, k); val += body.slice(k + 1, e - 1); k = e; }
+        else if(ch === '"'){ let e = k + 1, dd = 0; while(e < body.length && !(body[e] === '"' && dd === 0)){ if(body[e] === '{') dd++; else if(body[e] === '}') dd--; e++; } val += body.slice(k + 1, e); k = e + 1; }
+        else { const mm = /^[^,#}\s]+/.exec(body.slice(k)); if(mm){ val += mm[0]; k += mm[0].length; } }
+        const cat = /^\s*#\s*/.exec(body.slice(k)); if(cat){ k += cat[0].length; continue; } break;
+      }
+      fields[name] = cleanTex(val);
+      const cm = /^\s*,/.exec(body.slice(k)); if(cm) k += cm[0].length; else break;
+    }
+    out.push({type, key: body.slice(0, comma).trim(), fields});
+  }
+  return out;
+}
+function parseRIS(text){
+  const items = []; let cur = null;
+  text.replace(/^\uFEFF/, '').split(/\r?\n/).forEach(line => {
+    const m = /^([A-Z][A-Z0-9])  -\s?(.*)$/.exec(line); if(!m) return;
+    const tag = m[1], val = m[2].trim();
+    if(tag === 'TY'){ cur = {TY: val, AU: [], KW: []}; return; }
+    if(!cur) return;
+    if(tag === 'ER'){ items.push(cur); cur = null; return; }
+    if(tag === 'AU' || tag === 'A1') cur.AU.push(val);
+    else if(tag === 'KW') cur.KW.push(val);
+    else cur[tag] = cur[tag] ? cur[tag] + '\n' + val : val;
+  });
+  if(cur) items.push(cur);
+  return items;
+}
+/* “Family, Given; Family, Given”, “Given Family and Given Family”, or a list of {family, given} */
+function personFrom(s){
+  s = String(s || '').trim(); if(!s) return null;
+  if(s.includes(',')){ const [fam, ...rest] = s.split(','); return {family: fam.trim(), given: rest.join(',').trim()}; }
+  const w = s.split(/\s+/); if(w.length === 1) return {family: w[0]};
+  return {family: w[w.length - 1], given: w.slice(0, -1).join(' ')};
+}
+function authorsFrom(v){
+  if(Array.isArray(v)) return joinAuthors(v.map(a => typeof a === 'string' ? personFrom(a) : {family: a.family, given: a.given, name: a.literal || a.name}).filter(Boolean));
+  const s = String(v || '').trim(); if(!s) return '';
+  const parts = s.includes(';') ? s.split(';') : /\s+and\s+/i.test(s) ? s.split(/\s+and\s+/i) : null;
+  return parts ? joinAuthors(parts.map(personFrom).filter(Boolean)) : (/,/.test(s) && s.split(',').length === 2 ? joinAuthors([personFrom(s)]) : s);
+}
+const yearFrom = v => { const m = /\b(1[0-9]{3}|20[0-9]{2}|2100)\b/.exec(String(v || '')); return m ? +m[1] : null; };
+const sourceFrom = (box, vol, iss, pages, pub) => box ? box + (vol ? ' ' + vol + (iss ? '(' + iss + ')' : '') : '') + (pages ? ': ' + String(pages).replace(/\s*-{1,2}\s*/, '–') : '') : (pub || '');
+const htmlText = s => String(s || '').replace(/<\s*br\s*\/?>/gi, '\n').replace(/<\/(p|div|li|h\d)>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\n{3,}/g, '\n\n').trim();
+const TYPE_MAP = {journalarticle: 'Paper', conferencepaper: 'Paper', preprint: 'Paper', report: 'Paper', manuscript: 'Paper', book: 'Book', booksection: 'Chapter', thesis: 'Other', webpage: 'Other',
+  article: 'Paper', inproceedings: 'Paper', conference: 'Paper', techreport: 'Paper', unpublished: 'Paper', incollection: 'Chapter', inbook: 'Chapter', phdthesis: 'Other', mastersthesis: 'Other', misc: 'Other',
+  jour: 'Paper', conf: 'Paper', cpaper: 'Paper', rprt: 'Paper', chap: 'Chapter', thes: 'Other', 'article-journal': 'Paper', 'paper-conference': 'Paper', chapter: 'Chapter'};
+const typeFrom = v => TYPE_MAP[String(v || '').toLowerCase().replace(/[\s_]/g, '')] || '';
+const doiFrom = (...vs) => { for(const v of vs){ const m = /(10\.\d{4,9}\/[^\s"<>]+)/.exec(String(v || '')); if(m) return m[1].replace(/[.,;)]+$/, ''); } return ''; };
+const tagsFrom = v => (Array.isArray(v) ? v : String(v || '').split(/[;,]/)).map(x => String(x).trim()).filter(Boolean);
+/* CSV columns: which one is which */
+const CSV_GUESS = {t: ['title', 'titel', 'titre', 'título', 'titolo', '标题', '題名', '题名', '篇名'], au: ['author', 'authors', 'creator', 'creators', 'autor', 'autoren', 'auteur', 'auteurs', 'autores', '作者', '著者'], y: ['publication year', 'year', 'date', 'issued', 'jahr', 'année', 'año', 'anno', '年份', '年', '出版年', '发表年份'], box: ['publication title', 'journal', 'source', 'container', 'publication', 'venue', 'booktitle', 'container-title', 'zeitschrift', 'revue', 'revista', 'rivista', '期刊', '来源', '刊名', '出处'],
+  vol: ['volume'], iss: ['issue', 'number'], pages: ['pages', 'page'], pub: ['publisher'], doi: ['doi'], url: ['url', 'link'], tags: ['manual tags', 'tags', 'keywords', 'keyword'], n: ['notes', 'note'], type: ['item type', 'type']};
+function guessColumns(head){
+  const h = head.map(x => String(x).trim().toLowerCase()), map = {};
+  Object.entries(CSV_GUESS).forEach(([k, names]) => { let i = h.findIndex(x => names.includes(x)); if(i < 0) i = h.findIndex(x => names.some(nm => x.includes(nm))); if(i >= 0 && !Object.values(map).includes(i)) map[k] = i; });
+  return map;
+}
+function itemsFromCSV(rows, map){
+  const get = (r, k) => map[k] != null ? String(r[map[k]] == null ? '' : r[map[k]]).trim() : '';
+  return rows.slice(1).map(r => ({t: get(r, 't'), au: authorsFrom(get(r, 'au')), y: yearFrom(get(r, 'y')), v: sourceFrom(get(r, 'box'), get(r, 'vol'), get(r, 'iss'), get(r, 'pages'), get(r, 'pub')),
+    doi: doiFrom(get(r, 'doi'), get(r, 'url')), tags: tagsFrom(get(r, 'tags')), n: htmlText(get(r, 'n')), l: typeFrom(get(r, 'type'))})).filter(x => x.t);
+}
+function readImport(text, name){
+  const s = String(text || '').replace(/^\uFEFF/, ''), lower = String(name || '').toLowerCase(), first = s.trim().charAt(0);
+  if(/\.json$/.test(lower) || first === '[' || first === '{'){
+    let j; try{ j = JSON.parse(s); }catch(e){ return {error: 'That JSON file couldn’t be read.'}; }
+    if(j && j.app && j.lib) return {error: 'That’s a Paper Map backup. Use Settings → Data → Import backup for it.'};
+    const arr = Array.isArray(j) ? j : (j && (j.items || j.data)) || [];
+    return {format: 'CSL JSON', items: arr.map(m => ({t: String(Array.isArray(m.title) ? m.title[0] : m.title || '').replace(/\s+/g, ' ').trim(), au: authorsFrom(m.author || []), y: yearFrom(m.issued && m.issued['date-parts'] ? m.issued['date-parts'][0][0] : m.issued && m.issued.raw || m.year),
+      v: sourceFrom(Array.isArray(m['container-title']) ? m['container-title'][0] : m['container-title'], m.volume, m.issue, m.page, m.publisher), doi: doiFrom(m.DOI, m.URL), tags: tagsFrom(m.keyword), n: htmlText(m.note), l: typeFrom(m.type)})).filter(x => x.t)};
+  }
+  if(/\.ris$/.test(lower) || /^TY  - /m.test(s)){
+    return {format: 'RIS', items: parseRIS(s).map(r => ({t: (r.TI || r.T1 || r.CT || '').split('\n')[0], au: joinAuthors(r.AU.map(personFrom).filter(Boolean)), y: yearFrom(r.PY || r.Y1 || r.DA), v: sourceFrom(r.T2 || r.JO || r.JF || r.JA, r.VL, r.IS, r.SP ? r.SP + (r.EP ? '–' + r.EP : '') : '', r.PB),
+      doi: doiFrom(r.DO, r.UR), tags: r.KW, n: htmlText(r.N1), l: typeFrom(r.TY)})).filter(x => x.t)};
+  }
+  if(/\.bib(tex)?$/.test(lower) || /@\s*[a-z]+\s*[{(]/i.test(s)){
+    const items = parseBib(s).map(b => { const f = b.fields; return {t: f.title || '', au: authorsFrom(f.author || f.editor || ''), y: yearFrom(f.year || f.date), v: sourceFrom(f.journal || f.journaltitle || f.booktitle, f.volume, f.number, f.pages, f.publisher || f.institution || f.school),
+      doi: doiFrom(f.doi, f.url), tags: tagsFrom(f.keywords), n: f.annote || f.note || '', l: typeFrom(b.type)}; }).filter(x => x.t);
+    if(items.length) return {format: 'BibTeX', items};
+  }
+  const rows = parseCSV(s);
+  if(rows.length < 2) return {error: 'No papers found in that file. It should be a CSV with a header row, or a BibTeX, RIS or CSL JSON file.'};
+  const head = rows[0], map = guessColumns(head), zotero = head.map(x => String(x).trim()).includes('Item Type') && head.map(x => String(x).trim()).includes('Publication Year');
+  return {format: zotero ? 'Zotero CSV' : 'CSV', head, rows, map, items: itemsFromCSV(rows, map)};
+}
+const normTitle = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]/g, '');
+function existingKeys(){
+  const dois = new Set(), titles = new Set();
+  Object.values(lib.entries).forEach(e => { if(e.kind !== 'paper') return; if(e.doi) dois.add(String(e.doi).toLowerCase()); titles.add(normTitle(e.t) + '|' + (e.y || '')); });
+  return {has: x => (x.doi && dois.has(x.doi.toLowerCase())) || titles.has(normTitle(x.t) + '|' + (x.y || ''))};
+}
+function openImport(){
+  const pick = '<p>Bring in papers from Zotero or another reference tool: a <b>CSV</b>, <b>BibTeX</b> (.bib), <b>RIS</b> (.ris) or <b>CSL JSON</b> file. You choose where they go and check them before anything is added.</p>' +
+    '<div class="imp-drop" id="impDrop"><button type="button" class="btn primary" id="impPick">Choose a file</button><input type="file" id="impFile" accept=".csv,.tsv,.txt,.bib,.bibtex,.ris,.json,text/csv" hidden><span class="hint">or drop it here</span></div>' +
+    '<details class="imp-help"><summary>Exporting from Zotero</summary><ol><li>Right-click a collection and choose <b>Export Collection…</b> (or select items and choose <b>Export Items…</b>).</li><li>Choose <b>CSV</b> or <b>BibTeX</b>, then OK.</li><li>Choose that file here.</li></ol></details>' +
+    '<details class="imp-help"><summary>Or paste the text</summary><textarea id="impText2" rows="6" placeholder="Paste CSV, BibTeX, RIS or CSL JSON"></textarea><div class="set-actions"><button type="button" class="btn" id="impRead">Read it</button></div></details>' +
+    '<p class="form-error" id="impErr" hidden></p>';
+  openModal({title: 'Import papers', body: '<div id="impBody">' + pick + '</div>', actions: [{label: 'Cancel'}],
+    onOpen: bd => {
+      const err = m => { const e = bd.querySelector('#impErr'); if(e){ e.hidden = !m; e.textContent = m || ''; } };
+      const take = (text, name) => { const r = readImport(text, name); if(r.error){ err(r.error); return; } if(!r.items.length && !r.head){ err('No papers with a title were found in that file.'); return; } importReview(bd, r, String(name || 'Imported').replace(/\.[^.]+$/, '')); };
+      const file = f => { if(!f) return; if(f.size > 20 * 1048576){ err('That file is larger than 20 MB.'); return; } const rd = new FileReader(); rd.onload = () => take(String(rd.result), f.name); rd.onerror = () => err('That file couldn’t be read.'); rd.readAsText(f); };
+      bd.querySelector('#impPick').addEventListener('click', () => bd.querySelector('#impFile').click());
+      bd.querySelector('#impFile').addEventListener('change', ev => file(ev.target.files[0]));
+      bd.querySelector('#impRead').addEventListener('click', () => take(bd.querySelector('#impText2').value, 'Pasted'));
+      const drop = bd.querySelector('#impDrop');
+      drop.addEventListener('dragover', ev => { ev.preventDefault(); drop.classList.add('over'); });
+      drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+      drop.addEventListener('drop', ev => { ev.preventDefault(); drop.classList.remove('over'); file(ev.dataTransfer.files[0]); });
+    }});
+}
+function importReview(bd, r, srcName){
+  const ex = existingKeys();
+  const st = {dupSkip: true, tags: false, notes: true, pick: new Set(), topic: ui.topic && IDX.topics[ui.topic] ? ui.topic : (lib.topics[0] || {}).id, sub: '__new', newName: srcName === 'Pasted' ? 'Imported' : srcName};
+  const draw = () => {
+    if(r.head) r.items = itemsFromCSV(r.rows, r.map);
+    r.items.forEach((x, i) => { x.dup = ex.has(x); x.i = i; });
+    if(!st.pick.size || st.pick.__n !== r.items.length){ st.pick = new Set(r.items.filter(x => !x.dup).map(x => x.i)); st.pick.__n = r.items.length; }
+    const nd = r.items.filter(x => x.dup).length, ny = r.items.filter(x => !x.y).length, tagSet = new Set(r.items.flatMap(x => x.tags || [])), nn = r.items.filter(x => x.n).length;
+    const tp = IDX.topics[st.topic];
+    const subOpts = tp ? treeSubs(tp).filter(s => !s.hidden).map(s => '<option value="' + s.id + '"' + (st.sub === s.id ? ' selected' : '') + '>' + esc(subPath(s).join(' › ')) + '</option>').join('') : '';
+    const cols = r.head ? '<details class="imp-cols" id="impCols"' + (r.map.t == null || st.colsOpen ? ' open' : '') + '><summary>Columns</summary><div class="imp-colgrid">' + [['t', 'Title'], ['au', 'Authors'], ['y', 'Year'], ['box', 'Journal or book'], ['vol', 'Volume'], ['iss', 'Issue'], ['pages', 'Pages'], ['doi', 'DOI'], ['tags', 'Tags'], ['n', 'Notes'], ['type', 'Type']].map(([k, label]) => '<label>' + label + '<select data-imp-col="' + k + '"><option value="">(none)</option>' + r.head.map((h, i) => '<option value="' + i + '"' + (r.map[k] === i ? ' selected' : '') + '>' + esc(h || 'Column ' + (i + 1)) + '</option>').join('') + '</select></label>').join('') + '</div></details>' : '';
+    const n = [...st.pick].length;
+    bd.querySelector('#impBody').innerHTML =
+      (r.head && r.map.t == null ? '<p class="warn-line">Choose which column holds each paper’s title (under Columns), and the rest if you like.</p>' : '') +
+      '<p><b>' + r.items.length + (r.items.length === 1 ? ' paper' : ' papers') + '</b> in “' + esc(srcName) + '” (' + esc(r.format) + ').' + (nd ? ' ' + nd + ' already in your map ' + (nd === 1 ? 'is' : 'are') + ' unticked.' : '') + (ny ? ' ' + ny + ' without a year won’t show on the map until you add one.' : '') + '</p>' + cols +
+      '<div class="form-grid"><label>Topic<select id="impTopic">' + lib.topics.map(x => '<option value="' + x.id + '"' + (x.id === st.topic ? ' selected' : '') + '>' + esc(x.name) + '</option>').join('') + '</select></label>' +
+      '<label>Subtopic<select id="impSub"><option value="__new"' + (st.sub === '__new' ? ' selected' : '') + '>New subtopic…</option>' + subOpts + '</select></label>' +
+      (st.sub === '__new' ? '<label class="full">Name of the new subtopic<input type="text" id="impNew" maxlength="80" value="' + esc(st.newName) + '"></label>' : '') + '</div>' +
+      '<div class="ex-opts">' + (tagSet.size ? '<label><input type="checkbox" id="impTags"' + (st.tags ? ' checked' : '') + '> Keep their tags (' + tagSet.size + ')</label>' : '') + (nn ? '<label><input type="checkbox" id="impNotes"' + (st.notes ? ' checked' : '') + '> Keep their notes (' + nn + ')</label>' : '') + '<span class="hint"><button type="button" class="linkbtn" data-imp-all="1">Tick all</button> · <button type="button" class="linkbtn" data-imp-none="1">Untick all</button></span></div>' +
+      '<div class="imp-list">' + r.items.map(x => '<label class="imp-row' + (x.dup ? ' dup' : '') + '"><input type="checkbox" data-imp-i="' + x.i + '"' + (st.pick.has(x.i) ? ' checked' : '') + '><span class="imp-y">' + esc(x.y || '—') + '</span><span class="imp-t"><b>' + esc(x.t) + '</b><span class="hint">' + esc([x.au, x.v].filter(Boolean).join(' · ')) + (x.dup ? ' · already in your map' : '') + '</span></span></label>').join('') + '</div>';
+    const act = document.getElementById('modalActions');
+    act.innerHTML = '<button type="button" class="btn" id="impBack">Back</button><button type="button" class="btn primary" id="impGo"' + (n ? '' : ' disabled') + '>Import ' + n + (n === 1 ? ' paper' : ' papers') + '</button>';
+    act.querySelector('#impBack').onclick = () => { closeModal(); openImport(); };
+    act.querySelector('#impGo').onclick = () => doImport(r, st);
+  };
+  bd.onchange = ev => {
+    const c = ev.target.closest('[data-imp-col]'); if(c){ r.map[c.dataset.impCol] = c.value === '' ? undefined : +c.value; st.pick = new Set(); st.colsOpen = true; draw(); return; }
+    const k = ev.target.closest('[data-imp-i]'); if(k){ if(k.checked) st.pick.add(+k.dataset.impI); else st.pick.delete(+k.dataset.impI); st.pick.__n = r.items.length; const n = st.pick.size, g = document.getElementById('impGo'); if(g){ g.textContent = 'Import ' + n + (n === 1 ? ' paper' : ' papers'); g.disabled = !n; } return; }
+    if(ev.target.id === 'impTopic'){ st.topic = ev.target.value; st.sub = '__new'; draw(); return; }
+    if(ev.target.id === 'impSub'){ st.sub = ev.target.value; draw(); return; }
+    if(ev.target.id === 'impTags') st.tags = ev.target.checked;
+    if(ev.target.id === 'impNotes') st.notes = ev.target.checked;
+  };
+  bd.oninput = ev => { if(ev.target.id === 'impNew') st.newName = ev.target.value; };
+  bd.addEventListener('toggle', ev => { if(ev.target.id === 'impCols') st.colsOpen = ev.target.open; }, true);
+  bd.onclick = ev => {
+    if(ev.target.closest('[data-imp-all]')){ st.pick = new Set(r.items.map(x => x.i)); st.pick.__n = r.items.length; draw(); }
+    if(ev.target.closest('[data-imp-none]')){ st.pick = new Set(); st.pick.__n = r.items.length; draw(); }
+  };
+  draw();
+}
+function doImport(r, st){
+  const items = r.items.filter(x => st.pick.has(x.i)); if(!items.length) return;
+  const before = clone(lib);
+  let sid = st.sub;
+  if(sid === '__new' || !IDX.subs[sid]){
+    const name = (st.newName || '').trim() || 'Imported';
+    let nid; do{ nid = rid('s'); }while(IDX.subs[nid] || IDX.topics[nid]);
+    attachSubtree([{id: nid, name, desc: '', groups: []}], {k: 't', id: st.topic}, 'inside');
+    if(Array.isArray(settings.lanes)){ settings.lanes.push(nid); persistSettings(); }
+    reindex(); sid = nid;
+  }
+  const tagId = {};
+  if(st.tags) items.forEach(x => (x.tags || []).forEach(nm => { if(tagId[nm]) return; const ex = lib.tags.find(z => z.name.toLowerCase() === nm.toLowerCase()); tagId[nm] = ex ? ex.id : (function(){ let id; do{ id = rid('tag'); }while(lib.tags.some(z => z.id === id)); lib.tags.push({id, name: nm, color: nextTagColor(), map: true}); return id; })(); }));
+  items.forEach(x => {
+    let id; do{ id = rid('e'); }while(lib.entries[id]);
+    const e = {id, kind: 'paper', topic: IDX.topicOf[sid], sub: sid, group: '', y: x.y || undefined, au: x.au || '', t: x.t, v: x.v || '', l: LAYERS.includes(x.l) ? x.l : 'Paper', p: 2,
+      tags: st.tags ? [...new Set((x.tags || []).map(nm => tagId[nm]).filter(Boolean))] : [], d: [], f: '', n: st.notes ? (x.n || '') : '', needs: []};
+    if(x.doi) e.doi = x.doi; if(!e.n) delete e.n; if(e.y == null) delete e.y;
+    lib.entries[id] = e;
+  });
+  reindex(); touchAllTopics(); syncControls();
+  closeModal(); openView(sid);
+  const where = (IDX.subs[sid] || {}).name || 'your map';
+  toast('Imported ' + items.length + (items.length === 1 ? ' paper' : ' papers') + ' into “' + where + '”', () => { lib = before; reindex(); touchAllTopics(); fixView(); renderAll(); toast('Undone'); });
+}
+
+/* ===================== export: a picture of the topics you choose ===================== */
+const EXPORT_PROPS = ['fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'stroke-dasharray', 'stroke-linecap', 'stroke-linejoin', 'opacity', 'display', 'visibility', 'font-family', 'font-size', 'font-weight', 'font-style', 'letter-spacing', 'text-anchor', 'paint-order'];
+function cloneWithStyles(src){
+  const out = src.cloneNode(true);
+  const a = [src, ...src.querySelectorAll('*')], b = [out, ...out.querySelectorAll('*')];
+  a.forEach((el, i) => { const cs = getComputedStyle(el); b[i].setAttribute('style', EXPORT_PROPS.map(p => p + ':' + cs.getPropertyValue(p)).join(';')); b[i].removeAttribute('class'); b[i].removeAttribute('tabindex'); b[i].removeAttribute('role'); });
+  return out;
+}
+function allLaneRows(){
+  const rows = [];
+  lib.topics.forEach(tp => treeSubs(tp).forEach(s => rows.push({sub: s, topic: tp, depth: subAncestors(s).filter(x => !x.hidden).length, name: s.hidden ? tp.name : s.name})));
+  return rows;
+}
+function laneOfEntry(e){ return e.kind === 'concept' ? '__concepts' : e.sub; }
+function tlLanes(id){ if(IDX.subs[id]) return [id]; const tp = IDX.topics[id]; return tp ? treeSubs(tp).map(s => s.id) : []; }
+/* which topics outside the choice are joined to it, and how many lines would be left out */
+function exportLinks(sel){
+  const out = {}, left = {n: 0};
+  lib.links.forEach(([a, b, t]) => {
+    if(t === 'o' || t === 'p') return;
+    const A = lib.entries[a], B = lib.entries[b]; if(!A || !B || A.kind === 'concept' || B.kind === 'concept') return;
+    const la = laneOfEntry(A), lb = laneOfEntry(B), ia = sel.has(la), ib = sel.has(lb);
+    if(ia === ib) return;
+    left.n++;
+    const o = ia ? lb : la; (out[o] = out[o] || {lines: 0, related: false}).lines++;
+  });
+  (lib.tlinks || []).forEach(l => {
+    const A = tlLanes(l[0]), B = tlLanes(l[1]);
+    const ia = A.some(x => sel.has(x)), ib = B.some(x => sel.has(x));
+    if(ia === ib) return;
+    (ia ? B : A).forEach(o => { if(!sel.has(o)) (out[o] = out[o] || {lines: 0, related: false}).related = true; });
+  });
+  return {suggest: Object.keys(out).map(id => Object.assign({id}, out[id])).sort((x, y) => y.lines - x.lines), left: left.n};
+}
+function measureText(txt, font){ const c = measureText.c || (measureText.c = document.createElement('canvas').getContext('2d')); c.font = font; return c.measureText(txt).width; }
+function xmlEsc(s){ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+/* draw the map for the chosen rows, copy it with every colour written out, then put the page back exactly as it was */
+function buildExportSVG(o){
+  const root = document.documentElement, prevTheme = root.getAttribute('data-theme');
+  const keep = {lanes: settings.lanes, showConcepts: settings.showConcepts, sel: ui.selected, br: ui.branch, range: settings.range};
+  const mapEl = document.getElementById('map'), prevW = mapEl.style.width;
+  /* no concepts row unless the chosen papers actually use a concept */
+  if(o.concepts && !Object.values(lib.entries).some(e => e.kind === 'paper' && o.subs.includes(e.sub) && (e.needs || []).some(c => lib.entries[c]))) o = Object.assign({}, o, {concepts: false});
+  let cap = null;
+  try{
+    root.setAttribute('data-theme', 'light');
+    settings.lanes = o.subs.slice(); settings.showConcepts = !!o.concepts; ui.selected = null; ui.branch = null;
+    if(o.allYears) settings.range = null;
+    mapEl.style.width = o.width + 'px';
+    renderMap(true);
+    mapSvg.classList.remove('focus');
+    mapSvg.querySelectorAll('.hot,.far,.soft,.sel').forEach(n => n.classList.remove('hot', 'far', 'soft', 'sel'));
+    if(o.notes) mapSvg.classList.remove('quiet-notes');
+    mapSvg.classList.toggle('show-pre', !!o.concepts);
+    const cs = getComputedStyle(root);
+    cap = {plot: cloneWithStyles(mapSvg), axis: cloneWithStyles(axisSvg), lanes: (MAP.lanes || []).slice(), W: MAP.W, H: MAP.H, laneH: MAP.laneH, top: MAP.top || 8,
+      ink: cs.getPropertyValue('--ink').trim() || '#1C2330', muted: cs.getPropertyValue('--muted').trim() || '#6B7280', band: getComputedStyle(mapSvg.querySelector('.band') || mapSvg).fill,
+      labFont: getComputedStyle(document.querySelector('#mapLabels .nm') || document.body).fontFamily, sans: cs.getPropertyValue('--sans').trim(), serif: cs.getPropertyValue('--serif').trim()};
+  }finally{
+    if(prevTheme == null) root.removeAttribute('data-theme'); else root.setAttribute('data-theme', prevTheme);
+    settings.lanes = keep.lanes; settings.showConcepts = keep.showConcepts; ui.selected = keep.sel; ui.branch = keep.br; settings.range = keep.range;
+    mapEl.style.width = prevW;
+    renderMap(true);
+  }
+  if(!cap || !cap.lanes.length) return null;
+  /* concepts: only the ones the chosen papers use */
+  if(o.concepts){
+    const used = new Set();
+    Object.values(lib.entries).forEach(e => { if(e.kind === 'paper' && o.subs.includes(e.sub)) (e.needs || []).forEach(c => used.add(c)); });
+    const drop = new Set(Object.values(lib.entries).filter(e => e.kind === 'concept' && !used.has(e.id)).map(e => e.id));
+    cap.plot.querySelectorAll('[data-id]').forEach(n => { if(drop.has(n.getAttribute('data-id'))) n.remove(); });
+    cap.plot.querySelectorAll('[data-a]').forEach(n => { if(drop.has(n.getAttribute('data-a')) || drop.has(n.getAttribute('data-b'))) n.remove(); });
+  }
+  ['#brush', 'rect.bg'].forEach(s => cap.plot.querySelectorAll(s).forEach(n => n.remove()));
+  /* fewer lines: only the colour lines, or none at all */
+  if(o.lines === 'colour' || o.lines === 'none'){
+    const keepIds = new Set([...cap.plot.querySelectorAll('[data-br]')].map(n => n.getAttribute('data-a') + '|' + n.getAttribute('data-b')));
+    cap.plot.querySelectorAll('[data-a]').forEach(n => { if(o.lines === 'none' || !keepIds.has(n.getAttribute('data-a') + '|' + n.getAttribute('data-b'))) n.remove(); });
+  }
+  cap.plot.querySelectorAll('[id="brush"]').forEach(n => n.remove());
+  const usedBranches = [...new Set([...cap.plot.querySelectorAll('[data-br]')].map(n => n.getAttribute('data-br')))].map(id => lib.branches.find(b => b.id === id)).filter(Boolean);
+  /* the label column */
+  const labFont = '600 14px ' + (cap.labFont || '').replace(/,?\s*serif\s*$/, '') + ", Georgia, 'Times New Roman', serif", ctxFont = '400 11px ' + cap.sans;
+  const rows = cap.lanes.map((ln, i) => {
+    const s = ln.sub, depth = ln.concepts ? 0 : subAncestors(s).filter(x => !x.hidden).length;
+    const first = !ln.concepts && (i === 0 || cap.lanes[i - 1].topic.id !== ln.topic.id) && !s.hidden;
+    return {name: ln.concepts ? 'Concepts' : (s.hidden ? ln.topic.name : s.name), depth, ctx: first ? ln.topic.name : '', concepts: !!ln.concepts};
+  });
+  const labW = Math.min(300, Math.max(130, ...rows.map(r => measureText(r.name, labFont) + 18 + r.depth * 14 + (r.depth ? 12 : 0)), ...rows.map(r => r.ctx ? measureText(r.ctx, ctxFont) + 18 : 0)));
+  const M = 36, titleH = o.title ? 70 : 8, axisH = 30;
+  const legendH = o.legend ? 44 : 0, footH = 30;
+  const Wt = M + labW + cap.W + M, Ht = M + titleH + cap.H + axisH + legendH + footH + M - 10;
+  const serif = (cap.serif || '').replace(/,?\s*serif\s*$/, '') + ", Georgia, 'Times New Roman', serif", sans = (cap.sans || '').replace(/,?\s*sans-serif\s*$/, '') + ', Helvetica, Arial, sans-serif';
+  let s = '<svg xmlns="http://www.w3.org/2000/svg" width="' + Wt + '" height="' + Ht + '" viewBox="0 0 ' + Wt + ' ' + Ht + '">';
+  s += '<rect width="' + Wt + '" height="' + Ht + '" fill="#FFFFFF"/>';
+  if(o.title){
+    s += '<text x="' + M + '" y="' + (M + 28) + '" style="font:900 30px ' + xmlEsc(serif) + ';fill:' + cap.ink + '">' + xmlEsc(o.title) + '</text>';
+    const np = Object.values(lib.entries).filter(e => e.kind === 'paper' && o.subs.includes(e.sub) && !e.parent).length;
+    s += '<text x="' + M + '" y="' + (M + 52) + '" style="font:400 13px ' + xmlEsc(sans) + ';fill:' + cap.muted + '">' + xmlEsc(np + (np === 1 ? ' paper' : ' papers') + ' · ' + rows.filter(r => !r.concepts).length + ' rows · ' + new Date().toLocaleDateString([], {day: 'numeric', month: 'long', year: 'numeric'})) + '</text>';
+  }
+  const ox = M, oy = M + titleH;
+  rows.forEach((r, i) => {
+    const y = oy + cap.top + i * cap.laneH;
+    if(i % 2 === 0) s += '<rect x="' + ox + '" y="' + y + '" width="' + labW + '" height="' + cap.laneH + '" style="fill:' + cap.band + '"/>';
+    const tx = ox + 10 + r.depth * 14;
+    if(r.ctx) s += '<text x="' + tx + '" y="' + (y + cap.laneH / 2 - 7) + '" style="font:' + ctxFont.replace(/"/g, "'") + ';fill:' + cap.muted + '">' + xmlEsc(r.ctx) + '</text>';
+    const ny = y + cap.laneH / 2 + (r.ctx ? 9 : 5);
+    if(r.depth) s += '<text x="' + (tx - 2) + '" y="' + ny + '" style="font:400 12px ' + xmlEsc(sans) + ';fill:' + cap.muted + '">└</text>';
+    s += '<text x="' + (tx + (r.depth ? 12 : 0)) + '" y="' + ny + '" style="font:' + (r.concepts ? '600 13px ' + xmlEsc(sans) : labFont.replace(/"/g, "'")) + ';fill:' + (r.concepts ? cap.muted : cap.ink) + '">' + xmlEsc(r.name) + '</text>';
+  });
+  const plot = cap.plot; plot.setAttribute('x', ox + labW); plot.setAttribute('y', oy); plot.setAttribute('width', cap.W); plot.setAttribute('height', cap.H);
+  plot.removeAttribute('style');
+  s += new XMLSerializer().serializeToString(plot).replace(/^<svg[^>]*?>/, m => m.replace(/\sid="[^"]*"/, ''));
+  const axis = cap.axis; axis.setAttribute('x', ox + labW); axis.setAttribute('y', oy + cap.H); axis.setAttribute('width', cap.W); axis.setAttribute('height', axisH); axis.removeAttribute('style');
+  s += new XMLSerializer().serializeToString(axis).replace(/^<svg[^>]*?>/, m => m.replace(/\sid="[^"]*"/, ''));
+  let ly = oy + cap.H + axisH + 26;
+  if(o.legend){
+    let lx = ox;
+    const item = (svg, label) => { s += '<g transform="translate(' + lx + ',' + (ly - 4) + ')">' + svg + '</g><text x="' + (lx + 30) + '" y="' + ly + '" style="font:400 12px ' + xmlEsc(sans) + ';fill:' + cap.muted + '">' + xmlEsc(label) + '</text>'; lx += 40 + measureText(label, '400 12px ' + sans) + 18; };
+    const ln = dash => '<line x1="0" y1="0" x2="24" y2="0" style="stroke:' + cap.ink + ';stroke-width:1.6' + (dash ? ';stroke-dasharray:' + dash : '') + '"/>';
+    item(ln(''), 'builds on'); item(ln('5 3'), 'responds to'); item(ln('1.5 3'), 'related to');
+    item('<circle cx="12" cy="0" r="5" style="fill:' + readColor() + '"/>', 'read'); item('<circle cx="12" cy="0" r="5" style="fill:' + wantColor() + '"/>', 'want to read');
+    usedBranches.forEach(b => item('<line x1="0" y1="0" x2="24" y2="0" style="stroke:' + b.color + ';stroke-width:2.6"/>', b.name));
+    ly += legendH - 18;
+  }
+  s += '<text x="' + ox + '" y="' + (ly + 8) + '" style="font:400 11px ' + xmlEsc(sans) + ';fill:' + cap.muted + ';opacity:.85">' + xmlEsc((o.disclaimer ? 'Lines show how the author reads these papers as connected, not a citation network. ' : '') + 'Made with Paper Map') + '</text>';
+  s += '</svg>';
+  return {svg: s, w: Wt, h: Ht};
+}
+function readColor(){ return getComputedStyle(document.documentElement).getPropertyValue('--read').trim() || '#009473'; }
+function wantColor(){ return getComputedStyle(document.documentElement).getPropertyValue('--want').trim() || '#E34234'; }
+async function svgToCanvas(x, scale){
+  const img = new Image();
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(x.svg);
+  await (img.decode ? img.decode() : new Promise((res, rej) => { img.onload = res; img.onerror = rej; }));
+  const max = 15e6, sc = Math.min(scale, Math.sqrt(max / (x.w * x.h)));
+  const c = document.createElement('canvas'); c.width = Math.round(x.w * sc); c.height = Math.round(x.h * sc);
+  const g = c.getContext('2d'); g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+  return c;
+}
+function canvasBlob(c, type, q){ return new Promise(res => c.toBlob(res, type, q)); }
+/* a one-page PDF around a JPEG of the map */
+async function jpegPdf(c, wPt, hPt){
+  const jpg = new Uint8Array(await (await canvasBlob(c, 'image/jpeg', 0.92)).arrayBuffer());
+  const enc = new TextEncoder(), parts = [], offs = [];
+  let len = 0;
+  const push = x => { const b = typeof x === 'string' ? enc.encode(x) : x; parts.push(b); len += b.length; };
+  const obj = (n, body) => { offs[n] = len; push(n + ' 0 obj\n'); body(); push('\nendobj\n'); };
+  push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+  const content = 'q ' + wPt.toFixed(2) + ' 0 0 ' + hPt.toFixed(2) + ' 0 0 cm /Im0 Do Q';
+  obj(1, () => push('<< /Type /Catalog /Pages 2 0 R >>'));
+  obj(2, () => push('<< /Type /Pages /Kids [3 0 R] /Count 1 >>'));
+  obj(3, () => push('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + wPt.toFixed(2) + ' ' + hPt.toFixed(2) + '] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>'));
+  obj(4, () => { push('<< /Type /XObject /Subtype /Image /Width ' + c.width + ' /Height ' + c.height + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + jpg.length + ' >>\nstream\n'); push(jpg); push('\nendstream'); });
+  obj(5, () => push('<< /Length ' + content.length + ' >>\nstream\n' + content + '\nendstream'));
+  obj(6, () => push('<< /Producer (Paper Map) /Title (' + 'Paper Map export' + ') >>'));
+  const xref = len;
+  let x = 'xref\n0 7\n0000000000 65535 f \n';
+  for(let i = 1; i <= 6; i++) x += String(offs[i]).padStart(10, '0') + ' 00000 n \n';
+  push(x + 'trailer\n<< /Size 7 /Root 1 0 R /Info 6 0 R >>\nstartxref\n' + xref + '\n%%EOF');
+  return new Blob(parts, {type: 'application/pdf'});
+}
+/* save where the person chooses (a Dropbox or iCloud Drive folder works), or download */
+async function saveBlobAs(blob, name){
+  if(window.showSaveFilePicker && window.isSecureContext !== false){
+    try{
+      const ext = name.split('.').pop();
+      const h = await window.showSaveFilePicker({suggestedName: name, types: [{description: ext === 'pdf' ? 'PDF document' : 'PNG image', accept: {[blob.type]: ['.' + ext]}}]});
+      const w = await h.createWritable(); await w.write(blob); await w.close();
+      return 'saved';
+    }catch(e){ if(e && e.name === 'AbortError') return 'cancelled'; }
+  }
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 8000);
+  return 'downloaded';
+}
+function slugName(s){ return String(s || 'paper-map').toLowerCase().normalize('NFKD').replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-').slice(0, 60) || 'paper-map'; }
+function openExport(){
+  const rows = allLaneRows();
+  const filled = new Set(Object.values(lib.entries).filter(e => e.kind === 'paper' && typeof e.y === 'number').map(e => e.sub));
+  const start = ui.topic && IDX.topics[ui.topic] ? new Set(treeSubs(IDX.topics[ui.topic]).map(s => s.id)) : new Set(rows.map(r => r.sub.id));
+  const st = {sel: new Set([...start].filter(id => filled.has(id))), concepts: Object.values(lib.entries).some(e => e.kind === 'concept'), notes: false, legend: true, allYears: true, format: 'png', title: '', lines: 'all', disclaimer: true};
+  if(!st.sel.size) rows.forEach(r => { if(filled.has(r.sub.id)) st.sel.add(r.sub.id); });
+  const defTitle = () => { const tps = lib.topics.filter(tp => treeSubs(tp).some(s => st.sel.has(s.id))); return tps.length === 1 ? tps[0].name : (lib.title || 'Paper Map'); };
+  st.title = defTitle();
+  let titleTouched = false;
+  const treeHTML = () => lib.topics.map(tp => {
+    const subs = rows.filter(r => r.topic.id === tp.id), on = subs.filter(r => st.sel.has(r.sub.id)).length;
+    const head = '<label class="ex-topic"><input type="checkbox" data-ex-topic="' + tp.id + '"' + (on && on === subs.length ? ' checked' : '') + '> <b>' + esc(tp.name) + '</b></label>';
+    const kids = subs.filter(r => !r.sub.hidden).map(r => '<label class="ex-sub" style="--d:' + r.depth + '"><input type="checkbox" data-ex-sub="' + r.sub.id + '"' + (st.sel.has(r.sub.id) ? ' checked' : '') + (filled.has(r.sub.id) ? '' : ' disabled') + '> ' + esc(r.name) + (filled.has(r.sub.id) ? '' : ' <span class="hint">no papers</span>') + '</label>').join('');
+    return '<div class="ex-group">' + head + kids + '</div>';
+  }).join('');
+  const suggestHTML = () => {
+    const L = exportLinks(st.sel);
+    if(!L.suggest.length) return '<p class="hint">Nothing you left out is linked to what you chose.</p>';
+    const name = id => { const r = rows.find(x => x.sub.id === id); return r ? (r.sub.hidden ? r.topic.name : r.topic.name + ' › ' + r.name) : id; };
+    return '<p class="hint">' + L.left + (L.left === 1 ? ' line leads' : ' lines lead') + ' to topics you haven’t chosen. ' + (L.left ? 'They are left out, and colour lines show only the part inside your choice. Add a topic to keep its lines:' : 'Related topics outside your choice:') + '</p>' +
+      '<div class="ex-sugs">' + L.suggest.slice(0, 8).map(x => '<button type="button" class="ex-sug" data-ex-add="' + x.id + '"><span aria-hidden="true">+</span> ' + esc(name(x.id)) + ' <span class="hint">' + [x.lines ? x.lines + (x.lines === 1 ? ' line' : ' lines') : '', x.related ? 'related topic' : ''].filter(Boolean).join(' · ') + '</span></button>').join('') + '</div>';
+  };
+  openModal({
+    title: 'Export the map',
+    body: '<div class="ex-wrap"><div class="ex-left"><p class="ex-h">Topics to include</p><div class="ex-tree" id="exTree">' + treeHTML() + '</div>' +
+      '<p class="ex-h">Linked to your choice</p><div id="exSug">' + suggestHTML() + '</div></div>' +
+      '<div class="ex-right"><p class="ex-h">Preview</p><div class="ex-prev" id="exPrev"><p class="hint">Drawing…</p></div>' +
+      '<div class="form-grid"><label class="full">Title on the picture<input type="text" id="exTitle" maxlength="80" value="' + esc(st.title) + '"></label></div>' +
+      '<div class="ex-opts"><label>Lines <select id="exLines"><option value="all">All lines</option><option value="colour">Only colour lines</option><option value="none">No lines, just the papers</option></select></label></div>' +
+      '<div class="ex-opts"><label><input type="checkbox" id="exConcepts"' + (st.concepts ? ' checked' : '') + '> Concepts these papers use</label><label><input type="checkbox" id="exNotes"> Notes on lines</label><label><input type="checkbox" id="exLegend" checked> Legend</label><label><input type="checkbox" id="exDisc" checked> Say the lines are my own reading</label>' + (settings.range ? '<label><input type="checkbox" id="exRange"> Only the years in view</label>' : '') + '</div>' +
+      '<div class="ex-fmt" role="radiogroup" aria-label="Format"><label><input type="radio" name="exFmt" value="png" checked> PNG image</label><label><input type="radio" name="exFmt" value="pdf"> PDF</label></div>' +
+      '<p class="hint" id="exWhere">' + (window.showSaveFilePicker ? 'You choose where to save it: a Dropbox or iCloud Drive folder works.' : 'It downloads to your device.') + '</p></div></div>',
+    actions: [{label: 'Cancel'}, {label: 'Export', primary: true, onClick: () => { doExport(st); return false; }}],
+    onOpen: bd => {
+      bd.closest('.modal, #modal, [role="dialog"]') && bd.closest('.modal, #modal, [role="dialog"]').classList.add('modal-wide');
+      const prev = bd.querySelector('#exPrev');
+      let tm = 0;
+      const redraw = () => { clearTimeout(tm); tm = setTimeout(() => { const x = buildExportSVG(exportOpts(st)); prev.innerHTML = x ? '<img alt="Preview of the exported map" src="data:image/svg+xml;charset=utf-8,' + encodeURIComponent(x.svg) + '">' : '<p class="hint">Choose at least one topic with papers.</p>'; }, 120); };
+      const refresh = () => { bd.querySelector('#exTree').innerHTML = treeHTML(); bd.querySelector('#exSug').innerHTML = suggestHTML(); if(!titleTouched){ st.title = defTitle(); bd.querySelector('#exTitle').value = st.title; } redraw(); };
+      bd.addEventListener('change', ev => {
+        const tsel = ev.target.closest('[data-ex-topic]'), ssel = ev.target.closest('[data-ex-sub]');
+        if(tsel){ rows.filter(r => r.topic.id === tsel.dataset.exTopic && filled.has(r.sub.id)).forEach(r => { if(tsel.checked) st.sel.add(r.sub.id); else st.sel.delete(r.sub.id); }); refresh(); return; }
+        if(ssel){ if(ssel.checked) st.sel.add(ssel.dataset.exSub); else st.sel.delete(ssel.dataset.exSub); refresh(); return; }
+        if(ev.target.id === 'exConcepts') st.concepts = ev.target.checked;
+        if(ev.target.id === 'exNotes') st.notes = ev.target.checked;
+        if(ev.target.id === 'exLegend') st.legend = ev.target.checked;
+        if(ev.target.id === 'exRange') st.allYears = !ev.target.checked;
+        if(ev.target.name === 'exFmt') st.format = ev.target.value;
+        if(ev.target.id === 'exLines') st.lines = ev.target.value;
+        if(ev.target.id === 'exDisc') st.disclaimer = ev.target.checked;
+        redraw();
+      });
+      bd.addEventListener('input', ev => { if(ev.target.id === 'exTitle'){ titleTouched = true; st.title = ev.target.value; redraw(); } });
+      bd.addEventListener('click', ev => { const a = ev.target.closest('[data-ex-add]'); if(a){ st.sel.add(a.dataset.exAdd); refresh(); } });
+      redraw();
+    }
+  });
+}
+function exportOpts(st){
+  const order = allLaneRows().map(r => r.sub.id).filter(id => st.sel.has(id));
+  return {subs: order, concepts: st.concepts, notes: st.notes, legend: st.legend, allYears: st.allYears, title: st.title.trim(), width: 1400, lines: st.lines, disclaimer: st.disclaimer};
+}
+async function doExport(st){
+  const x = buildExportSVG(exportOpts(st));
+  if(!x){ toast('Choose at least one topic with papers'); return; }
+  const btn = document.querySelector('#modalActions .primary'); if(btn){ btn.disabled = true; btn.textContent = 'Exporting…'; }
+  try{
+    const c = await svgToCanvas(x, 2);
+    const name = slugName(st.title) + '-' + new Date().toISOString().slice(0, 10) + '.' + st.format;
+    const blob = st.format === 'pdf' ? await jpegPdf(c, 842, 842 * x.h / x.w) : await canvasBlob(c, 'image/png');
+    const r = await saveBlobAs(blob, name);
+    if(r === 'cancelled'){ if(btn){ btn.disabled = false; btn.textContent = 'Export'; } return; }
+    closeModal(); toast(r === 'saved' ? 'Saved ' + name : 'Downloaded ' + name);
+  }catch(e){ if(btn){ btn.disabled = false; btn.textContent = 'Export'; } toast('The picture couldn’t be made in this browser'); }
 }
 
 /* ===================== colours ===================== */
@@ -1920,7 +2889,8 @@ function renderSubSection(s, tp, asPart, opts){
 function emptyGuide(){
   return '<section class="branch"><div class="branch-head"><h2>Get started</h2></div>' +
     '<ol class="guide"><li>Click <strong>Modify</strong> at the top right to add your first topic and paper. Everything saves in this browser automatically.</li>' +
-    '<li>To keep your list safe and use it on other devices, connect a private GitHub repository under <strong>Settings → GitHub sync</strong>.</li>' +
+    '<li>To keep your list safe and use it on other devices, connect sync under <strong>Settings → Sync</strong>: Dropbox, a folder, or GitHub.</li>' +
+    '<li>Already have papers in Zotero or a spreadsheet? <button type="button" class="linkbtn" data-start-import="1">Import them</button> from a CSV, BibTeX or RIS file.</li>' +
     '<li>Have a backup file? Use <strong>Settings → Data → Import backup</strong>.</li></ol></section>';
 }
 function renderMain(){
@@ -2284,12 +3254,19 @@ function renderMap(force){
   updateRangeUI();
 }
 const EK = (a, b) => a + '|' + b;
-function oneStep(id){
-  const F = {nodes: new Set([id]), edges: new Set(), far: new Set(), soft: new Set(), softNodes: new Set(), self: id};
-  lib.links.forEach(l => { if(l[2] === 'r' && settings.showRelated === false) return; if(lineHidden(l[0], l[1], l[2])) return; if(l[0] === id || l[1] === id){ F.edges.add(EK(l[0], l[1])); F.nodes.add(l[0]); F.nodes.add(l[1]); } });
+function oneStep(id, dir){
+  dir = dir || 'all';
+  const F = {nodes: new Set([id]), edges: new Set(), far: new Set(), soft: new Set(), softNodes: new Set(), self: id, lv: new Map([[id, 0]]), elv: new Map()};
+  const add = (a, b, o) => { const k = EK(a, b); F.edges.add(k); F.nodes.add(o); F.elv.set(k, 1); if(!F.lv.has(o)) F.lv.set(o, 1); };
+  lib.links.forEach(l => {
+    if(l[2] === 'r' && (settings.showRelated === false || dir !== 'all')) return;
+    if(lineHidden(l[0], l[1], l[2])) return;
+    if(l[1] === id && dir !== 'down') add(l[0], l[1], l[0]);
+    if(l[0] === id && dir !== 'up') add(l[0], l[1], l[1]);
+  });
   const e = lib.entries[id];
-  if(e && e.kind === 'concept') (IDX.users[id] || []).forEach(p => { F.edges.add(EK(id, p)); F.nodes.add(p); });
-  else if(e) (e.needs || []).forEach(c => { if(lib.entries[c]){ F.edges.add(EK(c, id)); F.nodes.add(c); } });
+  if(e && e.kind === 'concept'){ if(dir !== 'up') (IDX.users[id] || []).forEach(p => add(id, p, p)); }
+  else if(e && dir !== 'down') (e.needs || []).forEach(c => { if(lib.entries[c]) add(c, id, c); });
   return F;
 }
 function branchSets(bid, F, soft){
@@ -2307,15 +3284,26 @@ function branchesNear(id){
   lib.links.forEach(l => { if(l[0] !== id && l[1] !== id) return; if(l[2] === 'r' && settings.showRelated === false) return; const o = l[0] === id ? l[1] : l[0]; (IDX.nodeBranches[o] || new Set()).forEach(b => reach.add(b)); });
   return {own: [], reach: [...reach]};
 }
-function depthWalk(id, depth, F){
+/* walk the lines out from a paper, remembering how many steps away each one is.
+   dir: 'all' follows every line either way (the whole pipeline); 'up' only what it builds on, and so on back;
+   'down' only what builds on it, and so on forward; 'lineage' does 'up' and 'down' but never turns sideways. */
+function depthWalk(id, depth, F, dir){
+  dir = dir || 'all';
+  if(dir === 'lineage'){ depthWalk(id, depth, F, 'up'); depthWalk(id, depth, F, 'down'); return; }
   const lim = depth === 'all' ? Infinity : depth, showR = settings.showRelated !== false;
   let frontier = [id]; const seen = new Set([id]);
   for(let lv = 1; lv <= lim && frontier.length; lv++){
     const next = [];
-    const step = (o, ek, t) => { if(t === 'r' && !showR) return; F.edges.add(ek); F.nodes.add(o); if(lv > 1) F.far.add(ek); if(!seen.has(o)){ seen.add(o); next.push(o); } };
+    const step = (o, ek, t) => {
+      if(t === 'r' && (!showR || dir !== 'all')) return;
+      F.edges.add(ek); F.nodes.add(o); if(lv > 1) F.far.add(ek);
+      if(!F.elv.has(ek) || F.elv.get(ek) > lv) F.elv.set(ek, lv);
+      if(!F.lv.has(o) || F.lv.get(o) > lv) F.lv.set(o, lv);
+      if(!seen.has(o)){ seen.add(o); next.push(o); }
+    };
     frontier.forEach(x => {
-      (IDX.up[x] || []).forEach(([o, t]) => { if(!lineHidden(o, x, t)) step(o, EK(o, x), t); });
-      (IDX.down[x] || []).forEach(([o, t]) => { if(!lineHidden(x, o, t)) step(o, EK(x, o), t); });
+      if(dir !== 'down') (IDX.up[x] || []).forEach(([o, t]) => { if(!lineHidden(o, x, t)) step(o, EK(o, x), t); });
+      if(dir !== 'up') (IDX.down[x] || []).forEach(([o, t]) => { if(!lineHidden(x, o, t)) step(o, EK(x, o), t); });
     });
     frontier = next;
   }
@@ -2323,20 +3311,28 @@ function depthWalk(id, depth, F){
 /* A selected paper lights up one step around it (or more, with “How far”).
    If it sits on a colour line, that whole line lights up end to end; if not, the colour lines it leads to show faintly. */
 function focusSets(id){
-  const F = oneStep(id);
-  if(ui.depth && ui.depth !== 1) depthWalk(id, ui.depth, F);
+  const dir = settings.focusDir || 'all';
+  const F = oneStep(id, dir);
+  if(ui.depth && ui.depth !== 1) depthWalk(id, ui.depth, F, dir);
   const R = branchesNear(id);
   R.own.forEach(b => branchSets(b, F, false));
   R.reach.forEach(b => branchSets(b, F, true));
   return F;
 }
+/* how far away something is shows as how strong it is: one step is full strength, then each step fades a little */
+function lvClass(lv){ return lv == null || lv <= 1 ? '' : 'lv' + Math.min(lv, 5); }
 function paintFocus(F){
   mapSvg.classList.add('focus');
+  const LV = ['lv2', 'lv3', 'lv4', 'lv5'];
   mapSvg.querySelectorAll('.edge,.edge-note').forEach(e => {
     const k = EK(e.dataset.a, e.dataset.b), hot = F.edges.has(k);
     e.classList.toggle('hot', hot); e.classList.toggle('far', hot && F.far.has(k)); e.classList.toggle('soft', !hot && F.soft.has(k));
+    e.classList.remove(...LV); const c = hot && F.elv ? lvClass(F.elv.get(k)) : ''; if(c && !e.classList.contains('br')) e.classList.add(c);
   });
-  mapSvg.querySelectorAll('.node,.lbl').forEach(n => { const i = n.dataset.id, hot = F.nodes.has(i); n.classList.toggle('hot', hot); n.classList.toggle('soft', !hot && F.softNodes.has(i)); });
+  mapSvg.querySelectorAll('.node,.lbl').forEach(n => {
+    const i = n.dataset.id, hot = F.nodes.has(i); n.classList.toggle('hot', hot); n.classList.toggle('soft', !hot && F.softNodes.has(i));
+    n.classList.remove(...LV); const c = hot && F.lv ? lvClass(F.lv.get(i)) : ''; if(c) n.classList.add(c);
+  });
 }
 function applyFocus(id){
   if(!id || !MAP.P[id]){
@@ -2413,8 +3409,20 @@ function focusNoteHTML(id){
   if(R.own.length) h += '<p class="rel"><span class="rel-k">On colour lines</span>' + R.own.map(branchChip).join('') + '</p>';
   else if(R.reach.length) h += '<p class="rel"><span class="rel-k">Leads to colour lines</span>' + R.reach.map(branchChip).join('') + '</p>';
   const hasLines = lib.links.some(l => l[0] === id || l[1] === id) || (lib.entries[id] && (lib.entries[id].needs || []).length);
-  if(hasLines) h += '<p class="rel depth-ctl"><span class="rel-k">How far</span>' + [[1, '1 step'], [2, '2 steps'], [3, '3 steps'], ['all', 'Whole line']].map(o => '<button type="button" class="dchip' + (String(ui.depth) === String(o[0]) ? ' on' : '') + '" data-depth="' + o[0] + '">' + o[1] + '</button>').join('') +
-    (lib.links.some(l => l[2] === 'r') ? '<span class="dsep" aria-hidden="true"></span><button type="button" class="dchip rel-toggle' + (settings.showRelated !== false ? ' on' : '') + '" data-rel-toggle="1" aria-pressed="' + (settings.showRelated !== false) + '" title="Show or hide the dotted Related-to lines"><svg width="18" height="6" aria-hidden="true"><line x1="1" y1="3" x2="17" y2="3"></line></svg>Related to</button>' : '') + '</p>';
+  if(hasLines){
+    const F = focusSets(id);
+    const lit = [...F.nodes].filter(x => x !== id && lib.entries[x]);
+    const np = lit.filter(x => lib.entries[x].kind !== 'concept').length, nc = lit.length - np;
+    const dir = settings.focusDir || 'all', open = !!settings.hfOpen;
+    const DIRS = [['all', 'All ways', 'Every connection, in any direction: the whole pipeline'], ['up', 'Earlier only', 'Only what it builds on, and what those build on'], ['down', 'Later only', 'Only what builds on it, and what builds on those'], ['lineage', 'Earlier + later', 'Back and forward in time, without turning into side branches']];
+    const hasR = lib.links.some(l => l[2] === 'r');
+    h += '<div class="rel depth-ctl"><span class="rel-k">How far</span>' + [[1, '1 step'], [2, '2 steps'], [3, '3 steps'], ['all', 'Whole line']].map(o => '<button type="button" class="dchip' + (String(ui.depth) === String(o[0]) ? ' on' : '') + '" data-depth="' + o[0] + '">' + o[1] + '</button>').join('') +
+      '<span class="hf-count" title="How much is lit up now">' + np + (np === 1 ? ' paper' : ' papers') + (nc ? ', ' + nc + (nc === 1 ? ' concept' : ' concepts') : '') + '</span>' +
+      '<button type="button" class="hf-more' + (dir !== 'all' || (hasR && settings.showRelated === false) ? ' changed' : '') + '" data-hf-open="1" aria-expanded="' + open + '" title="Direction and Related-to lines">' + (dir !== 'all' ? esc(DIRS.find(d => d[0] === dir)[1]) : 'Options') + ' <span aria-hidden="true">' + (open ? '▴' : '▾') + '</span></button>' +
+      '<div class="hf-opts"' + (open ? '' : ' hidden') + '><span class="hf-k">Direction</span>' + DIRS.map(d => '<button type="button" class="dchip small' + (dir === d[0] ? ' on' : '') + '" data-hf-dir="' + d[0] + '" title="' + esc(d[2]) + '">' + d[1] + '</button>').join('') +
+      (hasR ? '<span class="dsep" aria-hidden="true"></span><button type="button" class="dchip small rel-toggle' + (settings.showRelated !== false ? ' on' : '') + '" data-rel-toggle="1" aria-pressed="' + (settings.showRelated !== false) + '" title="Show or hide the dotted Related-to lines"' + (dir !== 'all' ? ' disabled' : '') + '><svg width="18" height="6" aria-hidden="true"><line x1="1" y1="3" x2="17" y2="3"></line></svg>Related to</button>' : '') +
+      '</div></div>';
+  }
   return h;
 }
 function branchInfoHTML(bid){
@@ -2443,10 +3451,24 @@ function renderBranchRow(){
 }
 document.addEventListener('click', ev => {
   const be = ev.target.closest('[data-branch-edit]'); if(be){ openBranchForm(be.dataset.branchEdit); return; }
+  if(ev.target.closest('#btnExport')){ openExport(); return; }
+  const stb = ev.target.closest('[data-sync-tab]'); if(stb){ const root = stb.closest('.sync-section'); root.querySelectorAll('[data-sync-tab]').forEach(x => x.setAttribute('aria-selected', String(x === stb))); root.querySelectorAll('[data-sync-pane]').forEach(p => { p.hidden = p.dataset.syncPane !== stb.dataset.syncTab; }); return; }
+  if(ev.target.closest('[data-fs-connect]')){ closeModal(); fsConnect(); return; }
+  if(ev.target.closest('[data-fs-reconnect]')){ const tt = document.getElementById('toast'); if(tt) tt.hidden = true; closeModal(); fsReconnect(); return; }
+  if(ev.target.closest('[data-sync-pull]')){ closeModal(); ghPullNow(); return; }
+  if(ev.target.closest('[data-sync-save]')){ const c = ghCfg(); if(!c) return; c.dirty = true; ghStore(c); gh.rev++; ghSave(); toast('Saving to ' + syncName()); return; }
+  if(ev.target.closest('[data-sync-history]')){ closeModal(); ghHistory(); return; }
+  if(ev.target.closest('[data-sync-forget]')){ const n = syncName(); syncForget(); closeModal(); toast('Disconnected from ' + n + '. Your list stays in this browser.'); return; }
+  if(ev.target.closest('#setMapExport')){ closeModal(); setTimeout(openExport, 0); return; }
+  if(ev.target.closest('#setPapersImport, [data-start-import]')){ closeModal(); setTimeout(openImport, 0); return; }
+  if(ev.target.closest('[data-token-help]')){ const tt = document.getElementById('toast'); if(tt) tt.hidden = true; closeModal(); openTokenHelp(); return; }
+  if(ev.target.closest('[data-token-date]')){ closeModal(); openTokenDate(); return; }
   if(ev.target.closest('#btnBranches, [data-branch-manage], #setBrManage')){ if(ev.target.closest('#setBrManage')) closeModal(); openBranchManager(); return; }
   const bh = ev.target.closest('[data-branch-hide]'); if(bh){ setBranchHidden(bh.dataset.branchHide, true); toast('Hidden on the map. Show it again from Colour lines.'); return; }
   const bf = ev.target.closest('[data-branch-focus]'); if(bf){ ev.preventDefault(); if(ui.branch === bf.dataset.branchFocus){ ui.branch = null; select(null); renderMap(true); renderBranchRow(); } else focusBranch(bf.dataset.branchFocus); return; }
   const rt = ev.target.closest('[data-rel-toggle]'); if(rt){ setShowRelated(settings.showRelated === false); return; }
+  const ho = ev.target.closest('[data-hf-open]'); if(ho){ settings.hfOpen = !settings.hfOpen; persistSettings({remote:false}); infoEl.innerHTML = infoHTML(ui.selected); return; }
+  const hd = ev.target.closest('[data-hf-dir]'); if(hd){ settings.focusDir = hd.dataset.hfDir; persistSettings({remote:false}); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); return; }
   const dp = ev.target.closest('[data-depth]'); if(dp){ ui.depth = dp.dataset.depth === 'all' ? 'all' : +dp.dataset.depth; settings.focusDepth = ui.depth; persistSettings({remote:false}); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); }
 });
 function relGroup(title, items){
@@ -2485,7 +3507,7 @@ function infoHTML(id){
   const st = stOf(e);
   return '<div class="info-grid"><p class="info-year">' + esc(e.y) + '</p><div>' +
     '<p class="info-au">' + (e.au ? esc(e.au) + ' · ' : '') + place + '</p>' +
-    '<p class="info-t">' + esc(e.t) + '</p>' + (e.f ? '<p class="info-f">' + esc(e.f) + '</p>' : '') + infoTagsHTML(e) + rels +
+    '<p class="info-t">' + esc(e.t) + '</p>' + (e.v || e.doi ? '<p class="info-src">' + esc(e.v || '') + (e.doi ? (e.v ? ' · ' : '') + '<a href="https://doi.org/' + esc(e.doi) + '" target="_blank" rel="noopener">doi.org/' + esc(e.doi) + '</a>' : '') + '</p>' : '') + (e.f ? '<p class="info-f">' + esc(e.f) + '</p>' : '') + infoTagsHTML(e) + rels +
     '<p class="info-actions"><button type="button" class="stbtn want" data-st="want" data-id="' + e.id + '" aria-pressed="' + (st === 'want') + '">Want to read</button><button type="button" class="stbtn read" data-st="read" data-id="' + e.id + '" aria-pressed="' + (st === 'read') + '">Read</button><button type="button" class="linkbtn" data-goto="' + e.id + '">Show in table</button><button type="button" class="linkbtn" data-reader="' + e.id + '">Notes &amp; PDF</button>' +
     (ui.edit ? '<button type="button" class="linkbtn" data-edit="' + e.id + '">Modify</button>' : '') +
     '<button type="button" class="linkbtn" data-clear-sel="1">Clear selection</button></p></div></div>';
@@ -2563,10 +3585,10 @@ function openBranchForm(bid, back){
 }
 function appSectionHTML(){
   let body;
-  if(STANDALONE) body = '<p class="hint">You are using Paper Map as an app. It opens in its own window and works offline; your list is saved in this app and, if you connect it, in your GitHub repository.</p>';
+  if(STANDALONE) body = '<p class="hint">You are using Paper Map as an app. It opens in its own window and works offline; your list is saved in this app and, if you connect sync, there too.</p>';
   else if(!SERVED) body = '<p class="hint">This copy is a file on your computer. To install Paper Map as an app, open its website with <b>?app</b> at the end (the README links to it) and install it from there.</p>';
   else body = '<div class="set-actions"><button type="button" class="btn primary" id="setInstall">Install Paper Map</button></div>' +
-    '<p class="hint">It opens in its own window, with its own icon, and works offline. The app keeps its own copy of your list: connect GitHub sync, or export a backup here and import it there, to bring your papers across.</p>';
+    '<p class="hint">It opens in its own window, with its own icon, and works offline. The app keeps its own copy of your list: connect sync, or export a backup here and import it there, to bring your papers across.</p>';
   return '<div class="set-section"><h3>App</h3>' + body + '</div>';
 }
 function branchManagerHTML(){
@@ -2781,6 +3803,7 @@ function setBarH(){ document.documentElement.style.setProperty('--bar-h', docume
 /* ===================== modal & toast ===================== */
 const modal = {root: document.getElementById('modalRoot'), title: document.getElementById('modalTitle'), body: document.getElementById('modalBody'), actions: document.getElementById('modalActions'), onClose:null, ret:null, buttons:[]};
 function openModal(o){
+  { const mw = document.querySelector('#modalRoot .modal'); if(mw) mw.classList.remove('modal-wide'); }
   modal.ret = document.activeElement;
   modal.title.textContent = o.title;
   modal.body.innerHTML = o.body;
@@ -2826,7 +3849,7 @@ document.getElementById('btnAddPaper').addEventListener('click', () => openEntry
   btn.addEventListener('click', ev => { ev.stopPropagation(); show(menu.hidden); });
   menu.addEventListener('click', ev => {
     const b = ev.target.closest('[data-more]'); if(!b) return; show(false);
-    const go = {concept: () => { const a = document.querySelector('#addMenu [data-add="concept"]'); if(a) a.click(); }, filters: () => document.getElementById('filterToggle').click(), modify: () => document.getElementById('btnEdit').click(), settings: () => document.getElementById('btnSettings').click()}[b.dataset.more];
+    const go = {concept: () => { const a = document.querySelector('#addMenu [data-add="concept"]'); if(a) a.click(); }, filters: () => document.getElementById('filterToggle').click(), modify: () => document.getElementById('btnEdit').click(), settings: () => document.getElementById('btnSettings').click(), export: () => openExport(), import: () => openImport()}[b.dataset.more];
     if(go) go();
   });
   document.addEventListener('click', ev => { if(!menu.hidden && !ev.target.closest('.more-wrap')) show(false); });
@@ -2835,7 +3858,7 @@ document.getElementById('btnAddPaper').addEventListener('click', () => openEntry
   const more = document.getElementById('btnAddMore'), menu = document.getElementById('addMenu');
   const show = open => { menu.hidden = !open; more.setAttribute('aria-expanded', String(open)); };
   more.addEventListener('click', ev => { ev.stopPropagation(); show(menu.hidden); });
-  menu.addEventListener('click', ev => { const b = ev.target.closest('[data-add]'); if(!b) return; show(false); if(b.dataset.add === 'concept') openConceptForm(null); else openEntryForm(null); });
+  menu.addEventListener('click', ev => { const b = ev.target.closest('[data-add]'); if(!b) return; show(false); if(b.dataset.add === 'concept') openConceptForm(null); else if(b.dataset.add === 'import') openImport(); else openEntryForm(null); });
   document.addEventListener('click', ev => { if(!menu.hidden && !ev.target.closest('.add-split')) show(false); });
   document.addEventListener('keydown', ev => { if(ev.key === 'Escape' && !menu.hidden) show(false); });
 })();
@@ -3007,6 +4030,7 @@ function openEntryForm(id, preset){
   const doms = IDX.domains.slice();
   state.d.forEach(x => { if(!doms.includes(x)) doms.push(x); });
   const body = '<div class="form-grid">' +
+    '<div class="full doi-field"><label for="fDoi">DOI <span class="hint">optional · fills in the rest for you</span></label><div class="doi-row"><input type="text" id="fDoi" name="doi" value="' + esc(base.doi || '') + '" placeholder="10.1257/… or a doi.org link" autocomplete="off" spellcheck="false"><button type="button" class="btn" id="doiFill">Fill from DOI</button></div><p class="doi-msg hint" id="doiMsg" aria-live="polite"></p></div>' +
     '<label class="full">Title<input type="text" name="t" value="' + esc(base.t) + '" required></label>' +
     '<label class="full">Authors<input type="text" name="au" value="' + esc(base.au) + '" placeholder="Kahneman, D. &amp; Tversky, A."></label>' +
     '<label>Year<input type="number" name="y" value="' + esc(base.y) + '" inputmode="numeric"></label>' +
@@ -3034,6 +4058,7 @@ function openEntryForm(id, preset){
     onOpen: b => {
       const fTopic = b.querySelector('[name=topic]'), fSub = b.querySelector('[name=sub]'), fGroup = b.querySelector('[name=group]'), fParent = b.querySelector('[name=parent]');
       fTopic.addEventListener('change', () => { fSub.innerHTML = subOptions(fTopic.value, ''); fGroup.innerHTML = groupOptions(fSub.value, ''); fParent.innerHTML = parentOptions(fSub.value, ''); });
+      wireDoiFill(b, isNew);
       fSub.addEventListener('change', () => { fGroup.innerHTML = groupOptions(fSub.value, ''); fParent.innerHTML = parentOptions(fSub.value, ''); });
       b.querySelector('#domChips').addEventListener('click', ev => {
         const x = ev.target.closest('[data-fdom]'); if(!x) return;
@@ -3069,6 +4094,72 @@ function openEntryForm(id, preset){
   });
 }
 function formErr(b, msg){ const el = b.querySelector('#formErr'); el.hidden = false; el.textContent = msg; return false; }
+/* ---------- DOI ---------- */
+function cleanDoi(s){
+  s = String(s || '').trim().replace(/^(?:https?:\/\/)?(?:dx\.)?doi\.org\//i, '').replace(/^doi:\s*/i, '').trim();
+  return /^10\.\d{4,9}\/\S+$/.test(s) ? s : '';
+}
+function initials(given){ return String(given || '').split(/\s+/).filter(Boolean).map(p => p.split('-').map(q => q.charAt(0).toUpperCase() + '.').join('-')).join(' '); }
+function joinAuthors(list){
+  const names = list.filter(a => a && (a.family || a.name)).map(a => a.family ? a.family + (a.given ? ', ' + initials(a.given) : '') : a.name);
+  if(names.length <= 1) return names[0] || '';
+  if(names.length > 6) return names.slice(0, 6).join(', ') + ' et al.';
+  return names.slice(0, -1).join(', ') + ' & ' + names[names.length - 1];
+}
+async function lookupDoi(doi){
+  /* Crossref first: it registers most journal and book DOIs; then DataCite, for data, preprints and repositories */
+  try{
+    const r = await fetch('https://api.crossref.org/works/' + encodeURIComponent(doi), {headers: {'Accept': 'application/json'}});
+    if(r.ok){
+      const m = (await r.json()).message || {};
+      const dp = (m.issued && m.issued['date-parts'] && m.issued['date-parts'][0]) || (m['published-print'] && m['published-print']['date-parts'][0]) || (m['published-online'] && m['published-online']['date-parts'][0]) || [];
+      const box = (m['container-title'] || [])[0] || '';
+      const vol = m.volume ? ' ' + m.volume + (m.issue ? '(' + m.issue + ')' : '') : '';
+      const src = box ? box + vol + (m.page ? ': ' + String(m.page).replace('-', '–') : '') : (m.publisher || '');
+      const type = {'journal-article': 'Paper', 'proceedings-article': 'Paper', 'posted-content': 'Paper', 'report': 'Paper', 'book': 'Book', 'monograph': 'Book', 'edited-book': 'Book', 'reference-book': 'Book', 'book-chapter': 'Chapter', 'book-section': 'Chapter'}[m.type] || '';
+      return {from: 'Crossref', t: ((m.title || [])[0] || '').replace(/\s+/g, ' ').trim(), au: joinAuthors((m.author || []).map(a => ({family: a.family, given: a.given, name: a.name}))), y: dp[0] || '', v: src, l: type};
+    }
+  }catch(e){}
+  /* then any other DOI agency (mEDRA, JaLC, KISTI…) through doi.org itself */
+  const viaDoiOrg = async () => {
+    try{
+      const r = await fetch('https://doi.org/' + doi.split('/').map(encodeURIComponent).join('/'), {headers: {'Accept': 'application/vnd.citationstyles.csl+json'}});
+      if(!r.ok) return null;
+      const m = await r.json();
+      const dp = (m.issued && m.issued['date-parts'] && m.issued['date-parts'][0]) || [];
+      const box = Array.isArray(m['container-title']) ? m['container-title'][0] : m['container-title'];
+      const vol = m.volume ? ' ' + m.volume + (m.issue ? '(' + m.issue + ')' : '') : '';
+      const type = {'article-journal': 'Paper', 'paper-conference': 'Paper', 'report': 'Paper', 'book': 'Book', 'chapter': 'Chapter'}[m.type] || '';
+      const title = Array.isArray(m.title) ? m.title[0] : m.title;
+      return title ? {from: 'doi.org', t: String(title).replace(/\s+/g, ' ').trim(), au: joinAuthors((m.author || []).map(a => ({family: a.family, given: a.given, name: a.literal || a.name}))), y: dp[0] || '', v: box ? box + vol + (m.page ? ': ' + String(m.page).replace('-', '–') : '') : (m.publisher || ''), l: type} : null;
+    }catch(e){ return null; }
+  };
+  try{
+    const r = await fetch('https://api.datacite.org/dois/' + encodeURIComponent(doi));
+    if(r.ok){
+      const a = ((await r.json()).data || {}).attributes || {};
+      return {from: 'DataCite', t: ((a.titles || [])[0] || {}).title || '', au: joinAuthors((a.creators || []).map(c => ({family: c.familyName, given: c.givenName, name: c.name}))), y: a.publicationYear || '', v: a.publisher || '', l: ''};
+    }
+  }catch(e){}
+  return viaDoiOrg();
+}
+function wireDoiFill(b, isNew){
+  const btn = b.querySelector('#doiFill'), inp = b.querySelector('#fDoi'), msg = b.querySelector('#doiMsg');
+  if(!btn) return;
+  const run = async () => {
+    const doi = cleanDoi(inp.value);
+    if(!doi){ msg.textContent = 'That doesn’t look like a DOI. It starts with 10. and has a slash, like 10.1257/aer.91.2.73.'; msg.classList.add('warn-line'); return; }
+    inp.value = doi; msg.classList.remove('warn-line'); msg.textContent = 'Looking it up…'; btn.disabled = true;
+    const m = await lookupDoi(doi);
+    btn.disabled = false;
+    if(!m){ msg.textContent = navigator.onLine === false ? 'You’re offline, so the DOI can’t be looked up now.' : 'No record found for this DOI. Check it, or fill in the fields yourself.'; msg.classList.add('warn-line'); return; }
+    const set = (n, v) => { const el = b.querySelector('[name="' + n + '"]'); if(!el || v === '' || v == null) return false; const cur = el.value.trim(); const empty = !cur || (n === 'y' && isNew && +cur === new Date().getFullYear()) || (n === 'l' && cur === 'Paper'); if(!empty) return false; if(el.tagName === 'SELECT' && ![...el.options].some(o => o.value === String(v))) return false; el.value = v; el.classList.add('just-filled'); setTimeout(() => el.classList.remove('just-filled'), 1800); return true; };
+    const filled = [['t', 'title'], ['au', 'authors'], ['y', 'year'], ['v', 'source'], ['l', 'type']].filter(([n]) => set(n, m[n])).map(x => x[1]);
+    msg.textContent = filled.length ? 'Filled in ' + filled.join(', ') + ' from ' + m.from + '. Fields you had already filled were left as they were.' : 'Found it on ' + m.from + ', but every field was already filled, so nothing changed.';
+  };
+  btn.addEventListener('click', run);
+  inp.addEventListener('keydown', ev => { if(ev.key === 'Enter'){ ev.preventDefault(); run(); } });
+}
 function saveEntry(b, id, state, base){
   const val = n => { const el = b.querySelector('[name="' + n + '"]'); return el ? el.value.trim() : ''; };
   const t = val('t'), au = val('au'), y = parseInt(val('y'), 10);
@@ -3084,11 +4175,12 @@ function saveEntry(b, id, state, base){
     id: eid, kind:'paper', topic: IDX.topicOf[sub], sub, group: val('group'), y, au, t, v: val('v'), l: val('l'),
     p: pv ? +pv.value : 2,
     tags: state.tags.filter(x => lib.tags.some(z => z.id === x)),
-    d: state.d.slice(), f: val('f'), n: val('n'),
+    d: state.d.slice(), f: val('f'), n: val('n'), doi: cleanDoi(val('doi')) || undefined,
     needs: state.needs.filter(x => lib.entries[x] && lib.entries[x].kind === 'concept')
   });
   const parent = val('parent');
   if(parent && lib.entries[parent] && lib.entries[parent].kind === 'concept') e.parent = parent; else delete e.parent;
+  if(!e.doi) delete e.doi;
   const before = clone(lib);
   const oldTopic = prev ? prev.topic : null;
   lib.entries[eid] = e;
@@ -3506,11 +4598,11 @@ function openSettings(){
       '<div class="set-section"><h3>Paper</h3><div class="form-grid"><fieldset class="full"><legend>Light or dark</legend>' + [['auto', 'Match my system'], ['light', 'Light'], ['dark', 'Dark']].map(p => '<label><input type="radio" name="theme" value="' + p[0] + '"' + ((settings.theme || 'auto') === p[0] ? ' checked' : '') + '> ' + p[1] + '</label>').join('') + '</fieldset><fieldset class="full"><legend>Page background in light mode</legend>' +
         [['mist','Mist (cool, default)'],['warm','Warm white'],['white','Pure white']].map(p => '<label><input type="radio" name="paper" value="' + p[0] + '"' + ((settings.paper || 'mist') === p[0] ? ' checked' : '') + '> ' + p[1] + '</label>').join('') + '</fieldset></div></div>' +
       '<div class="set-section"><h3>Map</h3><label style="display:flex;gap:.5em;align-items:center"><input type="checkbox" id="srcColors"' + (settings.mapColor !== 'plain' ? ' checked' : '') + '> Colour unmarked dots by tag</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.4em"><input type="checkbox" id="setShowPre"' + (settings.showPre ? ' checked' : '') + '> Always show prerequisite lines</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.4em"><input type="checkbox" id="setShowRel"' + (settings.showRelated !== false ? ' checked' : '') + '> Show Related-to lines (dotted)</label><div class="set-actions"><button type="button" class="btn" id="setTags">Manage tags &amp; colours</button></div></div>' +
-      '<div class="set-section"><h3>Modify</h3><label style="display:flex;gap:.5em;align-items:center"><input type="checkbox" id="setAskEdit"' + (settings.skipModifyConfirm ? '' : ' checked') + '> Ask before turning on Modify mode</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.5em">Undo stays available for <select id="setUndoWin">' + [[5, '5 minutes'], [10, '10 minutes'], [30, '30 minutes'], [0, 'until my next change']].map(o => '<option value="' + o[0] + '"' + (undoMinutes() === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label><p class="hint" style="margin:.4em 0 0">Undo always covers your last change, until you make another one. ' + (ghCfg() ? 'Every version saved before that stays in <a href="https://github.com/' + encodeURIComponent(ghCfg().owner) + '/' + encodeURIComponent(ghCfg().repo) + '/commits/' + encodeURIComponent(ghCfg().branch || 'main') + '/' + ghCfg().path.split('/').map(encodeURIComponent).join('/') + '" target="_blank" rel="noopener">your repository’s history</a>.' : 'With GitHub sync, every saved version also stays in your repository’s history.') + '</p><div class="set-actions"><button type="button" class="btn" id="setEdit">' + (ui.edit ? 'Turn off Modify mode' : 'Turn on Modify mode') + '</button></div></div>' +
+      '<div class="set-section"><h3>Modify</h3><label style="display:flex;gap:.5em;align-items:center"><input type="checkbox" id="setAskEdit"' + (settings.skipModifyConfirm ? '' : ' checked') + '> Ask before turning on Modify mode</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.5em">Undo stays available for <select id="setUndoWin">' + [[5, '5 minutes'], [10, '10 minutes'], [30, '30 minutes'], [0, 'until my next change']].map(o => '<option value="' + o[0] + '"' + (undoMinutes() === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label><p class="hint" style="margin:.4em 0 0">Undo always covers your last change, until you make another one. ' + (ghCfg() ? 'Every version saved before that stays in <a href="https://github.com/' + encodeURIComponent(ghCfg().owner) + '/' + encodeURIComponent(ghCfg().repo) + '/commits/' + encodeURIComponent(ghCfg().branch || 'main') + '/' + ghCfg().path.split('/').map(encodeURIComponent).join('/') + '" target="_blank" rel="noopener">your repository’s history</a>.' : 'With sync, earlier versions are kept too: Settings → Sync → Earlier versions.') + '</p><div class="set-actions"><button type="button" class="btn" id="setEdit">' + (ui.edit ? 'Turn off Modify mode' : 'Turn on Modify mode') + '</button></div></div>' +
       '<div class="set-section"><h3>Colour lines</h3><p class="hint">Named paths of ideas, with their colours. Add, rename, recolour or hide them, and see what is on each.</p><div class="set-actions"><button type="button" class="btn" id="setBrManage">Manage colour lines</button></div></div>' +
-      ghSectionHTML() +
+      syncSectionHTML() +
       '<div class="set-section"><h3>Data</h3><p class="hint">Saving status: <span data-save-state>' + esc(saveStateText()) + '</span>. A backup is one JSON file with all your topics, papers, lines and marks, in the same format as the data file in your repository.</p>' +
-      '<div class="set-actions"><button type="button" class="btn" id="setExport">Export backup</button><button type="button" class="btn" id="setImport">Import backup</button><button type="button" class="btn" id="setNotes">Export notes</button><button type="button" class="btn" id="setReset">Start over</button>' + '</div></div>' +
+      '<div class="set-actions"><button type="button" class="btn" id="setExport">Export backup</button><button type="button" class="btn" id="setImport">Import backup</button><button type="button" class="btn" id="setNotes">Export notes</button><button type="button" class="btn" id="setMapExport">Export map (PNG or PDF)</button><button type="button" class="btn" id="setPapersImport">Import papers (Zotero, CSV, BibTeX, RIS)</button><button type="button" class="btn" id="setReset">Start over</button>' + '</div></div>' +
       appSectionHTML() +
       '<p class="hint set-version" id="setVersion">Paper Map ' + APP_VERSION + ' · <a href="' + RELEASES_URL + '/tag/' + APP_VERSION + '" target="_blank" rel="noopener">What’s new</a><span id="setLatest"></span></p>',
     actions:[{label:'Done', primary:true}],
@@ -3542,12 +4634,98 @@ function openSettings(){
 }
 const REPO_LINK = 'https://github.com/new?name=paper-map-data&visibility=private&description=Paper+Map+data';
 const TOKEN_LINK = 'https://github.com/settings/personal-access-tokens/new?name=Paper+Map&description=Lets+Paper+Map+save+to+one+private+repository&expires_in=366&contents=write';
+function fmtDay(ms){ return new Date(ms).toLocaleDateString([], {day: 'numeric', month: 'short', year: 'numeric'}); }
+function tokenDaysLeft(c){ return c && c.tokenExp ? Math.ceil((c.tokenExp - Date.now()) / 864e5) : null; }
+const TOKENS_LINK = 'https://github.com/settings/personal-access-tokens';
+function tokenRenewHTML(){
+  return '<ol class="gh-steps"><li>Open <a href="' + TOKENS_LINK + '" target="_blank" rel="noopener">your tokens on GitHub</a> and click the Paper Map token.</li><li>Click <b>Regenerate token</b> and choose a year. Its repository and permission stay the same.</li><li>Copy the new token, then paste it in <b>Settings → Sync → GitHub</b> and click <b>Save and reload</b>.</li></ol>';
+}
+function tokenLineHTML(c){
+  if(c && c.tokenNever) return '<p class="hint">Token: never expires. <button type="button" class="linkbtn" data-token-date="1">Change</button></p>';
+  const d = tokenDaysLeft(c); if(d == null) return '';
+  const when = fmtDay(c.tokenExp) + (c.tokenExpKnown ? '' : ' (estimated: a year after you connected)');
+  const cls = d <= 14 ? ' warn-line' : '';
+  return '<p class="hint' + cls + '">Token ' + (d < 0 ? 'expired on ' + when : 'expires on ' + when + (d <= 30 ? ' · in ' + d + (d === 1 ? ' day' : ' days') : '')) + '. <button type="button" class="linkbtn" data-token-help="1">How to renew</button> · <button type="button" class="linkbtn" data-token-date="1">Change the date</button></p>';
+}
+function askTokenExpiry(then){
+  const yr = Date.now() + 366 * 864e5;
+  let done = false;
+  const go = () => { if(done) return; done = true; const c = lsGet(GH_KEY); if(c && !c.tokenExpKnown && !c.tokenExp){ c.tokenExp = yr; ghStore(c); } setTimeout(then, 0); };
+  openModal({title: 'When does this token expire?', onClose: go, body: '<p class="hint">Paper Map reminds you two weeks before, so saving never stops by surprise. You can see the date on the token’s page on GitHub.</p>' +
+      '<div class="tok-opts"><label><input type="radio" name="tokExp" value="year" checked> In a year, on ' + esc(fmtDay(yr)) + ' <span class="hint">(what the Create a token link sets)</span></label>' +
+      '<label><input type="radio" name="tokExp" value="date"> On another date <input type="date" id="tokDate2" value="' + new Date(yr).toISOString().slice(0, 10) + '"></label>' +
+      '<label><input type="radio" name="tokExp" value="never"> It never expires</label></div>',
+    actions: [{label: 'Save', primary: true, onClick: bd => {
+      const v = (bd.querySelector('input[name="tokExp"]:checked') || {}).value, c = lsGet(GH_KEY); if(!c) return;
+      if(v === 'never'){ c.tokenExp = null; c.tokenNever = true; }
+      else{ c.tokenNever = false; c.tokenExp = v === 'date' ? (Date.parse(bd.querySelector('#tokDate2').value + 'T12:00:00') || yr) : yr; }
+      c.tokenExpKnown = true; ghStore(c);
+      go();
+    }}],
+    onOpen: bd => { const d = bd.querySelector('#tokDate2'); d.addEventListener('focus', () => { bd.querySelector('input[value="date"]').checked = true; }); }
+  });
+}
+function openTokenHelp(){ openModal({title: 'Renew your GitHub token', body: '<p>Tokens stop working on the date they expire. Renewing takes a minute and keeps everything as it is.</p>' + tokenRenewHTML(), actions: [{label: 'OK', primary: true}]}); }
+function openTokenDate(){
+  const c = ghCfg(); if(!c) return;
+  if(c.tokenNever || !c.tokenExpKnown){ askTokenExpiry(() => {}); return; }
+  openModal({title: 'When does your token expire?', body: '<p class="hint">GitHub shows it on the token’s page. Paper Map reminds you two weeks before.</p><div class="form-grid"><label class="full">Expires on<input type="date" id="tokDate" value="' + new Date(c.tokenExp || Date.now()).toISOString().slice(0, 10) + '"></label></div>',
+    actions: [{label: 'Cancel'}, {label: 'Save', primary: true, onClick: bd => { const v = bd.querySelector('#tokDate').value; const ms = Date.parse(v + 'T12:00:00'); if(!ms) return false; const c2 = ghCfg(); if(!c2) return; c2.tokenExp = ms; c2.tokenExpKnown = true; ghStore(c2); toast('Saved: the token expires on ' + fmtDay(ms)); }}]});
+}
+/* once a day, close to the date, say so */
+function tokenReminder(){
+  const c = ghCfg(); if(!c || (c.kind && c.kind !== 'github') || PREVIEW) return;
+  if(c.tokenNever) return;
+  if(!c.tokenExp){ c.tokenExp = Date.now() + 366 * 864e5; c.tokenExpKnown = false; ghStore(c); return; }
+  const d = tokenDaysLeft(c); if(d > 14) return;
+  let last = 0; try{ last = +localStorage.getItem('rl:tokenNag') || 0; }catch(e){}
+  if(Date.now() - last < 864e5) return;
+  try{ localStorage.setItem('rl:tokenNag', String(Date.now())); }catch(e){}
+  setTimeout(() => {
+    const el = document.getElementById('toast'); if(!el) return;
+    el.innerHTML = '<span>' + (d < 0 ? 'Your GitHub token has expired, so nothing is saving to GitHub.' : 'Your GitHub token expires ' + (d <= 0 ? 'today' : 'in ' + d + (d === 1 ? ' day' : ' days')) + '.') + '</span><button type="button" data-token-help="1">How to renew</button>';
+    el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 14000);
+  }, 2500);
+}
+window.addEventListener('load', tokenReminder);
+/* Dropbox pane switched off together with Dropbox sign-in:
+// function dbxSectionHTML(){
+//   const c = lsGet(GH_KEY) || {}, on = c.kind === 'dropbox' && c.refresh, key = dbxKey();
+//   let h = '<p class="hint">Your list is kept in your own Dropbox, in <b>Apps › Paper Map</b>, with earlier versions of the file. A free Dropbox account is enough, and Paper Map can only see that one folder.</p>';
+//   if(on) h += '<p class="hint">Status: <span data-save-state>' + esc(saveStateText()) + '</span>' + (c.who ? ' · ' + esc(c.who) : '') + '</p>' + syncButtonsHTML('Dropbox');
+//   else if(key) h += (syncKind() && syncKind() !== 'dropbox' ? '<p class="hint">You are syncing with ' + esc(syncName()) + ' now. Connecting Dropbox switches to it; what is in ' + esc(syncName()) + ' stays there.</p>' : '') + '<div class="set-actions"><button type="button" class="btn primary" data-dbx-connect="1">Connect Dropbox</button></div><p class="hint">You sign in on Dropbox’s own page and come straight back.</p>';
+//   else h += '<p class="hint warn-line">Dropbox isn’t set up for this copy of Paper Map yet: it needs an app key (free, made once by whoever hosts Paper Map).</p>';
+//   h += '<details class="gh-adv"><summary>Advanced</summary><div class="form-grid"><label class="full">Dropbox app key<input type="text" id="dbxKey" autocomplete="off" spellcheck="false" value="' + esc(localStorage.getItem('rl:dbxKey') || '') + '" placeholder="' + esc(DROPBOX_APP_KEY ? 'built in' : 'paste the app key') + '"></label></div><div class="set-actions"><button type="button" class="btn" data-dbx-key="1">Save key</button></div></details>';
+//   return h;
+// }
+*/
+function fsSectionHTML(){
+  const c = lsGet(GH_KEY) || {}, on = c.kind === 'folder';
+  let h = '<p class="hint">Paper Map keeps your list as one file in a folder you choose. Put the folder inside <b>iCloud Drive</b>, <b>Dropbox</b> or <b>OneDrive</b>: that app copies it to your other computers and keeps its own history, and Paper Map also keeps earlier copies in <code>data/backups</code>. No account or token needed.</p>' +
+    '<details class="gh-adv"><summary>How, for each</summary><ul class="fs-tips"><li><b>iCloud Drive</b>: in Finder, open iCloud Drive, make a folder called Paper Map, then choose it here.</li><li><b>Dropbox</b>: choose a folder inside your Dropbox folder, and in Finder or Explorer right-click it → <b>Make available offline</b>.</li><li><b>OneDrive</b>: choose a folder inside OneDrive, and right-click it → <b>Always keep on this device</b>.</li></ul></details>';
+  if(!FS_OK) return h + '<p class="hint warn-line">This works in Chrome and Edge on a computer, not in this browser. On a phone, use GitHub.</p>';
+  if(on) h += '<p class="hint">Status: <span data-save-state>' + esc(saveStateText()) + '</span> · “' + esc(c.name || '') + '”</p>' + (fsDir ? syncButtonsHTML('your folder') : '<div class="set-actions"><button type="button" class="btn primary" data-fs-reconnect="1">Allow access again</button><button type="button" class="btn" data-sync-forget="1">Disconnect</button></div>');
+  else h += (syncKind() === 'github' ? '<p class="hint">You are syncing with GitHub now. Choosing a folder switches to it; what is on GitHub stays there.</p>' : '') + '<div class="set-actions"><button type="button" class="btn primary" data-fs-connect="1">Choose a folder</button></div><p class="hint">After the browser restarts, it asks once more before Paper Map can save there.</p>';
+  return h;
+}
+function syncButtonsHTML(where){
+  return '<div class="set-actions"><button type="button" class="btn" data-sync-pull="1">Load from ' + esc(where) + '</button><button type="button" class="btn" data-sync-save="1">Save now</button><button type="button" class="btn" data-sync-history="1">Earlier versions</button><button type="button" class="btn" data-sync-forget="1">Disconnect</button></div>';
+}
+function syncSectionHTML(){
+  if(PREVIEW) return ghSectionHTML();
+  const k = syncKind() === 'folder' ? 'folder' : 'github';
+  const tab = (id, label) => '<button type="button" role="tab" class="sync-tab" data-sync-tab="' + id + '" aria-selected="' + (k === id) + '">' + label + (syncKind() === id ? ' <span class="sync-dot" aria-label="connected"></span>' : '') + '</button>';
+  return '<div class="set-section sync-section"><h3>Sync</h3><p class="hint">Keep your list safe and on every device. GitHub is the most reliable: every save is kept for good. Choose one; you can switch later.</p>' +
+    '<div class="sync-tabs" role="tablist">' + tab('github', 'GitHub') + tab('folder', 'iCloud / Dropbox folder') + '</div>' +
+    '<div class="sync-pane" data-sync-pane="github"' + (k === 'github' ? '' : ' hidden') + '>' + ghSectionHTML().replace('<div class="set-section"><h3>GitHub sync</h3>', '<div class="sync-gh">') + '</div>' +
+    '<div class="sync-pane" data-sync-pane="folder"' + (k === 'folder' ? '' : ' hidden') + '>' + fsSectionHTML() + '</div></div>';
+}
 function ghSectionHTML(){
-  if(PREVIEW) return '<div class="set-section"><h3>GitHub sync</h3><p class="hint">Not available in the preview. Download the page to use it with your own list.</p></div>';
-  const g = lsGet(GH_KEY) || {};
+  if(PREVIEW) return '<div class="set-section"><h3>Sync</h3><p class="hint">Not available in the preview. Download the page to use it with your own list.</p></div>';
+  const g0 = lsGet(GH_KEY) || {}, g = (g0.kind || 'github') === 'github' ? g0 : {};
   const has = !!(g.owner && g.repo && g.token);
   return '<div class="set-section"><h3>GitHub sync</h3>' +
-    '<p class="hint">Recommended: the copy in this browser is lost if its data is cleared. This keeps your list in a private GitHub repository you own: each change is saved there within seconds, earlier versions stay in its history, and you can open the list on any device. The token stays in this browser only.</p>' +
+    '<p class="hint">The copy in this browser is lost if its data is cleared. This keeps your list in a private GitHub repository you own: each change is saved there within seconds, earlier versions stay in its history, and you can open the list on any device. The token stays in this browser only.</p>' +
     (has ? '' : '<ol class="gh-steps">' +
       '<li><a href="' + REPO_LINK + '" target="_blank" rel="noopener">Create a private repository</a>. The name is filled in; tick <em>Add a README file</em>.</li>' +
       '<li><a href="' + TOKEN_LINK + '" target="_blank" rel="noopener">Create a token</a>: under Repository access, choose <em>Only select repositories</em> and pick that repository. The only permission it needs, <em>Contents: Read and write</em>, is already filled in; remove anything else.</li>' +
@@ -3566,11 +4744,13 @@ function ghSectionHTML(){
     '<button type="button" class="btn" id="ghSaveNow"' + (has ? '' : ' disabled') + '>Save to GitHub now</button>' +
     '<button type="button" class="btn" id="ghHistoryBtn"' + (has ? '' : ' disabled') + '>Earlier versions</button>' +
     '<button type="button" class="btn" id="ghForgetBtn"' + (has ? '' : ' disabled') + '>Disconnect</button></div>' +
-    '<p class="hint">Status: <span data-save-state>' + esc(has ? saveStateText() : 'Not connected') + '</span>' + (has ? ' · ' + esc(g.owner + '/' + g.repo) : '') + '</p><p class="form-error" id="ghFormErr" hidden></p></div>';
+    '<p class="hint">Status: <span data-save-state>' + esc(has ? saveStateText() : 'Not connected') + '</span>' + (has ? ' · ' + esc(g.owner + '/' + g.repo) : '') + '</p>' + (has ? tokenLineHTML(Object.assign({}, g)) : '') + '<p class="form-error" id="ghFormErr" hidden></p></div>';
 }
+let ghTokenExpHeader = null;
 async function ghWhoAmI(token){
   const res = await fetch('https://api.github.com/user?_=' + Date.now(), {headers: {'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + token}});
   if(!res.ok) throw {status: res.status};
+  try{ const h = res.headers.get('github-authentication-token-expiration'); ghTokenExpHeader = h ? Date.parse(h.replace(' UTC', 'Z').replace(' ', 'T')) || null : null; }catch(e){ ghTokenExpHeader = null; }
   const j = await res.json();
   return j && j.login;
 }
@@ -3599,9 +4779,12 @@ function wireGhSection(b){
     if(!/^[A-Za-z0-9-]{1,39}$/.test(owner || '')) return err('Couldn’t find your GitHub username. Enter it under Advanced.');
     go.textContent = 'Save and reload';
     const same = old.owner === owner && old.repo === repo && old.branch === branch && old.path === path;
-    ghStore({owner, repo, branch, path, token, sha: same ? old.sha || null : null, dirty: same ? !!old.dirty : false, lastSyncedAt: same ? old.lastSyncedAt || 0 : 0});
+    const tokenSame = old.token === token;
+    const tokenExp = !tokenSame ? (ghTokenExpHeader || Date.now() + 366 * 864e5) : (old.tokenExp || ghTokenExpHeader || Date.now() + 366 * 864e5);
+    const tokenExpKnown = !tokenSame ? !!ghTokenExpHeader : (old.tokenExpKnown || !!ghTokenExpHeader);
+    ghStore({owner, repo, branch, path, token, tokenExp, tokenExpKnown, sha: same ? old.sha || null : null, dirty: same ? !!old.dirty : false, lastSyncedAt: same ? old.lastSyncedAt || 0 : 0});
     b.querySelector('#ghSaveNow').disabled = false; b.querySelector('#ghForgetBtn').disabled = false; b.querySelector('#ghPull').disabled = false; b.querySelector('#ghHistoryBtn').disabled = false;
-    ghLoad();
+    if(!tokenSame && !ghTokenExpHeader) askTokenExpiry(() => ghLoad()); else ghLoad();
   });
   b.querySelector('#ghSaveNow').addEventListener('click', () => { const c = ghCfg(); if(!c) return; c.dirty = true; ghStore(c); gh.rev++; ghSave(); });
   b.querySelector('#ghPull').addEventListener('click', () => { closeModal(); ghPullNow(); });
@@ -3788,14 +4971,17 @@ function ghSerial(fn){ const run = ghChain.then(fn, fn); ghChain = run.catch(() 
 function ghPathUrl(c, path){ return 'https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + '/contents/' + String(path).split('/').filter(Boolean).map(encodeURIComponent).join('/'); }
 function ghRef(c){ return '?ref=' + encodeURIComponent(c.branch) + '&_=' + Date.now(); }
 function ghPutPath(c, path, content, message, sha){
+  if(c.kind === 'dropbox' || c.kind === 'folder') return remotePut(c, path, b64ToBytes(content), null, false);
   const body = {message, content, branch: c.branch};
   if(sha) body.sha = sha;
   return fetch(ghPathUrl(c, path), {method:'PUT', headers: ghHeaders(c, {'Content-Type':'application/json'}), body: JSON.stringify(body)});
 }
 function ghDeletePath(c, path, sha, message){
+  if(c.kind === 'dropbox' || c.kind === 'folder') return remoteDelete(c, path);
   return fetch(ghPathUrl(c, path), {method:'DELETE', headers: ghHeaders(c, {'Content-Type':'application/json'}), body: JSON.stringify({message, sha, branch: c.branch})});
 }
 async function ghPathSha(c, path){
+  if(c.kind === 'dropbox' || c.kind === 'folder') return remoteMeta(c, path);
   const r = await fetch(ghPathUrl(c, path) + ghRef(c), {headers: ghHeaders(c, {'Accept':'application/vnd.github.object+json'})});
   if(r.status === 404) return null;
   if(!r.ok) throw {status: r.status};
@@ -3803,6 +4989,7 @@ async function ghPathSha(c, path){
   return (j && j.sha) || null;
 }
 async function ghListDir(c, dir){
+  if(c.kind === 'dropbox' || c.kind === 'folder') return remoteList(c, dir);
   const r = await fetch(ghPathUrl(c, dir) + ghRef(c), {headers: ghHeaders(c)});
   if(r.status === 404) return [];
   if(!r.ok) throw {status: r.status};
@@ -3827,7 +5014,7 @@ async function ghMirrorNotes(){
   Object.values(lib.entries).forEach(e => { if(String(e.n || '').trim() && ID_RE.test(e.id)) want['notes/' + e.id + '.md'] = noteFileMd(e); });
   (await ghListDir(c, 'notes')).forEach(f => { if(f.type === 'file' && /\.md$/i.test(f.name)) have[f.path] = f.sha; });
   for(const path of Object.keys(want)){
-    if(have[path] && have[path] === await gitBlobSha(want[path])) continue;
+    if(have[path] && have[path] === await remoteHash(c, want[path])) continue;
     const r = await ghPutPath(c, path, b64encode(want[path]), 'Notes: ' + ((lib.entries[path.slice(6, -3)] || {}).t || path), have[path] || null);
     if(!r.ok) throw {status: r.status};
   }
@@ -3848,16 +5035,21 @@ async function pdfUrl(e){
   const key = e.pdf.path + '@' + (e.pdf.sha || '');
   if(pdfUrls[key]) return pdfUrls[key];
   const c = ghCfg(); if(!c) throw {status:'nogh'};
-  const r = await fetch(ghPathUrl(c, e.pdf.path) + ghRef(c), {headers: ghHeaders(c, {'Accept':'application/vnd.github.raw+json'})});
-  if(!r.ok) throw {status: r.status};
-  const blob = new Blob([await r.arrayBuffer()], {type:'application/pdf'});
+  let bytes;
+  if(c.kind === 'dropbox' || c.kind === 'folder'){ bytes = await remoteBytes(c, e.pdf.path); if(!bytes) throw {status: 404}; }
+  else{
+    const r = await fetch(ghPathUrl(c, e.pdf.path) + ghRef(c), {headers: ghHeaders(c, {'Accept':'application/vnd.github.raw+json'})});
+    if(!r.ok) throw {status: r.status};
+    bytes = await r.arrayBuffer();
+  }
+  const blob = new Blob([bytes], {type:'application/pdf'});
   return (pdfUrls[key] = URL.createObjectURL(blob));
 }
 async function attachPdf(id, file){
   const e = lib.entries[id], c = ghCfg();
   if(!e || !c) return;
   if(!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf'){ toast('Choose a PDF file'); return; }
-  if(file.size > PDF_MAX){ toast('This PDF is larger than 50 MB, too big to keep in GitHub this way'); return; }
+  if(file.size > PDF_MAX){ toast('This PDF is larger than 50 MB, too big to keep this way'); return; }
   const path = 'pdfs/' + id + '.pdf';
   const pane = document.getElementById('readerPdf');
   if(reader.id === id) pane.innerHTML = '<p class="pdf-msg">Uploading the PDF to your repository…</p>';
@@ -3911,16 +5103,16 @@ async function renderReaderPdf(){
   const c = ghCfg();
   if(!e.pdf){
     if(!c){
-      pane.innerHTML = '<div class="pdf-empty"><p>' + (PREVIEW ? 'PDFs are kept in your own private GitHub repository, so they aren’t available in this preview.' : 'Connect GitHub sync to keep the paper’s PDF with your list.') + '</p>' +
+      pane.innerHTML = '<div class="pdf-empty"><p>' + (PREVIEW ? 'PDFs are kept with your own synced list, so they aren’t available in this preview.' : 'Connect sync (Settings → Sync) to keep the paper’s PDF with your list.') + '</p>' +
         (PREVIEW ? '' : '<button type="button" class="btn" data-reader-settings="1">Open Settings</button>') + '</div>';
       return;
     }
-    pane.innerHTML = '<div class="pdf-empty" id="pdfDrop"><p>Attach the paper’s PDF to read it here. It is stored in your private GitHub repository.</p><button type="button" class="btn primary" data-pdf-pick="1">Attach PDF</button><p style="margin:10px 0 0;font-size:.82rem">or drop a PDF here</p></div>';
+    pane.innerHTML = '<div class="pdf-empty" id="pdfDrop"><p>Attach the paper’s PDF to read it here. It is stored with your synced list.</p><button type="button" class="btn primary" data-pdf-pick="1">Attach PDF</button><p style="margin:10px 0 0;font-size:.82rem">or drop a PDF here</p></div>';
     return;
   }
   const head = '<div class="pdf-head"><span class="pdf-name">' + esc(e.pdf.name || 'PDF') + (e.pdf.size ? ' · ' + fmtSize(e.pdf.size) : '') + '</span>' +
     '<a class="linkbtn" id="pdfOpen" target="_blank" rel="noopener" hidden>Open in new tab</a><button type="button" class="linkbtn" data-pdf-pick="1">Replace</button><button type="button" class="linkbtn" data-pdf-remove="1">Remove</button></div>';
-  if(!c){ pane.innerHTML = head + '<p class="pdf-msg">This PDF is in your GitHub repository. Connect GitHub sync in Settings to open it here.</p>'; return; }
+  if(!c){ pane.innerHTML = head + '<p class="pdf-msg">This PDF is stored with your synced list. Connect sync in Settings to open it here.</p>'; return; }
   pane.innerHTML = head + '<div class="pdf-frame"><p class="pdf-msg">Loading the PDF…</p></div>';
   const id = e.id;
   try{
@@ -4583,7 +5775,7 @@ const onResize = debounce(() => { renderMap(false); setBarH(); document.getEleme
 if('ResizeObserver' in window) new ResizeObserver(onResize).observe(mapScroll);
 window.addEventListener('resize', onResize);
 if(location.hash.length > 1) setTimeout(() => scrollToEl(mainEl, 'start'), 80);
-if(!PREVIEW && ghCfg()) ghLoad();
+fsRestore().catch(() => {}).then(() => { if(!PREVIEW && ghCfg()) ghLoad(); });
 const reTheme = () => { renderMain(); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); };
 if(window.matchMedia){ const mq = window.matchMedia('(prefers-color-scheme: dark)'); if(mq.addEventListener) mq.addEventListener('change', reTheme); }
 if('MutationObserver' in window) new MutationObserver(reTheme).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
