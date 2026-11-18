@@ -1,10 +1,9 @@
 ![Paper Map: papers on a timeline, joined by hand-drawn lines](assets/preview.png)
 
-I built this because I wanted a better way to organise what I read and understand how ideas connect.
+I built this simply because I wanted a better way to organise what I read and understand how ideas connect.
 
 ![Structure: topics inside topics, to any depth. Connect: lines between papers, concepts and topics. Explore: a field laid out over time.](assets/features.svg)
 
-![Each topic as a table, with status, notes, tags and concept cards](assets/table.png)
 
 The live preview (link at the top right of this page) shows the made-up example in [`example/displaydata.json`](example/displaydata.json).
 
