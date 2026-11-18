@@ -763,6 +763,12 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
 .map-labels button.tl-rel.tl-multi::after{background:var(--tlcg)}
 .map-labels button.tl-hover.tl-hover-multi{box-shadow:none;background:color-mix(in srgb, var(--ink) 6%, transparent)}
 .map-labels button.tl-hover-multi::after{background:var(--tlhg)}
+
+/* while you hover, the hover colours win over the colours of the row you are in */
+.map-labels button.tl-hover:not(.tl-hover-multi)::after{display:none}
+.map-labels button.tl-rel.tl-multi.tl-hover:not(.tl-hover-multi){box-shadow:inset 3px 0 0 var(--tlh, var(--focus));background:color-mix(in srgb, var(--tlh, var(--focus)) 10%, transparent)}
+
+.set-version{margin:1.2em 0 0;text-align:right;font-size:.78rem}
 </style>
 </head>
 <body>
@@ -939,6 +945,7 @@ const PRIO_LABEL = {3:'★ Must read', 2:'○ Optional', 1:'· Background'};
 const DEFAULT_COLORS = {green:'#009473', red:'#E34234'};
 const PREVIEW_DATA = 'example/displaydata.json';
 let PREVIEW = false;
+const APP_VERSION = '1.4.0';
 const BRANCH_PALETTE = ['#E34234', '#7058A3', '#009473', '#38A1DB', '#E7609E', '#8B5E3C', '#E2A72E'];
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
@@ -3100,7 +3107,8 @@ function openSettings(){
       '<div class="set-section"><h3>Colour lines</h3><p class="hint">Give a main line of thought a colour: open a line’s ✎ in Modify mode and choose one. Rename or recolour them here.</p><div id="brList">' + branchListHTML() + '</div><div class="set-actions"><button type="button" class="btn" id="brAdd">Add a colour line</button></div></div>' +
       ghSectionHTML() +
       '<div class="set-section"><h3>Data</h3><p class="hint">Saving status: <span data-save-state>' + esc(saveStateText()) + '</span>. A backup is one JSON file with all your topics, papers, lines and marks, in the same format as the data file in your repository.</p>' +
-      '<div class="set-actions"><button type="button" class="btn" id="setExport">Export backup</button><button type="button" class="btn" id="setImport">Import backup</button><button type="button" class="btn" id="setNotes">Export notes</button><button type="button" class="btn" id="setReset">Start over</button>' + '</div></div>',
+      '<div class="set-actions"><button type="button" class="btn" id="setExport">Export backup</button><button type="button" class="btn" id="setImport">Import backup</button><button type="button" class="btn" id="setNotes">Export notes</button><button type="button" class="btn" id="setReset">Start over</button>' + '</div></div>' +
+      '<p class="hint set-version">Paper Map ' + APP_VERSION + '</p>',
     actions:[{label:'Done', primary:true}],
     onOpen: b => {
       const g = b.querySelector('#cGreen'), r = b.querySelector('#cRed');
