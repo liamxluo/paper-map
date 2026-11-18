@@ -6,8 +6,8 @@
 <meta name="color-scheme" content="light dark">
 <title>Paper Map</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=d">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Paper Map">
 <meta name="application-name" content="Paper Map">
@@ -814,6 +814,17 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
 .install-card.folded .ic-pill img{border-radius:5px}
 .install-card.folded .ic-pill:hover{background:color-mix(in srgb, var(--ink) 6%, transparent)}
 @media (max-width: 560px){ .install-card:not(.folded) .ic-text span{display:none} }
+
+/* ---------- sync safety ---------- */
+.ver-cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:.6em 0}
+.ver-cmp > div{border:1px solid var(--rule);border-radius:10px;padding:.55em .7em;display:flex;flex-direction:column;gap:2px;background:var(--bg)}
+.ver-cmp span{font-size:.86rem;color:var(--muted)}
+.hist-list{display:flex;flex-direction:column;gap:4px;max-height:50vh;overflow:auto;margin-top:.5em}
+.hist-row{display:flex;align-items:center;gap:10px;padding:.35em .5em;border-bottom:1px solid var(--rule)}
+.hist-when{min-width:11em;font-variant-numeric:tabular-nums}
+.hist-what{flex:1}
+
+#toast .toast-link{margin-left:.8em;color:inherit;font-weight:600;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -841,11 +852,11 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
     </div>
   </div>
   <div class="install-card" id="installCard" hidden>
-    <img src="icons/icon-192.png" alt="" width="36" height="36">
+    <img src="icons/icon-192.png?v=d" alt="" width="36" height="36">
     <div class="ic-text"><b>Get the Paper Map app</b><span>Its own icon and window. Works offline.</span></div>
     <button type="button" class="btn primary" id="icInstall">Install</button>
     <button type="button" class="ic-fold" id="icFold" title="Fold this away" aria-label="Fold this away">‹</button>
-    <button type="button" class="ic-pill" id="icPill" title="Install the Paper Map app"><img src="icons/icon-192.png" alt="" width="20" height="20">Install app</button>
+    <button type="button" class="ic-pill" id="icPill" title="Install the Paper Map app"><img src="icons/icon-192.png?v=d" alt="" width="20" height="20">Install app</button>
   </div>
   <div class="preview-banner" id="previewBanner" hidden>
     <div class="wrap preview-inner">This is a preview with example data. Nothing you change here is saved. To start your own, install the app (top right, in Chrome or Edge), <a href="./?app">open it here</a>, or <a href="index.html" download="index.html">download the page</a>.</div>
@@ -998,7 +1009,10 @@ const PRIO_LABEL = {3:'★ Must read', 2:'○ Optional', 1:'· Background'};
 const DEFAULT_COLORS = {green:'#009473', red:'#E34234'};
 const PREVIEW_DATA = 'example/displaydata.json';
 let PREVIEW = false;
-const APP_VERSION = '1.5.0';
+/* Set this to the tag of the GitHub release you are about to publish (v1.3.0, v1.3.1, …). */
+const APP_VERSION = 'v1.3.0';
+const APP_REPO = 'liamxluo/paper-map';
+const RELEASES_URL = 'https://github.com/' + APP_REPO + '/releases';
 /* Installed as an app (or installable): only when the page comes from a website, never from a downloaded file */
 const SERVED = /^https?:$/.test(location.protocol);
 const STANDALONE = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
@@ -1012,6 +1026,35 @@ function showInstallCard(on){
 }
 window.addEventListener('beforeinstallprompt', ev => { ev.preventDefault(); installPrompt = ev; showInstallCard(true); });
 window.addEventListener('appinstalled', () => { installPrompt = null; showInstallCard(false); try{ toast('Paper Map is installed. Open it from your Dock, Start menu or home screen.'); }catch(e){} });
+function verParts(v){ return String(v || '').replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0); }
+function verNewer(a, b){ const x = verParts(a), y = verParts(b); for(let i = 0; i < 3; i++){ if((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); } return false; }
+async function latestRelease(){
+  let c = null; try{ c = JSON.parse(localStorage.getItem('rl:latest') || 'null'); }catch(e){}
+  if(c && Date.now() - c.at < 12 * 3600e3) return c.tag;
+  try{
+    const r = await fetch('https://api.github.com/repos/' + APP_REPO + '/releases/latest', {headers: {'Accept': 'application/vnd.github+json'}});
+    if(!r.ok) return c ? c.tag : null;
+    const j = await r.json(); const tag = j && j.tag_name;
+    try{ localStorage.setItem('rl:latest', JSON.stringify({tag, at: Date.now()})); }catch(e){}
+    return tag;
+  }catch(e){ return c ? c.tag : null; }
+}
+async function showLatest(){
+  const el = document.getElementById('setLatest'); if(!el || PREVIEW) return;
+  const tag = await latestRelease(); if(!tag || !document.getElementById('setLatest')) return;
+  if(verNewer(tag, APP_VERSION)) el.innerHTML = ' · <b>' + esc(tag) + ' is out</b>: ' + (SERVED ? 'reload to update' : '<a href="https://github.com/' + APP_REPO + '/releases/latest" target="_blank" rel="noopener">download it</a>');
+  else el.textContent = ' · up to date';
+}
+/* once after an update, say so */
+function announceUpdate(){
+  let seen = null; try{ seen = localStorage.getItem('rl:version'); localStorage.setItem('rl:version', APP_VERSION); }catch(e){ return; }
+  if(seen && seen !== APP_VERSION && !PREVIEW) setTimeout(() => {
+    const el = document.getElementById('toast'); if(!el) return;
+    el.innerHTML = '<span>Paper Map updated to ' + esc(APP_VERSION) + '</span><a class="toast-link" href="' + RELEASES_URL + '/tag/' + APP_VERSION + '" target="_blank" rel="noopener">What’s new</a>';
+    el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 9000);
+  }, 1200);
+}
+window.addEventListener('load', announceUpdate);
 async function runInstall(){
   if(installPrompt){ const p = installPrompt; p.prompt(); let ok = false; try{ ok = (await p.userChoice).outcome === 'accepted'; }catch(e){} if(ok){ installPrompt = null; showInstallCard(false); } return; }
   openInstallHelp();
@@ -1053,7 +1096,7 @@ async function openInstallHelp(){
     if(!c.manifest) missing.push('<code>manifest.webmanifest</code>');
     if(!c.worker) missing.push('<code>sw.js</code>');
     body = '<p>' + steps + '</p>' +
-      (missing.length ? '<p class="warn-line">This website is missing ' + missing.join(' and ') + '. Upload them, with the <code>icons</code> folder, next to <code>index.html</code> in your repository, wait a minute for GitHub Pages, then reload.</p>' : '<p class="hint">The app files are in place on this website (version ' + APP_VERSION + ').</p>') +
+      (missing.length ? '<p class="warn-line">This website is missing ' + missing.join(' and ') + '. Upload them, with the <code>icons</code> folder, next to <code>index.html</code> in your repository, wait a minute for GitHub Pages, then reload.</p>' : '<p class="hint">The app files are in place on this website (' + APP_VERSION + ').</p>') +
       '<p class="hint">Already installed? Open Paper Map from your Dock, Applications or home screen; browsers stop offering to install once it is there.</p>';
   }
   openModal({title: 'Install Paper Map', body, actions: [{label: 'OK', primary: true}]});
@@ -1333,19 +1376,52 @@ function adoptSnapshot(obj){
 function ghAdopt(f){
   const c = ghCfg(); if(!c) return;
   if(!adoptSnapshot(f.data)){ setGh('error', 'The data file on GitHub has the wrong format, so it wasn’t loaded.'); return; }
-  c.sha = f.sha; c.dirty = false; c.lastSyncedAt = (f.data && f.data.savedAt) || Date.now(); ghStore(c);
+  c.sha = f.sha; c.dirty = false; c.lastSyncedAt = (f.data && f.data.savedAt) || Date.now(); c.remoteCount = libCounts(f.data && f.data.lib).all; ghStore(c);
   gh.when = hhmm(c.lastSyncedAt); setGh('saved');
 }
-function ghAskWhich(f, title, text){
+function libCounts(L){ const es = Object.values((L && L.entries) || {}); const c = es.filter(e => e.kind === 'concept').length; return {papers: es.length - c, concepts: c, topics: ((L && L.topics) || []).length, all: es.length}; }
+function syncCountText(n){ return n.papers + (n.papers === 1 ? ' paper' : ' papers') + (n.concepts ? ', ' + n.concepts + (n.concepts === 1 ? ' concept' : ' concepts') : '') + ', ' + n.topics + (n.topics === 1 ? ' topic' : ' topics'); }
+function localEmpty(){ return Object.keys(lib.entries || {}).length === 0; }
+function remoteText(data){ return syncCountText(libCounts(data && data.lib)) + (data && data.savedAt ? ' · saved ' + stampText(data.savedAt) : ''); }
+/* replace this browser's list with what GitHub has (undoable) */
+function ghUseRemote(f, how){
+  const before = snapshot();
+  ghAdopt(f);
+  toast((how || 'Loaded from GitHub') + ': ' + syncCountText(libCounts(lib)), () => { adoptSnapshot(before); toast('Undone'); });
+}
+function ghAskWhich(f, title, text, preferLocal){
+  const R = libCounts(f.data && f.data.lib), L = libCounts(lib);
   setGh('error', 'Waiting for you to choose a version');
   openModal({
     title,
-    body:'<p>' + esc(text) + '</p><ul><li>Use the GitHub version: unsaved changes in this browser are replaced (you can undo straight away).</li><li>Keep this browser’s version: it overwrites the copy on GitHub; the old one stays in the commit history.</li></ul>',
+    body:'<p>' + esc(text) + '</p>' +
+      '<div class="ver-cmp"><div><b>On GitHub</b><span>' + esc(remoteText(f.data)) + '</span></div><div><b>In this browser</b><span>' + esc(syncCountText(L)) + '</span></div></div>' +
+      (R.all < L.all ? '<p class="warn-line">Using the GitHub version replaces ' + L.all + ' items in this browser with ' + R.all + '. You can undo straight away.</p>' : '') +
+      (L.all < R.all ? '<p class="warn-line">Keeping this browser’s version replaces ' + R.all + ' items on GitHub with ' + L.all + '. The old version stays in the history (Settings → GitHub sync → Earlier versions).</p>' : '<p class="hint">Whichever you don’t keep stays in the GitHub history.</p>'),
     actions:[
-      {label:'Use the GitHub version', onClick: () => { const before = snapshot(); ghAdopt(f); toast('Switched to the GitHub version', () => { adoptSnapshot(before); ghMark(); toast('Undone'); }); }},
-      {label:'Keep this version', primary:true, onClick: () => { const c = ghCfg(); if(!c) return; c.sha = f.sha; c.dirty = true; ghStore(c); ghSave(); }}
+      {label:'Keep this browser’s (' + L.papers + ')', primary: !!preferLocal, onClick: () => { const c = ghCfg(); if(!c) return; c.sha = f.sha; c.dirty = true; ghStore(c); gh.force = true; ghSave(); }},
+      {label:'Use the GitHub version (' + R.papers + ')', primary: !preferLocal, onClick: () => ghUseRemote(f, 'Switched to the GitHub version')}
     ]
   });
+}
+
+/* no data file at the chosen path: look for one nearby before writing anything */
+async function ghMissing(c){
+  const dir = String(c.path).split('/').slice(0, -1).join('/');
+  let others = [];
+  try{ others = (await ghListDir(c, dir)).filter(x => x.type === 'file' && /\.json$/i.test(x.name) && x.path !== c.path).map(x => x.path); }catch(e){}
+  if(others.length){
+    setGh('error', 'Waiting for you to choose a file');
+    openModal({
+      title: 'Your data may be in another file',
+      body: '<p>There is no <code>' + esc(c.path) + '</code> in ' + esc(c.owner + '/' + c.repo) + ', but it has ' + others.map(p => '<code>' + esc(p) + '</code>').join(', ') + '.</p><p class="hint">Choose one to load it. Nothing is written to GitHub until you do.</p>',
+      actions: others.slice(0, 3).map((p, i) => ({label: 'Use ' + p.split('/').pop(), primary: i === 0, onClick: () => { const c2 = ghCfg(); if(!c2) return; c2.path = p; c2.sha = null; c2.dirty = false; ghStore(c2); ghLoad(); }})).concat([{label: 'Not now'}])
+    });
+    return;
+  }
+  c.sha = null; ghStore(c);
+  if(localEmpty()){ c.dirty = false; ghStore(c); gh.when = ''; setGh('saved'); toast('Connected. Nothing is saved on GitHub yet; your first paper will be.'); return; }
+  c.dirty = true; ghStore(c); return ghSave();
 }
 async function ghLoad(){
   const c = ghCfg();
@@ -1356,19 +1432,88 @@ async function ghLoad(){
   try{ f = await ghGetFile(c); }catch(e){ err = e; }
   gh.busy = false;
   if(err){ setGh('error', ghErr(err)); return; }
-  if(f.missing){ c.sha = null; c.dirty = true; ghStore(c); return ghSave(); }
+  if(f.missing) return ghMissing(c);
   const remoteChanged = f.sha !== c.sha;
   if(!remoteChanged){ if(c.dirty) return ghSave(); gh.when = hhmm(c.lastSyncedAt); setGh('saved'); return; }
-  const localHasData = (lib.updatedAt || 0) > 0 || statusTime > 0;
+  const localHasData = !localEmpty();
+  if(!localHasData) return ghUseRemote(f, 'Loaded from GitHub');
   if(!c.sha){
-    if(!localHasData) return ghAdopt(f);
     return ghAskWhich(f, 'The repository already has data', 'This repository already holds reading-list data, and this browser has changes of its own. Which one do you want to keep?');
   }
   if(c.dirty) return ghAskWhich(f, 'GitHub has a newer version', 'This data was changed on another device or directly on GitHub, and this browser has unsaved changes too. Which one do you want to keep?');
+  { const R = libCounts(f.data && f.data.lib).all, L = libCounts(lib).all;
+    if(L > R && (R === 0 || (L >= 10 && R < L / 2))) return ghAskWhich(f, 'GitHub has less than this browser', 'The copy on GitHub holds much less than this browser. If something emptied it by mistake, keep this browser’s list: it is saved back to GitHub.', true); }
   ghAdopt(f);
   toast('Loaded the latest data from GitHub');
 }
 function ghSave(){ return ghSerial(ghSaveNow); }
+function ghGuard(f, mine, theirs){
+  setGh('error', 'Not saved: waiting for you to choose');
+  openModal({
+    title: 'GitHub has more than this browser',
+    body: '<div class="ver-cmp"><div><b>On GitHub</b><span>' + esc(remoteText(f.data)) + '</span></div><div><b>In this browser</b><span>' + esc(syncCountText(libCounts(lib))) + '</span></div></div>' +
+      '<p class="warn-line">Saving now would replace ' + theirs + ' items on GitHub with ' + mine + '. Nothing has been saved.</p>',
+    actions: [
+      {label: 'Save this browser’s anyway', onClick: () => { const c = ghCfg(); if(!c) return; c.sha = f.sha; c.dirty = true; ghStore(c); gh.force = true; ghSave(); }},
+      {label: 'Load from GitHub', primary: true, onClick: () => ghUseRemote(f, 'Loaded from GitHub')}
+    ]
+  });
+}
+/* Load from GitHub, on request */
+async function ghPullNow(){
+  const c = ghCfg(); if(!c) return;
+  let f;
+  try{ setGh('loading'); f = await ghGetFile(c); }catch(e){ setGh('error', ghErr(e)); return; }
+  if(f.missing){ updateSaveState(); return ghMissing(c); }
+  setGh('saved');
+  openModal({
+    title: 'Load from GitHub',
+    body: '<div class="ver-cmp"><div><b>On GitHub</b><span>' + esc(remoteText(f.data)) + '</span></div><div><b>In this browser</b><span>' + esc(syncCountText(libCounts(lib))) + '</span></div></div><p class="hint">This browser’s list is replaced by GitHub’s. You can undo straight away.</p>',
+    actions: [{label: 'Cancel'}, {label: 'Load it', primary: true, onClick: () => ghUseRemote(f, 'Loaded from GitHub')}]
+  });
+}
+/* Earlier versions: every save is a commit, so any of them can come back */
+async function ghHistory(){
+  const c = ghCfg(); if(!c) return;
+  let list = [];
+  try{
+    const r = await fetch('https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + '/commits?path=' + encodeURIComponent(c.path) + '&sha=' + encodeURIComponent(c.branch) + '&per_page=40&_=' + Date.now(), {headers: ghHeaders(c)});
+    if(!r.ok) throw {status: r.status};
+    list = await r.json();
+  }catch(e){ toast(ghErr(e)); return; }
+  openModal({
+    title: 'Earlier versions on GitHub',
+    body: '<p class="hint">Every save is kept. Look at one to see what it holds, then restore it: it becomes your list here and is saved to GitHub as the newest version.</p>' +
+      '<div class="hist-list">' + (list.length ? list.map(x => '<div class="hist-row" data-hist="' + esc(x.sha) + '"><span class="hist-when">' + esc(new Date((x.commit && x.commit.author && x.commit.author.date) || 0).toLocaleString([], {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})) + '</span><span class="hist-what hint"></span><button type="button" class="btn small" data-hist-look="' + esc(x.sha) + '">Look</button></div>').join('') : '<p class="hint">No versions yet.</p>') + '</div>',
+    actions: [{label: 'Close'}],
+    onOpen: bd => {
+      bd.addEventListener('click', async ev => {
+        const lk = ev.target.closest('[data-hist-look]');
+        const rs = ev.target.closest('[data-hist-restore]');
+        if(lk){
+          const row = lk.closest('[data-hist]'); lk.disabled = true; lk.textContent = '…';
+          try{
+            const r = await fetch(ghApi(c) + '?ref=' + encodeURIComponent(lk.dataset.histLook), {headers: ghHeaders(c, {'Accept':'application/vnd.github.raw+json'})});
+            if(!r.ok) throw {status: r.status};
+            const data = JSON.parse(await r.text());
+            row._data = data;
+            row.querySelector('.hist-what').textContent = syncCountText(libCounts(data.lib));
+            lk.outerHTML = '<button type="button" class="btn small primary" data-hist-restore="1">Restore</button>';
+          }catch(e){ lk.disabled = false; lk.textContent = 'Look'; toast(ghErr(e)); }
+          return;
+        }
+        if(rs){
+          const row = rs.closest('[data-hist]'); const data = row && row._data; if(!data) return;
+          const before = snapshot();
+          if(!adoptSnapshot(data)){ toast('That version has the wrong format'); return; }
+          closeModal();
+          const c2 = ghCfg(); if(c2){ c2.dirty = true; ghStore(c2); } gh.force = true; gh.rev++; ghSave();
+          toast('Restored: ' + syncCountText(libCounts(lib)) + '. Saving it to GitHub.', () => { adoptSnapshot(before); ghMark(); toast('Undone'); });
+        }
+      });
+    }
+  });
+}
 async function ghSaveNow(){
   clearTimeout(gh.timer);
   const c = ghCfg();
@@ -1376,6 +1521,17 @@ async function ghSaveNow(){
   if(gh.busy){ gh.again = true; return; }
   gh.busy = true; setGh('saving');
   const rev = gh.rev;
+  if(!gh.force){
+    const mine = libCounts(lib).all, known = c.remoteCount || 0;
+    if(mine === 0 || (known >= 10 && mine < known / 2) || !c.sha){
+      let f = null; try{ f = await ghGetFile(c); }catch(e){}
+      if(f && !f.missing){
+        const theirs = libCounts(f.data && f.data.lib).all;
+        if(theirs > mine && (mine === 0 || (theirs >= 10 && mine < theirs / 2))){ gh.busy = false; ghGuard(f, mine, theirs); return; }
+      }
+    }
+  }
+  gh.force = false;
   const snap = snapshot();
   const content = b64encode(JSON.stringify(snap, null, 1));
   const message = appTitle() + ' autosave ' + stampText(snap.savedAt);
@@ -1391,7 +1547,7 @@ async function ghSaveNow(){
     if(!res.ok) throw {status: res.status};
     const j = await res.json();
     const c2 = ghCfg();
-    if(c2){ c2.sha = j && j.content && j.content.sha; c2.lastSyncedAt = snap.savedAt; c2.dirty = gh.rev !== rev; ghStore(c2); }
+    if(c2){ c2.sha = j && j.content && j.content.sha; c2.lastSyncedAt = snap.savedAt; c2.remoteCount = libCounts(snap.lib).all; c2.dirty = gh.rev !== rev; ghStore(c2); }
     ok = true;
     gh.when = hhmm(snap.savedAt); setGh(c2 && c2.dirty ? 'pending' : 'saved');
   }catch(e){ setGh('error', ghErr(e)); }
@@ -3298,7 +3454,7 @@ function openSettings(){
       '<div class="set-section"><h3>Data</h3><p class="hint">Saving status: <span data-save-state>' + esc(saveStateText()) + '</span>. A backup is one JSON file with all your topics, papers, lines and marks, in the same format as the data file in your repository.</p>' +
       '<div class="set-actions"><button type="button" class="btn" id="setExport">Export backup</button><button type="button" class="btn" id="setImport">Import backup</button><button type="button" class="btn" id="setNotes">Export notes</button><button type="button" class="btn" id="setReset">Start over</button>' + '</div></div>' +
       appSectionHTML() +
-      '<p class="hint set-version">Paper Map ' + APP_VERSION + '</p>',
+      '<p class="hint set-version" id="setVersion">Paper Map ' + APP_VERSION + ' · <a href="' + RELEASES_URL + '/tag/' + APP_VERSION + '" target="_blank" rel="noopener">What’s new</a><span id="setLatest"></span></p>',
     actions:[{label:'Done', primary:true}],
     onOpen: b => {
       const g = b.querySelector('#cGreen'), r = b.querySelector('#cRed');
@@ -3308,6 +3464,7 @@ function openSettings(){
       b.querySelector('#setTitle').addEventListener('change', ev => { lib.title = ev.target.value.trim(); applyTitle(); touchLib([]); });
       b.querySelector('#srcColors').addEventListener('change', ev => { settings.mapColor = ev.target.checked ? 'source' : 'plain'; persistSettings(); renderMap(true); });
       b.querySelector('#setShowPre').addEventListener('change', ev => { settings.showPre = ev.target.checked; persistSettings(); renderMap(true); });
+      showLatest();
       const inst = b.querySelector('#setInstall');
       if(inst) inst.addEventListener('click', () => { closeModal(); runInstall(); });
       b.querySelector('#setShowRel').addEventListener('change', ev => { settings.showRelated = ev.target.checked; persistSettings({remote:false}); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); });
@@ -3347,7 +3504,9 @@ function ghSectionHTML(){
     '<label class="full">File path<input type="text" id="ghPath" autocomplete="off" spellcheck="false" value="' + esc(g.path || 'data/paper-map.json') + '"></label>' +
     '</div></details>' +
     '<div class="set-actions"><button type="button" class="btn primary" id="ghConnect">' + (has ? 'Save and reload' : 'Connect') + '</button>' +
-    '<button type="button" class="btn" id="ghSaveNow"' + (has ? '' : ' disabled') + '>Save now</button>' +
+    '<button type="button" class="btn" id="ghPull"' + (has ? '' : ' disabled') + '>Load from GitHub</button>' +
+    '<button type="button" class="btn" id="ghSaveNow"' + (has ? '' : ' disabled') + '>Save to GitHub now</button>' +
+    '<button type="button" class="btn" id="ghHistoryBtn"' + (has ? '' : ' disabled') + '>Earlier versions</button>' +
     '<button type="button" class="btn" id="ghForgetBtn"' + (has ? '' : ' disabled') + '>Disconnect</button></div>' +
     '<p class="hint">Status: <span data-save-state>' + esc(has ? saveStateText() : 'Not connected') + '</span>' + (has ? ' · ' + esc(g.owner + '/' + g.repo) : '') + '</p><p class="form-error" id="ghFormErr" hidden></p></div>';
 }
@@ -3382,14 +3541,16 @@ function wireGhSection(b){
     go.textContent = 'Save and reload';
     const same = old.owner === owner && old.repo === repo && old.branch === branch && old.path === path;
     ghStore({owner, repo, branch, path, token, sha: same ? old.sha || null : null, dirty: same ? !!old.dirty : false, lastSyncedAt: same ? old.lastSyncedAt || 0 : 0});
-    b.querySelector('#ghSaveNow').disabled = false; b.querySelector('#ghForgetBtn').disabled = false;
+    b.querySelector('#ghSaveNow').disabled = false; b.querySelector('#ghForgetBtn').disabled = false; b.querySelector('#ghPull').disabled = false; b.querySelector('#ghHistoryBtn').disabled = false;
     ghLoad();
   });
   b.querySelector('#ghSaveNow').addEventListener('click', () => { const c = ghCfg(); if(!c) return; c.dirty = true; ghStore(c); gh.rev++; ghSave(); });
+  b.querySelector('#ghPull').addEventListener('click', () => { closeModal(); ghPullNow(); });
+  b.querySelector('#ghHistoryBtn').addEventListener('click', () => { closeModal(); ghHistory(); });
   b.querySelector('#ghForgetBtn').addEventListener('click', () => {
     ghForget();
     b.querySelector('#ghToken').value = '';
-    b.querySelector('#ghSaveNow').disabled = true; b.querySelector('#ghForgetBtn').disabled = true;
+    b.querySelector('#ghSaveNow').disabled = true; b.querySelector('#ghForgetBtn').disabled = true; b.querySelector('#ghPull').disabled = true; b.querySelector('#ghHistoryBtn').disabled = true;
     toast('Disconnected; the token was removed from this browser');
   });
 }
@@ -3600,6 +3761,7 @@ function strHash(s){ let h = 0x811c9dc5; for(let i = 0; i < s.length; i++){ h ^=
 function notesSig(){ return strHash(Object.values(lib.entries).filter(e => String(e.n || '').trim()).sort((a, b) => a.id < b.id ? -1 : 1).map(e => e.id + '\u0001' + noteFileMd(e)).join('\u0002')); }
 async function ghMirrorNotes(){
   const c = ghCfg(); if(!c) return;
+  if(localEmpty()) return;
   const sig = notesSig();
   if(c.notesSig === sig) return;
   const want = {}, have = {};

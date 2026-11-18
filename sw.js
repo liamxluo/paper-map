@@ -1,7 +1,7 @@
 /* Paper Map, installed as an app: keep the page itself available offline.
    Your data is never cached here: it lives in this browser and in your own GitHub repository. */
-const CACHE = 'paper-map-1.5.0';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png'];
+const CACHE = 'paper-map-v1.3.0';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=d', './icons/icon-512.png?v=d', './icons/maskable-512.png?v=d', './icons/apple-touch-icon.png?v=d'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
