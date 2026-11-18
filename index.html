@@ -993,6 +993,25 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
 .rl-note{font-style:italic;color:var(--muted);font-size:.82rem;line-height:1.35}
 .rl-y{color:var(--faint);font-variant-numeric:tabular-nums;font-size:.8rem}
 @media (max-width: 640px){ .rel-list li{grid-template-columns:6.2em minmax(0,1fr) auto} }
+
+/* ---------- the paper panel: read marks beside the title, How far folded ---------- */
+.info-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px 18px;flex-wrap:wrap}
+.info-head .info-t{flex:1 1 18em;min-width:0}
+.info-st{display:inline-flex;gap:8px;flex:none;margin-top:.15em}
+.info-st .stbtn{margin:0}
+.hf-fold .depth-ctl{margin-top:.45em}
+.info-actions{margin-top:.85em}
+@media (max-width: 640px){ .info-st{width:100%} }
+
+.hf-fold .depth-ctl .hf-count{display:none}
+
+/* ---------- no Focus column: the notes get the room ---------- */
+.c-tags .doms,.c-tags .pres{display:block;margin-top:.35em}
+.c-note{width:34%}
+.more-fields{border:1px solid var(--rule);border-radius:10px;padding:.45em .7em}
+.more-fields > summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+.more-fields[open] > summary{margin-bottom:.5em}
+.more-fields label{display:flex;flex-direction:column;gap:4px}
 </style>
 </head>
 <body>
@@ -1124,13 +1143,13 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
       <span><i class="sz p1"></i>· Background</span>
     </p>
     <p class="legend">
-      <span><svg class="lsw" width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="27" y2="5"></line><path class="lsw-arr" d="M23 2 L28 5 L23 8"></path></svg>Builds on</span>
-      <span><svg class="lsw c" width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="27" y2="5"></line><path class="lsw-arr" d="M23 2 L28 5 L23 8"></path></svg>Responds to</span>
-      <span><svg class="lsw r" width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="27" y2="5"></line><path class="lsw-arr" d="M23 2 L28 5 L23 8"></path></svg>Related to</span>
+      <span><svg class="lsw" width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="29" y2="5"></line><path class="lsw-arr" d="M13 1.5 L17.5 5 L13 8.5"></path></svg>Builds on</span>
+      <span><svg class="lsw c" width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="29" y2="5"></line><path class="lsw-arr" d="M13 1.5 L17.5 5 L13 8.5"></path></svg>Responds to</span>
+      <span><svg class="lsw r" width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="29" y2="5"></line></svg>Related to</span>
       <span><i class="cdot-sw"></i>Square: a concept you created</span>
       <span><svg class="lsw p" width="28" height="8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4"></line></svg>Prerequisite concepts (when selected, or always: Settings)</span>
     </p>
-    <p class="map-hint">Arrows point to the later paper, the way ideas flow; Settings → Map can point them at the paper each one builds on instead, or hide them.</p>
+    <p class="map-hint">On Builds on and Responds to lines, the arrow points to the later paper, the way ideas flow; Settings → Map can point it at the paper each one builds on instead, or hide it. Related-to lines have no direction, so no arrow.</p>
     <p class="legend" id="srcLegend" hidden></p>
     <p class="map-hint">Drag along the year axis to zoom into a period, double-click the map to zoom in on a point, and drag sideways to pan once zoomed in. Pinch or Ctrl + scroll also zooms. Over long spans the axis gives busy decades more room and sparse years less; once you zoom in, it is even.</p>
   </details>
@@ -1351,6 +1370,7 @@ function normalizeSettings(S){
   S.showConcepts = S.showConcepts !== false;
   S.showRelated = S.showRelated !== false;
   S.relOpen = !!S.relOpen;
+  S.hfFoldOpen = !!S.hfFoldOpen;
   if(!['flow', 'cite', 'off'].includes(S.arrows)) S.arrows = 'flow';
   if(!['all', 'up', 'down', 'lineage'].includes(S.focusDir)) S.focusDir = 'all';
   S.hfOpen = !!S.hfOpen;
@@ -3105,15 +3125,14 @@ function rowHTML(e, withPlace){
     '<td class="c-st">' + statusDots(e) + '</td>' +
     '<td class="c-year"><span class="spine" aria-hidden="true"></span><span class="node-mark" aria-hidden="true"></span><span class="yr" draggable="true" data-drag-paper="' + e.id + '" title="Drag onto a topic in Contents to move it there">' + esc(e.y) + '</span></td>' +
     '<td class="c-ref"><span class="au">' + esc(e.au) + '</span><span class="t">' + esc(e.t) + '</span><span class="v">' + esc(e.v) + '</span></td>' +
-    '<td class="c-focus"><span class="f">' + esc(e.f) + '</span>' + (doms ? '<span class="doms">' + doms + '</span>' : '') + (pres ? '<span class="pres"><span class="pres-k">Needs</span>' + pres + '</span>' : '') + '</td>' +
-    '<td class="c-tags">' + tags.join('') + '</td>' +
+    '<td class="c-tags">' + tags.join('') + (doms ? '<span class="doms">' + doms + '</span>' : '') + (pres ? '<span class="pres"><span class="pres-k">Needs</span>' + pres + '</span>' : '') + '</td>' +
     '<td class="c-note">' + noteCell(e) + editButtons(e.id) + '</td>' +
   '</tr>';
 }
 function tableHTML(rows, withPlace){
   return '<div class="table-wrap"><table><thead><tr>' +
     '<th class="c-st">Status</th><th class="c-year">Year</th><th class="c-ref">Paper</th>' +
-    '<th class="c-focus">Focus</th><th class="c-tags">Labels</th><th class="c-note">Notes</th>' +
+    '<th class="c-tags">Labels</th><th class="c-note">Notes</th>' +
     '</tr></thead><tbody>' + rows.map(e => rowHTML(e, withPlace)).join('') + '</tbody></table></div>';
 }
 function noteCell(e){
@@ -3349,18 +3368,29 @@ function buildScale(left, inner, years){
   f.ticks = kept.sort((p, q) => p - q);
   return f;
 }
-/* an arrowhead at one end of a line, sitting on the edge of that end's dot.
-   'flow': it points at the later paper, the way ideas travel; 'cite': it points at the paper being built on. */
-function edgeArrow(p, q, atEnd, rDot){
+/* an arrowhead ON the line, a little past its middle (clear of any note, which sits at the middle),
+   so lines meeting at one dot don't pile their arrows up there.
+   'flow': it points along the line towards the later paper; 'cite': back towards the paper being built on. */
+function edgeArrow(p, q, flow){
   const same = Math.abs(p.y - q.y) < 1, mx = (p.x + q.x) / 2;
-  let tip, ux, uy;
-  if(same){ const h = Math.min(20, 6 + Math.abs(q.x - p.x) * 0.08); if(atEnd){ tip = q; ux = q.x - mx; uy = h; } else { tip = p; ux = p.x - mx; uy = h; } }
-  else if(Math.abs(q.x - p.x) > 2){ tip = atEnd ? q : p; ux = atEnd ? q.x - mx : p.x - mx; uy = 0; }
-  else { tip = atEnd ? q : p; ux = 0; uy = atEnd ? q.y - p.y : p.y - q.y; }
-  const L = Math.hypot(ux, uy) || 1; ux /= L; uy /= L;
-  const tx = tip.x - ux * (rDot + 1.6), ty = tip.y - uy * (rDot + 1.6), back = 6.2, wide = 3.4;
-  const bx = tx - ux * back, by = ty - uy * back;
-  return 'M' + (bx - uy * wide).toFixed(1) + ' ' + (by + ux * wide).toFixed(1) + ' L' + tx.toFixed(1) + ' ' + ty.toFixed(1) + ' L' + (bx + uy * wide).toFixed(1) + ' ' + (by - ux * wide).toFixed(1);
+  if(Math.hypot(q.x - p.x, q.y - p.y) < 30) return '';
+  const tt = flow ? 0.62 : 0.38, s = 1 - tt;
+  let x, y, dx, dy;
+  if(same){
+    const h = Math.min(20, 6 + Math.abs(q.x - p.x) * 0.08), c = {x: mx, y: p.y - h};
+    x = s * s * p.x + 2 * s * tt * c.x + tt * tt * q.x; y = s * s * p.y + 2 * s * tt * c.y + tt * tt * q.y;
+    dx = 2 * s * (c.x - p.x) + 2 * tt * (q.x - c.x); dy = 2 * s * (c.y - p.y) + 2 * tt * (q.y - c.y);
+  }else{
+    const c1 = {x: mx, y: p.y}, c2 = {x: mx, y: q.y};
+    x = s * s * s * p.x + 3 * s * s * tt * c1.x + 3 * s * tt * tt * c2.x + tt * tt * tt * q.x;
+    y = s * s * s * p.y + 3 * s * s * tt * c1.y + 3 * s * tt * tt * c2.y + tt * tt * tt * q.y;
+    dx = 3 * s * s * (c1.x - p.x) + 6 * s * tt * (c2.x - c1.x) + 3 * tt * tt * (q.x - c2.x);
+    dy = 3 * s * s * (c1.y - p.y) + 6 * s * tt * (c2.y - c1.y) + 3 * tt * tt * (q.y - c2.y);
+  }
+  let L = Math.hypot(dx, dy) || 1; let ux = dx / L, uy = dy / L;
+  if(!flow){ ux = -ux; uy = -uy; }
+  const tipx = x + ux * 3.2, tipy = y + uy * 3.2, bx = x - ux * 3.2, by = y - uy * 3.2, wide = 3.6;
+  return 'M' + (bx - uy * wide).toFixed(1) + ' ' + (by + ux * wide).toFixed(1) + ' L' + tipx.toFixed(1) + ' ' + tipy.toFixed(1) + ' L' + (bx + uy * wide).toFixed(1) + ' ' + (by - ux * wide).toFixed(1);
 }
 function edgePath(p, q){
   if(Math.abs(p.y - q.y) < 1){
@@ -3387,7 +3417,7 @@ function rekeyTl(oldId, newId){
 }
 function tlOf(ln){ const id = tlIdOf(ln); return (lib.tlinks || []).filter(l => l[0] === id || l[1] === id).map(l => l[0] === id ? l[1] : l[0]); }
 function topicLinkArcs(){ return ''; }
-document.addEventListener('toggle', ev => { const d = ev.target; if(d && d.matches && d.matches('[data-rel-fold]')){ settings.relOpen = d.open; persistSettings({remote:false}); } }, true);
+document.addEventListener('toggle', ev => { const d = ev.target; if(!d || !d.matches) return; if(d.matches('[data-rel-fold]')){ settings.relOpen = d.open; persistSettings({remote:false}); } else if(d.matches('[data-hf-fold]')){ settings.hfFoldOpen = d.open; persistSettings({remote:false}); } }, true);
 function clearTlHover(){ mapLabels.querySelectorAll('.tl-hover').forEach(x => { x.classList.remove('tl-hover', 'tl-hover-multi'); x.style.removeProperty('--tlh'); x.style.removeProperty('--tlhg'); }); }
 mapLabels.addEventListener('mouseover', ev => {
   clearTlHover();
@@ -3524,9 +3554,9 @@ function renderMap(force){
     const muted = (!ok[a] || !ok[b]) && t !== 'o' ? ' muted' : '';
     const brId = lib.lineBranch[a + '|' + b + '|' + t], br = brId && lib.branches.find(x => x.id === brId);
     s += '<path class="edge ' + t + muted + (br ? ' br' : '') + '"' + (br ? ' style="--br:' + br.color + '" data-br="' + br.id + '"' : '') + ' data-a="' + a + '" data-b="' + b + '" d="' + edgePath(p, q) + '"></path>';
-    if(settings.arrows !== 'off' && (t === 'b' || t === 'c' || t === 'r')){
-      const toEnd = settings.arrows !== 'cite', target = lib.entries[toEnd ? b : a];
-      s += '<path class="edge arr ' + t + muted + (br ? ' br' : '') + '"' + (br ? ' style="--br:' + br.color + '" data-br="' + br.id + '"' : '') + ' data-a="' + a + '" data-b="' + b + '" d="' + edgeArrow(p, q, toEnd, target ? dotR(target, narrow) : 5) + '"></path>';
+    if(settings.arrows !== 'off' && (t === 'b' || t === 'c')){
+      const ad = edgeArrow(p, q, settings.arrows !== 'cite');
+      if(ad) s += '<path class="edge arr ' + t + muted + (br ? ' br' : '') + '"' + (br ? ' style="--br:' + br.color + '" data-br="' + br.id + '"' : '') + ' data-a="' + a + '" data-b="' + b + '" d="' + ad + '"></path>';
     }
     if(note){
       const same = Math.abs(p.y - q.y) < 1;
@@ -3761,12 +3791,16 @@ function focusNoteHTML(id){
     const dir = settings.focusDir || 'all', open = !!settings.hfOpen;
     const DIRS = [['all', 'All ways', 'Every connection, in any direction: the whole pipeline'], ['up', 'Earlier only', 'Only what it builds on, and what those build on'], ['down', 'Later only', 'Only what builds on it, and what builds on those'], ['lineage', 'Earlier + later', 'Back and forward in time, without turning into side branches']];
     const hasR = lib.links.some(l => l[2] === 'r');
-    h += '<div class="rel depth-ctl"><span class="rel-k">How far</span>' + [[1, '1 step'], [2, '2 steps'], [3, '3 steps'], ['all', 'Whole line']].map(o => '<button type="button" class="dchip' + (String(ui.depth) === String(o[0]) ? ' on' : '') + '" data-depth="' + o[0] + '">' + o[1] + '</button>').join('') +
+    const DEPTHS = [[1, '1 step'], [2, '2 steps'], [3, '3 steps'], ['all', 'Whole line']];
+    const curDepth = (DEPTHS.find(o => String(o[0]) === String(ui.depth)) || DEPTHS[0])[1];
+    const countTxt = np + (np === 1 ? ' paper' : ' papers') + (nc ? ', ' + nc + (nc === 1 ? ' concept' : ' concepts') : '');
+    h += '<details class="rel-fold hf-fold" data-hf-fold="1"' + (settings.hfFoldOpen ? ' open' : '') + '><summary><span class="rel-k">How far</span><span class="rel-sum">' + esc(curDepth) + (dir !== 'all' ? ' · ' + esc(DIRS.find(d => d[0] === dir)[1]) : '') + ' · ' + esc(countTxt) + '</span></summary>';
+    h += '<div class="rel depth-ctl">' + DEPTHS.map(o => '<button type="button" class="dchip' + (String(ui.depth) === String(o[0]) ? ' on' : '') + '" data-depth="' + o[0] + '">' + o[1] + '</button>').join('') +
       '<span class="hf-count" title="How much is lit up now">' + np + (np === 1 ? ' paper' : ' papers') + (nc ? ', ' + nc + (nc === 1 ? ' concept' : ' concepts') : '') + '</span>' +
       '<button type="button" class="hf-more' + (dir !== 'all' || (hasR && settings.showRelated === false) ? ' changed' : '') + '" data-hf-open="1" aria-expanded="' + open + '" title="Direction and Related-to lines">' + (dir !== 'all' ? esc(DIRS.find(d => d[0] === dir)[1]) : 'Options') + ' <span aria-hidden="true">' + (open ? '▴' : '▾') + '</span></button>' +
       '<div class="hf-opts"' + (open ? '' : ' hidden') + '><span class="hf-k">Direction</span>' + DIRS.map(d => '<button type="button" class="dchip small' + (dir === d[0] ? ' on' : '') + '" data-hf-dir="' + d[0] + '" title="' + esc(d[2]) + '">' + d[1] + '</button>').join('') +
       (hasR ? '<span class="dsep" aria-hidden="true"></span><button type="button" class="dchip small rel-toggle' + (settings.showRelated !== false ? ' on' : '') + '" data-rel-toggle="1" aria-pressed="' + (settings.showRelated !== false) + '" title="Show or hide the dotted Related-to lines"' + (dir !== 'all' ? ' disabled' : '') + '><svg width="18" height="6" aria-hidden="true"><line x1="1" y1="3" x2="17" y2="3"></line></svg>Related to</button>' : '') +
-      '</div></div>';
+      '</div></div></details>';
   }
   return h;
 }
@@ -3867,8 +3901,8 @@ function infoHTML(id){
   const st = stOf(e);
   return '<div class="info-grid"><p class="info-year">' + esc(e.y) + '</p><div>' +
     '<p class="info-au">' + (e.au ? esc(e.au) + ' · ' : '') + place + '</p>' +
-    '<p class="info-t">' + esc(e.t) + '</p>' + (e.v || idLinksHTML(e) ? '<p class="info-src">' + esc(e.v || '') + (idLinksHTML(e) ? (e.v ? ' · ' : '') + idLinksHTML(e) : '') + '</p>' : '') + (e.f ? '<p class="info-f">' + esc(e.f) + '</p>' : '') + infoTagsHTML(e) + rels +
-    '<p class="info-actions"><button type="button" class="stbtn want" data-st="want" data-id="' + e.id + '" aria-pressed="' + (st === 'want') + '">Want to read</button><button type="button" class="stbtn read" data-st="read" data-id="' + e.id + '" aria-pressed="' + (st === 'read') + '">Read</button><button type="button" class="linkbtn" data-goto="' + e.id + '">Show in table</button><button type="button" class="linkbtn" data-reader="' + e.id + '">Notes &amp; PDF</button>' +
+    '<div class="info-head"><p class="info-t">' + esc(e.t) + '</p><span class="info-st"><button type="button" class="stbtn want" data-st="want" data-id="' + e.id + '" aria-pressed="' + (st === 'want') + '">Want to read</button><button type="button" class="stbtn read" data-st="read" data-id="' + e.id + '" aria-pressed="' + (st === 'read') + '">Read</button></span></div>' + (e.v || idLinksHTML(e) ? '<p class="info-src">' + esc(e.v || '') + (idLinksHTML(e) ? (e.v ? ' · ' : '') + idLinksHTML(e) : '') + '</p>' : '') + infoTagsHTML(e) + rels +
+    '<p class="info-actions"><button type="button" class="linkbtn" data-goto="' + e.id + '">Show in table</button><button type="button" class="linkbtn" data-reader="' + e.id + '">Notes &amp; PDF</button>' +
     (ui.edit ? '<button type="button" class="linkbtn" data-edit="' + e.id + '">Modify</button>' : '') +
     '<button type="button" class="linkbtn" data-clear-sel="1">Clear selection</button></p></div></div>';
 }
@@ -4405,7 +4439,7 @@ function openEntryForm(id, preset){
       '<div style="display:flex;gap:8px;margin-top:6px"><input type="text" id="newTag" placeholder="New tag name"><button type="button" class="btn" id="addTag">New tag</button></div></div>' +
     '<div class="field full"><span>Interests</span><div class="domchips" id="domChips">' + doms.map(x => '<button type="button" class="dom' + (state.d.includes(x) ? ' on' : '') + '" data-fdom="' + esc(x) + '" aria-pressed="' + state.d.includes(x) + '">' + esc(x) + '</button>').join('') + '</div>' +
       '<div style="display:flex;gap:8px;margin-top:6px"><input type="text" id="newDom" placeholder="New interest"><button type="button" class="btn" id="addDom">Add</button></div></div>' +
-    '<label class="full">Focus<textarea name="f" rows="2" placeholder="The question this paper answers">' + esc(base.f) + '</textarea></label>' +
+    '<details class="full more-fields"' + (base.f ? ' open' : '') + '><summary>More details</summary><label>Focus <span class="hint">optional · the question it answers, if the title doesn’t say it</span><textarea name="f" rows="2" placeholder="The question this paper answers">' + esc(base.f) + '</textarea></label></details>' +
     '<label class="full">Notes<textarea name="n" rows="3" placeholder="Why read it, and how">' + esc(base.n) + '</textarea></label>' +
     pickerHTML('b', 'Builds on', state.b, 'earlier papers it builds on') +
     pickerHTML('c', 'Responds to', state.c, 'papers it replicates, rebuts or revises') +
