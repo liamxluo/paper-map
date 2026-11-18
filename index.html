@@ -756,6 +756,13 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
 .tl-badges{flex-direction:column;align-items:center;gap:0;right:5px;max-height:calc(100% - 8px);overflow-y:auto;scrollbar-width:none}
 .tl-badges::-webkit-scrollbar{display:none}
 .tl-badges .tl-badge{font-size:.74rem;line-height:1.05}
+
+/* a row related in several colours: its edge splits into them */
+.map-labels button.tl-rel.tl-multi{box-shadow:none;background:color-mix(in srgb, var(--ink) 6%, transparent)}
+.map-labels button.tl-rel.tl-multi::after,.map-labels button.tl-hover-multi::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:4px 0 0 4px}
+.map-labels button.tl-rel.tl-multi::after{background:var(--tlcg)}
+.map-labels button.tl-hover.tl-hover-multi{box-shadow:none;background:color-mix(in srgb, var(--ink) 6%, transparent)}
+.map-labels button.tl-hover-multi::after{background:var(--tlhg)}
 </style>
 </head>
 <body>
@@ -1738,6 +1745,12 @@ function edgePath(p, q){
 /* Related topics: a small ⇄ after the row's name; the rows related to the one you are in, or hovering, light up */
 function tlIdOf(ln){ return ln.sub.hidden ? ln.topic.id : ln.sub.id; }
 function tlBranch(l){ const bid = (lib.tlinkColor || {})[l[0] + '|' + l[1]]; return (bid && (lib.branches || []).find(b => b.id === bid)) || null; }
+function tlColours(rels){ return [...new Set(rels.map(r => r.color || 'var(--focus)'))]; }
+function tlStyle(cols, v){
+  if(cols.length === 1) return v + ':' + cols[0];
+  const n = cols.length;
+  return v + 'g:linear-gradient(to bottom,' + cols.map((c, i) => c + ' ' + (i * 100 / n).toFixed(2) + '% ' + ((i + 1) * 100 / n).toFixed(2) + '%').join(',') + ')';
+}
 function tlRelsOf(id){ return (lib.tlinks || []).filter(l => l[0] === id || l[1] === id).map(l => { const br = tlBranch(l); return {o: l[0] === id ? l[1] : l[0], bid: br ? br.id : '', color: br ? br.color : '', name: br ? br.name : ''}; }); }
 function rekeyTl(oldId, newId){
   const m = lib.tlinkColor || {};
@@ -1745,7 +1758,7 @@ function rekeyTl(oldId, newId){
 }
 function tlOf(ln){ const id = tlIdOf(ln); return (lib.tlinks || []).filter(l => l[0] === id || l[1] === id).map(l => l[0] === id ? l[1] : l[0]); }
 function topicLinkArcs(){ return ''; }
-function clearTlHover(){ mapLabels.querySelectorAll('.tl-hover').forEach(x => { x.classList.remove('tl-hover'); x.style.removeProperty('--tlh'); }); }
+function clearTlHover(){ mapLabels.querySelectorAll('.tl-hover').forEach(x => { x.classList.remove('tl-hover', 'tl-hover-multi'); x.style.removeProperty('--tlh'); x.style.removeProperty('--tlhg'); }); }
 mapLabels.addEventListener('mouseover', ev => {
   clearTlHover();
   const b = ev.target.closest('button[data-tl-id]'); if(!b || !b.dataset.tlRel) return;
@@ -1753,10 +1766,15 @@ mapLabels.addEventListener('mouseover', ev => {
   const rels = b.dataset.tlRel.split(' ').map(s => s.split('~')).filter(p => only === null || p[1] === only);
   if(!rels.length) return;
   const col = {}; rels.forEach(p => { col[p[0]] = p[2] || 'var(--focus)'; });
-  const self = only !== null && rels[0][2] ? rels[0][2] : 'var(--focus)';
+  const selfCols = [...new Set(rels.map(p => p[2] || 'var(--focus)'))];
+  const paint = (x, cols) => {
+    x.classList.add('tl-hover');
+    if(cols.length > 1){ x.classList.add('tl-hover-multi'); const m = tlStyle(cols, '--tlh').split(':'); x.style.setProperty(m[0], m.slice(1).join(':')); }
+    else x.style.setProperty('--tlh', cols[0]);
+  };
   mapLabels.querySelectorAll('button[data-tl-id]').forEach(x => {
-    const c = x === b ? self : col[x.dataset.tlId]; if(!c) return;
-    x.classList.add('tl-hover'); x.style.setProperty('--tlh', c);
+    if(x === b) paint(x, selfCols);
+    else if(col[x.dataset.tlId]) paint(x, [col[x.dataset.tlId]]);
   });
 });
 mapLabels.addEventListener('mouseleave', clearTlHover);
@@ -1769,7 +1787,7 @@ function renderMapLabels(lanes, laneH){
   /* the row you are in, and every row related to it, light up together (in the link's colour) */
   const litTl = {};
   const here = ui.page !== 'concepts' ? (ui.sub || ui.topic) : null;
-  if(here){ const hr = tlRelsOf(here); if(hr.length){ litTl[here] = 'var(--focus)'; hr.forEach(r => { if(!litTl[r.o] || litTl[r.o] === 'var(--focus)') litTl[r.o] = r.color || 'var(--focus)'; }); } }
+  if(here){ const hr = tlRelsOf(here); if(hr.length){ litTl[here] = tlColours(hr); hr.forEach(r => { litTl[r.o] = [r.color || 'var(--focus)']; }); } }
   mapLabels.innerHTML = lanes.map((ln, i) => {
     if(ln.concepts) return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + ' lane-concepts' + (ui.page === 'concepts' ? ' on' : '') + '" data-view="__concepts" style="--d:0" title="Open the Concepts page"><span class="lab-in"><span class="full"><span class="nm"><i class="sq" aria-hidden="true"></i>Concepts</span></span><span class="short">Ideas</span></span></button>';
     const anc = subAncestors(ln.sub);
@@ -1784,7 +1802,7 @@ function renderMapLabels(lanes, laneH){
     const groups = []; rels.forEach(r => { let g = groups.find(x => x.bid === r.bid); if(!g){ g = {bid: r.bid, color: r.color, name: r.name, os: []}; groups.push(g); } g.os.push(r.o); });
     const lit = litTl[tid];
     const badges = groups.length ? '<span class="tl-badges">' + groups.map(g => '<span class="tl-badge" data-tl-group="' + g.bid + '"' + (g.color ? ' style="--tlc:' + g.color + '"' : '') + ' title="' + esc((g.name ? g.name + ': ' : 'Related to ') + g.os.map(topicNodeName).join(', ')) + '">⇄</span>').join('') + '</span>' : '';
-    return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + (ln.sub.id === ui.sub && ui.page !== 'concepts' ? ' on' : '') + (lit ? ' tl-rel' : '') + '" data-view="' + ln.sub.id + '" data-tl-id="' + tid + '" data-tl-rel="' + esc(rels.map(r => r.o + '~' + r.bid + '~' + r.color).join(' ')) + '" style="--d:' + dd + ';--nb:' + groups.length + (lit ? ';--tlc:' + lit : '') + '" title="Open “' + esc(full) + '”' + (rels.length ? ' · related to ' + esc(rels.map(r => topicNodeName(r.o)).join(', ')) : '') + '"><span class="lab-in"><span class="full">' + (ctx ? '<span class="lt">' + esc(ctx) + '</span>' : '') + '<span class="nm">' + (dd ? '<span class="lane-in" aria-hidden="true">└</span>' : '') + esc(name) + '</span></span>' + badges + '<span class="short">' + esc(name.slice(0, 4)) + '</span></span></button>';
+    return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + (ln.sub.id === ui.sub && ui.page !== 'concepts' ? ' on' : '') + (lit ? ' tl-rel' + (lit.length > 1 ? ' tl-multi' : '') : '') + '" data-view="' + ln.sub.id + '" data-tl-id="' + tid + '" data-tl-rel="' + esc(rels.map(r => r.o + '~' + r.bid + '~' + r.color).join(' ')) + '" style="--d:' + dd + ';--nb:' + groups.length + (lit ? ';' + tlStyle(lit, '--tlc') : '') + '" title="Open “' + esc(full) + '”' + (rels.length ? ' · related to ' + esc(rels.map(r => topicNodeName(r.o)).join(', ')) : '') + '"><span class="lab-in"><span class="full">' + (ctx ? '<span class="lt">' + esc(ctx) + '</span>' : '') + '<span class="nm">' + (dd ? '<span class="lane-in" aria-hidden="true">└</span>' : '') + esc(name) + '</span></span>' + badges + '<span class="short">' + esc(name.slice(0, 4)) + '</span></span></button>';
   }).join('');
   mapLabels.classList.toggle('has-tl', !!arcsSvg);
   if(arcsSvg) mapLabels.insertAdjacentHTML('beforeend', arcsSvg);
