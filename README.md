@@ -91,7 +91,7 @@ Every topic also opens as a list, with status, notes, tags and concept cards
 
 </details>
 
-**One field at a time:** **Topics on the map → Current topic only**.
+- **One field at a time:** **Topics on the map → Current topic only**.
 
 ---
 

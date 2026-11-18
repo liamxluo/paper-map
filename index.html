@@ -92,7 +92,10 @@ h1{font-family:var(--serif);font-weight:900;font-size:clamp(2.2rem,6.6vw,3.8rem)
 .lp-subs input,.lp-topic input{accent-color:var(--ink)}
 
 /* central map */
-.map{display:grid;grid-template-columns:calc(var(--lab-w,132px) + var(--lab-extra,0px)) minmax(0,1fr)}
+.map,.map-axis{display:grid;grid-template-columns:calc(var(--lab-w,132px) + var(--lab-extra,0px)) minmax(0,1fr)}
+.map-box{max-height:max(300px, calc(100vh - 230px));overflow-y:auto;overflow-x:hidden}
+.map-axis{position:sticky;bottom:0;z-index:3;background:var(--bg)}
+.net-axis{touch-action:none}
 .map-labels{display:grid;grid-auto-rows:var(--lane-h,46px);padding-top:var(--map-top,8px);align-content:start}
 .map-labels button{font-family:var(--serif);font-weight:600;font-size:.9rem;line-height:1.2;text-align:left;background:transparent;border:0;border-radius:4px 0 0 4px;padding:0 10px 0 8px;color:var(--ink);cursor:pointer;display:flex;align-items:center;min-width:0;overflow:hidden}
 .map-labels button.band{background:var(--band)}
@@ -577,6 +580,14 @@ body.editing .toc-link{padding-right:34px}
 .net.quiet-notes.focus .edge-note.hot{display:inline}
 .tl-svg g.faint{opacity:.22}
 .tl-svg g.on path{opacity:.95;stroke-width:2}
+
+/* ---------- row labels: one row each, never spilling into the next ---------- */
+.map-labels button > .lab-in{display:block;min-width:0;flex:1 1 auto;overflow:hidden}
+.map-labels .full{min-width:0}
+.map-labels .nm{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+.map-labels .lt{line-height:1.15}
+.map-labels .lt + .nm{line-height:1.1}
+.map-labels .lt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -611,8 +622,8 @@ body.editing .toc-link{padding-right:34px}
       <button type="button" data-act="new-sub">New subtopic</button>
       <button type="button" data-act="new-topic">New topic</button>
       <button type="button" data-act="tags">Tags &amp; colours</button>
-      <button type="button" data-act="edit-topic">Modify this topic</button>
-      <button type="button" data-act="del-topic">Delete this topic</button>
+      <button type="button" data-act="edit-topic" id="barEditTopic">Modify this topic</button>
+      <button type="button" data-act="del-topic" id="barDelTopic">Delete this topic</button>
       <span class="sep"></span>
       <button type="button" data-act="export">Export backup</button>
       <button type="button" data-act="exit-edit">Done</button>
@@ -662,11 +673,14 @@ body.editing .toc-link{padding-right:34px}
   </div>
   <div class="lane-picker" id="lanePicker" hidden></div>
 
+  <div class="map-box" id="mapBox">
   <div class="map" id="map">
     <div class="map-labels" id="mapLabels" aria-label="Topics on the map"></div>
     <div class="map-scroll" id="mapScroll">
       <svg class="net" id="net" aria-label="Papers by topic and year, with the lines between them"></svg>
     </div>
+  </div>
+  <div class="map-axis" id="mapAxis"><div></div><svg class="net net-axis" id="netAxis" aria-hidden="true"></svg></div>
   </div>
 
   <div class="info" id="info" aria-live="polite"></div>
@@ -1340,7 +1354,7 @@ function renderSubSection(s, tp, asPart, opts){
       s.groups.map(g => '<button type="button" class="subchip' + (ui.group === g.id ? ' on' : '') + '" data-group="' + g.id + '">' + esc(g.name) + '<span>' + papers.filter(e => e.group === g.id).length + '</span></button>').join('') + '</div>' : '';
     const edit = ui.edit ? '<div class="head-edit"><button type="button" class="btn" data-act="new-entry">Add paper</button>' +
       (concepts.length ? '<button type="button" class="btn" data-act="new-concept">Add concept</button>' : '') +
-      '<button type="button" class="btn" data-act="edit-sub" data-sub="' + s.id + '">Modify ' + (s.hidden ? 'topic' : 'subtopic') + '</button>' +
+      (s.hidden ? '<button type="button" class="btn" data-act="edit-topic">Modify topic</button><button type="button" class="btn" data-act="new-sub" data-topic="' + tp.id + '">Add subtopic</button><button type="button" class="btn" data-act="del-topic">Delete topic</button>' : '<button type="button" class="btn" data-act="edit-sub" data-sub="' + s.id + '">Modify subtopic</button>') +
       (!s.hidden ? '<button type="button" class="btn" data-act="new-sub" data-topic="' + tp.id + '" data-parent="' + s.id + '">Add subtopic inside</button>' : '') +
       (!s.hidden ? '<button type="button" class="btn" data-act="del-sub" data-sub="' + s.id + '">Delete subtopic</button>' : '') + '</div>' : '';
     h += '<div class="branch-head"><h2>' + esc(title) + '</h2>' +
@@ -1364,6 +1378,8 @@ function emptyGuide(){
     '<li>Have a backup file? Use <strong>Settings → Data → Import backup</strong>.</li></ol></section>';
 }
 function renderMain(){
+  const tpBar = IDX.topics[ui.topic];
+  if(tpBar){ const nm = tpBar.name.length > 22 ? tpBar.name.slice(0, 21) + '…' : tpBar.name; document.getElementById('barEditTopic').textContent = 'Modify “' + nm + '”'; document.getElementById('barDelTopic').textContent = 'Delete “' + nm + '”'; }
   if(!Object.keys(lib.entries).length && !ui.edit){ mainEl.innerHTML = emptyGuide(); return; }
   const tp = IDX.topics[ui.topic];
   if(!tp){ mainEl.innerHTML = '<p class="empty">No topics yet.</p>'; return; }
@@ -1382,7 +1398,7 @@ function renderMain(){
     const anyConcept = es.some(e => e.kind === 'concept');
     html = '<section class="branch" id="sec-' + tp.id + '-all"><div class="branch-head"><h2>' + esc(tp.name) + ': all</h2>' +
       '<p class="branch-count">' + countText(es) + '</p>' + (tp.desc ? '<p class="branch-desc">' + esc(tp.desc) + '</p>' : '') + relatedTopicsHTML(tp.id) +
-      (ui.edit ? '<div class="head-edit"><button type="button" class="btn" data-act="new-entry">Add paper</button></div>' : '') + '</div>';
+      (ui.edit ? '<div class="head-edit"><button type="button" class="btn" data-act="new-entry">Add paper</button><button type="button" class="btn" data-act="edit-topic">Modify topic</button><button type="button" class="btn" data-act="new-sub" data-topic="' + tp.id + '">Add subtopic</button><button type="button" class="btn" data-act="del-topic">Delete topic</button></div>' : '') + '</div>';
     if(anyConcept){
       html += visibleSubs(tp).concat(tp.subs.filter(s => s.hidden)).map(s => renderSubSection(s, tp, true)).join('');
     }else{
@@ -1399,6 +1415,7 @@ const mapSvg = document.getElementById('net');
 const mapScroll = document.getElementById('mapScroll');
 const mapLabels = document.getElementById('mapLabels');
 const infoEl = document.getElementById('info');
+const axisSvg = document.getElementById('netAxis'), mapBox = document.getElementById('mapBox');
 let lastMapW = 0;
 const MAP = {P:{}, x:null, W:0, H:0, left:0, inner:0, axisY:0, full:[1700, 2030]};
 
@@ -1542,9 +1559,11 @@ function renderMapLabels(lanes, laneH){
     let last = -1; anc.forEach((a, k) => { if(onMap.has(a.id)) last = k; });
     const dd = anc.filter(a => onMap.has(a.id)).length;
     const pre = anc.slice(last + 1).map(a => a.name);
-    const name = ln.sub.hidden ? ln.topic.name : (pre.length ? pre.join(' › ') + ' › ' : '') + ln.sub.name;
+    const name = ln.sub.hidden ? ln.topic.name : ln.sub.name;
+    const full = ln.sub.hidden ? ln.topic.name : [ln.topic.name].concat(anc.map(a => a.name), [ln.sub.name]).join(' › ');
     const showTopic = !ln.sub.hidden && (i === 0 || lanes[i - 1].topic.id !== ln.topic.id);
-    return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + (ln.sub.id === ui.sub ? ' on' : '') + '" data-view="' + ln.sub.id + '" style="--d:' + dd + '" title="Open “' + esc(name) + '”"><span><span class="full">' + (showTopic ? '<span class="lt">' + esc(ln.topic.name) + '</span>' : '') + (dd ? '<span class="lane-in" aria-hidden="true">└</span>' : '') + esc(name) + '</span><span class="short">' + esc(ln.sub.name.slice(0, 4)) + '</span></span></button>';
+    const ctx = (showTopic ? [ln.topic.name] : []).concat(pre).join(' › ') + (pre.length ? ' ›' : '');
+    return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + (ln.sub.id === ui.sub ? ' on' : '') + '" data-view="' + ln.sub.id + '" style="--d:' + dd + '" title="Open “' + esc(full) + '”"><span class="lab-in"><span class="full">' + (ctx ? '<span class="lt">' + esc(ctx) + '</span>' : '') + '<span class="nm">' + (dd ? '<span class="lane-in" aria-hidden="true">└</span>' : '') + esc(name) + '</span></span><span class="short">' + esc(name.slice(0, 4)) + '</span></span></button>';
   }).join('');
   mapLabels.classList.toggle('has-tl', !!arcsSvg);
   if(arcsSvg) mapLabels.insertAdjacentHTML('beforeend', arcsSvg);
@@ -1557,7 +1576,7 @@ function renderMap(force){
   const filled = {};
   Object.values(lib.entries).forEach(e => { if((e.kind === 'concept' || (e.kind === 'paper' && !e.parent)) && typeof e.y === 'number') filled[e.sub] = true; });
   const lanes = lanesShown().filter(ln => filled[ln.sub.id]);
-  const laneH = lanes.length > 18 ? (narrow ? 30 : 34) : (narrow ? 38 : 46);
+  const laneH = narrow ? 38 : 46;
   const root = document.documentElement;
   root.style.setProperty('--lane-h', laneH + 'px');
   root.style.setProperty('--map-top', '8px');
@@ -1565,6 +1584,7 @@ function renderMap(force){
   document.getElementById('btnLanes').textContent = 'Topics on the map (' + lanes.length + ')';
   if(!lanes.length){
     mapSvg.setAttribute('width', 0); mapSvg.setAttribute('height', 0); mapSvg.innerHTML = '';
+    axisSvg.setAttribute('width', 0); axisSvg.setAttribute('height', 0); axisSvg.innerHTML = '';
     if(!document.getElementById('mapEmpty')) mapScroll.insertAdjacentHTML('beforeend', '<p class="map-empty" id="mapEmpty">Nothing to show yet: the selected topics have no papers. Use “Topics on the map” to choose others.</p>');
     updateRangeUI();
     return;
@@ -1577,8 +1597,8 @@ function renderMap(force){
   const items = Object.values(lib.entries).filter(e => laneIndex[e.sub] != null && (e.kind === 'concept' || (e.kind === 'paper' && !e.parent)) && typeof e.y === 'number');
   const inner = W - left - right;
   const x = buildScale(left, inner, items.map(e => e.y));
-  const axisY = top + lanes.length * laneH + 6;
-  const H = axisY + 30;
+  const H = top + lanes.length * laneH + 4;
+  const axisY = H + 1000;
   Object.assign(MAP, {x, W, H, left, inner, axisY, laneH, top});
   const P = {};
   const seen = {};
@@ -1592,21 +1612,23 @@ function renderMap(force){
   const ok = {};
   items.forEach(e => { ok[e.id] = matches(e); });
 
-  let s = '<defs><clipPath id="plotClip"><rect x="' + left + '" y="0" width="' + inner + '" height="' + (axisY + 2) + '"></rect></clipPath></defs>';
+  let s = '<defs><clipPath id="plotClip"><rect x="' + left + '" y="0" width="' + inner + '" height="' + H + '"></rect></clipPath></defs>';
   s += '<rect class="bg" x="0" y="0" width="' + W + '" height="' + H + '" fill="transparent"></rect>';
   lanes.forEach((ln, i) => {
     if(i % 2 === 0) s += '<rect class="band" x="0" y="' + (top + i * laneH) + '" width="' + W + '" height="' + laneH + '"></rect>';
     if(i > 0 && lanes[i - 1].topic.id !== ln.topic.id) s += '<line class="topic-rule" x1="0" x2="' + W + '" y1="' + (top + i * laneH) + '" y2="' + (top + i * laneH) + '"></line>';
   });
-  s += '<line class="axis" x1="' + left + '" x2="' + (W - right) + '" y1="' + axisY + '" y2="' + axisY + '"></line>';
+  /* the year axis is its own strip under the rows, so it stays in view while the rows scroll */
+  let ax = '<line class="axis" x1="' + left + '" x2="' + (W - right) + '" y1="4" y2="4"></line>';
   x.ticks.forEach(t => {
     const tx = x(t);
     if(tx < left - 1 || tx > W - right + 1) return;
-    s += '<line class="axis" x1="' + tx.toFixed(1) + '" x2="' + tx.toFixed(1) + '" y1="' + axisY + '" y2="' + (axisY + 4) + '"></line>';
-    s += '<text class="tick" x="' + tx.toFixed(1) + '" y="' + (axisY + 17) + '" text-anchor="middle">' + t + '</text>';
+    ax += '<line class="axis" x1="' + tx.toFixed(1) + '" x2="' + tx.toFixed(1) + '" y1="4" y2="8"></line>';
+    ax += '<text class="tick" x="' + tx.toFixed(1) + '" y="21" text-anchor="middle">' + t + '</text>';
   });
-  s += '<rect class="axis-zone" x="' + left + '" y="' + (axisY - 4) + '" width="' + inner + '" height="30"></rect>';
-  s += '<rect class="brush" id="brush" x="0" y="' + top + '" width="0" height="' + (axisY - top) + '"></rect>';
+  ax += '<rect class="axis-zone" x="' + left + '" y="0" width="' + inner + '" height="30"></rect>';
+  axisSvg.setAttribute('viewBox', '0 0 ' + W + ' 30'); axisSvg.setAttribute('width', W); axisSvg.setAttribute('height', 30); axisSvg.innerHTML = ax;
+  s += '<rect class="brush" id="brush" x="0" y="' + top + '" width="0" height="' + (H - top) + '"></rect>';
   s += '<g clip-path="url(#plotClip)">';
   let notes = '';
   lib.links.forEach(([a, b, t, note]) => {
@@ -1861,6 +1883,12 @@ function select(id, center){
   }
   applyFocus(ui.selected);
   infoEl.innerHTML = infoHTML(ui.selected);
+  if(ui.selected) revealInMap(ui.selected);
+}
+function revealInMap(id){
+  const p = MAP.P[id]; if(!p || mapBox.scrollHeight <= mapBox.clientHeight + 1) return;
+  const view = mapBox.clientHeight - 36, top = mapBox.scrollTop;
+  if(p.y < top + 20 || p.y > top + view - 20) mapBox.scrollTo({top: Math.max(0, p.y - view / 2), behavior: 'smooth'});
 }
 
 /* ===================== status ===================== */
@@ -2342,11 +2370,16 @@ function deleteSub(sid){
   });
 }
 function deleteTopic(tid){
-  if(lib.topics.length <= 1){ toast('Keep at least one topic'); return; }
-  const tp = IDX.topics[tid];
-  const n = topicEntries(tid).length;
-  confirmDanger('Delete topic', 'Delete topic “' + tp.name + '”, its ' + tp.subs.length + ' subtopics and ' + n + ' items?', 'Delete topic', () => {
+  const tp = IDX.topics[tid]; if(!tp) return;
+  const n = topicEntries(tid).length, last = lib.topics.length <= 1;
+  const subN = tp.subs.filter(s => !s.hidden).length;
+  confirmDanger('Delete topic', 'Delete topic “' + tp.name + '”, its ' + subN + ' subtopics and ' + n + ' items?' + (last ? ' It is your only topic, so an empty “Untitled topic” will take its place.' : ''), 'Delete topic', () => {
     const before = clone(lib), stBefore = clone(status);
+    if(last){
+      let id; do{ id = rid('t'); }while(IDX.topics[id] || IDX.subs[id]);
+      let sid; do{ sid = rid('s'); }while(IDX.subs[sid] || IDX.topics[sid] || sid === id);
+      lib.topics.push({id, name:'Untitled topic', desc:'', subs:[{id:sid, name:'Untitled topic', desc:'', groups:[], hidden:true}]});
+    }
     const gone = new Set(topicEntries(tid).map(e => e.id));
     gone.forEach(k => { const x = lib.entries[k]; if(x) delete status[keyOf(x)]; delete lib.entries[k]; });
     statusTime = Date.now(); persistStatus();
@@ -3314,6 +3347,26 @@ mapSvg.addEventListener('pointerup', ev => {
   }else if(!d.moved) select(null);
 });
 mapSvg.addEventListener('pointercancel', () => { drag = null; });
+function axisX(ev){ const r = axisSvg.getBoundingClientRect(); return (ev.clientX - r.left) * (r.width ? MAP.W / r.width : 1); }
+axisSvg.addEventListener('pointerdown', ev => {
+  if(ev.button !== 0) return;
+  const x0 = axisX(ev); drag = {mode:'brush', x0, x1:x0};
+  try{ axisSvg.setPointerCapture(ev.pointerId); }catch(e){}
+});
+axisSvg.addEventListener('pointermove', ev => {
+  if(!drag || drag.mode !== 'brush') return;
+  drag.x1 = axisX(ev);
+  const b = document.getElementById('brush');
+  if(b){ b.setAttribute('x', Math.min(drag.x0, drag.x1)); b.setAttribute('width', Math.abs(drag.x1 - drag.x0)); }
+});
+axisSvg.addEventListener('pointerup', () => {
+  if(!drag || drag.mode !== 'brush') return;
+  const d = drag; drag = null;
+  if(Math.abs(d.x1 - d.x0) > 8) setRange(MAP.x.inv(Math.min(d.x0, d.x1)), MAP.x.inv(Math.max(d.x0, d.x1)));
+  else { const b = document.getElementById('brush'); if(b) b.setAttribute('width', 0); }
+});
+axisSvg.addEventListener('pointercancel', () => { drag = null; });
+axisSvg.addEventListener('dblclick', ev => { zoomBy(2, MAP.x.inv(axisX(ev))); });
 mapSvg.addEventListener('click', ev => {
   const n = ev.target.closest('.node');
   if(n) select(n.dataset.id, false);
