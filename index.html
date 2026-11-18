@@ -616,6 +616,92 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
 @media (hover:none){ .toc-plus{opacity:1} }
 /* keep the drag-and-drop highlights on top of the new look */
 .drop-inside > .toc-link,.drop-end .toc-link{background:var(--hl)}
+
+/* ---------- nested subtopics hang off their parent's timeline: the line beside them carries that timeline on ---------- */
+.branch.nested{--sx:calc(3.6rem + 12px);--np:16px;margin-left:calc(var(--sx) - 1px + (var(--d,1) - 1) * (var(--sx) + 1px + var(--np)));padding-left:var(--np);border-left:2px solid color-mix(in srgb, var(--rule-strong) 70%, transparent)}
+@media (max-width:760px){ .branch.nested{--sx:calc(2.4rem + 16px);--np:10px;margin-left:calc(var(--sx) - 1px + (min(var(--d,1), 2) - 1) * (var(--sx) + 1px + var(--np)))} }
+
+/* ---------- the whole line of a selected paper ---------- */
+.net.focus .edge.hot.far{opacity:.8;stroke-width:1.3}
+.lineage-note{margin-top:.4em}
+/* ---------- a lasting Undo in the top bar ---------- */
+.undo-pill{display:inline-flex;align-items:center;gap:.35em;flex:0 1 auto;min-width:0;max-width:min(40vw,340px);padding:.3em .8em;border-radius:999px;border:1px solid var(--rule-strong);background:var(--surface);color:var(--ink);font:inherit;font-size:.82rem;font-weight:500;cursor:pointer;box-shadow:var(--raise);white-space:nowrap}
+.undo-pill[hidden]{display:none}
+.undo-pill:hover{border-color:var(--ink)}
+.undo-pill .undo-what{color:var(--muted);font-weight:400;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.undo-pill .undo-what::before{content:': '}
+@media (max-width:760px){ .undo-pill .undo-what{display:none} }
+/* ---------- deleting: the count in red, and dangerous buttons that look it ---------- */
+.danger-count{color:var(--red-ink);font-weight:700;font-size:1.04rem;line-height:1.45;margin:0 0 .7em}
+.btn.danger{color:var(--red-ink);border-color:color-mix(in srgb, var(--red) 45%, var(--rule-strong))}
+.btn.danger:hover{background:var(--red-a);border-color:var(--red)}
+.head-edit .btn.danger{margin-left:auto}
+.linkbtn.danger{color:var(--red-ink)}
+
+/* ---------- colour lines ---------- */
+.net .edge.br{stroke:var(--br);opacity:.85;stroke-width:2.2}
+.net.many-lines:not(.focus) .edge.br{opacity:.7;stroke-width:1.9}
+.net.focus .edge.br{opacity:.16}
+.net.focus .edge.br.hot{stroke:var(--br);opacity:1;stroke-width:2.6}
+.net.focus .edge.br.hot.far{opacity:.92;stroke-width:2.3}
+.net.focus .edge.soft{opacity:.42}
+.net.focus .edge.br.soft{stroke:var(--br);opacity:.55;stroke-width:2}
+.net.focus .node.soft{opacity:.6}
+.net.focus .lbl.soft{opacity:.5}
+.br-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.br-chip{display:inline-flex;align-items:center;gap:.4em;font:inherit;font-size:.82rem;padding:.22em .7em;border-radius:999px;border:1px solid var(--rule-strong);background:var(--surface);color:var(--ink);cursor:pointer}
+.br-chip i{width:16px;height:3px;border-radius:2px;background:var(--br)}
+.br-chip.on,.br-chip:hover{border-color:var(--br);box-shadow:0 0 0 1px var(--br)}
+.br-dot{display:inline-block;width:18px;height:18px;border-radius:50%;background:var(--br)}
+.br-set{display:flex;align-items:center;gap:8px;margin:.35em 0}
+.br-set input[type=color]{width:36px;height:28px;border:1px solid var(--rule-strong);border-radius:4px;padding:2px;background:var(--bg)}
+.br-set input[type=text]{flex:1;min-width:0}
+.ln-new{display:flex;gap:10px;flex-wrap:wrap}
+.depth-ctl .dchip{font:inherit;font-size:.82rem;padding:.2em .7em;border-radius:999px;border:1px solid var(--rule-strong);background:var(--surface);color:var(--ink);cursor:pointer;margin:0 .3em .3em 0}
+.depth-ctl .dchip.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+/* ---------- New paper, any time ---------- */
+.btn.add-paper{background:var(--surface);font-weight:600;box-shadow:var(--raise)}
+.btn.add-paper:hover{border-color:var(--ink)}
+.edit-banner [data-act="new-entry"]{background:#FFFFFF;color:#1C2330;border-color:#FFFFFF;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.35),0 3px 10px rgba(0,0,0,.28)}
+@media (max-width:760px){ .btn.add-paper .add-label{display:none} }
+/* ---------- dragging papers ---------- */
+.net .node{cursor:grab;touch-action:none}
+.net.node-dragging,.net.node-dragging .node{cursor:grabbing}
+.net .lane-drop{fill:var(--focus);opacity:.1;pointer-events:none}
+.net .drag-ghost{fill:var(--focus);opacity:.9;stroke:var(--surface);stroke-width:2;pointer-events:none}
+.map-labels button.drop-target{box-shadow:inset 3px 0 0 var(--focus);background:color-mix(in srgb, var(--focus) 12%, transparent)}
+.drag-hint{position:fixed;z-index:60;pointer-events:none;background:var(--ink);color:var(--surface);font-size:.8rem;padding:.3em .65em;border-radius:6px;box-shadow:var(--raise);white-space:nowrap}
+.drag-hint[hidden]{display:none}
+.yr[draggable=true]{cursor:grab}
+.toc-link.paper-over{outline:2px solid var(--focus);outline-offset:-2px;background:color-mix(in srgb, var(--focus) 10%, transparent)}
+
+/* ---------- concepts: their own row, page and section ---------- */
+.sq{display:inline-block;width:.62em;height:.62em;border:1.6px solid currentColor;border-radius:2px;margin-right:.45em;vertical-align:.05em;flex:none}
+.toc-concepts{margin-top:10px;padding-top:8px;border-top:1px solid var(--rule)}
+.toc-concepts .toc-link span:first-child{display:inline-flex;align-items:center}
+.map-labels button.lane-concepts .nm{display:flex;align-items:center;font-family:var(--sans);font-weight:600;font-size:.84rem;letter-spacing:.02em;color:var(--muted)}
+.map-labels button.lane-concepts.on .nm{color:var(--ink)}
+.relchip.concept-chip{display:inline-flex;align-items:center}
+.concept-intro{margin:0 0 .4em}
+.name-clash{color:var(--red-ink);margin:-.2em 0 .2em}
+.picker-list .pick-new{font-weight:600;color:var(--ink)}
+.pick-new-form{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:.5em .6em;border-top:1px solid var(--rule)}
+.pick-new-form > span:first-child{font-weight:600;width:100%}
+.pick-new-form .hint{width:100%;color:var(--red-ink)}
+.pick-new-form label{display:flex;align-items:center;gap:.4em;font-size:.86rem}
+.pick-new-form input{width:6em}
+/* ---------- + New paper, with a small menu for a concept ---------- */
+.add-split{position:relative;display:inline-flex;align-items:stretch}
+.add-split .add-paper{border-top-right-radius:0;border-bottom-right-radius:0}
+.add-split .add-more{border-left:0;border-top-left-radius:0;border-bottom-left-radius:0;padding-left:.5em;padding-right:.5em;background:var(--surface);box-shadow:var(--raise)}
+.add-menu{position:absolute;top:calc(100% + 6px);right:0;z-index:50;min-width:250px;display:flex;flex-direction:column;padding:6px;border:1px solid var(--rule);border-radius:10px;background:var(--surface);box-shadow:var(--raise)}
+.add-menu[hidden]{display:none}
+.add-menu button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;font:inherit;border:0;background:none;color:var(--ink);padding:.5em .65em;border-radius:7px;cursor:pointer}
+.add-menu button:hover,.add-menu button:focus-visible{background:var(--band)}
+.add-menu b{font-weight:600;font-size:.9rem}
+.add-menu span{font-size:.78rem;color:var(--muted)}
+
+.topic-intro{margin:-.2em 0 .3em}
 </style>
 </head>
 <body>
@@ -632,8 +718,11 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
   <div class="wrap appbar-inner">
     <button type="button" class="toc-toggle" id="tocToggle" aria-controls="toc" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h11M2.5 8h11M2.5 12h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Contents</button>
     <span class="crumb" id="crumb"></span>
+    <button type="button" class="undo-pill" id="undoPill" hidden><span aria-hidden="true">↶</span> Undo<span class="undo-what"></span></button>
     <span class="save-state" data-save-state></span>
     <div class="appbar-actions">
+      <span class="add-split"><button type="button" class="btn add-paper" id="btnAddPaper" title="Add a paper"><span aria-hidden="true">+</span><span class="add-label"> New paper</span></button><button type="button" class="btn add-more" id="btnAddMore" aria-haspopup="true" aria-expanded="false" aria-controls="addMenu" title="Add something else"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <span class="add-menu" id="addMenu" hidden><button type="button" data-add="paper"><b>Paper</b><span>a reading, placed on the map by its year</span></button><button type="button" data-add="concept"><b>Concept</b><span>one idea papers rely on, with the year it appeared</span></button></span></span>
       <button type="button" class="filter-toggle" id="filterToggle" aria-expanded="false" aria-controls="filters">Filters</button>
       <button type="button" class="btn" id="btnEdit">Modify</button>
       <button type="button" class="btn" id="btnSettings">Settings</button>
@@ -650,8 +739,6 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
       <button type="button" data-act="new-sub">New subtopic</button>
       <button type="button" data-act="new-topic">New topic</button>
       <button type="button" data-act="tags">Tags &amp; colours</button>
-      <button type="button" data-act="edit-topic" id="barEditTopic">Modify this topic</button>
-      <button type="button" data-act="del-topic" id="barDelTopic">Delete this topic</button>
       <span class="sep"></span>
       <button type="button" data-act="export">Export backup</button>
       <button type="button" data-act="exit-edit">Done</button>
@@ -688,6 +775,7 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
   <div class="map-tools">
     <button type="button" class="btn" id="btnLanes" aria-expanded="false" aria-controls="lanePicker">Topics on the map</button>
     <button type="button" class="btn years-toggle" id="btnZoom" aria-expanded="false" aria-controls="zoomTools">Years: all</button>
+    <div class="br-row" id="branchRow" hidden></div>
     <div class="zoom" id="zoomTools" role="group" aria-label="Zoom the timeline" hidden>
       <button type="button" class="btn" data-zoom="out" aria-label="Zoom out">−</button>
       <button type="button" class="btn" data-zoom="in" aria-label="Zoom in">+</button>
@@ -770,6 +858,7 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script>
+let undoSlot = null, undoing = false;
 (function(){
 'use strict';
 
@@ -789,6 +878,8 @@ const PRIO_LABEL = {3:'★ Must read', 2:'○ Optional', 1:'· Background'};
 const DEFAULT_COLORS = {green:'#009473', red:'#E34234'};
 const PREVIEW_DATA = 'example/displaydata.json';
 let PREVIEW = false;
+const BRANCH_PALETTE = ['#E34234', '#7058A3', '#009473', '#38A1DB', '#E7609E', '#8B5E3C'];
+const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
 /* ===================== utils ===================== */
@@ -833,7 +924,7 @@ function buildSeed(){
 
 /* ===================== state ===================== */
 let lib = null, status = {}, statusTime = 0, settings = null, IDX = null;
-const ui = {topic:null, sub:null, group:null, prio:'all', q:'', tag:'', dom:'', st:'all', edit:false, selected:null, pending:null};
+const ui = {topic:null, sub:null, group:null, prio:'all', q:'', tag:'', dom:'', st:'all', edit:false, selected:null, pending:null, branch:null, depth:1};
 
 function validLib(L){
   if(!(L && Array.isArray(L.topics) && L.entries && typeof L.entries === 'object' && Array.isArray(L.links))) return false;
@@ -851,10 +942,17 @@ function normalizeSettings(S){
   if(S.lanes != null && !Array.isArray(S.lanes)) S.lanes = null;
   S.skipModifyConfirm = S.skipModifyConfirm === true;
   S.showPre = S.showPre === true;
+  if(!['auto', 'light', 'dark'].includes(S.theme)) S.theme = 'auto';
+  if(![1, 2, 3, 'all'].includes(S.focusDepth)) S.focusDepth = 1;
+  S.showConcepts = S.showConcepts !== false;
+  S.undoWindow = [0, 5, 10, 30].includes(S.undoWindow) ? S.undoWindow : 10;
   return S;
 }
 function normalizeLib(L){
   if(!Array.isArray(L.tlinks)) L.tlinks = [];
+  if(!Array.isArray(L.branches)) L.branches = [];
+  L.branches = L.branches.filter(b => b && ID_RE.test(String(b.id))).map(b => ({id: String(b.id), name: String(b.name || 'Colour line').slice(0, 40), color: HEX_RE.test(b.color) ? b.color : BRANCH_PALETTE[0]}));
+  if(!L.lineBranch || typeof L.lineBranch !== 'object' || Array.isArray(L.lineBranch)) L.lineBranch = {};
   if(!Array.isArray(L.tags) || !L.tags.every(x => x && ID_RE.test(String(x.id)))) L.tags = defaultTags();
   Object.values(L.entries).forEach(e => { if(e.kind === 'paper' && !Array.isArray(e.tags)) e.tags = []; });
   return L;
@@ -884,7 +982,7 @@ function reindex(){
   Object.values(lib.entries).forEach(e => {
     if(!subs[e.sub]){ const tp = topics[e.topic] || lib.topics[0]; e.topic = tp.id; e.sub = tp.subs[0].id; }
     else e.topic = topicOf[e.sub];
-    (bySub[e.sub] = bySub[e.sub] || []).push(e);
+    if(e.kind !== 'concept') (bySub[e.sub] = bySub[e.sub] || []).push(e);
     (e.needs || []).forEach(c => { if(lib.entries[c]) (users[c] = users[c] || []).push(e.id); });
     if(e.parent){ if(lib.entries[e.parent]) (children[e.parent] = children[e.parent] || []).push(e.id); else delete e.parent; }
   });
@@ -909,12 +1007,22 @@ function reindex(){
   lib.tlinks = lib.tlinks.filter(l => { if(!Array.isArray(l) || l[0] === l[1] || !nodeOk(l[0]) || !nodeOk(l[1])) return false; const k = [l[0], l[1]].sort().join('|'); if(seenTL.has(k)) return false; seenTL.add(k); return true; });
   const tlinksOf = {};
   lib.tlinks.forEach(l => { (tlinksOf[l[0]] = tlinksOf[l[0]] || []).push([l[1], l[2] || '', l]); (tlinksOf[l[1]] = tlinksOf[l[1]] || []).push([l[0], l[2] || '', l]); });
-  IDX = {subs, topicOf, topics, up, down, cUp, cDown, users, children, bySub, kids, depth, subOrder, tlinksOf, domains: Array.from(domains), tags: Object.fromEntries(lib.tags.map(x => [x.id, x]))};
+  /* colour lines: lineBranch maps "a|b|type" to a colour line's id */
+  if(!Array.isArray(lib.branches)) lib.branches = [];
+  if(!lib.lineBranch || typeof lib.lineBranch !== 'object') lib.lineBranch = {};
+  const brIds = new Set(lib.branches.map(b => b.id)), linkKeys = new Set(lib.links.map(l => l[0] + '|' + l[1] + '|' + l[2]));
+  Object.keys(lib.lineBranch).forEach(k => { if(!linkKeys.has(k) || !brIds.has(lib.lineBranch[k])) delete lib.lineBranch[k]; });
+  const branchLines = {}, nodeBranches = {};
+  Object.entries(lib.lineBranch).forEach(([k, bid]) => { (branchLines[bid] = branchLines[bid] || []).push(k); const [a, b] = k.split('|'); (nodeBranches[a] = nodeBranches[a] || new Set()).add(bid); (nodeBranches[b] = nodeBranches[b] || new Set()).add(bid); });
+  IDX = {subs, topicOf, topics, up, down, cUp, cDown, users, children, bySub, kids, depth, subOrder, tlinksOf, branchLines, nodeBranches, domains: Array.from(domains), tags: Object.fromEntries(lib.tags.map(x => [x.id, x]))};
 }
 const keyOf = e => e.k || e.id;
 function stOf(e){ return status[keyOf(e)] || ''; }
 function entriesOfSub(sid){ return IDX.bySub[sid] || []; }
-function topicEntries(tid){ return Object.values(lib.entries).filter(e => e.topic === tid); }
+function topicEntries(tid){ return Object.values(lib.entries).filter(e => e.topic === tid && e.kind !== 'concept'); }
+function allConcepts(){ return Object.values(lib.entries).filter(e => e.kind === 'concept'); }
+const CONCEPT_LANE = {sub: {id: '__concepts', name: 'Concepts', groups: []}, topic: {id: '__concepts', name: 'Concepts'}, concepts: true};
+function laneOf(e){ return e.kind === 'concept' ? '__concepts' : e.sub; }
 function tagsOf(e){ const ts = e.tags || []; return lib.tags.filter(x => ts.includes(x.id)); }
 function mapTagsOf(e){ return tagsOf(e).filter(x => x.map !== false).slice(0, 3); }
 function rgbHex(c){ return '#' + c.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join(''); }
@@ -939,6 +1047,7 @@ function subPath(s){ return subAncestors(s).concat([s]).filter(x => !x.hidden).m
 
 /* ===================== persistence ===================== */
 function touchLib(){
+  if(undoSlot && !undoSlot.fresh && !undoing) clearUndo();
   lib.updatedAt = Date.now();
   if(!lsSet(LS.lib, lib)) toast('This browser’s storage is full; changes may not be saved here');
   ghMark();
@@ -1027,7 +1136,8 @@ function adoptSnapshot(obj){
   if(!validLib(L)) return false;
   if(obj.status && obj.status.map && typeof obj.status.map === 'object'){ status = obj.status.map; statusTime = obj.status.updatedAt || Date.now(); lsSet(LS.status, {map:status, updatedAt:statusTime}); }
   lib = normalizeLib(L); lsSet(LS.lib, lib);
-  if(obj.settings && typeof obj.settings === 'object'){ const keep = {toc: settings.toc, range: settings.range}; settings = normalizeSettings(Object.assign(defaultSettings(), obj.settings)); Object.assign(settings, keep); lsSet(LS.settings, settings); }
+  if(!undoing) clearUndo();
+  if(obj.settings && typeof obj.settings === 'object'){ const keep = {toc: settings.toc, range: settings.range, theme: settings.theme}; settings = normalizeSettings(Object.assign(defaultSettings(), obj.settings)); Object.assign(settings, keep); lsSet(LS.settings, settings); }
   reindex(); applyColors();
   if(location.hash.length > 1){ const hv = resolveView(location.hash.slice(1)); ui.topic = hv.topic; ui.sub = hv.sub; }
   fixView(); renderAll();
@@ -1114,6 +1224,7 @@ function ghForget(){
 function applyColors(){
   const root = document.documentElement;
   root.setAttribute('data-paper', settings.paper || 'mist');
+  if(settings.theme === 'light' || settings.theme === 'dark') root.setAttribute('data-theme', settings.theme); else root.removeAttribute('data-theme');
   const c = settings.colors;
   ['green','red'].forEach(k => {
     const hex = c && c[k];
@@ -1162,7 +1273,7 @@ function subCountDeep(s){ return subDescendants(s.id).reduce((n, d) => n + subCo
 
 /* ===================== views & tabs ===================== */
 const mainEl = document.getElementById('main');
-function viewId(){ return ui.sub || (ui.topic + '-all'); }
+function viewId(){ return ui.page === 'concepts' ? 'concepts' : (ui.sub || (ui.topic + '-all')); }
 function defaultViewOf(tid){
   const tp = IDX.topics[tid];
   if(!tp) return {topic:null, sub:null};
@@ -1182,6 +1293,12 @@ function fixView(){
   if(ui.selected && !lib.entries[ui.selected]) ui.selected = null;
 }
 function openView(id, opts){
+  if(id === '__concepts' || id === 'concepts'){
+    ui.page = 'concepts'; ui.pending = opts || {scroll:true}; applyView();
+    try{ if(location.hash.slice(1) !== 'concepts') location.hash = 'concepts'; }catch(e){}
+    return;
+  }
+  ui.page = null;
   const v = resolveView(id);
   if(v.sub && IDX.subs[v.sub]) subAncestors(IDX.subs[v.sub]).forEach(a => tocClosedSet.delete(a.id));
   if(v.topic !== ui.topic || v.sub !== ui.sub) ui.group = null;
@@ -1205,6 +1322,7 @@ const tocOpenSet = new Set(), tocClosedSet = new Set();
 const CARET = '<svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1.5 7 5 3 8.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function tocExpanded(tp){ if(tocClosedSet.has(tp.id)) return false; return tocOpenSet.has(tp.id) || tp.id === ui.topic; }
 function tocLink(view, label, n, on, cls){
+  on = on && ui.page !== 'concepts';
   return '<button type="button" class="toc-link' + (cls ? ' ' + cls : '') + (on ? ' on' : '') + (n ? '' : ' dim') + '" data-view="' + view + '"' + (on ? ' aria-current="page"' : '') + '><span>' + esc(label) + '</span><span class="n">' + n + '</span></button>';
 }
 const DRAG = '<span class="toc-drag" draggable="true" title="Drag to move" aria-hidden="true">⠿</span>';
@@ -1244,11 +1362,13 @@ function renderTabs(){
   });
   h += '</ul>';
   if(ui.edit) h += '<div class="toc-add" data-node="e:end"><button type="button" class="toc-link add" data-act="new-topic">+ New topic</button></div>';
+  h += '<div class="toc-concepts"><div class="toc-row"><span class="toc-caret-sp" aria-hidden="true"></span><button type="button" class="toc-link topic' + (ui.page === 'concepts' ? ' on' : '') + '" data-view="__concepts"' + (ui.page === 'concepts' ? ' aria-current="page"' : '') + '><span><i class="sq" aria-hidden="true"></i>Concepts</span><span class="n">' + allConcepts().length + '</span></button></div></div>';
   tocBody.innerHTML = h;
   if(focusSel){ const f = tocBody.querySelector(focusSel); if(f) f.focus({preventScroll:true}); }
   const tp = IDX.topics[ui.topic], s = ui.sub ? IDX.subs[ui.sub] : null;
   const crumb = document.getElementById('crumb');
-  if(tp){
+  if(ui.page === 'concepts'){ crumb.innerHTML = '<span class="crumb-top">Concepts</span>'; mainEl.setAttribute('aria-label', 'Concepts'); }
+  else if(tp){
     const path = s ? (s.hidden ? [] : subPath(s)) : ['All'];
     const tail = path.length ? path[path.length - 1] : '';
     crumb.innerHTML = '<span class="crumb-top' + (tail ? ' has-tail' : '') + '">' + esc(tp.name) + '</span>' +
@@ -1289,7 +1409,7 @@ function statusDots(e){
 }
 function editButtons(id, isConcept){
   if(!ui.edit) return '';
-  return '<span class="row-edit"><button type="button" class="linkbtn" data-edit="' + id + '">' + (isConcept ? 'Modify concept' : 'Modify') + '</button>' + (isConcept ? '' : '<button type="button" class="linkbtn" data-tagassign="' + id + '">Tags</button>') + '<button type="button" class="linkbtn" data-del="' + id + '">Delete</button></span>';
+  return '<span class="row-edit"><button type="button" class="linkbtn" data-edit="' + id + '">' + (isConcept ? 'Modify concept' : 'Modify') + '</button>' + (isConcept ? '' : '<button type="button" class="linkbtn" data-tagassign="' + id + '">Tags</button>') + '<button type="button" class="linkbtn danger" data-del="' + id + '">Delete</button></span>';
 }
 function rowHTML(e, withPlace){
   const st = stOf(e);
@@ -1302,7 +1422,7 @@ function rowHTML(e, withPlace){
   const pres = (e.needs || []).filter(c => lib.entries[c]).map(c => '<button type="button" class="prechip" data-card="' + c + '" title="' + esc(lib.entries[c].t) + '">' + esc(lib.entries[c].short || lib.entries[c].t) + '</button>').join('');
   return '<tr id="r-' + e.id + '" class="p' + (e.p || 1) + (st ? ' st-' + st : '') + '">' +
     '<td class="c-st">' + statusDots(e) + '</td>' +
-    '<td class="c-year"><span class="spine" aria-hidden="true"></span><span class="node-mark" aria-hidden="true"></span><span class="yr">' + esc(e.y) + '</span></td>' +
+    '<td class="c-year"><span class="spine" aria-hidden="true"></span><span class="node-mark" aria-hidden="true"></span><span class="yr" draggable="true" data-drag-paper="' + e.id + '" title="Drag onto a topic in Contents to move it there">' + esc(e.y) + '</span></td>' +
     '<td class="c-ref"><span class="au">' + esc(e.au) + '</span><span class="t">' + esc(e.t) + '</span><span class="v">' + esc(e.v) + '</span></td>' +
     '<td class="c-focus"><span class="f">' + esc(e.f) + '</span>' + (doms ? '<span class="doms">' + doms + '</span>' : '') + (pres ? '<span class="pres"><span class="pres-k">Needs</span>' + pres + '</span>' : '') + '</td>' +
     '<td class="c-tags">' + tags.join('') + '</td>' +
@@ -1354,7 +1474,7 @@ function conceptCard(c){
     (down.length ? '<p class="concept-links"><span class="k">Next</span>' + conceptChips(down) + '</p>' : '') +
     (rows.length ? '<div class="table-wrap"><table class="pre-table"><thead><tr><th class="c-st">Status</th><th class="c-year">Year</th><th class="c-ref">Reading</th><th class="c-kind">Type</th><th class="c-note">How to read</th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>' : '') +
     (users.length ? '<p class="concept-links"><span class="k">Papers that use it</span>' + users.map(u => '<button type="button" class="relchip" data-goto="' + u.id + '">' + esc(mapLabel(u)) + ' ' + esc(u.y) + '</button>').join('') + '</p>' : '') +
-    (ui.edit ? '<p class="concept-links"><button type="button" class="btn" data-edit="' + c.id + '">Modify concept</button><button type="button" class="btn" data-add-reading="' + c.id + '">Add reading</button><button type="button" class="btn" data-del="' + c.id + '">Delete concept</button></p>' : '') +
+    (ui.edit ? '<p class="concept-links"><button type="button" class="btn" data-edit="' + c.id + '">Modify concept</button><button type="button" class="btn" data-add-reading="' + c.id + '">Add reading</button><button type="button" class="btn danger" data-del="' + c.id + '">Delete concept</button></p>' : '') +
   '</article>';
 }
 function countText(es){
@@ -1363,6 +1483,19 @@ function countText(es){
   const read = keys.filter(k => status[k] === 'read').length, want = keys.filter(k => status[k] === 'want').length;
   const concepts = es.filter(e => e.kind === 'concept').length;
   return (concepts ? concepts + (concepts === 1 ? ' concept' : ' concepts') + (papers.length ? ', ' : '') : '') + (papers.length || !concepts ? papers.length + (papers.length === 1 ? ' paper' : ' papers') + ', ' + read + ' read, ' + want + ' want to read' : '');
+}
+function conceptsUsedHTML(papers){
+  const ids = [...new Set(papers.flatMap(p => p.needs || []))].filter(c => lib.entries[c] && lib.entries[c].kind === 'concept');
+  if(!ids.length) return '';
+  return '<p class="rel tl-row"><span class="rel-k">Concepts used here</span>' + ids.map(c => lib.entries[c]).sort(byYear).map(c => '<button type="button" class="relchip concept-chip" data-card="' + c.id + '"><i class="sq" aria-hidden="true"></i>' + esc(c.t) + '</button>').join('') + '</p>';
+}
+function renderConceptsPage(){
+  const cs = allConcepts().sort(byYear);
+  return '<section class="branch"><div class="branch-head"><h2>Concepts</h2><p class="branch-count">' + cs.length + (cs.length === 1 ? ' concept' : ' concepts') + '</p>' +
+    '<p class="branch-desc">Ideas your papers rely on, each with the year it appeared. A paper sits under one topic but can need many concepts: a topic is a shelf, a concept is a tool.</p>' +
+    '<div class="head-edit"><button type="button" class="btn" data-act="new-concept">+ New concept</button></div></div>' +
+    (cs.length ? cs.map(conceptCard).join('') : '<p class="empty">No concepts yet. A good concept is one idea with a year, such as “Nash equilibrium, 1950”, that papers in different topics rely on. Add one with “+ New concept”, or from a paper’s Prerequisite concepts.</p>') +
+    '</section>';
 }
 function renderSubSection(s, tp, asPart, opts){
   opts = opts || {};
@@ -1382,13 +1515,12 @@ function renderSubSection(s, tp, asPart, opts){
       '<button type="button" class="subchip' + (ui.group ? '' : ' on') + '" data-group="">All<span>' + papers.length + '</span></button>' +
       s.groups.map(g => '<button type="button" class="subchip' + (ui.group === g.id ? ' on' : '') + '" data-group="' + g.id + '">' + esc(g.name) + '<span>' + papers.filter(e => e.group === g.id).length + '</span></button>').join('') + '</div>' : '';
     const edit = ui.edit ? '<div class="head-edit"><button type="button" class="btn" data-act="new-entry">Add paper</button>' +
-      (concepts.length ? '<button type="button" class="btn" data-act="new-concept">Add concept</button>' : '') +
-      (s.hidden ? '<button type="button" class="btn" data-act="edit-topic">Modify topic</button><button type="button" class="btn" data-act="new-sub" data-topic="' + tp.id + '">Add subtopic</button><button type="button" class="btn" data-act="del-topic">Delete topic</button>' : '<button type="button" class="btn" data-act="edit-sub" data-sub="' + s.id + '">Modify subtopic</button>') +
+      (s.hidden ? '<button type="button" class="btn" data-act="edit-topic">Modify topic</button><button type="button" class="btn" data-act="new-sub" data-topic="' + tp.id + '">Add subtopic</button><button type="button" class="btn danger" data-act="del-topic">Delete topic</button>' : '<button type="button" class="btn" data-act="edit-sub" data-sub="' + s.id + '">Modify subtopic</button>') +
       (!s.hidden ? '<button type="button" class="btn" data-act="new-sub" data-topic="' + tp.id + '" data-parent="' + s.id + '">Add subtopic inside</button>' : '') +
-      (!s.hidden ? '<button type="button" class="btn" data-act="del-sub" data-sub="' + s.id + '">Delete subtopic</button>' : '') + '</div>' : '';
+      (!s.hidden ? '<button type="button" class="btn danger" data-act="del-sub" data-sub="' + s.id + '">Delete subtopic</button>' : '') + '</div>' : '';
     h += '<div class="branch-head"><h2>' + esc(title) + '</h2>' +
       '<p class="branch-count">' + countText(opts.countEs || es) + '</p>' +
-      ((s.hidden ? tp.desc : s.desc) ? '<p class="branch-desc">' + esc(s.hidden ? tp.desc : s.desc) + '</p>' : '') + relatedTopicsHTML(s.hidden ? tp.id : s.id) +
+      ((s.hidden ? tp.desc : s.desc) ? '<p class="branch-desc">' + esc(s.hidden ? tp.desc : s.desc) + '</p>' : '') + relatedTopicsHTML(s.hidden ? tp.id : s.id) + conceptsUsedHTML(papers) +
       chips + edit + '</div>';
   }
   h += concepts.map(conceptCard).join('');
@@ -1407,8 +1539,7 @@ function emptyGuide(){
     '<li>Have a backup file? Use <strong>Settings → Data → Import backup</strong>.</li></ol></section>';
 }
 function renderMain(){
-  const tpBar = IDX.topics[ui.topic];
-  if(tpBar){ const nm = tpBar.name.length > 22 ? tpBar.name.slice(0, 21) + '…' : tpBar.name; document.getElementById('barEditTopic').textContent = 'Modify “' + nm + '”'; document.getElementById('barDelTopic').textContent = 'Delete “' + nm + '”'; }
+  if(ui.page === 'concepts'){ mainEl.innerHTML = renderConceptsPage(); return; }
   if(!Object.keys(lib.entries).length && !ui.edit){ mainEl.innerHTML = emptyGuide(); return; }
   const tp = IDX.topics[ui.topic];
   if(!tp){ mainEl.innerHTML = '<p class="empty">No topics yet.</p>'; return; }
@@ -1427,7 +1558,7 @@ function renderMain(){
     const anyConcept = es.some(e => e.kind === 'concept');
     html = '<section class="branch" id="sec-' + tp.id + '-all"><div class="branch-head"><h2>' + esc(tp.name) + ': all</h2>' +
       '<p class="branch-count">' + countText(es) + '</p>' + (tp.desc ? '<p class="branch-desc">' + esc(tp.desc) + '</p>' : '') + relatedTopicsHTML(tp.id) +
-      (ui.edit ? '<div class="head-edit"><button type="button" class="btn" data-act="new-entry">Add paper</button><button type="button" class="btn" data-act="edit-topic">Modify topic</button><button type="button" class="btn" data-act="new-sub" data-topic="' + tp.id + '">Add subtopic</button><button type="button" class="btn" data-act="del-topic">Delete topic</button></div>' : '') + '</div>';
+      (ui.edit ? '<div class="head-edit"><button type="button" class="btn" data-act="new-entry">Add paper</button><button type="button" class="btn" data-act="edit-topic">Modify topic</button><button type="button" class="btn" data-act="new-sub" data-topic="' + tp.id + '">Add subtopic</button><button type="button" class="btn danger" data-act="del-topic">Delete topic</button></div>' : '') + '</div>';
     if(anyConcept){
       html += visibleSubs(tp).concat(tp.subs.filter(s => s.hidden)).map(s => renderSubSection(s, tp, true)).join('');
     }else{
@@ -1584,13 +1715,14 @@ function renderMapLabels(lanes, laneH){
   const arcsSvg = topicLinkArcs(lanes, laneH);
   document.documentElement.style.setProperty('--lab-extra', ((maxD ? Math.min(90, 14 + maxD * 14) : 0) + (arcsSvg ? 12 : 0)) + 'px');
   mapLabels.innerHTML = lanes.map((ln, i) => {
+    if(ln.concepts) return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + ' lane-concepts' + (ui.page === 'concepts' ? ' on' : '') + '" data-view="__concepts" style="--d:0" title="Open the Concepts page"><span class="lab-in"><span class="full"><span class="nm"><i class="sq" aria-hidden="true"></i>Concepts</span></span><span class="short">Ideas</span></span></button>';
     const anc = subAncestors(ln.sub);
     let last = -1; anc.forEach((a, k) => { if(onMap.has(a.id)) last = k; });
     const dd = anc.filter(a => onMap.has(a.id)).length;
     const pre = anc.slice(last + 1).map(a => a.name);
     const name = ln.sub.hidden ? ln.topic.name : ln.sub.name;
     const full = ln.sub.hidden ? ln.topic.name : [ln.topic.name].concat(anc.map(a => a.name), [ln.sub.name]).join(' › ');
-    const showTopic = !ln.sub.hidden && (i === 0 || lanes[i - 1].topic.id !== ln.topic.id);
+    const showTopic = !ln.sub.hidden && (i === 0 || lanes[i - 1].topic.id !== ln.topic.id || lanes[i - 1].concepts);
     const ctx = (showTopic ? [ln.topic.name] : []).concat(pre).join(' › ') + (pre.length ? ' ›' : '');
     return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + (ln.sub.id === ui.sub ? ' on' : '') + '" data-view="' + ln.sub.id + '" style="--d:' + dd + '" title="Open “' + esc(full) + '”"><span class="lab-in"><span class="full">' + (ctx ? '<span class="lt">' + esc(ctx) + '</span>' : '') + '<span class="nm">' + (dd ? '<span class="lane-in" aria-hidden="true">└</span>' : '') + esc(name) + '</span></span><span class="short">' + esc(name.slice(0, 4)) + '</span></span></button>';
   }).join('');
@@ -1603,8 +1735,9 @@ function renderMap(force){
   lastMapW = avail;
   const narrow = window.innerWidth <= 760;
   const filled = {};
-  Object.values(lib.entries).forEach(e => { if((e.kind === 'concept' || (e.kind === 'paper' && !e.parent)) && typeof e.y === 'number') filled[e.sub] = true; });
+  Object.values(lib.entries).forEach(e => { if((e.kind === 'concept' || (e.kind === 'paper' && !e.parent)) && typeof e.y === 'number') filled[laneOf(e)] = true; });
   const lanes = lanesShown().filter(ln => filled[ln.sub.id]);
+  if(settings.showConcepts !== false && filled.__concepts) lanes.unshift(CONCEPT_LANE);
   const laneH = narrow ? 38 : 46;
   const root = document.documentElement;
   root.style.setProperty('--lane-h', laneH + 'px');
@@ -1623,19 +1756,19 @@ function renderMap(force){
   const top = 8, left = 12, right = 14;
   const laneIndex = {};
   lanes.forEach((ln, i) => { laneIndex[ln.sub.id] = i; });
-  const items = Object.values(lib.entries).filter(e => laneIndex[e.sub] != null && (e.kind === 'concept' || (e.kind === 'paper' && !e.parent)) && typeof e.y === 'number');
+  const items = Object.values(lib.entries).filter(e => laneIndex[laneOf(e)] != null && (e.kind === 'concept' || (e.kind === 'paper' && !e.parent)) && typeof e.y === 'number');
   const inner = W - left - right;
   const x = buildScale(left, inner, items.map(e => e.y));
   const H = top + lanes.length * laneH + 4;
   const axisY = H + 1000;
-  Object.assign(MAP, {x, W, H, left, inner, axisY, laneH, top});
+  Object.assign(MAP, {x, W, H, left, inner, axisY, laneH, top, lanes});
   const P = {};
   const seen = {};
   items.slice().sort(byYear).forEach(e => {
-    const key = e.sub + '-' + e.y;
+    const key = laneOf(e) + '-' + e.y;
     const n = seen[key] = (seen[key] || 0) + 1;
     const off = n === 1 ? 0 : (n % 2 === 0 ? (n / 2) * 7 : -((n - 1) / 2) * 7);
-    P[e.id] = {x: x(e.y) + off, y: top + laneIndex[e.sub] * laneH + laneH / 2};
+    P[e.id] = {x: x(e.y) + off, y: top + laneIndex[laneOf(e)] * laneH + laneH / 2};
   });
   MAP.P = P;
   const ok = {};
@@ -1664,7 +1797,8 @@ function renderMap(force){
     const p = P[a], q = P[b];
     if(!p || !q) return;
     const muted = (!ok[a] || !ok[b]) && t !== 'o' ? ' muted' : '';
-    s += '<path class="edge ' + t + muted + '" data-a="' + a + '" data-b="' + b + '" d="' + edgePath(p, q) + '"></path>';
+    const brId = lib.lineBranch[a + '|' + b + '|' + t], br = brId && lib.branches.find(x => x.id === brId);
+    s += '<path class="edge ' + t + muted + (br ? ' br' : '') + '"' + (br ? ' style="--br:' + br.color + '" data-br="' + br.id + '"' : '') + ' data-a="' + a + '" data-b="' + b + '" d="' + edgePath(p, q) + '"></path>';
     if(note){
       const same = Math.abs(p.y - q.y) < 1;
       const nx = (p.x + q.x) / 2, ny = same ? p.y - Math.min(20, 6 + Math.abs(q.x - p.x) * 0.08) / 2 - 4 : (p.y + q.y) / 2 - 3;
@@ -1730,24 +1864,75 @@ function renderMap(force){
   mapSvg.classList.toggle('many-lines', mapSvg.querySelectorAll('.edge:not(.p)').length > 120);
   mapSvg.classList.toggle('quiet-notes', mapSvg.querySelectorAll('.edge-note').length > 12);
   renderTagLegend(useSrc);
+  renderBranchRow();
   applyFocus(ui.selected);
   updateRangeUI();
 }
+const EK = (a, b) => a + '|' + b;
+function oneStep(id){
+  const F = {nodes: new Set([id]), edges: new Set(), far: new Set(), soft: new Set(), softNodes: new Set(), self: id};
+  lib.links.forEach(l => { if(l[0] === id || l[1] === id){ F.edges.add(EK(l[0], l[1])); F.nodes.add(l[0]); F.nodes.add(l[1]); } });
+  const e = lib.entries[id];
+  if(e && e.kind === 'concept') (IDX.users[id] || []).forEach(p => { F.edges.add(EK(id, p)); F.nodes.add(p); });
+  else if(e) (e.needs || []).forEach(c => { if(lib.entries[c]){ F.edges.add(EK(c, id)); F.nodes.add(c); } });
+  return F;
+}
+function branchSets(bid, F, soft){
+  (IDX.branchLines[bid] || []).forEach(k => {
+    const [a, b] = k.split('|'), ek = EK(a, b);
+    if(soft){ if(!F.edges.has(ek)){ F.soft.add(ek); [a, b].forEach(n => { if(!F.nodes.has(n)) F.softNodes.add(n); }); } }
+    else{ F.edges.add(ek); if(a !== F.self && b !== F.self) F.far.add(ek); F.nodes.add(a); F.nodes.add(b); F.softNodes.delete(a); F.softNodes.delete(b); F.soft.delete(ek); }
+  });
+}
+function branchesNear(id){
+  const own = IDX.nodeBranches[id];
+  if(own && own.size) return {own: [...own], reach: []};
+  const reach = new Set();
+  lib.links.forEach(l => { if(l[0] !== id && l[1] !== id) return; const o = l[0] === id ? l[1] : l[0]; (IDX.nodeBranches[o] || new Set()).forEach(b => reach.add(b)); });
+  return {own: [], reach: [...reach]};
+}
+function depthWalk(id, depth, F){
+  const lim = depth === 'all' ? Infinity : depth;
+  ['up', 'down'].forEach(dir => {
+    let frontier = [id]; const seen = new Set([id]);
+    for(let lv = 1; lv <= lim && frontier.length; lv++){
+      const next = [];
+      frontier.forEach(x => ((dir === 'up' ? IDX.up[x] : IDX.down[x]) || []).forEach(([o, t]) => {
+        if(t === 'r') return;
+        const ek = dir === 'up' ? EK(o, x) : EK(x, o);
+        F.edges.add(ek); F.nodes.add(o); if(lv > 1) F.far.add(ek);
+        if(!seen.has(o)){ seen.add(o); next.push(o); }
+      }));
+      frontier = next;
+    }
+  });
+}
+/* A selected paper lights up one step around it (or more, with “How far”).
+   If it sits on a colour line, that whole line lights up end to end; if not, the colour lines it leads to show faintly. */
+function focusSets(id){
+  const F = oneStep(id);
+  if(ui.depth && ui.depth !== 1) depthWalk(id, ui.depth, F);
+  const R = branchesNear(id);
+  R.own.forEach(b => branchSets(b, F, false));
+  R.reach.forEach(b => branchSets(b, F, true));
+  return F;
+}
+function paintFocus(F){
+  mapSvg.classList.add('focus');
+  mapSvg.querySelectorAll('.edge,.edge-note').forEach(e => {
+    const k = EK(e.dataset.a, e.dataset.b), hot = F.edges.has(k);
+    e.classList.toggle('hot', hot); e.classList.toggle('far', hot && F.far.has(k)); e.classList.toggle('soft', !hot && F.soft.has(k));
+  });
+  mapSvg.querySelectorAll('.node,.lbl').forEach(n => { const i = n.dataset.id, hot = F.nodes.has(i); n.classList.toggle('hot', hot); n.classList.toggle('soft', !hot && F.softNodes.has(i)); });
+}
 function applyFocus(id){
   if(!id || !MAP.P[id]){
+    if(ui.branch && (IDX.branchLines[ui.branch] || []).length){ const F = {nodes: new Set(), edges: new Set(), far: new Set(), soft: new Set(), softNodes: new Set(), self: null}; branchSets(ui.branch, F, false); F.far.clear(); paintFocus(F); return; }
     mapSvg.classList.remove('focus');
-    mapSvg.querySelectorAll('.hot').forEach(n => n.classList.remove('hot'));
+    mapSvg.querySelectorAll('.hot,.far,.soft').forEach(n => n.classList.remove('hot', 'far', 'soft'));
     return;
   }
-  mapSvg.classList.add('focus');
-  const related = new Set([id]);
-  mapSvg.querySelectorAll('.edge,.edge-note').forEach(e => {
-    const hot = e.dataset.a === id || e.dataset.b === id;
-    e.classList.toggle('hot', hot);
-    if(hot){ related.add(e.dataset.a); related.add(e.dataset.b); }
-  });
-  mapSvg.querySelectorAll('.node').forEach(n => n.classList.toggle('hot', related.has(n.dataset.id)));
-  mapSvg.querySelectorAll('.lbl').forEach(l => l.classList.toggle('hot', related.has(l.dataset.id)));
+  paintFocus(focusSets(id));
 }
 function updateRangeUI(){
   const r = settings.range;
@@ -1803,6 +1988,35 @@ function relChip(oid){
   return '<button type="button" class="relchip" data-select="' + oid + '">' + esc(mapLabel(o)) + ' ' + esc(o.y) + '</button>';
 }
 function group(title, ids){ ids = ids.filter(x => lib.entries[x]); return ids.length ? '<p class="rel"><span class="rel-k">' + title + '</span>' + ids.map(relChip).join('') + '</p>' : ''; }
+function branchChip(bid){ const b = lib.branches.find(x => x.id === bid); return b ? '<button type="button" class="br-chip" data-branch-focus="' + b.id + '" style="--br:' + b.color + '"><i aria-hidden="true"></i>' + esc(b.name) + '</button>' : ''; }
+function focusNoteHTML(id){
+  const R = branchesNear(id);
+  let h = '';
+  if(R.own.length) h += '<p class="rel"><span class="rel-k">On colour lines</span>' + R.own.map(branchChip).join('') + '</p>';
+  else if(R.reach.length) h += '<p class="rel"><span class="rel-k">Leads to colour lines</span>' + R.reach.map(branchChip).join('') + '</p>';
+  const hasLines = lib.links.some(l => l[0] === id || l[1] === id) || (lib.entries[id] && (lib.entries[id].needs || []).length);
+  if(hasLines) h += '<p class="rel depth-ctl"><span class="rel-k">How far</span>' + [[1, '1 step'], [2, '2 steps'], [3, '3 steps'], ['all', 'Whole line']].map(o => '<button type="button" class="dchip' + (String(ui.depth) === String(o[0]) ? ' on' : '') + '" data-depth="' + o[0] + '">' + o[1] + '</button>').join('') + '</p>';
+  return h;
+}
+function branchInfoHTML(bid){
+  const b = lib.branches.find(x => x.id === bid); if(!b) return infoHTML(null);
+  const ids = new Set(); (IDX.branchLines[bid] || []).forEach(k => { const [x, y] = k.split('|'); ids.add(x); ids.add(y); });
+  const es = [...ids].map(i => lib.entries[i]).filter(Boolean).sort(byYear);
+  return '<div class="info-grid"><p class="info-year"><span class="br-dot" style="--br:' + b.color + '"></span></p><div><p class="info-meta">Colour line</p><h3 class="info-title">' + esc(b.name) + '</h3>' +
+    '<p class="rel"><span class="rel-k">' + es.length + ' on it</span>' + es.map(e => relChip(e.id)).join('') + '</p>' +
+    '<p class="info-actions"><button type="button" class="linkbtn" data-clear-sel="1">Clear</button></p></div></div>';
+}
+function focusBranch(bid){ ui.selected = null; ui.branch = bid; mapSvg.querySelectorAll('.node.sel').forEach(n => n.classList.remove('sel')); infoEl.innerHTML = branchInfoHTML(bid); applyFocus(null); renderBranchRow(); }
+function renderBranchRow(){
+  const row = document.getElementById('branchRow'); if(!row) return;
+  const used = lib.branches.filter(b => (IDX.branchLines[b.id] || []).length);
+  row.hidden = !used.length;
+  row.innerHTML = used.map(b => branchChip(b.id).replace('class="br-chip"', 'class="br-chip' + (ui.branch === b.id ? ' on' : '') + '"')).join('');
+}
+document.addEventListener('click', ev => {
+  const bf = ev.target.closest('[data-branch-focus]'); if(bf){ ev.preventDefault(); if(ui.branch === bf.dataset.branchFocus){ ui.branch = null; select(null); renderBranchRow(); } else focusBranch(bf.dataset.branchFocus); return; }
+  const dp = ev.target.closest('[data-depth]'); if(dp){ ui.depth = dp.dataset.depth === 'all' ? 'all' : +dp.dataset.depth; settings.focusDepth = ui.depth; persistSettings({remote:false}); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); }
+});
 function relGroup(title, items){
   items = items.filter(x => lib.entries[x[0]]);
   return items.length ? '<p class="rel"><span class="rel-k">' + title + '</span>' + items.map(x => relChip(x[0]) + (x[2] ? '<span class="rel-note">' + esc(x[2]) + '</span>' : '')).join('') + '</p>' : '';
@@ -1811,7 +2025,7 @@ function infoHTML(id){
   const e = id && lib.entries[id];
   if(!e) return '<p class="info-empty">Click any dot to see what it builds on and what built on or challenged it, and mark it “Want to read” or “Read” here. On a wide screen, hover over a dot to preview its lines.</p>';
   const tp = IDX.topics[e.topic], s = IDX.subs[e.sub];
-  const place = esc(tp ? tp.name : '') + (s && !s.hidden ? ' / ' + esc(s.name) : '');
+  const place = e.kind === 'concept' ? 'Concept' : esc(tp ? tp.name : '') + (s && !s.hidden ? ' / ' + esc(s.name) : '');
   if(e.kind === 'concept'){
     const users = (IDX.users[e.id] || []).map(i => lib.entries[i]).sort(byYear).map(u => u.id);
     const d = conceptDone(e);
@@ -1833,6 +2047,7 @@ function infoHTML(id){
     relGroup('Challenged by', down.filter(x => x[1] === 'c')) +
     relGroup('Related to', up.filter(x => x[1] === 'r').concat(down.filter(x => x[1] === 'r'))) +
     group('Prerequisites', e.needs || []);
+  rels += focusNoteHTML(id);
   if(ui.edit) rels += editLinksHTML(id) + '<p class="info-actions"><button type="button" class="btn" data-link-add="b" data-id="' + e.id + '">+ It builds on…</button><button type="button" class="btn" data-link-add="c" data-id="' + e.id + '">+ It responds to…</button><button type="button" class="btn" data-link-add="r" data-id="' + e.id + '">+ Related to…</button></p>';
   else if(!rels) rels = '<p class="info-note">No lines yet. After reading it, turn on Modify mode to link the papers it builds on.</p>';
   const st = stOf(e);
@@ -1855,19 +2070,38 @@ function editLinksHTML(id){
     const other = lib.entries[l[0] === id ? l[1] : l[0]];
     const rel = l[2] === 'r' ? 'Related to' : l[0] === id ? (l[2] === 'c' ? 'Challenged by' : 'Built on by') : (l[2] === 'c' ? 'Responds to' : 'Builds on');
     const key = esc(l[0] + '|' + l[1] + '|' + l[2]);
-    return '<span class="pick">' + esc(rel + ': ' + mapLabel(other) + ' ' + other.y) + (l[3] ? ' · <em>' + esc(l[3]) + '</em>' : '') + '<button type="button" data-link-note="' + key + '" aria-label="Note on this line" title="Note on this line">✎</button><button type="button" data-link-del="' + key + '" aria-label="Delete this line">×</button></span>';
+    return '<span class="pick">' + esc(rel + ': ' + mapLabel(other) + ' ' + other.y) + (l[3] ? ' · <em>' + esc(l[3]) + '</em>' : '') + '<button type="button" data-link-note="' + key + '" aria-label="Note and colour of this line" title="Note and colour">✎</button><button type="button" data-link-del="' + key + '" aria-label="Delete this line">×</button></span>';
   }).join('') + '</p>';
 }
+function branchListHTML(){
+  if(!lib.branches.length) return '<p class="hint">No colour lines yet.</p>';
+  return lib.branches.map(x => '<div class="br-set" data-br-row="' + x.id + '"><input type="color" value="' + x.color + '" aria-label="Colour"><input type="text" value="' + esc(x.name) + '" maxlength="40" aria-label="Name"><span class="hint">' + (IDX.branchLines[x.id] || []).length + ' lines</span><button type="button" class="linkbtn danger" data-br-del="' + x.id + '">Remove</button></div>').join('');
+}
+function nextBranchColor(){ const used = new Set(lib.branches.map(b => b.color.toLowerCase())); return BRANCH_PALETTE.find(c => !used.has(c.toLowerCase())) || BRANCH_PALETTE[lib.branches.length % BRANCH_PALETTE.length]; }
 function openLinkNote(a, b, ty){
   const l = lib.links.find(x => x[0] === a && x[1] === b && x[2] === ty); if(!l) return;
+  const key = a + '|' + b + '|' + ty, cur = lib.lineBranch[key] || '';
   openModal({
-    title:'Note on this line',
-    body:'<div class="form-grid"><label class="full">Shown on the map next to the line<input type="text" id="lnNote" maxlength="60" value="' + esc(l[3] || '') + '"></label></div>',
+    title:'This line',
+    body:'<div class="form-grid"><label class="full">Note, shown on the map next to the line<input type="text" id="lnNote" maxlength="60" value="' + esc(l[3] || '') + '"></label>' +
+      '<label class="full">Colour line<select id="lnBranch"><option value="">None: a plain line</option>' + lib.branches.map(x => '<option value="' + x.id + '"' + (x.id === cur ? ' selected' : '') + '>' + esc(x.name) + '</option>').join('') + '<option value="__new">New colour line…</option></select><span class="hint">Give a main line of thought its own colour. Lines of every kind can share one.</span></label>' +
+      '<div class="full ln-new" hidden><label>Name<input type="text" id="lnBrName" maxlength="40" placeholder="Main line"></label><label>Colour<input type="color" id="lnBrColor" value="' + nextBranchColor() + '"></label></div></div>',
     actions:[{label:'Cancel'}, {label:'Save', primary:true, onClick: bd => {
+      const before = clone(lib);
       const v = bd.querySelector('#lnNote').value.trim();
       if(v) l[3] = v; else l.length = 3;
+      let bid = bd.querySelector('#lnBranch').value;
+      if(bid === '__new'){
+        let id; do{ id = rid('b'); }while(lib.branches.some(x => x.id === id));
+        const col = bd.querySelector('#lnBrColor').value;
+        lib.branches.push({id, name: bd.querySelector('#lnBrName').value.trim() || 'Colour line ' + (lib.branches.length + 1), color: HEX_RE.test(col) ? col : nextBranchColor()});
+        bid = id;
+      }
+      if(bid) lib.lineBranch[key] = bid; else delete lib.lineBranch[key];
       reindex(); touchLib(); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected);
-    }}]
+      toast('Line saved', () => { lib = before; reindex(); touchLib(); renderAll(); toast('Undone'); });
+    }}],
+    onOpen: b2 => { const sel = b2.querySelector('#lnBranch'), nw = b2.querySelector('.ln-new'); sel.addEventListener('change', () => { nw.hidden = sel.value !== '__new'; }); }
   });
 }
 function openLinkPicker(id, type){
@@ -1900,7 +2134,9 @@ function openLinkPicker(id, type){
   });
 }
 function select(id, center){
+  ui.branch = null;
   ui.selected = id && lib.entries[id] ? id : null;
+  if(typeof renderBranchRow === 'function') renderBranchRow();
   mapSvg.querySelectorAll('.node.sel').forEach(n => n.classList.remove('sel'));
   if(ui.selected){
     const n = mapSvg.querySelector('.node[data-id="' + ui.selected + '"]');
@@ -1943,7 +2179,7 @@ function resetFilters(){ ui.q = ''; ui.prio = 'all'; ui.tag = ''; ui.dom = ''; u
 function goTo(id){
   const e = lib.entries[id];
   if(!e) return;
-  if(e.kind === 'concept'){ openView(e.sub, {card: e.id}); return; }
+  if(e.kind === 'concept'){ openView('__concepts', {card: e.id}); return; }
   if(!matches(e)) resetFilters();
   if(e.parent){ openView(e.sub, {row: e.id}); return; }
   const inView = ui.sub === e.sub || (!ui.sub && ui.topic === e.topic);
@@ -2008,14 +2244,74 @@ document.addEventListener('keydown', ev => { if(ev.key === 'Escape' && !modal.ro
 let toastTimer = null, undoFn = null;
 function toast(msg, undo){
   const t = document.getElementById('toast');
-  undoFn = undo || null;
+  if(undo && !undoing) setUndo(msg, undo);
   t.innerHTML = '<span>' + esc(msg) + '</span>' + (undo ? '<button type="button" data-undo="1">Undo</button>' : '');
   t.hidden = false;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.hidden = true; undoFn = null; }, undo ? 9000 : 3200);
+  toastTimer = setTimeout(() => { t.hidden = true; }, undo ? 9000 : 3200);
 }
+document.getElementById('undoPill').addEventListener('click', () => runUndo());
+document.getElementById('btnAddPaper').addEventListener('click', () => openEntryForm(null));
+(() => {
+  const more = document.getElementById('btnAddMore'), menu = document.getElementById('addMenu');
+  const show = open => { menu.hidden = !open; more.setAttribute('aria-expanded', String(open)); };
+  more.addEventListener('click', ev => { ev.stopPropagation(); show(menu.hidden); });
+  menu.addEventListener('click', ev => { const b = ev.target.closest('[data-add]'); if(!b) return; show(false); if(b.dataset.add === 'concept') openConceptForm(null); else openEntryForm(null); });
+  document.addEventListener('click', ev => { if(!menu.hidden && !ev.target.closest('.add-split')) show(false); });
+  document.addEventListener('keydown', ev => { if(ev.key === 'Escape' && !menu.hidden) show(false); });
+})();
 document.getElementById('toast').addEventListener('click', ev => {
-  if(ev.target.closest('[data-undo]') && undoFn){ const f = undoFn; undoFn = null; document.getElementById('toast').hidden = true; f(); }
+  if(ev.target.closest('[data-undo]')){ document.getElementById('toast').hidden = true; runUndo(); }
+});
+/* The last change can be undone for as long as Settings says (10 minutes by default), until you make another change.
+   It doesn't vanish when the message fades or the mouse moves. */
+function undoMinutes(){ return settings.undoWindow === 0 ? 0 : (settings.undoWindow || 10); }
+function setUndo(label, fn){
+  undoSlot = {label, fn, at: Date.now(), stAt: clone(status), fresh: true};
+  setTimeout(() => { if(undoSlot) undoSlot.fresh = false; }, 0);
+  renderUndo();
+}
+function clearUndo(){ if(undoSlot){ undoSlot = null; renderUndo(); } }
+function runUndo(){
+  if(undoSlot && undoMinutes() && Date.now() - undoSlot.at > undoMinutes() * 60000){ undoSlot = null; renderUndo(); toast('Undo has expired'); return; }
+  if(!undoSlot) return;
+  const s = undoSlot; undoSlot = null;
+  const stNow = clone(status);
+  undoing = true;
+  try{ s.fn(); } finally { undoing = false; }
+  /* keep any Read / Want-to-read marks made since the change */
+  let changed = false;
+  new Set(Object.keys(s.stAt).concat(Object.keys(stNow))).forEach(k => {
+    if(JSON.stringify(s.stAt[k]) === JSON.stringify(stNow[k])) return;
+    if(stNow[k] === undefined) delete status[k]; else status[k] = stNow[k];
+    changed = true;
+  });
+  if(changed){ statusTime = Date.now(); persistStatus(); renderAll(); }
+  renderUndo();
+}
+function renderUndo(){
+  const b = document.getElementById('undoPill'); if(!b) return;
+  if(undoSlot && undoMinutes() && Date.now() - undoSlot.at > undoMinutes() * 60000) undoSlot = null;
+  b.hidden = !undoSlot;
+  if(undoSlot){
+    b.querySelector('.undo-what').textContent = undoSlot.label;
+    b.title = 'Undo: ' + undoSlot.label + ' (works ' + (undoMinutes() ? 'for ' + undoMinutes() + ' minutes, ' : '') + 'until your next change; Ctrl or Cmd + Z)';
+  }
+  if(typeof setBarH === 'function') setBarH();
+}
+/* no background timer: the time limit is checked whenever you move or type, and again when you press Undo */
+let undoCheckAt = 0;
+['pointermove', 'keydown', 'focus', 'visibilitychange'].forEach(ty => window.addEventListener(ty, () => {
+  if(!undoSlot) return;
+  const now = Date.now(); if(now - undoCheckAt < 5000) return;
+  undoCheckAt = now; renderUndo();
+}, {passive:true}));
+document.addEventListener('keydown', ev => {
+  if(!(ev.metaKey || ev.ctrlKey) || ev.shiftKey || ev.altKey || (ev.key !== 'z' && ev.key !== 'Z')) return;
+  const a = document.activeElement;
+  if(a && a.matches && a.matches('input, textarea, select, [contenteditable="true"]')) return;
+  if(!modal.root.hidden || !undoSlot) return;
+  ev.preventDefault(); runUndo();
 });
 
 /* ===================== edit mode ===================== */
@@ -2069,11 +2365,38 @@ function bindPickers(body, state, selfId){
       if(!q){ list.innerHTML = ''; return; }
       const terms = q.split(/\s+/);
       const hits = pool().filter(e => { const hay = (e.y + ' ' + (e.au || '') + ' ' + (e.t || '') + ' ' + (e.short || '')).toLowerCase(); return terms.every(t => hay.includes(t)); }).sort(byYear).slice(0, 8);
-      list.innerHTML = hits.map(e => '<button type="button" data-pick="' + e.id + '">' + esc(e.kind === 'concept' ? e.t : [e.y, shortAu(e.au), e.t].filter(Boolean).join('  ')) + '</button>').join('') || '';
+      const raw = input.value.trim();
+      const exact = (name === 'needs' || name === 'cup') && allConcepts().some(c => c.t.trim().toLowerCase() === raw.toLowerCase());
+      list.innerHTML = hits.map(e => '<button type="button" data-pick="' + e.id + '">' + esc(e.kind === 'concept' ? e.t : [e.y, shortAu(e.au), e.t].filter(Boolean).join('  ')) + '</button>').join('') +
+        ((name === 'needs' || name === 'cup') && !exact ? '<button type="button" class="pick-new" data-pick-new="1">+ New concept “' + esc(raw) + '”</button>' : '');
     };
     input.addEventListener('input', refresh);
     input.addEventListener('focus', refresh);
     list.addEventListener('click', ev => {
+      const nb = ev.target.closest('[data-pick-new]');
+      if(nb){
+        const nameNew = input.value.trim(); if(!nameNew) return;
+        const h = clashHint(nameNew);
+        list.innerHTML = '<div class="pick-new-form"><span>New concept “' + esc(nameNew) + '”</span>' + (h ? '<span class="hint">' + esc(h) + '</span>' : '') +
+          '<label>Year it appeared<input type="number" class="pn-year" placeholder="e.g. 1950"></label><button type="button" class="btn" data-pn-add="1">Add</button><button type="button" class="linkbtn" data-pn-cancel="1">Cancel</button><span class="form-error pn-err" hidden></span></div>';
+        const yIn = list.querySelector('.pn-year'); yIn.focus();
+        const add = () => {
+          const y = parseInt(yIn.value, 10);
+          if(!isFinite(y) || y < 1 || y > 2100){ const er = list.querySelector('.pn-err'); er.hidden = false; er.textContent = 'Add the year as a whole number.'; return; }
+          let cid; do{ cid = rid('c'); }while(lib.entries[cid]);
+          const sub = defaultViewOf(lib.topics[0].id).sub;
+          const before = clone(lib);
+          lib.entries[cid] = {id: cid, kind: 'concept', topic: IDX.topicOf[sub], sub, group: '', y, t: nameNew, short: nameNew.slice(0, 14), what: '', why: '', refs: []};
+          reindex(); touchLib(); renderMap(true); renderTabs();
+          state[name].push(cid); picked.insertAdjacentHTML('beforeend', pickChip(cid));
+          input.value = ''; list.innerHTML = ''; input.focus();
+          toast('Created concept “' + nameNew + '”', () => { lib = before; reindex(); touchAllTopics(); renderAll(); toast('Undone'); });
+        };
+        list.querySelector('[data-pn-add]').addEventListener('click', add);
+        yIn.addEventListener('keydown', e2 => { if(e2.key === 'Enter'){ e2.preventDefault(); add(); } });
+        list.querySelector('[data-pn-cancel]').addEventListener('click', () => { list.innerHTML = ''; input.focus(); });
+        return;
+      }
       const b = ev.target.closest('[data-pick]'); if(!b) return;
       state[name].push(b.dataset.pick);
       picked.insertAdjacentHTML('beforeend', pickChip(b.dataset.pick));
@@ -2203,18 +2526,26 @@ function saveEntry(b, id, state, base){
 }
 
 /* ---------- concept form ---------- */
-function openConceptForm(id){
+function topicNameClash(name){
+  const n = String(name || '').trim().toLowerCase(); if(!n) return '';
+  for(const tp of lib.topics){
+    if(tp.name.trim().toLowerCase() === n) return tp.name;
+    const s = tp.subs.find(x => !x.hidden && x.name.trim().toLowerCase() === n); if(s) return s.name;
+  }
+  return '';
+}
+function clashHint(name){ const c = topicNameClash(name); return c ? 'There’s already a topic called “' + c + '”. Use a topic for a whole field you file papers under, and a concept for one idea papers rely on.' : ''; }
+function openConceptForm(id, preset){
   const isNew = !id;
-  const tp = IDX.topics[ui.topic];
-  const defSub = ui.sub || defaultViewOf(ui.topic).sub;
-  const base = isNew ? {kind:'concept', topic: tp.id, sub: defSub, y: new Date().getFullYear(), t:'', short:'', what:'', why:'', refs:[]} : clone(lib.entries[id]);
+  const defSub = IDX.subs[ui.sub] ? ui.sub : defaultViewOf(ui.topic || lib.topics[0].id).sub;
+  const base = isNew ? Object.assign({kind:'concept', topic: IDX.topicOf[defSub], sub: defSub, y: '', t:'', short:'', what:'', why:'', refs:[]}, preset || {}) : clone(lib.entries[id]);
   const state = {cup: isNew ? [] : (IDX.cUp[id] || []).slice()};
   const body = '<div class="form-grid">' +
+    '<p class="hint full concept-intro">A concept is one idea that papers rely on, with the year it appeared, such as “Nash equilibrium, 1950”. It lives in the Concepts row at the top of the map, not under a topic.</p>' +
     '<label>Name<input type="text" name="t" value="' + esc(base.t) + '" required></label>' +
-    '<label>Short name (shown on the map)<input type="text" name="short" value="' + esc(base.short) + '"></label>' +
-    '<label>Year (start)<input type="number" name="y" value="' + esc(base.y) + '"></label>' +
-    '<label>Topic<select name="topic">' + optionList(lib.topics.map(t => [t.id, t.name]), base.topic) + '</select></label>' +
-    '<label class="full">Subtopic<select name="sub">' + subOptions(base.topic, base.sub) + '</select></label>' +
+    '<label>Year it appeared<input type="number" name="y" value="' + esc(base.y) + '" placeholder="e.g. 1950"></label>' +
+    '<p class="hint full name-clash" hidden></p>' +
+    '<label class="full">Short name (shown on the map)<input type="text" name="short" value="' + esc(base.short) + '"></label>' +
     '<label class="full">What it is<textarea name="what" rows="2">' + esc(base.what) + '</textarea></label>' +
     '<label class="full">Why learn it first<textarea name="why" rows="3">' + esc(base.why) + '</textarea></label>' +
     pickerHTML('cup', 'Prerequisite concepts', state.cup, 'concepts to learn first') +
@@ -2223,10 +2554,10 @@ function openConceptForm(id){
     title: isNew ? 'New concept' : 'Modify concept', body,
     actions:[{label:'Cancel'}, {label:'Save', primary:true, onClick: b => {
       const val = n => { const el = b.querySelector('[name="' + n + '"]'); return el ? el.value.trim() : ''; };
-      const t = val('t'), y = parseInt(val('y'), 10), sub = val('sub');
+      const t = val('t'), y = parseInt(val('y'), 10);
+      const sub = IDX.subs[base.sub] ? base.sub : defaultViewOf(lib.topics[0].id).sub;
       if(!t) return formErr(b, 'The name can’t be empty.');
-      if(!isFinite(y) || y < 1 || y > 2100) return formErr(b, 'The year must be a whole number between 1 and 2100.');
-      if(!IDX.subs[sub]) return formErr(b, 'Choose a subtopic.');
+      if(!isFinite(y) || y < 1 || y > 2100) return formErr(b, 'Add the year the idea appeared, as a whole number between 1 and 2100.');
       const before = clone(lib);
       const cid = isNew ? (function(){ let x; do{ x = rid('c'); }while(lib.entries[x]); return x; })() : id;
       const prev = lib.entries[cid];
@@ -2235,16 +2566,16 @@ function openConceptForm(id){
       (IDX.children[cid] || []).forEach(k => { const r = lib.entries[k]; if(r){ r.sub = sub; r.topic = e.topic; } });
       lib.links = lib.links.filter(l => !(l[1] === cid && l[2] === 'o'));
       state.cup.forEach(a => { if(a !== cid && lib.entries[a] && lib.entries[a].kind === 'concept') lib.links.push([a, cid, 'o']); });
-      if(Array.isArray(settings.lanes) && !settings.lanes.includes(sub)){ settings.lanes.push(sub); persistSettings(); }
       reindex();
       touchLib([e.topic, prev ? prev.topic : null]);
-      openView(sub, {card: cid});
+      openView('__concepts', {card: cid});
       toast(isNew ? 'Added concept “' + t + '”' : 'Saved', () => { lib = before; reindex(); touchAllTopics(); renderAll(); toast('Undone'); });
       return true;
     }}],
     onOpen: b => {
-      const fTopic = b.querySelector('[name=topic]'), fSub = b.querySelector('[name=sub]');
-      fTopic.addEventListener('change', () => { fSub.innerHTML = subOptions(fTopic.value, ''); });
+      const fName = b.querySelector('[name=t]'), clash = b.querySelector('.name-clash');
+      const check = () => { const h = clashHint(fName.value); clash.hidden = !h; clash.textContent = h; };
+      fName.addEventListener('input', check); check();
       bindPickers(b, state, id);
     }
   });
@@ -2256,6 +2587,7 @@ function openTopicForm(tid){
   const tp = isNew ? {name:'', desc:''} : IDX.topics[tid];
   const body = '<div class="form-grid">' +
     '<label class="full">Topic name<input type="text" name="name" value="' + esc(tp.name) + '" ></label>' +
+    (isNew ? '<p class="hint full topic-intro">Top-level topics are for big areas, such as a field or a project. Links between them are drawn with lines, colour lines and Related topics, and the map shows them all.</p>' : '') +
     '<label class="full">Description<textarea name="desc" rows="2">' + esc(tp.desc) + '</textarea></label>' +
     (isNew ? '<label class="full">Subtopics<textarea name="subs" rows="3" placeholder="One per line"></textarea><span class="hint">Leave empty to keep papers directly under the topic; you can add subtopics any time.</span></label>' : '') +
     '</div><p class="form-error" id="formErr" hidden></p>';
@@ -2355,9 +2687,20 @@ function openSubForm(sid, topicId, parentId){
 }
 
 /* ---------- deletion ---------- */
-function confirmDanger(title, text, label, fn){
+function deletionWarning(ids, all){
+  const es = ids.map(k => lib.entries[k]).filter(Boolean);
+  const papers = es.filter(e => e.kind === 'paper').length, concepts = es.filter(e => e.kind === 'concept').length;
+  const noted = es.filter(e => e.n && String(e.n).trim()).length;
+  if(!papers && !concepts) return 'No papers will be deleted.';
+  const parts = [];
+  if(papers) parts.push((all ? 'all ' : '') + papers + (papers === 1 ? ' paper' : ' papers'));
+  if(concepts) parts.push(concepts + (concepts === 1 ? ' concept' : ' concepts'));
+  return 'You will delete ' + parts.join(' and ') + '.' + (noted ? ' Notes on ' + noted + ' of them go too.' : '');
+}
+function countPapers(ids){ return ids.map(k => lib.entries[k]).filter(e => e && e.kind === 'paper').length; }
+function confirmDanger(title, text, label, fn, warn){
   openModal({
-    title, body:'<p>' + esc(text) + '</p><label style="display:flex;gap:.5em;align-items:center;margin-top:.6em"><input type="checkbox" id="dangerAgree"> Yes, delete it</label>',
+    title, body:(warn ? '<p class="danger-count">' + esc(warn) + '</p>' : '') + '<p>' + esc(text) + '</p><label style="display:flex;gap:.5em;align-items:center;margin-top:.6em"><input type="checkbox" id="dangerAgree"> Yes, delete it</label>',
     actions:[{label:'Cancel'}, {label: label, primary:true, disabled:true, onClick: () => { fn(); }}],
     onOpen: (b, a) => { const cb = b.querySelector('#dangerAgree'), go = a.querySelector('[data-mi="1"]'); cb.addEventListener('change', () => { go.disabled = !cb.checked; }); }
   });
@@ -2376,13 +2719,14 @@ function deleteEntry(id){
     if(ui.selected === id) ui.selected = null;
     reindex(); touchAllTopics(); renderAll();
     toast('Deleted ' + name, () => { lib = before; status = stBefore; statusTime = Date.now(); persistStatus(); reindex(); touchAllTopics(); renderAll(); toast('Undone'); });
-  });
+  }, deletionWarning([id].concat(kids)));
 }
 function deleteSub(sid){
   const tp = IDX.topics[IDX.topicOf[sid]], s = IDX.subs[sid];
   const n = (IDX.bySub[sid] || []).length;
   const kn = (IDX.kids[sid] || []).length;
-  confirmDanger('Delete subtopic', 'Delete subtopic “' + s.name + '” and its ' + n + ' items?' + (kn ? ' Its ' + kn + (kn === 1 ? ' subtopic moves' : ' subtopics move') + ' up one level.' : ''), 'Delete subtopic', () => {
+  const sIds = (IDX.bySub[sid] || []).map(e => e.id), sPapers = countPapers(sIds);
+  confirmDanger('Delete subtopic “' + s.name + '”', 'This deletes the subtopic “' + s.name + '” and the ' + n + ' items directly in it.' + (kn ? ' Its ' + kn + (kn === 1 ? ' subtopic moves' : ' subtopics move') + ' up one level and keeps its papers.' : ''), sPapers ? 'Delete subtopic and ' + sPapers + (sPapers === 1 ? ' paper' : ' papers') : 'Delete subtopic', () => {
     const before = clone(lib), stBefore = clone(status);
     const gone = new Set((IDX.bySub[sid] || []).map(e => e.id));
     gone.forEach(k => { const x = lib.entries[k]; if(x) delete status[keyOf(x)]; delete lib.entries[k]; });
@@ -2396,13 +2740,14 @@ function deleteSub(sid){
     if(Array.isArray(settings.lanes)){ settings.lanes = settings.lanes.filter(x => x !== sid); persistSettings(); }
     reindex(); touchAllTopics(); ui.sub = null; openView(T.id);
     toast('Deleted subtopic “' + s.name + '”', () => { lib = before; status = stBefore; statusTime = Date.now(); persistStatus(); reindex(); touchAllTopics(); fixView(); renderAll(); toast('Undone'); });
-  });
+  }, deletionWarning(sIds));
 }
 function deleteTopic(tid){
   const tp = IDX.topics[tid]; if(!tp) return;
   const n = topicEntries(tid).length, last = lib.topics.length <= 1;
   const subN = tp.subs.filter(s => !s.hidden).length;
-  confirmDanger('Delete topic', 'Delete topic “' + tp.name + '”, its ' + subN + ' subtopics and ' + n + ' items?' + (last ? ' It is your only topic, so an empty “Untitled topic” will take its place.' : ''), 'Delete topic', () => {
+  const tIds = topicEntries(tid).map(e => e.id), tPapers = countPapers(tIds);
+  confirmDanger('Delete topic “' + tp.name + '”', 'This deletes the topic “' + tp.name + '”, its ' + subN + ' subtopics and ' + n + ' items.' + (last ? ' It is your only topic, so an empty “Untitled topic” will take its place.' : ''), tPapers ? 'Delete topic and ' + tPapers + (tPapers === 1 ? ' paper' : ' papers') : 'Delete topic', () => {
     const before = clone(lib), stBefore = clone(status);
     if(last){
       let id; do{ id = rid('t'); }while(IDX.topics[id] || IDX.subs[id]);
@@ -2419,7 +2764,7 @@ function deleteTopic(tid){
     if(Array.isArray(settings.lanes)){ settings.lanes = settings.lanes.filter(x => !subIds.has(x)); persistSettings(); }
     reindex(); touchLib([tid].concat(lib.topics.map(t => t.id))); ui.selected = null; openView(lib.topics[0].id);
     toast('Deleted topic “' + tp.name + '”', () => { lib = before; status = stBefore; statusTime = Date.now(); persistStatus(); reindex(); touchAllTopics(); fixView(); renderAll(); toast('Undone'); });
-  });
+  }, deletionWarning(tIds));
 }
 
 /* ---------- tags ---------- */
@@ -2530,7 +2875,7 @@ function openTagManager(){
 const lanePicker = document.getElementById('lanePicker');
 function renderLanePicker(){
   const shown = new Set(lanesShown().map(l => l.sub.id));
-  lanePicker.innerHTML = '<div class="lp-actions"><button type="button" class="btn" data-lp="all">Show all</button><button type="button" class="btn" data-lp="current">Current topic only</button><button type="button" class="btn" data-lp="none">Clear all</button></div>' +
+  lanePicker.innerHTML = (allConcepts().length ? '<div class="lp-topic"><label><input type="checkbox" data-lpc="1"' + (settings.showConcepts !== false ? ' checked' : '') + '>Concepts (their own row at the top)</label></div>' : '') + '<div class="lp-actions"><button type="button" class="btn" data-lp="all">Show all</button><button type="button" class="btn" data-lp="current">Current topic only</button><button type="button" class="btn" data-lp="none">Clear all</button></div>' +
     lib.topics.map(tp => {
       const ids = tp.subs.map(s => s.id);
       const n = ids.filter(x => shown.has(x)).length;
@@ -2550,6 +2895,7 @@ function setLanes(ids){
   renderMap(true);
 }
 lanePicker.addEventListener('change', ev => {
+  if(ev.target.dataset.lpc){ settings.showConcepts = ev.target.checked; persistSettings({remote:false}); renderLanePicker(); renderMap(true); return; }
   const shown = new Set(lanesShown().map(l => l.sub.id));
   const t = ev.target;
   if(t.dataset.lpt){ const tp = IDX.topics[t.dataset.lpt]; tp.subs.forEach(s => { if(t.checked) shown.add(s.id); else shown.delete(s.id); }); }
@@ -2578,10 +2924,11 @@ function openSettings(){
       '<div class="set-section"><h3>Read and Want-to-read colours</h3>' +
       '<p class="hint">The defaults are emerald #009473 and cinnabar #E34234. They sit almost opposite each other on the colour wheel, so both stay bright on a light page without clashing. Nothing else on the page uses these two colours.</p>' +
       '<div class="color-row"><label><input type="color" id="cGreen" value="' + esc(c.green || DEFAULT_COLORS.green) + '"> Read</label><label><input type="color" id="cRed" value="' + esc(c.red || DEFAULT_COLORS.red) + '"> Want to read</label><button type="button" class="btn" id="cReset">Reset to defaults</button></div></div>' +
-      '<div class="set-section"><h3>Paper</h3><div class="form-grid"><fieldset class="full"><legend>Page background (dark mode follows your system)</legend>' +
+      '<div class="set-section"><h3>Paper</h3><div class="form-grid"><fieldset class="full"><legend>Light or dark</legend>' + [['auto', 'Match my system'], ['light', 'Light'], ['dark', 'Dark']].map(p => '<label><input type="radio" name="theme" value="' + p[0] + '"' + ((settings.theme || 'auto') === p[0] ? ' checked' : '') + '> ' + p[1] + '</label>').join('') + '</fieldset><fieldset class="full"><legend>Page background in light mode</legend>' +
         [['mist','Mist (cool, default)'],['warm','Warm white'],['white','Pure white']].map(p => '<label><input type="radio" name="paper" value="' + p[0] + '"' + ((settings.paper || 'mist') === p[0] ? ' checked' : '') + '> ' + p[1] + '</label>').join('') + '</fieldset></div></div>' +
       '<div class="set-section"><h3>Map</h3><label style="display:flex;gap:.5em;align-items:center"><input type="checkbox" id="srcColors"' + (settings.mapColor !== 'plain' ? ' checked' : '') + '> Colour unmarked dots by tag</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.4em"><input type="checkbox" id="setShowPre"' + (settings.showPre ? ' checked' : '') + '> Always show prerequisite lines</label><div class="set-actions"><button type="button" class="btn" id="setTags">Manage tags &amp; colours</button></div></div>' +
-      '<div class="set-section"><h3>Modify</h3><label style="display:flex;gap:.5em;align-items:center"><input type="checkbox" id="setAskEdit"' + (settings.skipModifyConfirm ? '' : ' checked') + '> Ask before turning on Modify mode</label><div class="set-actions"><button type="button" class="btn" id="setEdit">' + (ui.edit ? 'Turn off Modify mode' : 'Turn on Modify mode') + '</button></div></div>' +
+      '<div class="set-section"><h3>Modify</h3><label style="display:flex;gap:.5em;align-items:center"><input type="checkbox" id="setAskEdit"' + (settings.skipModifyConfirm ? '' : ' checked') + '> Ask before turning on Modify mode</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.5em">Undo stays available for <select id="setUndoWin">' + [[5, '5 minutes'], [10, '10 minutes'], [30, '30 minutes'], [0, 'until my next change']].map(o => '<option value="' + o[0] + '"' + (undoMinutes() === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label><p class="hint" style="margin:.4em 0 0">Undo always covers your last change, until you make another one. ' + (ghCfg() ? 'Every version saved before that stays in <a href="https://github.com/' + encodeURIComponent(ghCfg().owner) + '/' + encodeURIComponent(ghCfg().repo) + '/commits/' + encodeURIComponent(ghCfg().branch || 'main') + '/' + ghCfg().path.split('/').map(encodeURIComponent).join('/') + '" target="_blank" rel="noopener">your repository’s history</a>.' : 'With GitHub sync, every saved version also stays in your repository’s history.') + '</p><div class="set-actions"><button type="button" class="btn" id="setEdit">' + (ui.edit ? 'Turn off Modify mode' : 'Turn on Modify mode') + '</button></div></div>' +
+      '<div class="set-section"><h3>Colour lines</h3><p class="hint">Give a main line of thought a colour: open a line’s ✎ in Modify mode and choose one. Rename or recolour them here.</p><div id="brList">' + branchListHTML() + '</div><div class="set-actions"><button type="button" class="btn" id="brAdd">Add a colour line</button></div></div>' +
       ghSectionHTML() +
       '<div class="set-section"><h3>Data</h3><p class="hint">Saving status: <span data-save-state>' + esc(saveStateText()) + '</span>. A backup is one JSON file with all your topics, papers, lines and marks, in the same format as the data file in your repository.</p>' +
       '<div class="set-actions"><button type="button" class="btn" id="setExport">Export backup</button><button type="button" class="btn" id="setImport">Import backup</button><button type="button" class="btn" id="setNotes">Export notes</button><button type="button" class="btn" id="setReset">Start over</button>' + '</div></div>',
@@ -2594,7 +2941,14 @@ function openSettings(){
       b.querySelector('#setTitle').addEventListener('change', ev => { lib.title = ev.target.value.trim(); applyTitle(); touchLib([]); });
       b.querySelector('#srcColors').addEventListener('change', ev => { settings.mapColor = ev.target.checked ? 'source' : 'plain'; persistSettings(); renderMap(true); });
       b.querySelector('#setShowPre').addEventListener('change', ev => { settings.showPre = ev.target.checked; persistSettings(); renderMap(true); });
+      const brList = b.querySelector('#brList');
+      const brSave = () => { reindex(); touchLib(); renderMap(true); infoEl.innerHTML = ui.branch ? branchInfoHTML(ui.branch) : infoHTML(ui.selected); };
+      brList.addEventListener('change', ev => { const row = ev.target.closest('[data-br-row]'); if(!row) return; const x = lib.branches.find(y => y.id === row.dataset.brRow); if(!x) return; if(ev.target.type === 'color' && HEX_RE.test(ev.target.value)) x.color = ev.target.value; if(ev.target.type === 'text') x.name = ev.target.value.trim().slice(0, 40) || x.name; brSave(); });
+      brList.addEventListener('click', ev => { const d = ev.target.closest('[data-br-del]'); if(!d) return; const before = clone(lib); lib.branches = lib.branches.filter(y => y.id !== d.dataset.brDel); if(ui.branch === d.dataset.brDel) ui.branch = null; brSave(); brList.innerHTML = branchListHTML(); toast('Colour line removed', () => { lib = before; reindex(); touchLib(); renderAll(); toast('Undone'); }); });
+      b.querySelector('#brAdd').addEventListener('click', () => { let id; do{ id = rid('b'); }while(lib.branches.some(y => y.id === id)); lib.branches.push({id, name: 'Colour line ' + (lib.branches.length + 1), color: nextBranchColor()}); brSave(); brList.innerHTML = branchListHTML(); });
+      b.querySelector('#setUndoWin').addEventListener('change', ev => { settings.undoWindow = +ev.target.value; persistSettings({remote:false}); renderUndo(); });
       b.querySelectorAll('input[name=paper]').forEach(rb => rb.addEventListener('change', () => { if(rb.checked){ settings.paper = rb.value; applyColors(); persistSettings(); renderMap(true); } }));
+      b.querySelectorAll('input[name=theme]').forEach(rb => rb.addEventListener('change', () => { if(rb.checked){ settings.theme = rb.value; applyColors(); persistSettings({remote:false}); renderMap(true); } }));
       wireGhSection(b);
       b.querySelector('#setEdit').addEventListener('click', () => { closeModal(); askEditMode(); });
       b.querySelector('#setAskEdit').addEventListener('change', ev => { settings.skipModifyConfirm = !ev.target.checked; persistSettings(); });
@@ -2695,7 +3049,7 @@ async function exportBackup(){
 function importBackup(){
   openModal({
     title:'Import backup',
-    body:'<p>Choose a .json file you exported earlier, or paste a backup below. Importing replaces all current content and marks.</p>' +
+    body:(countPapers(Object.keys(lib.entries)) ? '<p class="danger-count">Importing replaces your current list of ' + countPapers(Object.keys(lib.entries)) + ' papers.</p>' : '') + '<p>Choose a .json file you exported earlier, or paste a backup below. Importing replaces all current content and marks.</p>' +
       '<p><input type="file" id="impFile" accept=".json,application/json"></p><textarea class="backup" id="impText" placeholder="Or paste a backup here"></textarea><p class="form-error" id="formErr" hidden></p>',
     actions:[{label:'Cancel'}, {label:'Import and replace', primary:true, onClick: b => {
       let obj;
@@ -2725,7 +3079,7 @@ function importBackup(){
 function resetBuiltin(){
   openModal({
     title:'Start over',
-    body:'<p>This deletes all topics, papers, tags and lines and returns to a blank page. Export a backup first if you might want them back.</p><label style="display:flex;gap:.5em;align-items:center"><input type="checkbox" id="keepSt" checked> Keep Read and Want-to-read marks</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.5em"><input type="checkbox" id="dangerAgree"> Yes, start over</label>',
+    body:'<p class="danger-count">' + esc(deletionWarning(Object.keys(lib.entries), true)) + '</p><p>This deletes all topics, papers, tags and lines and returns to a blank page. Export a backup first if you might want them back.</p><label style="display:flex;gap:.5em;align-items:center"><input type="checkbox" id="keepSt" checked> Keep Read and Want-to-read marks</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.5em"><input type="checkbox" id="dangerAgree"> Yes, start over</label>',
     actions:[{label:'Cancel'}, {label:'Start over', primary:true, disabled:true, onClick: b => {
       const keep = b.querySelector('#keepSt').checked;
       const before = {lib: clone(lib), status: clone(status)};
@@ -3284,7 +3638,7 @@ function commonClick(ev){
   const st = ev.target.closest('[data-st]'); if(st){ toggleStatus(st.dataset.id, st.dataset.st); return true; }
   const sel = ev.target.closest('[data-select]'); if(sel){ select(sel.dataset.select, true); return true; }
   const gt = ev.target.closest('[data-goto]'); if(gt){ goTo(gt.dataset.goto); return true; }
-  const cd = ev.target.closest('[data-card]'); if(cd){ const c = lib.entries[cd.dataset.card]; if(c) openView(c.sub, {card: c.id}); return true; }
+  const cd = ev.target.closest('[data-card]'); if(cd){ const c = lib.entries[cd.dataset.card]; if(c) openView(c.kind === 'concept' ? '__concepts' : c.sub, {card: c.id}); return true; }
   const ed = ev.target.closest('[data-edit]'); if(ed){ const e = lib.entries[ed.dataset.edit]; if(e){ if(e.kind === 'concept') openConceptForm(e.id); else openEntryForm(e.id); } return true; }
   const dl = ev.target.closest('[data-del]'); if(dl){ deleteEntry(dl.dataset.del); return true; }
   return false;
@@ -3396,7 +3750,85 @@ axisSvg.addEventListener('pointerup', () => {
 });
 axisSvg.addEventListener('pointercancel', () => { drag = null; });
 axisSvg.addEventListener('dblclick', ev => { zoomBy(2, MAP.x.inv(axisX(ev))); });
+let nodeDrag = null, suppressMapClick = false;
+const dragHint = document.createElement('div'); dragHint.className = 'drag-hint'; dragHint.hidden = true; document.body.appendChild(dragHint);
+function laneAt(clientY){
+  const r = mapSvg.getBoundingClientRect(), sy = r.height ? MAP.H / r.height : 1, y = (clientY - r.top) * sy;
+  return {i: Math.max(0, Math.min((MAP.lanes || []).length - 1, Math.floor((y - MAP.top) / MAP.laneH))), y};
+}
+function laneName(ln){ return ln.sub.hidden ? ln.topic.name : [ln.topic.name].concat(subPath(ln.sub)).join(' › '); }
+function moveEntryTo(id, s, where){
+  const e = lib.entries[id]; if(!e || !s || e.sub === s.id) return;
+  const before = clone(lib);
+  e.sub = s.id; e.topic = IDX.topicOf[s.id]; e.group = '';
+  reindex(); touchLib(); renderAll(); if(ui.selected === id) select(id);
+  toast('Moved “' + mapLabel(e) + '” to “' + where + '”', () => { lib = before; reindex(); touchAllTopics(); renderAll(); toast('Undone'); });
+}
+mapSvg.addEventListener('pointerdown', ev => {
+  const n = ev.target.closest('.node'); if(!n || ev.button !== 0) return;
+  nodeDrag = {id: n.dataset.id, y0: ev.clientY, started: false};
+}, true);
+function cleanupNodeDrag(){
+  mapSvg.classList.remove('node-dragging');
+  ['laneDrop', 'dragGhost'].forEach(x => { const el = document.getElementById(x); if(el) el.remove(); });
+  mapLabels.querySelectorAll('.drop-target').forEach(b => b.classList.remove('drop-target'));
+  dragHint.hidden = true;
+}
+window.addEventListener('pointermove', ev => {
+  const d = nodeDrag; if(!d) return;
+  if(!d.started){
+    if(Math.abs(ev.clientY - d.y0) < 8) return;
+    const p = MAP.P[d.id], e = lib.entries[d.id]; if(!p || !e || e.kind === 'concept'){ nodeDrag = null; return; }
+    d.started = true; d.from = (MAP.lanes || []).findIndex(ln => ln.sub.id === e.sub);
+    mapSvg.classList.add('node-dragging');
+    mapSvg.insertAdjacentHTML('afterbegin', '<rect class="lane-drop" id="laneDrop" x="0" width="' + MAP.W + '" height="' + MAP.laneH + '" y="' + MAP.top + '"></rect>');
+    mapSvg.insertAdjacentHTML('beforeend', '<circle class="drag-ghost" id="dragGhost" cx="' + p.x + '" cy="' + p.y + '" r="7"></circle>');
+  }
+  const L = laneAt(ev.clientY), ln = MAP.lanes[L.i]; if(!ln) return;
+  d.to = ln.concepts ? d.from : L.i;
+  const g = document.getElementById('dragGhost'); if(g) g.setAttribute('cy', Math.max(MAP.top + 4, Math.min(MAP.H - 4, L.y)));
+  const r = document.getElementById('laneDrop'); if(r) r.setAttribute('y', MAP.top + L.i * MAP.laneH);
+  mapLabels.querySelectorAll('button').forEach((b, k) => b.classList.toggle('drop-target', k === L.i));
+  dragHint.hidden = false; dragHint.textContent = ln.concepts ? 'Papers can’t go in the Concepts row' : L.i === d.from ? 'Drop it on another row to move it' : 'Move to “' + laneName(ln) + '”';
+  dragHint.style.left = (ev.clientX + 14) + 'px'; dragHint.style.top = (ev.clientY + 12) + 'px';
+  const bx = mapBox.getBoundingClientRect();
+  if(ev.clientY < bx.top + 28) mapBox.scrollTop -= 14; else if(ev.clientY > bx.bottom - 44) mapBox.scrollTop += 14;
+});
+window.addEventListener('pointerup', () => {
+  const d = nodeDrag; nodeDrag = null; if(!d || !d.started) return;
+  suppressMapClick = true; setTimeout(() => { suppressMapClick = false; }, 0);
+  cleanupNodeDrag();
+  const ln = MAP.lanes[d.to]; if(ln && d.to !== d.from) moveEntryTo(d.id, ln.sub, laneName(ln));
+});
+window.addEventListener('pointercancel', () => { if(nodeDrag && nodeDrag.started) cleanupNodeDrag(); nodeDrag = null; });
+window.addEventListener('keydown', ev => { if(ev.key === 'Escape' && nodeDrag && nodeDrag.started){ cleanupNodeDrag(); nodeDrag = null; } });
+/* a list row: drag its year onto a topic or subtopic in Contents */
+let paperDrag = null;
+function dropSubFor(view){ if(IDX.subs[view]) return IDX.subs[view]; const tp = IDX.topics[String(view).replace(/-all$/, '')]; return tp ? (tp.subs.find(s => s.hidden) || null) : null; }
+function clearPaperOver(){ tocBody.querySelectorAll('.paper-over').forEach(x => x.classList.remove('paper-over')); }
+mainEl.addEventListener('dragstart', ev => {
+  const h = ev.target.closest && ev.target.closest('[data-drag-paper]'); if(!h) return;
+  paperDrag = h.dataset.dragPaper;
+  try{ ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', 'paper:' + paperDrag); }catch(e){}
+  document.body.classList.add('paper-dragging');
+});
+mainEl.addEventListener('dragend', () => { paperDrag = null; document.body.classList.remove('paper-dragging'); clearPaperOver(); });
+tocBody.addEventListener('dragover', ev => {
+  if(!paperDrag) return;
+  clearPaperOver();
+  const link = ev.target.closest('.toc-link[data-view]'), s = link && dropSubFor(link.dataset.view); if(!s) return;
+  ev.preventDefault(); try{ ev.dataTransfer.dropEffect = 'move'; }catch(e){}
+  link.classList.add('paper-over');
+}, true);
+tocBody.addEventListener('drop', ev => {
+  if(!paperDrag) return;
+  const link = ev.target.closest('.toc-link[data-view]'), s = link && dropSubFor(link.dataset.view), id = paperDrag;
+  paperDrag = null; clearPaperOver(); document.body.classList.remove('paper-dragging');
+  if(!s) return; ev.preventDefault(); ev.stopPropagation();
+  moveEntryTo(id, s, s.hidden ? IDX.topics[IDX.topicOf[s.id]].name : [IDX.topics[IDX.topicOf[s.id]].name].concat(subPath(s)).join(' › '));
+}, true);
 mapSvg.addEventListener('click', ev => {
+  if(suppressMapClick) return;
   const n = ev.target.closest('.node');
   if(n) select(n.dataset.id, false);
 });
@@ -3451,8 +3883,10 @@ document.getElementById('filterToggle').addEventListener('click', () => {
   if(open) setTimeout(() => document.getElementById('q').focus(), 0);
 });
 window.addEventListener('hashchange', () => {
-  const v = resolveView(location.hash.slice(1));
-  if(v.topic !== ui.topic || v.sub !== ui.sub){ ui.group = null; ui.topic = v.topic; ui.sub = v.sub; applyView(); }
+  const h = location.hash.slice(1);
+  if(h === 'concepts'){ if(ui.page !== 'concepts'){ ui.page = 'concepts'; applyView(); } return; }
+  const v = resolveView(h);
+  if(ui.page === 'concepts' || v.topic !== ui.topic || v.sub !== ui.sub){ ui.page = null; ui.group = null; ui.topic = v.topic; ui.sub = v.sub; applyView(); }
 });
 
 /* ===================== init ===================== */
@@ -3478,9 +3912,11 @@ if(demo){
 }else loadAll();
 reindex();
 applyColors();
+ui.depth = settings.focusDepth || 1;
 const pv = (demo && demo.preview) || {};
 const initView = resolveView(location.hash.slice(1) || pv.view || '');
 ui.topic = initView.topic; ui.sub = initView.sub;
+ui.page = (location.hash.slice(1) || pv.view) === 'concepts' ? 'concepts' : null;
 renderAll();
 if(pv.select && lib.entries[pv.select]) select(pv.select);
 const zoomTools = document.getElementById('zoomTools'), btnZoom = document.getElementById('btnZoom');

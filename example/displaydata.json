@@ -247,7 +247,19 @@
     "exams",
     "brain food"
    ]
-  ]
+  ],
+  "branches": [
+   {
+    "id": "bmain",
+    "name": "Main line",
+    "color": "#E34234"
+   }
+  ],
+  "lineBranch": {
+   "caffeine|psyecon1979|b": "bmain",
+   "psyecon1979|astro1996|b": "bmain",
+   "astro1996|chem2015|c": "bmain"
+  }
  },
  "status": {
   "map": {

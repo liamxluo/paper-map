@@ -16,7 +16,17 @@ The live preview (link at the top right of this page) shows a made-up example.
 
 ![How each kind of line looks: builds on is solid, responds to is dashed, related to is dotted, needs runs in long dashes from a concept, related topics are an arc beside two rows](assets/lines-legend.svg)
 
-![Linking a paper to one in another subtopic, then giving the line a note](assets/lines.gif)
+![Linking a paper to one in another subtopic, giving the line a note and the Main line colour, then seeing the whole colour line light up](assets/lines.gif)
+
+Click a paper and it lights up one step around it; **How far** in its panel shows more. Give a main line of thought its own colour from a line's ✎: click any paper on a colour line and the whole line lights up, end to end.
+
+### Topics
+
+Top-level topics are for big areas, such as a field or a project. Links between them are drawn with lines, colour lines and Related topics, and the map shows them all.
+
+### Concepts
+
+A topic is where a paper lives; a concept is an idea it needs, with the year the idea appeared, such as Nash equilibrium (1950). Concepts sit in their own row at the top of the map and have their own page in Contents, and a paper in any topic can need several of them. Add one from **+ New paper ▾ → Concept**, or straight from a paper's Prerequisite concepts.
 
 ---
 
@@ -28,7 +38,7 @@ One HTML file, nothing to install.
 
 1. Download [`index.html`](index.html): open it and click **Download raw file**.
 2. Double-click it to open it in your browser.
-3. Click **Modify** to add topics and papers. Everything is saved in that browser.
+3. Add papers with **+ New paper**, and topics with **Modify**. Everything is saved in that browser.
 
 To start from the example instead, use **Settings → Data → Import backup** and choose `displaydata.json`.
 
@@ -85,9 +95,9 @@ PDFs need GitHub sync. To export every note at once, use **Settings → Data →
 <details>
 <summary>Lists</summary>
 
-Every topic also opens as a list, with status, notes, tags and concept cards
+Every topic also opens as a list, with status, notes, tags and the concepts its papers use
 
-![Each topic as a table, with status, notes, tags and concept cards](assets/table.png)
+![Each topic as a table, with status, notes, tags and the concepts its papers use](assets/table.png)
 
 </details>
 
@@ -96,11 +106,12 @@ Every topic also opens as a list, with status, notes, tags and concept cards
 
 ![Contents in Mist, in Modify mode while hovering a row, in Warm white and in Dark](assets/styles.png)
 
-Pick Mist, Warm white or Pure white in **Settings → Paper**. Dark mode follows your system.
+Pick Mist, Warm white or Pure white in **Settings → Paper**. In the same place, choose Light, Dark or Match my system.
 
 </details>
 
-- **One field at a time:** **Topics on the map → Current topic only**.
+- **Move a paper:** drag its dot up or down to another row on the map, or drag its year in the list onto a topic in Contents.
+- **Hide rows for a while:** untick them in **Topics on the map**, and press **Show all** to bring everything back. Lines to papers in hidden rows aren't drawn while those rows are hidden.
 
 ---
 
@@ -109,6 +120,8 @@ Pick Mist, Warm white or Pure white in **Settings → Paper**. Dark mode follows
 **Not a reference manager.** It maps and annotates what you read; it doesn't look up DOIs or format citations the way Zotero does.
 
 **Keep a copy.** Without GitHub sync, your list lives only in this browser, and clearing its data deletes it. Connect sync, or export a backup now and then.
+
+**Undo.** After a change, Undo stays in the top bar for 10 minutes, until your next change (Ctrl or Cmd + Z works too). Every delete says in red how many papers go with it. Change the time in **Settings → Modify**.
 
 **Your token.** It stays in the browser where you enter it. Give it one private repository and **Contents: Read and write** only, and don't connect on shared computers.
 
