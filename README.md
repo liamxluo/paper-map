@@ -14,7 +14,7 @@ The live preview (link at the top right of this page) shows a made-up example.
 
 ### Lines
 
-![How each kind of line looks: builds on is solid, responds to is dashed, related to is dotted, needs runs in long dashes from a concept, related topics are an arc beside two rows](assets/lines-legend.svg)
+![How each kind of line looks: builds on is solid, responds to is dashed, related to is dotted, needs runs in long dashes from a concept, related topics are marked ⇄ and light up together](assets/lines-legend.svg)
 
 ![Linking a paper to one in another subtopic, giving the line a note and the Main line colour, then seeing the whole colour line light up](assets/lines.gif)
 
