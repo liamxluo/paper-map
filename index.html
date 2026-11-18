@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <title>Paper Map</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Paper Map">
+<meta name="application-name" content="Paper Map">
+<meta name="theme-color" content="#F5F6F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12161C" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;900&display=swap">
@@ -796,7 +804,7 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
     </div>
   </div>
   <div class="preview-banner" id="previewBanner" hidden>
-    <div class="wrap preview-inner">This is a preview with example data. Nothing you change here is saved. <a href="index.html" download="index.html">Download the page</a> to make your own.</div>
+    <div class="wrap preview-inner">This is a preview with example data. Nothing you change here is saved. <a href="./?app">Open the app</a> to start your own, or <a href="index.html" download="index.html">download the page</a>.</div>
   </div>
   <div class="edit-banner" id="editBanner" hidden>
     <div class="wrap edit-inner">
@@ -946,6 +954,13 @@ const DEFAULT_COLORS = {green:'#009473', red:'#E34234'};
 const PREVIEW_DATA = 'example/displaydata.json';
 let PREVIEW = false;
 const APP_VERSION = '1.4.0';
+/* Installed as an app (or installable): only when the page comes from a website, never from a downloaded file */
+const SERVED = /^https?:$/.test(location.protocol);
+const STANDALONE = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+let installPrompt = null;
+window.addEventListener('beforeinstallprompt', ev => { ev.preventDefault(); installPrompt = ev; });
+window.addEventListener('appinstalled', () => { installPrompt = null; try{ toast('Paper Map is installed as an app'); }catch(e){} });
+if(SERVED && 'serviceWorker' in navigator) window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
 const BRANCH_PALETTE = ['#E34234', '#7058A3', '#009473', '#38A1DB', '#E7609E', '#8B5E3C', '#E2A72E'];
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
@@ -2225,6 +2240,15 @@ function openBranchForm(bid){
     }
   });
 }
+function appSectionHTML(){
+  let body;
+  if(STANDALONE) body = '<p class="hint">You are using Paper Map as an app. It opens in its own window and works offline; your list is saved in this app and, if you connect it, in your GitHub repository.</p>';
+  else if(!SERVED) body = '<p class="hint">This copy is a file on your computer. To install Paper Map as an app, open its website with <b>?app</b> at the end (the README links to it) and install it from there.</p>';
+  else body = (installPrompt ? '<div class="set-actions"><button type="button" class="btn primary" id="setInstall">Install Paper Map</button></div>' : '') +
+    '<p class="hint">' + (installPrompt ? 'It opens in its own window, with its own icon, and works offline.' : 'In Chrome or Edge, use the install button at the end of the address bar. In Safari on a Mac, choose File → Add to Dock. On iPhone or iPad, tap Share → Add to Home Screen.') +
+    ' The app keeps its own copy of your list: connect GitHub sync, or export a backup here and import it there, to bring your papers across.</p>';
+  return '<div class="set-section"><h3>App</h3>' + body + '</div>';
+}
 function nextBranchColor(){ const used = new Set(lib.branches.map(b => b.color.toLowerCase())); return BRANCH_PALETTE.find(c => !used.has(c.toLowerCase())) || BRANCH_PALETTE[lib.branches.length % BRANCH_PALETTE.length]; }
 function openLinkNote(a, b, ty){
   const l = lib.links.find(x => x[0] === a && x[1] === b && x[2] === ty); if(!l) return;
@@ -3108,6 +3132,7 @@ function openSettings(){
       ghSectionHTML() +
       '<div class="set-section"><h3>Data</h3><p class="hint">Saving status: <span data-save-state>' + esc(saveStateText()) + '</span>. A backup is one JSON file with all your topics, papers, lines and marks, in the same format as the data file in your repository.</p>' +
       '<div class="set-actions"><button type="button" class="btn" id="setExport">Export backup</button><button type="button" class="btn" id="setImport">Import backup</button><button type="button" class="btn" id="setNotes">Export notes</button><button type="button" class="btn" id="setReset">Start over</button>' + '</div></div>' +
+      appSectionHTML() +
       '<p class="hint set-version">Paper Map ' + APP_VERSION + '</p>',
     actions:[{label:'Done', primary:true}],
     onOpen: b => {
@@ -3118,6 +3143,8 @@ function openSettings(){
       b.querySelector('#setTitle').addEventListener('change', ev => { lib.title = ev.target.value.trim(); applyTitle(); touchLib([]); });
       b.querySelector('#srcColors').addEventListener('change', ev => { settings.mapColor = ev.target.checked ? 'source' : 'plain'; persistSettings(); renderMap(true); });
       b.querySelector('#setShowPre').addEventListener('change', ev => { settings.showPre = ev.target.checked; persistSettings(); renderMap(true); });
+      const inst = b.querySelector('#setInstall');
+      if(inst) inst.addEventListener('click', async () => { if(!installPrompt) return; installPrompt.prompt(); try{ await installPrompt.userChoice; }catch(e){} installPrompt = null; closeModal(); });
       b.querySelector('#setShowRel').addEventListener('change', ev => { settings.showRelated = ev.target.checked; persistSettings({remote:false}); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); });
       const brList = b.querySelector('#brList');
       const brSave = () => { reindex(); touchLib(); renderMap(true); infoEl.innerHTML = ui.branch ? branchInfoHTML(ui.branch) : infoHTML(ui.selected); };

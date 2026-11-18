@@ -34,13 +34,17 @@ A topic is where a paper lives; a concept is an idea it needs, with the year the
 
 ### I. Open it
 
-One HTML file, nothing to install.
+Install it as an app, or keep it as one HTML file. Both work the same way.
 
+**As an app.** Open **[liamxluo.github.io/paper-map/?app](https://liamxluo.github.io/paper-map/?app)** and install it: in Chrome or Edge, use the install button at the end of the address bar (or **Settings → App → Install Paper Map**); in Safari on a Mac, **File → Add to Dock**; on iPhone or iPad, **Share → Add to Home Screen**. It gets its own icon and window, and opens even when you are offline.
+
+**As a file.**
 1. Download [`index.html`](index.html): open it and click **Download raw file**.
 2. Double-click it to open it in your browser.
-3. Add papers with **+ New paper**, and topics with **Modify**. Everything is saved in that browser.
 
-To start from the example instead, use **Settings → Data → Import backup** and choose `displaydata.json`.
+Then add papers with **+ New paper**, and topics with **Modify**. Everything is saved where you opened it.
+
+The app and the file keep separate lists. To use the same list in both, connect GitHub sync (below) in each, or move it with **Settings → Data → Export backup** and **Import backup**. To start from the example instead, import `displaydata.json`.
 
 ### II. Sync with GitHub (highly recommended)
 
@@ -144,6 +148,9 @@ Pick Mist, Warm white or Pure white in **Settings → Paper**. In the same place
 ```
 /
 ├── index.html              the whole app
+├── manifest.webmanifest    lets browsers install it as an app
+├── sw.js                   keeps the app working offline (never stores your data)
+├── icons/                  the app icon, in each size
 ├── README.md
 ├── .gitignore
 ├── example/
