@@ -24,8 +24,6 @@ Click a paper and it lights up one step around it; notes on lines show only on t
 
 Top-level topics are for big areas, such as a field or a project. Links between them are drawn with lines, colour lines and Related topics, and the map shows them all. Related topics carry ⇄ beside their names and light up together; give a link a colour from its ✎ to say which path it belongs to.
 
-![Board games is related to Procrastination by a blue link and to Dinner by a yellow one; in Board games both light up in their colours, and hovering the yellow mark lights up only Dinner](assets/related-topics.png)
-
 ### Concepts
 
 A topic is where a paper lives; a concept is an idea it needs, with the year the idea appeared, such as Nash equilibrium (1950). Concepts sit in their own row at the top of the map and have their own page in Contents, and a paper in any topic can need several of them. Add one from **+ New paper ▾ → Concept**, or straight from a paper's Prerequisite concepts.
@@ -100,6 +98,13 @@ PDFs need GitHub sync. To export every note at once, use **Settings → Data →
 Every topic also opens as a list, with status, notes, tags and the concepts its papers use
 
 ![Each topic as a table, with status, notes, tags and the concepts its papers use](assets/table.png)
+
+</details>
+
+<details>
+<summary>Related topics, in colour</summary>
+
+![Board games is related to Procrastination by a blue link and to Dinner by a yellow one; in Board games both light up in their colours, and hovering the yellow mark lights up only Dinner](assets/related-topics.png)
 
 </details>
 

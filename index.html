@@ -750,6 +750,12 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
 .ln-new .ln-name{display:flex;flex-direction:column;gap:3px}
 
 .ln-new[hidden]{display:none}
+
+/* related-topic marks: a column at the right edge, scrolling if there are more than fit */
+.map-labels button[data-tl-rel]:not([data-tl-rel=""]){padding-right:24px}
+.tl-badges{flex-direction:column;align-items:center;gap:0;right:5px;max-height:calc(100% - 8px);overflow-y:auto;scrollbar-width:none}
+.tl-badges::-webkit-scrollbar{display:none}
+.tl-badges .tl-badge{font-size:.74rem;line-height:1.05}
 </style>
 </head>
 <body>

@@ -206,42 +206,6 @@
     "n": "Read chapters 1 and 2.",
     "needs": []
    },
-   "doodle1994": {
-    "id": "doodle1994",
-    "kind": "paper",
-    "topic": "pile",
-    "sub": "psych",
-    "group": "",
-    "y": 1994,
-    "au": "Hale, R.",
-    "t": "Drawing while listening",
-    "v": "",
-    "l": "Paper",
-    "p": 2,
-    "tags": [],
-    "d": [],
-    "f": "What sketching does to attention.",
-    "n": "",
-    "needs": []
-   },
-   "stars2004": {
-    "id": "stars2004",
-    "kind": "paper",
-    "topic": "pile",
-    "sub": "space",
-    "group": "",
-    "y": 2004,
-    "au": "Ota, K.",
-    "t": "Star maps",
-    "v": "",
-    "l": "Paper",
-    "p": 2,
-    "tags": [],
-    "d": [],
-    "f": "How the night sky was charted.",
-    "n": "",
-    "needs": []
-   },
    "snack2011": {
     "id": "snack2011",
     "kind": "paper",
@@ -277,26 +241,6 @@
     "f": "What changes as a deadline gets close.",
     "n": "",
     "needs": []
-   },
-   "allnighter2021": {
-    "id": "allnighter2021",
-    "kind": "paper",
-    "topic": "pile",
-    "sub": "panic",
-    "group": "",
-    "y": 2021,
-    "au": "Okafor, N.",
-    "t": "Coffee and late work",
-    "v": "",
-    "l": "Paper",
-    "p": 2,
-    "tags": [],
-    "d": [],
-    "f": "Caffeine, sleep and the next morning.",
-    "n": "",
-    "needs": [
-     "caffeine"
-    ]
    },
    "monopoly2012": {
     "id": "monopoly2012",
@@ -378,11 +322,6 @@
     "the starting point"
    ],
    [
-    "doodle1994",
-    "tomorrow2009",
-    "r"
-   ],
-   [
     "tomorrow2009",
     "timetable2015",
     "b"
@@ -392,11 +331,6 @@
     "deadline2019",
     "b",
     "applies it"
-   ],
-   [
-    "deadline2019",
-    "allnighter2021",
-    "b"
    ],
    [
     "tomorrow2009",
@@ -458,7 +392,7 @@
    {
     "id": "bmain",
     "name": "Main line",
-    "color": "#E34234"
+    "color": "#7058A3"
    },
    {
     "id": "byellow",
@@ -481,8 +415,7 @@
    "astro1996": "want",
    "tomorrow2009": "read",
    "deadline2019": "want",
-   "monopoly2012": "read",
-   "doodle1994": "want"
+   "monopoly2012": "read"
   },
   "updatedAt": 1
  },
