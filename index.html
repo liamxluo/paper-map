@@ -718,6 +718,38 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
 
 /* the row you are in keeps its underline inside the two-line name */
 .map-labels button.on .nm{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px;padding-bottom:4px}
+
+/* ---------- row labels: no cut words, an arrow for where you are, no underlines ---------- */
+.map-labels .nm{overflow-wrap:normal;word-break:normal;hyphens:manual}
+.map-labels button:hover,.map-labels button.on,.map-labels button.on .nm{text-decoration:none}
+.map-labels button.on .nm{padding-bottom:0}
+.map-labels button{padding-left:calc(15px + var(--d,0) * 14px)}
+.map-labels.has-tl button{padding-left:calc(15px + var(--d,0) * 14px)}
+.map-labels button.on::before{content:'';position:absolute;left:5px;top:50%;transform:translateY(-50%);border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;border-left:6px solid var(--ink)}
+.map-labels button.has-tl-badge{padding-right:24px}
+.map-labels button[data-tl-rel]:not([data-tl-rel=""]){padding-right:calc(12px + var(--nb,0) * 15px)}
+.tl-badges{position:absolute;right:6px;top:50%;transform:translateY(-50%);display:flex;gap:3px}
+.tl-badges .tl-badge{position:static;transform:none;color:var(--tlc, var(--focus));opacity:.9}
+.map-labels button.tl-rel{box-shadow:inset 3px 0 0 var(--tlc, var(--focus));background:color-mix(in srgb, var(--tlc, var(--focus)) 10%, transparent)}
+.map-labels button.tl-hover{box-shadow:inset 3px 0 0 var(--tlh, var(--focus));background:color-mix(in srgb, var(--tlh, var(--focus)) 10%, transparent)}
+.tl-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--tlc);margin-right:.4em;vertical-align:.05em}
+/* ---------- pickers: what is linked so far ---------- */
+.lk-done{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 .7em;padding:.5em .6em;border:1px solid var(--rule);border-radius:8px;background:var(--bg);min-height:2.2em}
+.lk-done .rel-k{margin-right:.3em}
+.lk-done .pick.fresh{animation:lkfresh 1.6s ease-out}
+@keyframes lkfresh{0%{box-shadow:0 0 0 3px color-mix(in srgb, var(--focus) 45%, transparent)}100%{box-shadow:0 0 0 0 transparent}}
+
+/* ---------- colour line: name and colour ---------- */
+.swatches{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:4px}
+.swatches .sw{width:26px;height:26px;border-radius:50%;border:2px solid var(--surface);background:var(--c);box-shadow:0 0 0 1px var(--rule-strong);cursor:pointer;padding:0}
+.swatches .sw.on{box-shadow:0 0 0 2px var(--ink)}
+.swatches .sw-other{display:inline-flex;align-items:center;gap:6px;font-size:.84rem;color:var(--muted);margin-left:4px}
+.swatches .sw-other input{width:34px;height:26px;padding:1px;border:1px solid var(--rule-strong);border-radius:4px;background:var(--bg)}
+.field-k{display:block;font-size:.86rem;color:var(--muted);margin-bottom:2px}
+.ln-new{flex-direction:column;align-items:stretch}
+.ln-new .ln-name{display:flex;flex-direction:column;gap:3px}
+
+.ln-new[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -894,7 +926,7 @@ const PRIO_LABEL = {3:'★ Must read', 2:'○ Optional', 1:'· Background'};
 const DEFAULT_COLORS = {green:'#009473', red:'#E34234'};
 const PREVIEW_DATA = 'example/displaydata.json';
 let PREVIEW = false;
-const BRANCH_PALETTE = ['#E34234', '#7058A3', '#009473', '#38A1DB', '#E7609E', '#8B5E3C'];
+const BRANCH_PALETTE = ['#E34234', '#7058A3', '#009473', '#38A1DB', '#E7609E', '#8B5E3C', '#E2A72E'];
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
@@ -967,6 +999,7 @@ function normalizeSettings(S){
 }
 function normalizeLib(L){
   if(!Array.isArray(L.tlinks)) L.tlinks = [];
+  if(!L.tlinkColor || typeof L.tlinkColor !== 'object' || Array.isArray(L.tlinkColor)) L.tlinkColor = {};
   if(!Array.isArray(L.branches)) L.branches = [];
   L.branches = L.branches.filter(b => b && ID_RE.test(String(b.id))).map(b => ({id: String(b.id), name: String(b.name || 'Colour line').slice(0, 40), color: HEX_RE.test(b.color) ? b.color : BRANCH_PALETTE[0]}));
   if(!L.lineBranch || typeof L.lineBranch !== 'object' || Array.isArray(L.lineBranch)) L.lineBranch = {};
@@ -1022,6 +1055,9 @@ function reindex(){
   const nodeOk = id => (topics[id]) || (subs[id] && !subs[id].hidden);
   const seenTL = new Set();
   lib.tlinks = lib.tlinks.filter(l => { if(!Array.isArray(l) || l[0] === l[1] || !nodeOk(l[0]) || !nodeOk(l[1])) return false; const k = [l[0], l[1]].sort().join('|'); if(seenTL.has(k)) return false; seenTL.add(k); return true; });
+  if(!lib.tlinkColor || typeof lib.tlinkColor !== 'object') lib.tlinkColor = {};
+  { const tk = new Set(lib.tlinks.map(l => l[0] + '|' + l[1])), bids = new Set((lib.branches || []).map(b => b.id));
+    Object.keys(lib.tlinkColor).forEach(k => { if(!tk.has(k) || !bids.has(lib.tlinkColor[k])) delete lib.tlinkColor[k]; }); }
   const tlinksOf = {};
   lib.tlinks.forEach(l => { (tlinksOf[l[0]] = tlinksOf[l[0]] || []).push([l[1], l[2] || '', l]); (tlinksOf[l[1]] = tlinksOf[l[1]] || []).push([l[0], l[2] || '', l]); });
   /* colour lines: lineBranch maps "a|b|type" to a colour line's id */
@@ -1695,21 +1731,39 @@ function edgePath(p, q){
 }
 /* Related topics: a small ⇄ after the row's name; the rows related to the one you are in, or hovering, light up */
 function tlIdOf(ln){ return ln.sub.hidden ? ln.topic.id : ln.sub.id; }
+function tlBranch(l){ const bid = (lib.tlinkColor || {})[l[0] + '|' + l[1]]; return (bid && (lib.branches || []).find(b => b.id === bid)) || null; }
+function tlRelsOf(id){ return (lib.tlinks || []).filter(l => l[0] === id || l[1] === id).map(l => { const br = tlBranch(l); return {o: l[0] === id ? l[1] : l[0], bid: br ? br.id : '', color: br ? br.color : '', name: br ? br.name : ''}; }); }
+function rekeyTl(oldId, newId){
+  const m = lib.tlinkColor || {};
+  Object.keys(m).forEach(k => { const [a, b] = k.split('|'); if(a === oldId || b === oldId){ const nk = (a === oldId ? newId : a) + '|' + (b === oldId ? newId : b); m[nk] = m[k]; delete m[k]; } });
+}
 function tlOf(ln){ const id = tlIdOf(ln); return (lib.tlinks || []).filter(l => l[0] === id || l[1] === id).map(l => l[0] === id ? l[1] : l[0]); }
 function topicLinkArcs(){ return ''; }
+function clearTlHover(){ mapLabels.querySelectorAll('.tl-hover').forEach(x => { x.classList.remove('tl-hover'); x.style.removeProperty('--tlh'); }); }
 mapLabels.addEventListener('mouseover', ev => {
-  const b = ev.target.closest('button[data-tl-rel]'); mapLabels.querySelectorAll('.tl-hover').forEach(x => x.classList.remove('tl-hover'));
-  if(!b || !b.dataset.tlRel) return;
-  const rel = new Set(b.dataset.tlRel.split(' '));
-  mapLabels.querySelectorAll('button[data-tl-id]').forEach(x => { if(rel.has(x.dataset.tlId)) x.classList.add('tl-hover'); });
+  clearTlHover();
+  const b = ev.target.closest('button[data-tl-id]'); if(!b || !b.dataset.tlRel) return;
+  const badge = ev.target.closest('.tl-badge'), only = badge ? badge.dataset.tlGroup : null;
+  const rels = b.dataset.tlRel.split(' ').map(s => s.split('~')).filter(p => only === null || p[1] === only);
+  if(!rels.length) return;
+  const col = {}; rels.forEach(p => { col[p[0]] = p[2] || 'var(--focus)'; });
+  const self = only !== null && rels[0][2] ? rels[0][2] : 'var(--focus)';
+  mapLabels.querySelectorAll('button[data-tl-id]').forEach(x => {
+    const c = x === b ? self : col[x.dataset.tlId]; if(!c) return;
+    x.classList.add('tl-hover'); x.style.setProperty('--tlh', c);
+  });
 });
-mapLabels.addEventListener('mouseleave', () => mapLabels.querySelectorAll('.tl-hover').forEach(x => x.classList.remove('tl-hover')));
+mapLabels.addEventListener('mouseleave', clearTlHover);
 function renderMapLabels(lanes, laneH){
   const onMap = new Set(lanes.map(l => l.sub.id));
   let maxD = 0;
   lanes.forEach(ln => { const n = subAncestors(ln.sub).filter(a => onMap.has(a.id)).length; if(n > maxD) maxD = n; });
   const arcsSvg = topicLinkArcs(lanes, laneH);
   document.documentElement.style.setProperty('--lab-extra', ((maxD ? Math.min(90, 14 + maxD * 14) : 0) + (arcsSvg ? 12 : 0)) + 'px');
+  /* the row you are in, and every row related to it, light up together (in the link's colour) */
+  const litTl = {};
+  const here = ui.page !== 'concepts' ? (ui.sub || ui.topic) : null;
+  if(here){ const hr = tlRelsOf(here); if(hr.length){ litTl[here] = 'var(--focus)'; hr.forEach(r => { if(!litTl[r.o] || litTl[r.o] === 'var(--focus)') litTl[r.o] = r.color || 'var(--focus)'; }); } }
   mapLabels.innerHTML = lanes.map((ln, i) => {
     if(ln.concepts) return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + ' lane-concepts' + (ui.page === 'concepts' ? ' on' : '') + '" data-view="__concepts" style="--d:0" title="Open the Concepts page"><span class="lab-in"><span class="full"><span class="nm"><i class="sq" aria-hidden="true"></i>Concepts</span></span><span class="short">Ideas</span></span></button>';
     const anc = subAncestors(ln.sub);
@@ -1720,10 +1774,24 @@ function renderMapLabels(lanes, laneH){
     const full = ln.sub.hidden ? ln.topic.name : [ln.topic.name].concat(anc.map(a => a.name), [ln.sub.name]).join(' › ');
     const showTopic = !ln.sub.hidden && (i === 0 || lanes[i - 1].topic.id !== ln.topic.id || lanes[i - 1].concepts);
     const ctx = (showTopic ? [ln.topic.name] : []).concat(pre).join(' › ') + (pre.length ? ' ›' : '');
-    return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + (ln.sub.id === ui.sub ? ' on' : '') + (tlOf(ln).length ? ' has-tl-badge' : '') + (ui.page !== 'concepts' && tlOf(ln).includes(ui.sub || ui.topic) ? ' tl-rel' : '') + '" data-view="' + ln.sub.id + '" data-tl-id="' + tlIdOf(ln) + '" data-tl-rel="' + esc(tlOf(ln).join(' ')) + '" style="--d:' + dd + '" title="Open “' + esc(full) + '”' + (tlOf(ln).length ? ' · related to ' + esc(tlOf(ln).map(topicNodeName).join(', ')) : '') + '"><span class="lab-in"><span class="full">' + (ctx ? '<span class="lt">' + esc(ctx) + '</span>' : '') + '<span class="nm">' + (dd ? '<span class="lane-in" aria-hidden="true">└</span>' : '') + esc(name) + '</span></span>' + (tlOf(ln).length ? '<span class="tl-badge" aria-hidden="true">⇄</span>' : '') + '<span class="short">' + esc(name.slice(0, 4)) + '</span></span></button>';
+    const tid = tlIdOf(ln), rels = tlRelsOf(tid);
+    const groups = []; rels.forEach(r => { let g = groups.find(x => x.bid === r.bid); if(!g){ g = {bid: r.bid, color: r.color, name: r.name, os: []}; groups.push(g); } g.os.push(r.o); });
+    const lit = litTl[tid];
+    const badges = groups.length ? '<span class="tl-badges">' + groups.map(g => '<span class="tl-badge" data-tl-group="' + g.bid + '"' + (g.color ? ' style="--tlc:' + g.color + '"' : '') + ' title="' + esc((g.name ? g.name + ': ' : 'Related to ') + g.os.map(topicNodeName).join(', ')) + '">⇄</span>').join('') + '</span>' : '';
+    return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + (ln.sub.id === ui.sub && ui.page !== 'concepts' ? ' on' : '') + (lit ? ' tl-rel' : '') + '" data-view="' + ln.sub.id + '" data-tl-id="' + tid + '" data-tl-rel="' + esc(rels.map(r => r.o + '~' + r.bid + '~' + r.color).join(' ')) + '" style="--d:' + dd + ';--nb:' + groups.length + (lit ? ';--tlc:' + lit : '') + '" title="Open “' + esc(full) + '”' + (rels.length ? ' · related to ' + esc(rels.map(r => topicNodeName(r.o)).join(', ')) : '') + '"><span class="lab-in"><span class="full">' + (ctx ? '<span class="lt">' + esc(ctx) + '</span>' : '') + '<span class="nm">' + (dd ? '<span class="lane-in" aria-hidden="true">└</span>' : '') + esc(name) + '</span></span>' + badges + '<span class="short">' + esc(name.slice(0, 4)) + '</span></span></button>';
   }).join('');
   mapLabels.classList.toggle('has-tl', !!arcsSvg);
   if(arcsSvg) mapLabels.insertAdjacentHTML('beforeend', arcsSvg);
+  /* widen the label column until no single word is cut */
+  const root = document.documentElement;
+  let extra = parseFloat(getComputedStyle(root).getPropertyValue('--lab-extra')) || 0;
+  for(let pass = 0; pass < 3; pass++){
+    let need = 0;
+    mapLabels.querySelectorAll('.nm').forEach(nm => { const o = nm.scrollWidth - nm.clientWidth; if(o > need) need = o; });
+    if(need <= 1 || extra >= 170) break;
+    extra = Math.min(170, extra + Math.ceil(need) + 4);
+    root.style.setProperty('--lab-extra', extra + 'px');
+  }
 }
 function renderMap(force){
   const avail = Math.floor(mapScroll.clientWidth);
@@ -1859,7 +1927,8 @@ function renderMap(force){
   mapSvg.innerHTML = s;
   mapSvg.classList.toggle('show-pre', !!settings.showPre);
   mapSvg.classList.toggle('many-lines', mapSvg.querySelectorAll('.edge:not(.p)').length > 120);
-  mapSvg.classList.toggle('quiet-notes', mapSvg.querySelectorAll('.edge-note').length > 12);
+  /* notes on lines show only for the lines that are lit up, so an untouched map stays clean */
+  mapSvg.classList.add('quiet-notes');
   renderTagLegend(useSrc);
   renderBranchRow();
   applyFocus(ui.selected);
@@ -1889,20 +1958,17 @@ function branchesNear(id){
   return {own: [], reach: [...reach]};
 }
 function depthWalk(id, depth, F){
-  const lim = depth === 'all' ? Infinity : depth;
-  ['up', 'down'].forEach(dir => {
-    let frontier = [id]; const seen = new Set([id]);
-    for(let lv = 1; lv <= lim && frontier.length; lv++){
-      const next = [];
-      frontier.forEach(x => ((dir === 'up' ? IDX.up[x] : IDX.down[x]) || []).forEach(([o, t]) => {
-        if(t === 'r') return;
-        const ek = dir === 'up' ? EK(o, x) : EK(x, o);
-        F.edges.add(ek); F.nodes.add(o); if(lv > 1) F.far.add(ek);
-        if(!seen.has(o)){ seen.add(o); next.push(o); }
-      }));
-      frontier = next;
-    }
-  });
+  const lim = depth === 'all' ? Infinity : depth, showR = settings.showRelated !== false;
+  let frontier = [id]; const seen = new Set([id]);
+  for(let lv = 1; lv <= lim && frontier.length; lv++){
+    const next = [];
+    const step = (o, ek, t) => { if(t === 'r' && !showR) return; F.edges.add(ek); F.nodes.add(o); if(lv > 1) F.far.add(ek); if(!seen.has(o)){ seen.add(o); next.push(o); } };
+    frontier.forEach(x => {
+      (IDX.up[x] || []).forEach(([o, t]) => step(o, EK(o, x), t));
+      (IDX.down[x] || []).forEach(([o, t]) => step(o, EK(x, o), t));
+    });
+    frontier = next;
+  }
 }
 /* A selected paper lights up one step around it (or more, with “How far”).
    If it sits on a colour line, that whole line lights up end to end; if not, the colour lines it leads to show faintly. */
@@ -2007,16 +2073,21 @@ function branchInfoHTML(bid){
   const es = [...ids].map(i => lib.entries[i]).filter(Boolean).sort(byYear);
   return '<div class="info-grid"><p class="info-year"><span class="br-dot" style="--br:' + b.color + '"></span></p><div><p class="info-meta">Colour line</p><h3 class="info-title">' + esc(b.name) + '</h3>' +
     '<p class="rel"><span class="rel-k">' + es.length + ' on it</span>' + es.map(e => relChip(e.id)).join('') + '</p>' +
-    '<p class="info-actions"><button type="button" class="linkbtn" data-clear-sel="1">Clear</button></p></div></div>';
+    '<p class="info-actions"><button type="button" class="btn" data-branch-edit="' + b.id + '">Rename or recolour</button><button type="button" class="linkbtn" data-clear-sel="1">Clear</button></p></div></div>';
 }
 function focusBranch(bid){ ui.selected = null; ui.branch = bid; mapSvg.querySelectorAll('.node.sel').forEach(n => n.classList.remove('sel')); infoEl.innerHTML = branchInfoHTML(bid); applyFocus(null); renderBranchRow(); }
+document.addEventListener('dblclick', ev => { const c = ev.target.closest('#branchRow [data-branch-focus]'); if(c){ ev.preventDefault(); openBranchForm(c.dataset.branchFocus); } });
 function renderBranchRow(){
   const row = document.getElementById('branchRow'); if(!row) return;
   const used = lib.branches.filter(b => (IDX.branchLines[b.id] || []).length);
   row.hidden = !used.length;
-  row.innerHTML = used.map(b => branchChip(b.id).replace('class="br-chip"', 'class="br-chip' + (ui.branch === b.id ? ' on' : '') + '"')).join('');
+  /* keep the same buttons when nothing about them changed, so a double-click lands on one button */
+  const sig = used.map(b => b.id + ':' + b.name + ':' + b.color).join('|');
+  if(row.dataset.sig !== sig){ row.dataset.sig = sig; row.innerHTML = used.map(b => branchChip(b.id)).join(''); }
+  row.querySelectorAll('.br-chip').forEach(c => c.classList.toggle('on', c.dataset.branchFocus === ui.branch));
 }
 document.addEventListener('click', ev => {
+  const be = ev.target.closest('[data-branch-edit]'); if(be){ openBranchForm(be.dataset.branchEdit); return; }
   const bf = ev.target.closest('[data-branch-focus]'); if(bf){ ev.preventDefault(); if(ui.branch === bf.dataset.branchFocus){ ui.branch = null; select(null); renderBranchRow(); } else focusBranch(bf.dataset.branchFocus); return; }
   const rt = ev.target.closest('[data-rel-toggle]'); if(rt){ setShowRelated(settings.showRelated === false); return; }
   const dp = ev.target.closest('[data-depth]'); if(dp){ ui.depth = dp.dataset.depth === 'all' ? 'all' : +dp.dataset.depth; settings.focusDepth = ui.depth; persistSettings({remote:false}); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); }
@@ -2081,6 +2152,48 @@ function branchListHTML(){
   if(!lib.branches.length) return '<p class="hint">No colour lines yet.</p>';
   return lib.branches.map(x => '<div class="br-set" data-br-row="' + x.id + '"><input type="color" value="' + x.color + '" aria-label="Colour"><input type="text" value="' + esc(x.name) + '" maxlength="40" aria-label="Name"><span class="hint">' + (IDX.branchLines[x.id] || []).length + ' lines</span><button type="button" class="linkbtn danger" data-br-del="' + x.id + '">Remove</button></div>').join('');
 }
+function branchUses(bid){ return (IDX.branchLines[bid] || []).length + Object.values(lib.tlinkColor || {}).filter(v => v === bid).length; }
+function swatchesHTML(cur, idSuffix){
+  return '<div class="swatches" data-swatches="' + idSuffix + '">' + BRANCH_PALETTE.map(c => '<button type="button" class="sw' + (String(cur).toLowerCase() === c.toLowerCase() ? ' on' : '') + '" data-sw="' + c + '" style="--c:' + c + '" aria-label="Colour ' + c + '" title="' + c + '"></button>').join('') +
+    '<label class="sw-other">Other<input type="color" class="sw-input" value="' + (HEX_RE.test(cur) ? cur : BRANCH_PALETTE[0]) + '" aria-label="Pick any colour"></label></div>';
+}
+function bindSwatches(box){
+  box.querySelectorAll('[data-swatches]').forEach(sw => {
+    const input = sw.querySelector('.sw-input');
+    sw.addEventListener('click', ev => { const b = ev.target.closest('[data-sw]'); if(!b) return; input.value = b.dataset.sw; sw.querySelectorAll('.sw').forEach(x => x.classList.toggle('on', x === b)); });
+    input.addEventListener('input', () => sw.querySelectorAll('.sw').forEach(x => x.classList.toggle('on', x.dataset.sw.toLowerCase() === input.value.toLowerCase())));
+  });
+}
+function openBranchForm(bid){
+  const b = lib.branches.find(x => x.id === bid); if(!b) return;
+  const n = branchUses(bid);
+  openModal({
+    title: 'Colour line',
+    body: '<div class="form-grid"><label class="full">Name<input type="text" id="bfName" maxlength="40" value="' + esc(b.name) + '"></label>' +
+      '<div class="full"><span class="field-k">Colour</span>' + swatchesHTML(b.color, 'bf') + '</div>' +
+      '<p class="hint full">' + n + (n === 1 ? ' line uses' : ' lines use') + ' this colour line. A new name or colour changes all of them.</p>' +
+      '<p class="full"><button type="button" class="linkbtn danger" data-bf-remove="1">Remove this colour line</button><span class="hint"> · its lines stay, without a colour</span></p></div>',
+    actions: [{label:'Cancel'}, {label:'Save', primary:true, onClick: bd => {
+      const name = bd.querySelector('#bfName').value.trim(), col = bd.querySelector('[data-swatches="bf"] .sw-input').value;
+      if(!name){ bd.querySelector('#bfName').focus(); return false; }
+      const before = clone(lib);
+      b.name = name.slice(0, 40); if(HEX_RE.test(col)) b.color = col;
+      reindex(); touchLib([]); renderMap(true); renderMain();
+      infoEl.innerHTML = ui.branch ? branchInfoHTML(ui.branch) : infoHTML(ui.selected); applyFocus(ui.selected);
+      toast('Saved “' + b.name + '”', () => { lib = before; reindex(); touchLib([]); renderAll(); toast('Undone'); });
+    }}],
+    onOpen: bd => {
+      bindSwatches(bd);
+      bd.querySelector('[data-bf-remove]').addEventListener('click', () => {
+        const before = clone(lib);
+        lib.branches = lib.branches.filter(x => x.id !== bid);
+        if(ui.branch === bid) ui.branch = null;
+        reindex(); touchLib([]); closeModal(); renderAll();
+        toast('Removed colour line “' + b.name + '”', () => { lib = before; reindex(); touchLib([]); renderAll(); toast('Undone'); });
+      });
+    }
+  });
+}
 function nextBranchColor(){ const used = new Set(lib.branches.map(b => b.color.toLowerCase())); return BRANCH_PALETTE.find(c => !used.has(c.toLowerCase())) || BRANCH_PALETTE[lib.branches.length % BRANCH_PALETTE.length]; }
 function openLinkNote(a, b, ty){
   const l = lib.links.find(x => x[0] === a && x[1] === b && x[2] === ty); if(!l) return;
@@ -2089,33 +2202,60 @@ function openLinkNote(a, b, ty){
     title:'This line',
     body:'<div class="form-grid"><label class="full">Note, shown on the map next to the line<input type="text" id="lnNote" maxlength="60" value="' + esc(l[3] || '') + '"></label>' +
       '<label class="full">Colour line<select id="lnBranch"><option value="">None: a plain line</option>' + lib.branches.map(x => '<option value="' + x.id + '"' + (x.id === cur ? ' selected' : '') + '>' + esc(x.name) + '</option>').join('') + '<option value="__new">New colour line…</option></select><span class="hint">Give a main line of thought its own colour. Lines of every kind can share one.</span></label>' +
-      '<div class="full ln-new" hidden><label>Name<input type="text" id="lnBrName" maxlength="40" placeholder="Main line"></label><label>Colour<input type="color" id="lnBrColor" value="' + nextBranchColor() + '"></label></div></div>',
+      '<div class="full ln-new" hidden><label class="ln-name">Name of this colour line<input type="text" id="lnBrName" maxlength="40" placeholder="Main line"></label><div class="ln-col"><span class="field-k">Colour</span>' + swatchesHTML(nextBranchColor(), 'ln') + '</div></div></div>',
     actions:[{label:'Cancel'}, {label:'Save', primary:true, onClick: bd => {
       const before = clone(lib);
       const v = bd.querySelector('#lnNote').value.trim();
       if(v) l[3] = v; else l.length = 3;
       let bid = bd.querySelector('#lnBranch').value;
+      const nm = bd.querySelector('#lnBrName').value.trim(), col = bd.querySelector('[data-swatches="ln"] .sw-input').value;
       if(bid === '__new'){
         let id; do{ id = rid('b'); }while(lib.branches.some(x => x.id === id));
-        const col = bd.querySelector('#lnBrColor').value;
-        lib.branches.push({id, name: bd.querySelector('#lnBrName').value.trim() || 'Colour line ' + (lib.branches.length + 1), color: HEX_RE.test(col) ? col : nextBranchColor()});
+        lib.branches.push({id, name: nm || 'Colour line ' + (lib.branches.length + 1), color: HEX_RE.test(col) ? col : nextBranchColor()});
         bid = id;
+      }else if(bid){
+        const br = lib.branches.find(x => x.id === bid);
+        if(br){ if(nm) br.name = nm.slice(0, 40); if(HEX_RE.test(col)) br.color = col; }
       }
       if(bid) lib.lineBranch[key] = bid; else delete lib.lineBranch[key];
       reindex(); touchLib(); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected);
       toast('Line saved', () => { lib = before; reindex(); touchLib(); renderAll(); toast('Undone'); });
     }}],
-    onOpen: b2 => { const sel = b2.querySelector('#lnBranch'), nw = b2.querySelector('.ln-new'); sel.addEventListener('change', () => { nw.hidden = sel.value !== '__new'; }); }
+    onOpen: b2 => {
+      const sel = b2.querySelector('#lnBranch'), nw = b2.querySelector('.ln-new'), nmI = b2.querySelector('#lnBrName'), sw = b2.querySelector('[data-swatches="ln"]');
+      bindSwatches(b2);
+      const setCol = c => { sw.querySelector('.sw-input').value = c; sw.querySelectorAll('.sw').forEach(x => x.classList.toggle('on', x.dataset.sw.toLowerCase() === c.toLowerCase())); };
+      const sync = () => {
+        const v = sel.value, br = lib.branches.find(x => x.id === v);
+        nw.hidden = !v;
+        if(v === '__new'){ nmI.value = ''; nmI.placeholder = 'Main line'; setCol(nextBranchColor()); }
+        else if(br){ nmI.value = br.name; setCol(br.color); }
+      };
+      sel.addEventListener('change', sync); sync();
+    }
   });
 }
 function openLinkPicker(id, type){
   const e = lib.entries[id]; if(!e) return;
   openModal({
     title: type === 'r' ? 'What is “' + e.t + '” related to?' : (type === 'c' ? 'What does “' + e.t + '” respond to?' : 'What does “' + e.t + '” build on?'),
-    body:'<div class="form-grid"><label class="full">Search author, title or year<input type="search" id="lkq" autocomplete="off"></label></div><div class="picker-list" id="lkList"></div><p class="hint">Click a paper or concept to link it; you can link several. Only items already in your list appear here, so add missing ones first.</p>',
+    body:'<div class="lk-done" id="lkDone" aria-live="polite"></div><div class="form-grid"><label class="full">Search author, title or year<input type="search" id="lkq" autocomplete="off"></label></div><div class="picker-list" id="lkList"></div><p class="hint">Click a paper or concept to link it: it moves up to “Linked”. You can link several; × unlinks one.</p>',
     actions:[{label:'Done', primary:true}],
     onOpen: b => {
-      const inp = b.querySelector('#lkq'), list = b.querySelector('#lkList');
+      const inp = b.querySelector('#lkq'), list = b.querySelector('#lkList'), done = b.querySelector('#lkDone');
+      const linkedIds = () => lib.links.filter(l => l[2] === type && (l[1] === id || (type === 'r' && l[0] === id))).map(l => l[0] === id ? l[1] : l[0]);
+      const drawDone = fresh => {
+        const ids = linkedIds();
+        done.innerHTML = '<span class="rel-k">Linked</span>' + (ids.length ? ids.map(o => { const x = lib.entries[o]; return x ? '<span class="pick' + (o === fresh ? ' fresh' : '') + '">' + esc(x.kind === 'concept' ? x.t : mapLabel(x) + ' ' + x.y) + '<button type="button" aria-label="Unlink" data-unlink="' + o + '">×</button></span>' : ''; }).join('') : '<span class="hint">nothing yet</span>');
+      };
+      done.addEventListener('click', ev => {
+        const u = ev.target.closest('[data-unlink]'); if(!u) return;
+        const o = u.dataset.unlink, before = clone(lib);
+        lib.links = lib.links.filter(l => !(l[2] === type && ((l[0] === o && l[1] === id) || (type === 'r' && l[0] === id && l[1] === o))));
+        reindex(); touchLib([]); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected);
+        drawDone(); draw();
+        toast('Unlinked', () => { lib = before; reindex(); touchLib([]); renderAll(); toast('Undone'); });
+      });
       const draw = () => {
         const q = inp.value.trim().toLowerCase();
         const have = new Set(lib.links.filter(l => l[2] === type && (l[1] === id || (type === 'r' && l[0] === id))).map(l => l[0] === id ? l[1] : l[0]));
@@ -2123,6 +2263,7 @@ function openLinkPicker(id, type){
         list.innerHTML = c.map(x => '<button type="button" data-pick-link="' + x.id + '">' + esc(x.kind === 'concept' ? 'Concept: ' + x.t : [x.y, shortAu(x.au)].filter(Boolean).join('  ') + ': ' + x.t) + '</button>').join('') || '<p class="hint" style="padding:.4em .6em">Nothing found.</p>';
       };
       inp.addEventListener('input', draw);
+      drawDone();
       list.addEventListener('click', ev => {
         const pb = ev.target.closest('[data-pick-link]'); if(!pb) return;
         const o = lib.entries[pb.dataset.pickLink]; if(!o) return;
@@ -2130,7 +2271,7 @@ function openLinkPicker(id, type){
         lib.links.push([o.id, id, type]);
         reindex(); touchLib([]);
         renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected);
-        draw();
+        inp.value = ''; draw(); drawDone(o.id); inp.focus();
         toast('Linked: ' + mapLabel(e) + (type === 'r' ? ' is related to ' : type === 'c' ? ' responds to ' : ' builds on ') + mapLabel(o), () => { lib = before; reindex(); touchLib([]); renderAll(); toast('Undone'); });
       });
       draw();
@@ -3439,6 +3580,7 @@ function detachNode(node){
     D.push(s);
   });
   if(Array.isArray(settings.lanes) && T.subs.some(s => settings.lanes.includes(s.id))) settings.lanes.push(N.id);
+  rekeyTl(T.id, N.id);
   (lib.tlinks || []).forEach(l => { if(l[0] === T.id) l[0] = N.id; if(l[1] === T.id) l[1] = N.id; });
   lib.topics = lib.topics.filter(x => x !== T);
   return D;
@@ -3456,6 +3598,7 @@ function attachSubtree(D, target, zone){
     delete R.parent;
     if(!kids.length){ R.hidden = true; T2.subs = [R]; }
     else{ T2.subs = kids; if(hasEntries(R.id)){ R.name = 'Ungrouped'; T2.subs.unshift(R); } }
+    rekeyTl(R.id, T2.id);
     (lib.tlinks || []).forEach(l => { if(l[0] === R.id) l[0] = T2.id; if(l[1] === R.id) l[1] = T2.id; });
     const i = lib.topics.findIndex(x => x.id === target.id);
     lib.topics.splice(zone === 'before' ? i : i + 1, 0, T2);
@@ -3551,18 +3694,30 @@ function topicNodeView(id){ return IDX.topics[id] ? id + '-all' : id; }
 function relatedTopicsHTML(id){
   const L = IDX.tlinksOf[id] || [];
   if(!L.length && !ui.edit) return '';
-  const chips = L.map(([o, note, l]) => '<span class="tl-item"><button type="button" class="relchip" data-view="' + esc(topicNodeView(o)) + '">' + esc(topicNodeName(o)) + '</button>' + (note ? '<span class="rel-note">' + esc(note) + '</span>' : '') +
-    (ui.edit ? '<button type="button" class="tl-x" data-tlink-note="' + esc(l[0] + '|' + l[1]) + '" title="Note on this link" aria-label="Note on this link">✎</button><button type="button" class="tl-x" data-tlink-del="' + esc(l[0] + '|' + l[1]) + '" aria-label="Remove this link">×</button>' : '') + '</span>').join('');
+  const chips = L.map(([o, note, l]) => '<span class="tl-item"><button type="button" class="relchip" data-view="' + esc(topicNodeView(o)) + '">' + (tlBranch(l) ? '<i class="tl-dot" style="--tlc:' + tlBranch(l).color + '" aria-hidden="true"></i>' : '') + esc(topicNodeName(o)) + '</button>' + (note ? '<span class="rel-note">' + esc(note) + '</span>' : '') +
+    (ui.edit ? '<button type="button" class="tl-x" data-tlink-note="' + esc(l[0] + '|' + l[1]) + '" title="Note and colour" aria-label="Note and colour of this link">✎</button><button type="button" class="tl-x" data-tlink-del="' + esc(l[0] + '|' + l[1]) + '" aria-label="Remove this link">×</button>' : '') + '</span>').join('');
   return '<p class="rel tl-row"><span class="rel-k">Related topics</span>' + chips + (ui.edit ? '<button type="button" class="linkbtn" data-tlink-add="' + esc(id) + '">+ Related topic…</button>' : '') + '</p>';
 }
 function findTlink(key){ const [a, b] = key.split('|'); return lib.tlinks.find(l => l[0] === a && l[1] === b); }
 function openTopicLinkPicker(id){
   openModal({
     title: 'What is “' + topicNodeName(id) + '” related to?',
-    body:'<div class="form-grid"><label class="full">Search topics and subtopics<input type="search" id="tlq" autocomplete="off"></label></div><div class="picker-list" id="tlList"></div>',
+    body:'<div class="lk-done" id="tlDone" aria-live="polite"></div><div class="form-grid"><label class="full">Search topics and subtopics<input type="search" id="tlq" autocomplete="off"></label></div><div class="picker-list" id="tlList"></div><p class="hint">Click a topic to link it: it moves up to “Linked”. × unlinks one. Give a link a colour later from its ✎.</p>',
     actions:[{label:'Done', primary:true}],
     onOpen: b => {
-      const inp = b.querySelector('#tlq'), list = b.querySelector('#tlList');
+      const inp = b.querySelector('#tlq'), list = b.querySelector('#tlList'), done = b.querySelector('#tlDone');
+      const drawDone = fresh => {
+        const L = IDX.tlinksOf[id] || [];
+        done.innerHTML = '<span class="rel-k">Linked</span>' + (L.length ? L.map(([o, note, l]) => '<span class="pick' + (o === fresh ? ' fresh' : '') + '">' + esc(topicNodeName(o)) + '<button type="button" aria-label="Unlink" data-untl="' + esc(l[0] + '|' + l[1]) + '">×</button></span>').join('') : '<span class="hint">nothing yet</span>');
+      };
+      done.addEventListener('click', ev => {
+        const u = ev.target.closest('[data-untl]'); if(!u) return;
+        const l = findTlink(u.dataset.untl); if(!l) return;
+        const before = clone(lib);
+        lib.tlinks = lib.tlinks.filter(x => x !== l);
+        reindex(); touchLib([]); renderMain(); renderMap(true); drawDone(); draw();
+        toast('Unlinked', () => { lib = before; reindex(); touchLib([]); renderAll(); toast('Undone'); });
+      });
       const draw = () => {
         const q = inp.value.trim().toLowerCase();
         const have = new Set((IDX.tlinksOf[id] || []).map(x => x[0]));
@@ -3572,11 +3727,13 @@ function openTopicLinkPicker(id){
         list.innerHTML = c.map(x => '<button type="button" data-pick-tl="' + esc(x) + '">' + esc(topicNodeName(x)) + '</button>').join('') || '<p class="hint" style="padding:.4em .6em">Nothing found.</p>';
       };
       inp.addEventListener('input', draw);
+      drawDone();
       list.addEventListener('click', ev => {
         const pb = ev.target.closest('[data-pick-tl]'); if(!pb) return;
         const before = clone(lib);
         lib.tlinks.push([id, pb.dataset.pickTl]);
-        reindex(); touchLib([]); renderMain(); renderMap(true); draw();
+        reindex(); touchLib([]); renderMain(); renderMap(true);
+        inp.value = ''; draw(); drawDone(pb.dataset.pickTl); inp.focus();
         toast('Linked: ' + topicNodeName(id) + ' is related to ' + topicNodeName(pb.dataset.pickTl), () => { lib = before; reindex(); touchLib([]); renderAll(); toast('Undone'); });
       });
       draw();
@@ -3585,10 +3742,41 @@ function openTopicLinkPicker(id){
 }
 function openTopicLinkNote(key){
   const l = findTlink(key); if(!l) return;
+  const cur = (lib.tlinkColor || {})[key] || '';
   openModal({
-    title:'Note on this link',
-    body:'<div class="form-grid"><label class="full">Shown next to the link<input type="text" id="tlNote" maxlength="60" value="' + esc(l[2] || '') + '"></label></div>',
-    actions:[{label:'Cancel'}, {label:'Save', primary:true, onClick: bd => { const v = bd.querySelector('#tlNote').value.trim(); if(v) l[2] = v; else l.length = 2; reindex(); touchLib([]); renderMain(); renderMap(true); }}]
+    title:'This link',
+    body:'<div class="form-grid"><label class="full">Note, shown next to the link<input type="text" id="tlNote" maxlength="60" value="' + esc(l[2] || '') + '"></label>' +
+      '<label class="full">Colour line<select id="tlBranch"><option value="">None: the default blue</option>' + (lib.branches || []).map(x => '<option value="' + x.id + '"' + (x.id === cur ? ' selected' : '') + '>' + esc(x.name) + '</option>').join('') + '<option value="__new">New colour line…</option></select><span class="hint">Use a colour to say which path this link belongs to. One topic can have links in several colours.</span></label>' +
+      '<div class="full ln-new" hidden><label class="ln-name">Name of this colour line<input type="text" id="tlBrName" maxlength="40" placeholder="Main line"></label><div class="ln-col"><span class="field-k">Colour</span>' + swatchesHTML(nextBranchColor(), 'tl') + '</div></div></div>',
+    actions:[{label:'Cancel'}, {label:'Save', primary:true, onClick: bd => {
+      const before = clone(lib);
+      const v = bd.querySelector('#tlNote').value.trim(); if(v) l[2] = v; else l.length = 2;
+      let bid = bd.querySelector('#tlBranch').value;
+      const nm = bd.querySelector('#tlBrName').value.trim(), col = bd.querySelector('[data-swatches="tl"] .sw-input').value;
+      if(bid === '__new'){
+        let id; do{ id = rid('b'); }while(lib.branches.some(x => x.id === id));
+        lib.branches.push({id, name: nm || 'Colour line ' + (lib.branches.length + 1), color: HEX_RE.test(col) ? col : nextBranchColor()});
+        bid = id;
+      }else if(bid){
+        const br = lib.branches.find(x => x.id === bid);
+        if(br){ if(nm) br.name = nm.slice(0, 40); if(HEX_RE.test(col)) br.color = col; }
+      }
+      if(bid) lib.tlinkColor[key] = bid; else delete lib.tlinkColor[key];
+      reindex(); touchLib([]); renderMain(); renderMap(true);
+      toast('Link saved', () => { lib = before; reindex(); touchLib([]); renderAll(); toast('Undone'); });
+    }}],
+    onOpen: b2 => {
+      const sel = b2.querySelector('#tlBranch'), nw = b2.querySelector('.ln-new'), nmI = b2.querySelector('#tlBrName'), sw = b2.querySelector('[data-swatches="tl"]');
+      bindSwatches(b2);
+      const setCol = c => { sw.querySelector('.sw-input').value = c; sw.querySelectorAll('.sw').forEach(x => x.classList.toggle('on', x.dataset.sw.toLowerCase() === c.toLowerCase())); };
+      const sync = () => {
+        const v = sel.value, br = lib.branches.find(x => x.id === v);
+        nw.hidden = !v;
+        if(v === '__new'){ nmI.value = ''; nmI.placeholder = 'Main line'; setCol(nextBranchColor()); }
+        else if(br){ nmI.value = br.name; setCol(br.color); }
+      };
+      sel.addEventListener('change', sync); sync();
+    }
   });
 }
 

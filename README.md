@@ -16,13 +16,15 @@ The live preview (link at the top right of this page) shows a made-up example.
 
 ![How each kind of line looks: builds on is solid, responds to is dashed, related to is dotted, needs runs in long dashes from a concept, related topics are marked ⇄ and light up together](assets/lines-legend.svg)
 
-![Linking a paper to one in another subtopic, giving the line a note and the Main line colour, then seeing the whole colour line light up](assets/lines.gif)
+![Linking a paper to one in another subtopic, giving the line a note and the Main line colour, seeing the whole colour line light up, then How far → Whole line](assets/lines.gif)
 
-Click a paper and it lights up one step around it; **How far** in its panel shows more. Give a main line of thought its own colour from a line's ✎: click any paper on a colour line and the whole line lights up, end to end.
+Click a paper and it lights up one step around it; notes on lines show only on the lines that light up, so an untouched map stays clean. **How far** in its panel goes further, up to **Whole line**: every paper connected to it, in any direction, and **Related to** there shows or hides the dotted lines. Give a main line of thought its own colour from a line's ✎: click any paper on a colour line and the whole line lights up, end to end.
 
 ### Topics
 
-Top-level topics are for big areas, such as a field or a project. Links between them are drawn with lines, colour lines and Related topics, and the map shows them all.
+Top-level topics are for big areas, such as a field or a project. Links between them are drawn with lines, colour lines and Related topics, and the map shows them all. Related topics carry ⇄ beside their names and light up together; give a link a colour from its ✎ to say which path it belongs to.
+
+![Board games is related to Procrastination by a blue link and to Dinner by a yellow one; in Board games both light up in their colours, and hovering the yellow mark lights up only Dinner](assets/related-topics.png)
 
 ### Concepts
 
