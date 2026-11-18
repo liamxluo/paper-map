@@ -8,15 +8,9 @@ I built this because I wanted a better way to organise what I read and understan
 
 The live preview (link at the top right of this page) shows the made-up example in [`example/displaydata.json`](example/displaydata.json).
 
-## Two structures, one map
+## Draw the lines
 
-Topics and subtopics say where something belongs, as many levels deep as you need. Lines say what it connects to:
-
-| Line | Joins |
-|---|---|
-| Builds on · Responds to · Related to | any two papers or concepts, each line with an optional note |
-| Needs | a paper and the concepts to know first; a concept and the ones before it |
-| Related topics | any two topics or subtopics |
+![How each kind of line looks: builds on is solid, responds to is dashed, related to is dotted, needs runs in long dashes from a concept, related topics are an arc beside two rows](assets/lines-legend.svg)
 
 ![Linking a paper to one in another subtopic, then giving the line a note](assets/lines.gif)
 
