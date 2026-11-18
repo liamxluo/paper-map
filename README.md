@@ -127,16 +127,33 @@ Choose **+ New paper ▾ → Import papers** (on a phone, **⋯ → Import paper
 </details>
 
 <details>
-<summary>Fill in a paper from its DOI</summary>
+<summary>Fill in a paper from its DOI, ISBN or another ID</summary>
 
-Paste the DOI (or a doi.org link) at the top of **New paper** and click **Fill from DOI**: the title, authors, year and source come from Crossref, DataCite or the other DOI agencies. Anything you already typed stays as it is.
+Paste an identifier at the top of **New paper** and click **Fill in**: the title, authors, year and source come back by themselves. Anything you already typed stays as it is.
+
+| Paste | Looked up in |
+|---|---|
+| A DOI, or a doi.org link | Crossref, DataCite and the other DOI agencies |
+| An ISBN, for a book | Open Library, then Google Books |
+| An Elsevier PII (S0…) | Crossref, which also finds its DOI |
+| An arXiv ID (2101.00001) | arXiv's DOI on DataCite |
+| A PubMed or PubMed Central ID | Europe PMC |
+
+</details>
+
+<details>
+<summary>Export your papers as a list</summary>
+
+**Export ▾ → The papers**, or **Export list** under any topic's title. Choose this topic, everything, or the topics you tick, and all papers or only the ones you've read or want to read. Save it as **CSV** (Excel, Google Sheets, Numbers; it keeps topics, read marks, tags and the lines between papers), **BibTeX** (LaTeX, Overleaf, Zotero), **RIS** (Zotero, EndNote, Mendeley) or a **Markdown reading list** grouped by topic.
+
+**Both together**, in the same menu, puts the map and its list of papers in one file: a PDF with the map first and the list on the pages after it, or one long picture with the list under the map, handy for sharing in a chat.
 
 </details>
 
 <details>
 <summary>Export a map as PNG or PDF</summary>
 
-**Export**, next to Colour lines, lets you tick the topics to include. It shows which topics outside your choice are linked, and how many lines go there: add them, or leave them out and those lines are dropped (a colour line keeps the part inside your choice). Show all lines, only colour lines, or just the papers; a note on the picture says the lines are your own reading, not a citation network. Save it wherever you like, a Dropbox or iCloud Drive folder included.
+**Export ▾ → The map**, next to Colour lines, lets you tick the topics to include. It shows which topics outside your choice are linked, and how many lines go there: add them, or leave them out and those lines are dropped (a colour line keeps the part inside your choice). Show all lines, only colour lines, or just the papers; a note on the picture says the lines are your own reading, not a citation network. Save it wherever you like, a Dropbox or iCloud Drive folder included.
 
 ![An exported map: a title, the chosen topics with their lines, a legend, and a note that the lines are the author’s own reading](assets/export.png)
 

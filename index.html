@@ -946,6 +946,26 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
 .add-menu [data-add="import"]{border-top:1px solid var(--rule)}
 
 .fs-tips{margin:.4em 0 .2em 1.1em;padding:0;display:flex;flex-direction:column;gap:4px;font-size:.88rem;color:var(--muted)}
+
+/* ---------- export the paper list ---------- */
+.export-wrap{position:relative;display:inline-block}
+.export-menu{left:0;right:auto;min-width:280px}
+.le-scope{display:flex;flex-direction:column;gap:6px;margin:.2em 0 .6em}
+.le-scope label{display:flex;align-items:center;gap:8px}
+.le-tree{max-height:30vh;margin-bottom:.6em}
+.le-fmts{display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:8px;margin:.7em 0}
+.le-fmt{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;align-items:center;border:1px solid var(--rule);border-radius:10px;padding:.55em .7em;cursor:pointer}
+.le-fmt input{grid-row:span 2}
+.le-fmt.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.le-fmt .hint{font-size:.8rem}
+.le-prev{max-height:24vh;overflow:auto;background:var(--bg);border:1px solid var(--rule);border-radius:8px;padding:.6em .7em;font:400 .78rem/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;white-space:pre-wrap;word-break:break-word}
+
+.ex-list{border:1px solid var(--rule);border-radius:10px;padding:.55em .7em;margin:.6em 0;background:var(--bg)}
+.ex-list-on{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ex-list-opts{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:.5em;font-size:.9rem}
+.ex-list-opts[hidden],.ex-list-hint[hidden]{display:none}
+.ex-list-opts label{display:inline-flex;align-items:center;gap:6px}
+.ex-list-hint{margin:.45em 0 0}
 </style>
 </head>
 <body>
@@ -977,6 +997,8 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
           <button type="button" data-more="filters">Filters</button>
           <button type="button" data-more="modify"><span class="mm-modify">Modify</span></button>
           <button type="button" data-more="export">Export map</button>
+          <button type="button" data-more="exportList">Export papers</button>
+          <button type="button" data-more="exportBoth">Export map and papers</button>
           <button type="button" data-more="settings">Settings</button>
         </span></span>
     </div>
@@ -1036,7 +1058,8 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
     <button type="button" class="btn" id="btnLanes" aria-expanded="false" aria-controls="lanePicker">Topics on the map</button>
     <button type="button" class="btn years-toggle" id="btnZoom" aria-expanded="false" aria-controls="zoomTools">Years: all</button>
     <button type="button" class="btn" id="btnBranches" title="Name, colour, show or hide your colour lines">Colour lines</button>
-    <button type="button" class="btn" id="btnExport" title="Save chosen topics as a PNG or PDF">Export</button>
+    <span class="export-wrap"><button type="button" class="btn" id="btnExport" aria-haspopup="true" aria-expanded="false" title="Export the map as a picture, or the papers as a list">Export ▾</button>
+      <span class="add-menu export-menu" id="exportMenu" hidden><button type="button" data-export-kind="map"><b>The map</b><span>a picture of the topics you choose, as PNG or PDF</span></button><button type="button" data-export-kind="list"><b>The papers</b><span>a list as CSV, BibTeX, RIS or a Markdown reading list</span></button><button type="button" data-export-kind="both"><b>Both together</b><span>the map with its list of papers, as a PDF or one long picture</span></button></span></span>
     <div class="br-row" id="branchRow" hidden></div>
     <div class="zoom" id="zoomTools" role="group" aria-label="Zoom the timeline" hidden>
       <button type="button" class="btn" data-zoom="out" aria-label="Zoom out">−</button>
@@ -2190,10 +2213,11 @@ const TYPE_MAP = {journalarticle: 'Paper', conferencepaper: 'Paper', preprint: '
   jour: 'Paper', conf: 'Paper', cpaper: 'Paper', rprt: 'Paper', chap: 'Chapter', thes: 'Other', 'article-journal': 'Paper', 'paper-conference': 'Paper', chapter: 'Chapter'};
 const typeFrom = v => TYPE_MAP[String(v || '').toLowerCase().replace(/[\s_]/g, '')] || '';
 const doiFrom = (...vs) => { for(const v of vs){ const m = /(10\.\d{4,9}\/[^\s"<>]+)/.exec(String(v || '')); if(m) return m[1].replace(/[.,;)]+$/, ''); } return ''; };
+const isbnFrom = v => { for(const part of String(v || '').split(/[;,\s]+(?=\d)/)){ const k = idKind(part); if(k && k.kind === 'isbn') return k.id; } return ''; };
 const tagsFrom = v => (Array.isArray(v) ? v : String(v || '').split(/[;,]/)).map(x => String(x).trim()).filter(Boolean);
 /* CSV columns: which one is which */
 const CSV_GUESS = {t: ['title', 'titel', 'titre', 'título', 'titolo', '标题', '題名', '题名', '篇名'], au: ['author', 'authors', 'creator', 'creators', 'autor', 'autoren', 'auteur', 'auteurs', 'autores', '作者', '著者'], y: ['publication year', 'year', 'date', 'issued', 'jahr', 'année', 'año', 'anno', '年份', '年', '出版年', '发表年份'], box: ['publication title', 'journal', 'source', 'container', 'publication', 'venue', 'booktitle', 'container-title', 'zeitschrift', 'revue', 'revista', 'rivista', '期刊', '来源', '刊名', '出处'],
-  vol: ['volume'], iss: ['issue', 'number'], pages: ['pages', 'page'], pub: ['publisher'], doi: ['doi'], url: ['url', 'link'], tags: ['manual tags', 'tags', 'keywords', 'keyword'], n: ['notes', 'note'], type: ['item type', 'type']};
+  vol: ['volume'], iss: ['issue', 'number'], pages: ['pages', 'page'], pub: ['publisher'], doi: ['doi'], isbn: ['isbn'], url: ['url', 'link'], tags: ['manual tags', 'tags', 'keywords', 'keyword'], n: ['notes', 'note'], type: ['item type', 'type']};
 function guessColumns(head){
   const h = head.map(x => String(x).trim().toLowerCase()), map = {};
   Object.entries(CSV_GUESS).forEach(([k, names]) => { let i = h.findIndex(x => names.includes(x)); if(i < 0) i = h.findIndex(x => names.some(nm => x.includes(nm))); if(i >= 0 && !Object.values(map).includes(i)) map[k] = i; });
@@ -2202,7 +2226,7 @@ function guessColumns(head){
 function itemsFromCSV(rows, map){
   const get = (r, k) => map[k] != null ? String(r[map[k]] == null ? '' : r[map[k]]).trim() : '';
   return rows.slice(1).map(r => ({t: get(r, 't'), au: authorsFrom(get(r, 'au')), y: yearFrom(get(r, 'y')), v: sourceFrom(get(r, 'box'), get(r, 'vol'), get(r, 'iss'), get(r, 'pages'), get(r, 'pub')),
-    doi: doiFrom(get(r, 'doi'), get(r, 'url')), tags: tagsFrom(get(r, 'tags')), n: htmlText(get(r, 'n')), l: typeFrom(get(r, 'type'))})).filter(x => x.t);
+    doi: doiFrom(get(r, 'doi'), get(r, 'url')), isbn: isbnFrom(get(r, 'isbn')), tags: tagsFrom(get(r, 'tags')), n: htmlText(get(r, 'n')), l: typeFrom(get(r, 'type'))})).filter(x => x.t);
 }
 function readImport(text, name){
   const s = String(text || '').replace(/^\uFEFF/, ''), lower = String(name || '').toLowerCase(), first = s.trim().charAt(0);
@@ -2211,15 +2235,15 @@ function readImport(text, name){
     if(j && j.app && j.lib) return {error: 'That’s a Paper Map backup. Use Settings → Data → Import backup for it.'};
     const arr = Array.isArray(j) ? j : (j && (j.items || j.data)) || [];
     return {format: 'CSL JSON', items: arr.map(m => ({t: String(Array.isArray(m.title) ? m.title[0] : m.title || '').replace(/\s+/g, ' ').trim(), au: authorsFrom(m.author || []), y: yearFrom(m.issued && m.issued['date-parts'] ? m.issued['date-parts'][0][0] : m.issued && m.issued.raw || m.year),
-      v: sourceFrom(Array.isArray(m['container-title']) ? m['container-title'][0] : m['container-title'], m.volume, m.issue, m.page, m.publisher), doi: doiFrom(m.DOI, m.URL), tags: tagsFrom(m.keyword), n: htmlText(m.note), l: typeFrom(m.type)})).filter(x => x.t)};
+      v: sourceFrom(Array.isArray(m['container-title']) ? m['container-title'][0] : m['container-title'], m.volume, m.issue, m.page, m.publisher), doi: doiFrom(m.DOI, m.URL), isbn: isbnFrom(m.ISBN), tags: tagsFrom(m.keyword), n: htmlText(m.note), l: typeFrom(m.type)})).filter(x => x.t)};
   }
   if(/\.ris$/.test(lower) || /^TY  - /m.test(s)){
     return {format: 'RIS', items: parseRIS(s).map(r => ({t: (r.TI || r.T1 || r.CT || '').split('\n')[0], au: joinAuthors(r.AU.map(personFrom).filter(Boolean)), y: yearFrom(r.PY || r.Y1 || r.DA), v: sourceFrom(r.T2 || r.JO || r.JF || r.JA, r.VL, r.IS, r.SP ? r.SP + (r.EP ? '–' + r.EP : '') : '', r.PB),
-      doi: doiFrom(r.DO, r.UR), tags: r.KW, n: htmlText(r.N1), l: typeFrom(r.TY)})).filter(x => x.t)};
+      doi: doiFrom(r.DO, r.UR), isbn: isbnFrom(r.SN), tags: r.KW, n: htmlText(r.N1), l: typeFrom(r.TY)})).filter(x => x.t)};
   }
   if(/\.bib(tex)?$/.test(lower) || /@\s*[a-z]+\s*[{(]/i.test(s)){
     const items = parseBib(s).map(b => { const f = b.fields; return {t: f.title || '', au: authorsFrom(f.author || f.editor || ''), y: yearFrom(f.year || f.date), v: sourceFrom(f.journal || f.journaltitle || f.booktitle, f.volume, f.number, f.pages, f.publisher || f.institution || f.school),
-      doi: doiFrom(f.doi, f.url), tags: tagsFrom(f.keywords), n: f.annote || f.note || '', l: typeFrom(b.type)}; }).filter(x => x.t);
+      doi: doiFrom(f.doi, f.url), isbn: isbnFrom(f.isbn), tags: tagsFrom(f.keywords), n: f.annote || f.note || '', l: typeFrom(b.type)}; }).filter(x => x.t);
     if(items.length) return {format: 'BibTeX', items};
   }
   const rows = parseCSV(s);
@@ -2229,9 +2253,9 @@ function readImport(text, name){
 }
 const normTitle = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]/g, '');
 function existingKeys(){
-  const dois = new Set(), titles = new Set();
-  Object.values(lib.entries).forEach(e => { if(e.kind !== 'paper') return; if(e.doi) dois.add(String(e.doi).toLowerCase()); titles.add(normTitle(e.t) + '|' + (e.y || '')); });
-  return {has: x => (x.doi && dois.has(x.doi.toLowerCase())) || titles.has(normTitle(x.t) + '|' + (x.y || ''))};
+  const dois = new Set(), isbns = new Set(), titles = new Set();
+  Object.values(lib.entries).forEach(e => { if(e.kind !== 'paper') return; if(e.doi) dois.add(String(e.doi).toLowerCase()); if(e.isbn) isbns.add(e.isbn); titles.add(normTitle(e.t) + '|' + (e.y || '')); });
+  return {has: x => (x.doi && dois.has(x.doi.toLowerCase())) || (x.isbn && isbns.has(x.isbn)) || titles.has(normTitle(x.t) + '|' + (x.y || ''))};
 }
 function openImport(){
   const pick = '<p>Bring in papers from Zotero or another reference tool: a <b>CSV</b>, <b>BibTeX</b> (.bib), <b>RIS</b> (.ris) or <b>CSL JSON</b> file. You choose where they go and check them before anything is added.</p>' +
@@ -2311,13 +2335,150 @@ function doImport(r, st){
     let id; do{ id = rid('e'); }while(lib.entries[id]);
     const e = {id, kind: 'paper', topic: IDX.topicOf[sid], sub: sid, group: '', y: x.y || undefined, au: x.au || '', t: x.t, v: x.v || '', l: LAYERS.includes(x.l) ? x.l : 'Paper', p: 2,
       tags: st.tags ? [...new Set((x.tags || []).map(nm => tagId[nm]).filter(Boolean))] : [], d: [], f: '', n: st.notes ? (x.n || '') : '', needs: []};
-    if(x.doi) e.doi = x.doi; if(!e.n) delete e.n; if(e.y == null) delete e.y;
+    if(x.doi) e.doi = x.doi; if(x.isbn) e.isbn = x.isbn; if(!e.n) delete e.n; if(e.y == null) delete e.y;
     lib.entries[id] = e;
   });
   reindex(); touchAllTopics(); syncControls();
   closeModal(); openView(sid);
   const where = (IDX.subs[sid] || {}).name || 'your map';
   toast('Imported ' + items.length + (items.length === 1 ? ' paper' : ' papers') + ' into “' + where + '”', () => { lib = before; reindex(); touchAllTopics(); fixView(); renderAll(); toast('Undone'); });
+}
+
+
+/* ===================== export the paper list: CSV, BibTeX, RIS or a Markdown reading list ===================== */
+/* “Kahneman, D. & Tversky, A.” → [{family, given}] (and “et al.” → more authors exist) */
+function splitAuthors(au){
+  let s = String(au || '').trim(); if(!s) return {list: [], more: false};
+  const more = /\bet al\.?$/i.test(s); s = s.replace(/,?\s*\bet al\.?$/i, '').trim();
+  const parts = s.split(/\s+&\s+|\s+and\s+/i);
+  const out = [];
+  parts.forEach(p => p.split(/(?<=\.),\s+(?=[^,]+,)/).forEach(q => { q = q.trim(); if(!q) return; const i = q.indexOf(','); out.push(i > 0 ? {family: q.slice(0, i).trim(), given: q.slice(i + 1).trim()} : {family: q, given: ''}); }));
+  return {list: out, more};
+}
+/* “Econometrica 47(2): 263–291” → journal, volume, issue, pages */
+function splitSource(v){
+  const s = String(v || '').trim();
+  const m = /^(.*?)\s+(\d+[A-Za-z]?)(?:\((\w+)\))?(?::\s*([\w–-]+))?$/.exec(s);
+  return m && m[1] ? {box: m[1], vol: m[2], iss: m[3] || '', pages: (m[4] || '').replace('–', '-')} : {box: s, vol: '', iss: '', pages: ''};
+}
+function listOrder(){ const ord = {}; allLaneRows().forEach((r, i) => { ord[r.sub.id] = i; }); return ord; }
+function papersFor(o){
+  const ord = listOrder();
+  return Object.values(lib.entries).filter(e => e.kind === 'paper' && !e.parent && (!o.subs || o.subs.has(e.sub)) && (o.status === 'all' || (o.status === 'none' ? !stOf(e) : stOf(e) === o.status)))
+    .sort((a, b) => (ord[a.sub] ?? 9e9) - (ord[b.sub] ?? 9e9) || byYear(a, b));
+}
+const linkTitles = (id, dir, ty) => ((dir === 'up' ? IDX.up[id] : IDX.down[id]) || []).filter(x => x[1] === ty).map(x => lib.entries[x[0]]).filter(Boolean).map(e => (e.t || '') + (e.y ? ' (' + e.y + ')' : ''));
+const placeOf = e => { const tp = IDX.topics[e.topic], s = IDX.subs[e.sub]; return {topic: tp ? tp.name : '', sub: s && !s.hidden ? subPath(s).join(' › ') : ''}; };
+const statusWord = e => ({read: 'Read', want: 'Want to read'})[stOf(e)] || '';
+const tagNames = e => (e.tags || []).map(id => (lib.tags.find(x => x.id === id) || {}).name).filter(Boolean);
+function csvCell(v){ const s = String(v == null ? '' : v); return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+function papersCSV(es, o){
+  const head = ['Title', 'Authors', 'Year', 'Source', 'DOI', 'ISBN', 'Type', 'Topic', 'Subtopic', 'Status', 'Priority', 'Tags', 'Focus'].concat(o.notes ? ['Notes'] : []).concat(o.lines ? ['Builds on', 'Responds to', 'Related to', 'Built on by'] : []);
+  const rows = es.map(e => { const p = placeOf(e); return [e.t, e.au, e.y || '', e.v, e.doi || '', e.isbn || '', e.l || 'Paper', p.topic, p.sub, statusWord(e), PRIO_LABEL[e.p || 1] || '', tagNames(e).join('; '), e.f || '']
+    .concat(o.notes ? [e.n || ''] : []).concat(o.lines ? [linkTitles(e.id, 'up', 'b').join('; '), linkTitles(e.id, 'up', 'c').join('; '), linkTitles(e.id, 'up', 'r').concat(linkTitles(e.id, 'down', 'r')).join('; '), linkTitles(e.id, 'down', 'b').join('; ')] : []); });
+  return '\uFEFF' + [head].concat(rows).map(r => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
+}
+function bibKey(e, used){
+  const fam = (splitAuthors(e.au).list[0] || {}).family || 'anon';
+  const word = (String(e.t || '').normalize('NFKD').replace(/[^\w\s]/g, '').split(/\s+/).find(w => w.length > 3 && !/^(the|a|an|on|of|and|for|with|from|into)$/i.test(w)) || 'paper');
+  const base = (fam.normalize('NFKD').replace(/[^A-Za-z]/g, '') || 'anon').toLowerCase() + (e.y || '') + word.toLowerCase();
+  let k = base, n = 1; while(used.has(k)) k = base + String.fromCharCode(96 + (++n)); used.add(k); return k;
+}
+const bibEsc = s => String(s || '').replace(/[{}]/g, '').replace(/([&%$#_])/g, '\\$1');
+function papersBib(es, o){
+  const used = new Set();
+  return es.map(e => {
+    const A = splitAuthors(e.au), src = splitSource(e.v), type = e.l === 'Book' ? 'book' : e.l === 'Chapter' ? 'incollection' : src.vol || src.box ? 'article' : 'misc';
+    const f = [['title', '{' + bibEsc(e.t) + '}'], ['author', A.list.map(a => bibEsc(a.family) + (a.given ? ', ' + bibEsc(a.given) : '')).concat(A.more ? ['others'] : []).join(' and ')], ['year', e.y || '']];
+    if(type === 'book') f.push(['publisher', bibEsc(e.v)]);
+    else if(type === 'incollection') f.push(['booktitle', bibEsc(src.box)], ['pages', src.pages]);
+    else f.push([type === 'misc' ? 'howpublished' : 'journal', bibEsc(src.box)], ['volume', src.vol], ['number', src.iss], ['pages', src.pages.replace('-', '--')]);
+    f.push(['doi', e.doi || ''], ['isbn', e.isbn || ''], ['keywords', tagNames(e).map(bibEsc).join(', ')]);
+    if(o.notes && e.n) f.push(['annote', bibEsc(e.n.replace(/\s+/g, ' '))]);
+    return '@' + type + '{' + bibKey(e, used) + ',\n' + f.filter(x => String(x[1]).trim()).map(([k, v]) => '  ' + k + ' = ' + (/^\{/.test(v) ? v : '{' + v + '}')).join(',\n') + '\n}';
+  }).join('\n\n') + '\n';
+}
+function papersRIS(es, o){
+  return es.map(e => {
+    const A = splitAuthors(e.au), src = splitSource(e.v), ty = e.l === 'Book' ? 'BOOK' : e.l === 'Chapter' ? 'CHAP' : src.vol || src.box ? 'JOUR' : 'GEN';
+    const L = [['TY', ty]].concat(A.list.map(a => ['AU', a.family + (a.given ? ', ' + a.given : '')]), [['TI', e.t], ['PY', e.y || '']]);
+    if(ty === 'BOOK') L.push(['PB', e.v]); else L.push(['T2', src.box], ['VL', src.vol], ['IS', src.iss]);
+    if(src.pages){ const [sp, ep] = src.pages.split('-'); L.push(['SP', sp], ['EP', ep || '']); }
+    L.push(['DO', e.doi || ''], ['SN', e.isbn || '']); tagNames(e).forEach(nm => L.push(['KW', nm]));
+    if(o.notes && e.n) L.push(['N1', e.n.replace(/\s+/g, ' ')]);
+    L.push(['ER', '']);
+    return L.filter(([k, v]) => k === 'ER' || String(v).trim()).map(([k, v]) => k + '  - ' + v).join('\r\n');
+  }).join('\r\n\r\n') + '\r\n';
+}
+function papersMD(es, o, title){
+  let out = '# ' + title + '\n\n' + es.length + (es.length === 1 ? ' paper' : ' papers') + ' · exported from Paper Map on ' + new Date().toLocaleDateString([], {day: 'numeric', month: 'long', year: 'numeric'}) + '\n';
+  let lastPlace = null;
+  es.forEach(e => {
+    const p = placeOf(e), place = p.topic + (p.sub ? ' › ' + p.sub : '');
+    if(place !== lastPlace){ out += '\n## ' + place + '\n\n'; lastPlace = place; }
+    const st = stOf(e), box = st === 'read' ? '[x] ' : st === 'want' ? '[ ] ' : '';
+    out += '- ' + box + (e.au ? e.au + ' ' : '') + (e.y ? '(' + e.y + '). ' : '') + '**' + (e.t || '') + '**' + (e.v ? '. *' + e.v + '*' : '') + '.' + (e.doi ? ' https://doi.org/' + e.doi : '') + (e.isbn ? ' ISBN ' + e.isbn : '') + '\n';
+    if(o.lines){ const b = linkTitles(e.id, 'up', 'b'), c = linkTitles(e.id, 'up', 'c'); if(b.length) out += '  - Builds on: ' + b.join('; ') + '\n'; if(c.length) out += '  - Responds to: ' + c.join('; ') + '\n'; }
+    if(o.notes && e.n) out += '  - Notes: ' + e.n.replace(/\s+/g, ' ').slice(0, 600) + '\n';
+  });
+  return out;
+}
+const LIST_FORMATS = {csv: {label: 'CSV', hint: 'Excel, Google Sheets, Numbers, Zotero', ext: 'csv', type: 'text/csv;charset=utf-8', make: papersCSV},
+  bib: {label: 'BibTeX', hint: 'LaTeX, Overleaf, Zotero', ext: 'bib', type: 'application/x-bibtex;charset=utf-8', make: papersBib},
+  ris: {label: 'RIS', hint: 'Zotero, EndNote, Mendeley', ext: 'ris', type: 'application/x-research-info-systems;charset=utf-8', make: papersRIS},
+  md: {label: 'Reading list', hint: 'Markdown: grouped by topic, read ones ticked', ext: 'md', type: 'text/markdown;charset=utf-8', make: papersMD}};
+function openListExport(view){
+  /* which papers: this view, everything, or the topics you tick */
+  const here = view || (ui.sub ? ui.sub : ui.topic ? ui.topic + '-all' : null);
+  let hereSubs = null, hereName = '';
+  if(here && IDX.subs[here]){ const s = IDX.subs[here]; hereSubs = new Set([here].concat(subDescendants(here).map(x => x.id))); hereName = s.hidden ? (IDX.topics[IDX.topicOf[here]] || {}).name : subPath(s).join(' › '); }
+  else if(here){ const tp = IDX.topics[String(here).replace(/-all$/, '')]; if(tp){ hereSubs = new Set(treeSubs(tp).map(s => s.id)); hereName = tp.name; } }
+  const rows = allLaneRows();
+  const st = {scope: hereSubs ? 'here' : 'all', status: 'all', format: 'csv', notes: true, lines: true, pick: new Set(hereSubs || rows.map(r => r.sub.id))};
+  const subsOf = () => st.scope === 'here' ? hereSubs : st.scope === 'pick' ? st.pick : null;
+  const title = () => st.scope === 'here' ? hereName : st.scope === 'pick' ? 'Chosen topics' : (lib.title || 'Paper Map');
+  const count = sc => papersFor({subs: sc === 'here' ? hereSubs : sc === 'pick' ? st.pick : null, status: st.status}).length;
+  const tree = () => lib.topics.map(tp => '<div class="ex-group"><label class="ex-topic"><input type="checkbox" data-le-topic="' + tp.id + '"' + (treeSubs(tp).every(s => st.pick.has(s.id)) ? ' checked' : '') + '> <b>' + esc(tp.name) + '</b></label>' +
+    rows.filter(r => r.topic.id === tp.id && !r.sub.hidden).map(r => '<label class="ex-sub" style="--d:' + r.depth + '"><input type="checkbox" data-le-sub="' + r.sub.id + '"' + (st.pick.has(r.sub.id) ? ' checked' : '') + '> ' + esc(r.name) + '</label>').join('') + '</div>').join('');
+  const draw = bd => {
+    const es = papersFor({subs: subsOf(), status: st.status}), F = LIST_FORMATS[st.format];
+    const preview = es.length ? F.make(es.slice(0, 3), st, title()).replace(/^\uFEFF/, '').split(/\r?\n/).slice(0, 14).join('\n') : '';
+    bd.querySelector('#leBody').innerHTML =
+      '<div class="le-scope">' + (hereSubs ? '<label><input type="radio" name="leScope" value="here"' + (st.scope === 'here' ? ' checked' : '') + '> This view: <b>' + esc(hereName) + '</b> <span class="hint">(' + count('here') + ')</span></label>' : '') +
+        '<label><input type="radio" name="leScope" value="all"' + (st.scope === 'all' ? ' checked' : '') + '> Everything <span class="hint">(' + count('all') + ')</span></label>' +
+        '<label><input type="radio" name="leScope" value="pick"' + (st.scope === 'pick' ? ' checked' : '') + '> Choose topics</label></div>' +
+      (st.scope === 'pick' ? '<div class="ex-tree le-tree">' + tree() + '</div>' : '') +
+      '<div class="form-grid"><label>Which papers<select id="leStatus"><option value="all">All of them</option><option value="read"' + (st.status === 'read' ? ' selected' : '') + '>Only the ones I’ve read</option><option value="want"' + (st.status === 'want' ? ' selected' : '') + '>Only the ones I want to read</option><option value="none"' + (st.status === 'none' ? ' selected' : '') + '>Only the unmarked ones</option></select></label></div>' +
+      '<div class="le-fmts">' + Object.entries(LIST_FORMATS).map(([k, x]) => '<label class="le-fmt' + (st.format === k ? ' on' : '') + '"><input type="radio" name="leFmt" value="' + k + '"' + (st.format === k ? ' checked' : '') + '><b>' + x.label + '</b><span class="hint">' + x.hint + '</span></label>').join('') + '</div>' +
+      '<div class="ex-opts"><label><input type="checkbox" id="leNotes"' + (st.notes ? ' checked' : '') + '> Include notes</label>' + (st.format === 'csv' || st.format === 'md' ? '<label><input type="checkbox" id="leLines"' + (st.lines ? ' checked' : '') + '> Include the lines between papers</label>' : '') + '</div>' +
+      (preview ? '<p class="ex-h">Preview</p><pre class="le-prev">' + esc(preview) + (es.length > 3 ? '\n…' : '') + '</pre>' : '<p class="hint">No papers match.</p>');
+    const go = document.querySelector('#modalActions .primary'); if(go){ go.textContent = 'Export ' + es.length + (es.length === 1 ? ' paper' : ' papers'); go.disabled = !es.length; }
+  };
+  openModal({title: 'Export papers', body: '<div id="leBody"></div>',
+    actions: [{label: 'Cancel'}, {label: 'Export', primary: true, onClick: () => { doListExport(st, subsOf(), title()); return false; }}],
+    onOpen: bd => {
+      bd.addEventListener('change', ev => {
+        const x = ev.target;
+        if(x.name === 'leScope') st.scope = x.value;
+        else if(x.name === 'leFmt') st.format = x.value;
+        else if(x.id === 'leStatus') st.status = x.value;
+        else if(x.id === 'leNotes') st.notes = x.checked;
+        else if(x.id === 'leLines') st.lines = x.checked;
+        else if(x.dataset.leTopic){ const tp = IDX.topics[x.dataset.leTopic]; treeSubs(tp).forEach(s => { if(x.checked) st.pick.add(s.id); else st.pick.delete(s.id); }); }
+        else if(x.dataset.leSub){ if(x.checked) st.pick.add(x.dataset.leSub); else st.pick.delete(x.dataset.leSub); }
+        draw(bd);
+      });
+      draw(bd);
+    }});
+}
+async function doListExport(st, subs, title){
+  const es = papersFor({subs, status: st.status}); if(!es.length) return;
+  const F = LIST_FORMATS[st.format];
+  const blob = new Blob([F.make(es, st, title)], {type: F.type});
+  const name = slugName(title) + '-papers-' + new Date().toISOString().slice(0, 10) + '.' + F.ext;
+  const r = await saveBlobAs(blob, name);
+  if(r === 'cancelled') return;
+  closeModal(); toast((r === 'saved' ? 'Saved ' : 'Downloaded ') + name);
 }
 
 /* ===================== export: a picture of the topics you choose ===================== */
@@ -2487,7 +2648,8 @@ async function saveBlobAs(blob, name){
   if(window.showSaveFilePicker && window.isSecureContext !== false){
     try{
       const ext = name.split('.').pop();
-      const h = await window.showSaveFilePicker({suggestedName: name, types: [{description: ext === 'pdf' ? 'PDF document' : 'PNG image', accept: {[blob.type]: ['.' + ext]}}]});
+      const desc = {pdf: 'PDF document', png: 'PNG image', csv: 'CSV spreadsheet', bib: 'BibTeX file', ris: 'RIS file', md: 'Markdown file'}[ext] || 'File';
+      const h = await window.showSaveFilePicker({suggestedName: name, types: [{description: desc, accept: {[blob.type.split(';')[0]]: ['.' + ext]}}]});
       const w = await h.createWritable(); await w.write(blob); await w.close();
       return 'saved';
     }catch(e){ if(e && e.name === 'AbortError') return 'cancelled'; }
@@ -2498,11 +2660,12 @@ async function saveBlobAs(blob, name){
   return 'downloaded';
 }
 function slugName(s){ return String(s || 'paper-map').toLowerCase().normalize('NFKD').replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-').slice(0, 60) || 'paper-map'; }
-function openExport(){
+function openExport(preset){
+  preset = preset || {};
   const rows = allLaneRows();
   const filled = new Set(Object.values(lib.entries).filter(e => e.kind === 'paper' && typeof e.y === 'number').map(e => e.sub));
   const start = ui.topic && IDX.topics[ui.topic] ? new Set(treeSubs(IDX.topics[ui.topic]).map(s => s.id)) : new Set(rows.map(r => r.sub.id));
-  const st = {sel: new Set([...start].filter(id => filled.has(id))), concepts: Object.values(lib.entries).some(e => e.kind === 'concept'), notes: false, legend: true, allYears: true, format: 'png', title: '', lines: 'all', disclaimer: true};
+  const st = {sel: new Set([...start].filter(id => filled.has(id))), concepts: Object.values(lib.entries).some(e => e.kind === 'concept'), notes: false, legend: true, allYears: true, format: preset.format || 'png', title: '', lines: 'all', disclaimer: true, list: !!preset.list, listStatus: 'all', listNotes: false, listLines: true};
   if(!st.sel.size) rows.forEach(r => { if(filled.has(r.sub.id)) st.sel.add(r.sub.id); });
   const defTitle = () => { const tps = lib.topics.filter(tp => treeSubs(tp).some(s => st.sel.has(s.id))); return tps.length === 1 ? tps[0].name : (lib.title || 'Paper Map'); };
   st.title = defTitle();
@@ -2528,7 +2691,10 @@ function openExport(){
       '<div class="form-grid"><label class="full">Title on the picture<input type="text" id="exTitle" maxlength="80" value="' + esc(st.title) + '"></label></div>' +
       '<div class="ex-opts"><label>Lines <select id="exLines"><option value="all">All lines</option><option value="colour">Only colour lines</option><option value="none">No lines, just the papers</option></select></label></div>' +
       '<div class="ex-opts"><label><input type="checkbox" id="exConcepts"' + (st.concepts ? ' checked' : '') + '> Concepts these papers use</label><label><input type="checkbox" id="exNotes"> Notes on lines</label><label><input type="checkbox" id="exLegend" checked> Legend</label><label><input type="checkbox" id="exDisc" checked> Say the lines are my own reading</label>' + (settings.range ? '<label><input type="checkbox" id="exRange"> Only the years in view</label>' : '') + '</div>' +
-      '<div class="ex-fmt" role="radiogroup" aria-label="Format"><label><input type="radio" name="exFmt" value="png" checked> PNG image</label><label><input type="radio" name="exFmt" value="pdf"> PDF</label></div>' +
+      '<div class="ex-list"><label class="ex-list-on"><input type="checkbox" id="exList"' + (st.list ? ' checked' : '') + '> <b>Add the list of these papers</b> <span class="hint" id="exListN"></span></label>' +
+        '<div class="ex-list-opts"' + (st.list ? '' : ' hidden') + '><label>Which<select id="exListSt"><option value="all">All of them</option><option value="read">Only the ones I’ve read</option><option value="want">Only the ones I want to read</option><option value="none">Only the unmarked ones</option></select></label><label><input type="checkbox" id="exListLines" checked> The lines between them</label><label><input type="checkbox" id="exListNotes"> Notes</label></div>' +
+        '<p class="hint ex-list-hint"' + (st.list ? '' : ' hidden') + '>As a PNG, the list goes under the map in one long picture, handy for sharing in a chat. As a PDF, it follows on A4 pages after the map.</p></div>' +
+      '<div class="ex-fmt" role="radiogroup" aria-label="Format"><label><input type="radio" name="exFmt" value="png"' + (st.format === 'png' ? ' checked' : '') + '> PNG image</label><label><input type="radio" name="exFmt" value="pdf"' + (st.format === 'pdf' ? ' checked' : '') + '> PDF</label></div>' +
       '<p class="hint" id="exWhere">' + (window.showSaveFilePicker ? 'You choose where to save it: a Dropbox or iCloud Drive folder works.' : 'It downloads to your device.') + '</p></div></div>',
     actions: [{label: 'Cancel'}, {label: 'Export', primary: true, onClick: () => { doExport(st); return false; }}],
     onOpen: bd => {
@@ -2536,7 +2702,9 @@ function openExport(){
       const prev = bd.querySelector('#exPrev');
       let tm = 0;
       const redraw = () => { clearTimeout(tm); tm = setTimeout(() => { const x = buildExportSVG(exportOpts(st)); prev.innerHTML = x ? '<img alt="Preview of the exported map" src="data:image/svg+xml;charset=utf-8,' + encodeURIComponent(x.svg) + '">' : '<p class="hint">Choose at least one topic with papers.</p>'; }, 120); };
-      const refresh = () => { bd.querySelector('#exTree').innerHTML = treeHTML(); bd.querySelector('#exSug').innerHTML = suggestHTML(); if(!titleTouched){ st.title = defTitle(); bd.querySelector('#exTitle').value = st.title; } redraw(); };
+      const listCount = () => { const n = papersFor({subs: new Set(exportOpts(st).subs), status: st.listStatus}).length; const el = bd.querySelector('#exListN'); if(el) el.textContent = '(' + n + (n === 1 ? ' paper)' : ' papers)'); };
+      const refresh = () => { bd.querySelector('#exTree').innerHTML = treeHTML(); bd.querySelector('#exSug').innerHTML = suggestHTML(); if(!titleTouched){ st.title = defTitle(); bd.querySelector('#exTitle').value = st.title; } listCount(); redraw(); };
+      listCount();
       bd.addEventListener('change', ev => {
         const tsel = ev.target.closest('[data-ex-topic]'), ssel = ev.target.closest('[data-ex-sub]');
         if(tsel){ rows.filter(r => r.topic.id === tsel.dataset.exTopic && filled.has(r.sub.id)).forEach(r => { if(tsel.checked) st.sel.add(r.sub.id); else st.sel.delete(r.sub.id); }); refresh(); return; }
@@ -2547,6 +2715,11 @@ function openExport(){
         if(ev.target.id === 'exRange') st.allYears = !ev.target.checked;
         if(ev.target.name === 'exFmt') st.format = ev.target.value;
         if(ev.target.id === 'exLines') st.lines = ev.target.value;
+        if(ev.target.id === 'exList'){ st.list = ev.target.checked; bd.querySelector('.ex-list-opts').hidden = !st.list; bd.querySelector('.ex-list-hint').hidden = !st.list; }
+        if(ev.target.id === 'exListSt') st.listStatus = ev.target.value;
+        if(ev.target.id === 'exListLines') st.listLines = ev.target.checked;
+        if(ev.target.id === 'exListNotes') st.listNotes = ev.target.checked;
+        listCount();
         if(ev.target.id === 'exDisc') st.disclaimer = ev.target.checked;
         redraw();
       });
@@ -2560,14 +2733,138 @@ function exportOpts(st){
   const order = allLaneRows().map(r => r.sub.id).filter(id => st.sel.has(id));
   return {subs: order, concepts: st.concepts, notes: st.notes, legend: st.legend, allYears: st.allYears, title: st.title.trim(), width: 1400, lines: st.lines, disclaimer: st.disclaimer};
 }
+
+/* ---------- the map and its papers together: a long PNG, or a PDF with the list on the pages after the map ---------- */
+const LIST_SANS = '"Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif';
+const LIST_SERIF = 'Georgia, "Times New Roman", "Songti SC", "STSong", "Noto Serif SC", serif';
+function wrapLines(ctx, text, maxW){
+  const toks = String(text || '').match(/[\u2E80-\u9FFF\uF900-\uFAFF\uFF00-\uFFEF\u3000-\u303F]|[^\s\u2E80-\u9FFF\uF900-\uFAFF\uFF00-\uFFEF\u3000-\u303F]+|\s+/g) || [];
+  const lines = []; let cur = '';
+  const pushTok = tok => {
+    const test = cur + tok;
+    if(ctx.measureText(test).width <= maxW || !cur.trim()){
+      if(!cur.trim() && ctx.measureText(tok).width > maxW && tok.trim()){ for(const ch of tok){ if(ctx.measureText(cur + ch).width > maxW && cur){ lines.push(cur); cur = ''; } cur += ch; } return; }
+      cur = test;
+    } else { lines.push(cur.trimEnd()); cur = tok.trimStart(); }
+  };
+  toks.forEach(pushTok);
+  if(cur.trim()) lines.push(cur.trimEnd());
+  return lines;
+}
+/* lay the list out as blocks with heights, so it can be drawn on one long image or split into pages */
+function listBlocks(ctx, es, W, o, k){
+  const B = [], ink = '#1C2330', muted = '#5B6472', faint = '#8A919C';
+  const font = (w, px, fam) => w + ' ' + (px * k).toFixed(1) + 'px ' + fam;
+  const text = (f, color, lines, lh) => ({f, color, lines, lh: lh * k});
+  B.push({h: 46 * k, gap: 0, kind: 'title', draw: (g, x, y) => { g.font = font('700', 22, LIST_SERIF); g.fillStyle = ink; g.fillText('The papers on this map', x, y + 24 * k); g.font = font('400', 12.5, LIST_SANS); g.fillStyle = muted; g.fillText(es.length + (es.length === 1 ? ' paper' : ' papers') + (o.listStatus === 'read' ? ', all read' : o.listStatus === 'want' ? ', all to read' : '') + ' · ✓ read · ○ want to read', x, y + 42 * k); }});
+  let last = null;
+  es.forEach(e => {
+    const p = placeOf(e), place = p.topic + (p.sub ? ' › ' + p.sub : '');
+    if(place !== last){ last = place; g0(); }
+    function g0(){ ctx.font = font('700', 14, LIST_SANS); const ls = wrapLines(ctx, place, W); B.push({h: (14 + ls.length * 19) * k, kind: 'head', draw: (g, x, y) => { g.font = font('700', 14, LIST_SANS); g.fillStyle = ink; ls.forEach((l, i) => g.fillText(l, x, y + (14 + 14 + i * 19) * k)); g.fillStyle = '#E3E6EB'; g.fillRect(x, y + (14 + ls.length * 19 + 2) * k, W, 1 * k); }}); }
+    const st = stOf(e), mark = st === 'read' ? '✓' : st === 'want' ? '○' : '';
+    const ind = 18 * k, wt = W - ind;
+    const parts = [];
+    ctx.font = font('700', 13.5, LIST_SERIF); parts.push(text(font('700', 13.5, LIST_SERIF), ink, wrapLines(ctx, e.t || '', wt), 18));
+    const meta = [e.au, e.y, e.v].filter(Boolean).join(' · ');
+    if(meta){ ctx.font = font('400', 12.5, LIST_SANS); parts.push(text(font('400', 12.5, LIST_SANS), muted, wrapLines(ctx, meta, wt), 16.5)); }
+    const ids = [e.doi ? 'doi.org/' + e.doi : '', e.isbn ? 'ISBN ' + e.isbn : '', e.pmid ? 'PubMed ' + e.pmid : ''].filter(Boolean).join(' · ');
+    if(ids){ ctx.font = font('400', 11.5, LIST_SANS); parts.push(text(font('400', 11.5, LIST_SANS), faint, wrapLines(ctx, ids, wt), 15)); }
+    if(o.listLines){
+      [['Builds on', linkTitles(e.id, 'up', 'b')], ['Responds to', linkTitles(e.id, 'up', 'c')]].forEach(([lab, arr]) => { if(arr.length){ ctx.font = font('400', 11.5, LIST_SANS); parts.push(text(font('400', 11.5, LIST_SANS), faint, wrapLines(ctx, lab + ': ' + arr.join('; '), wt), 15)); } });
+    }
+    if(o.listNotes && e.n){ ctx.font = font('italic 400', 11.5, LIST_SANS); const ls = wrapLines(ctx, e.n.replace(/\s+/g, ' '), wt); parts.push(text(font('italic 400', 11.5, LIST_SANS), muted, ls.slice(0, 4).concat(ls.length > 4 ? ['…'] : []), 15)); }
+    const h = (10 * k) + parts.reduce((s, q) => s + q.lines.length * q.lh, 0) + 4 * k;
+    B.push({h, kind: 'entry', draw: (g, x, y) => {
+      let yy = y + 10 * k;
+      if(mark){ g.font = font('700', 13, LIST_SANS); g.fillStyle = st === 'read' ? readColor() : wantColor(); g.fillText(mark, x, yy + 13.5 * k); }
+      parts.forEach(q => { g.font = q.f; g.fillStyle = q.color; q.lines.forEach(l => { yy += q.lh; g.fillText(l, x + ind, yy - q.lh * 0.25); }); });
+    }});
+  });
+  return B;
+}
+/* one long image: the map, then the list under it */
+async function longImage(x, es, o){
+  const sc = 2, mapC = await svgToCanvas(x, sc);
+  const W = mapC.width, kl = sc * Math.max(1, (W / sc) / 960), pad = 36 * kl, listW = W - pad * 2;
+  const probe = document.createElement('canvas').getContext('2d');
+  const blocks = listBlocks(probe, es, listW, o, kl);
+  const listH = blocks.reduce((s, b) => s + b.h, 0) + pad * 1.5;
+  if(mapC.height + listH > 30000) return null;
+  const c = document.createElement('canvas'); c.width = W; c.height = Math.round(mapC.height + listH);
+  const g = c.getContext('2d'); g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, c.width, c.height); g.drawImage(mapC, 0, 0);
+  g.fillStyle = '#E3E6EB'; g.fillRect(pad, mapC.height, listW, 1 * sc);
+  let y = mapC.height + pad * 0.6; g.textBaseline = 'alphabetic';
+  blocks.forEach(b => { b.draw(g, pad, y); y += b.h; });
+  return c;
+}
+/* the list on A4 pages after the map */
+async function listPages(es, o){
+  const k = 150 / 72, PW = Math.round(595 * k), PH = Math.round(842 * k), M = Math.round(56 * k), W = PW - 2 * M;
+  const probe = document.createElement('canvas').getContext('2d');
+  const blocks = listBlocks(probe, es, W, o, k);
+  const pages = []; let cur = [], used = 0;
+  blocks.forEach((b, i) => {
+    const keepWithNext = b.kind === 'head' && blocks[i + 1] ? blocks[i + 1].h : 0;
+    if(cur.length && used + b.h + keepWithNext > PH - 2 * M - 20 * k){ pages.push(cur); cur = []; used = 0; }
+    cur.push(b); used += b.h;
+  });
+  if(cur.length) pages.push(cur);
+  return pages.map((bl, n) => {
+    const c = document.createElement('canvas'); c.width = PW; c.height = PH;
+    const g = c.getContext('2d'); g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, PW, PH);
+    let y = M; bl.forEach(b => { b.draw(g, M, y); y += b.h; });
+    g.font = (10 * k).toFixed(1) + 'px ' + LIST_SANS; g.fillStyle = '#8A919C'; g.textAlign = 'right';
+    g.fillText('Paper Map · ' + (n + 2) + ' / ' + (pages.length + 1), PW - M, PH - M * 0.5);
+    return c;
+  });
+}
+/* a PDF of several pictures, each on its own page and size */
+async function picturesPdf(pages){
+  const enc = new TextEncoder(), parts = [], offs = [];
+  let len = 0;
+  const push = x => { const b = typeof x === 'string' ? enc.encode(x) : x; parts.push(b); len += b.length; };
+  const obj = (n, body) => { offs[n] = len; push(n + ' 0 obj\n'); body(); push('\nendobj\n'); };
+  push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+  const jpgs = [];
+  for(const p of pages) jpgs.push(new Uint8Array(await (await canvasBlob(p.c, 'image/jpeg', 0.9)).arrayBuffer()));
+  const n = pages.length, kids = pages.map((p, i) => (3 + i * 3) + ' 0 R').join(' ');
+  obj(1, () => push('<< /Type /Catalog /Pages 2 0 R >>'));
+  obj(2, () => push('<< /Type /Pages /Kids [' + kids + '] /Count ' + n + ' >>'));
+  pages.forEach((p, i) => {
+    const pg = 3 + i * 3, im = pg + 1, ct = pg + 2, content = 'q ' + p.w.toFixed(2) + ' 0 0 ' + p.h.toFixed(2) + ' 0 0 cm /Im0 Do Q';
+    obj(pg, () => push('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + p.w.toFixed(2) + ' ' + p.h.toFixed(2) + '] /Resources << /XObject << /Im0 ' + im + ' 0 R >> >> /Contents ' + ct + ' 0 R >>'));
+    obj(im, () => { push('<< /Type /XObject /Subtype /Image /Width ' + p.c.width + ' /Height ' + p.c.height + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + jpgs[i].length + ' >>\nstream\n'); push(jpgs[i]); push('\nendstream'); });
+    obj(ct, () => push('<< /Length ' + content.length + ' >>\nstream\n' + content + '\nendstream'));
+  });
+  const info = 3 + n * 3;
+  obj(info, () => push('<< /Producer (Paper Map) /Title (Paper Map export) >>'));
+  const xref = len;
+  let x = 'xref\n0 ' + (info + 1) + '\n0000000000 65535 f \n';
+  for(let i = 1; i <= info; i++) x += String(offs[i]).padStart(10, '0') + ' 00000 n \n';
+  push(x + 'trailer\n<< /Size ' + (info + 1) + ' /Root 1 0 R /Info ' + info + ' 0 R >>\nstartxref\n' + xref + '\n%%EOF');
+  return new Blob(parts, {type: 'application/pdf'});
+}
+
 async function doExport(st){
   const x = buildExportSVG(exportOpts(st));
   if(!x){ toast('Choose at least one topic with papers'); return; }
   const btn = document.querySelector('#modalActions .primary'); if(btn){ btn.disabled = true; btn.textContent = 'Exporting…'; }
   try{
-    const c = await svgToCanvas(x, 2);
-    const name = slugName(st.title) + '-' + new Date().toISOString().slice(0, 10) + '.' + st.format;
-    const blob = st.format === 'pdf' ? await jpegPdf(c, 842, 842 * x.h / x.w) : await canvasBlob(c, 'image/png');
+    const name = slugName(st.title) + (st.list ? '-map-and-papers-' : '-') + new Date().toISOString().slice(0, 10) + '.' + st.format;
+    const es = st.list ? papersFor({subs: new Set(exportOpts(st).subs), status: st.listStatus}) : [];
+    let blob;
+    if(st.list && es.length && st.format === 'png'){
+      const c = await longImage(x, es, st);
+      if(!c){ if(btn){ btn.disabled = false; btn.textContent = 'Export'; } toast('That list is too long for one image. Choose PDF instead.'); return; }
+      blob = await canvasBlob(c, 'image/png');
+    }else if(st.list && es.length){
+      const mapC = await svgToCanvas(x, 2), pages = await listPages(es, st);
+      blob = await picturesPdf([{c: mapC, w: 842, h: 842 * x.h / x.w}].concat(pages.map(c => ({c, w: 595, h: 842}))));
+    }else{
+      const c = await svgToCanvas(x, 2);
+      blob = st.format === 'pdf' ? await jpegPdf(c, 842, 842 * x.h / x.w) : await canvasBlob(c, 'image/png');
+    }
     const r = await saveBlobAs(blob, name);
     if(r === 'cancelled'){ if(btn){ btn.disabled = false; btn.textContent = 'Export'; } return; }
     closeModal(); toast(r === 'saved' ? 'Saved ' + name : 'Downloaded ' + name);
@@ -2873,7 +3170,7 @@ function renderSubSection(s, tp, asPart, opts){
       (!s.hidden ? '<button type="button" class="btn" data-act="new-sub" data-topic="' + tp.id + '" data-parent="' + s.id + '">Add subtopic inside</button>' : '') +
       (!s.hidden ? '<button type="button" class="btn danger" data-act="del-sub" data-sub="' + s.id + '">Delete subtopic</button>' : '') + '</div>' : '';
     h += '<div class="branch-head"><h2>' + esc(title) + '</h2>' +
-      '<p class="branch-count">' + countText(opts.countEs || es) + '</p>' +
+      '<p class="branch-count">' + countText(opts.countEs || es) + ((opts.countEs || es).some(e => e.kind === 'paper') ? ' · <button type="button" class="linkbtn" data-export-papers="' + s.id + '">Export list</button>' : '') + '</p>' +
       ((s.hidden ? tp.desc : s.desc) ? '<p class="branch-desc">' + esc(s.hidden ? tp.desc : s.desc) + '</p>' : '') + relatedTopicsHTML(s.hidden ? tp.id : s.id) + conceptsUsedHTML(papers) +
       chips + edit + '</div>';
   }
@@ -2912,7 +3209,7 @@ function renderMain(){
     const es = topicEntries(tp.id);
     const anyConcept = es.some(e => e.kind === 'concept');
     html = '<section class="branch" id="sec-' + tp.id + '-all"><div class="branch-head"><h2>' + esc(tp.name) + ': all</h2>' +
-      '<p class="branch-count">' + countText(es) + '</p>' + (tp.desc ? '<p class="branch-desc">' + esc(tp.desc) + '</p>' : '') + relatedTopicsHTML(tp.id) +
+      '<p class="branch-count">' + countText(es) + (es.some(e => e.kind === 'paper') ? ' · <button type="button" class="linkbtn" data-export-papers="' + tp.id + '-all">Export list</button>' : '') + '</p>' + (tp.desc ? '<p class="branch-desc">' + esc(tp.desc) + '</p>' : '') + relatedTopicsHTML(tp.id) +
       (ui.edit ? '<div class="head-edit"><button type="button" class="btn" data-act="new-entry">Add paper</button><button type="button" class="btn" data-act="edit-topic">Modify topic</button><button type="button" class="btn" data-act="new-sub" data-topic="' + tp.id + '">Add subtopic</button><button type="button" class="btn danger" data-act="del-topic">Delete topic</button></div>' : '') + '</div>';
     if(anyConcept){
       html += visibleSubs(tp).concat(tp.subs.filter(s => s.hidden)).map(s => renderSubSection(s, tp, true)).join('');
@@ -3451,7 +3748,11 @@ function renderBranchRow(){
 }
 document.addEventListener('click', ev => {
   const be = ev.target.closest('[data-branch-edit]'); if(be){ openBranchForm(be.dataset.branchEdit); return; }
-  if(ev.target.closest('#btnExport')){ openExport(); return; }
+  if(ev.target.closest('#btnExport')){ const m = document.getElementById('exportMenu'), btn = document.getElementById('btnExport'); m.hidden = !m.hidden; btn.setAttribute('aria-expanded', String(!m.hidden)); return; }
+  const ek = ev.target.closest('[data-export-kind]'); if(ek){ document.getElementById('exportMenu').hidden = true; document.getElementById('btnExport').setAttribute('aria-expanded', 'false'); if(ek.dataset.exportKind === 'map') openExport(); else if(ek.dataset.exportKind === 'both') openExport({list: true, format: 'pdf'}); else openListExport(); return; }
+  if(!ev.target.closest('.export-wrap')){ const m = document.getElementById('exportMenu'); if(m && !m.hidden){ m.hidden = true; document.getElementById('btnExport').setAttribute('aria-expanded', 'false'); } }
+  const lx = ev.target.closest('[data-export-papers]'); if(lx){ openListExport(lx.dataset.exportPapers); return; }
+  if(ev.target.closest('#setPapersExport')){ closeModal(); setTimeout(() => openListExport(), 0); return; }
   const stb = ev.target.closest('[data-sync-tab]'); if(stb){ const root = stb.closest('.sync-section'); root.querySelectorAll('[data-sync-tab]').forEach(x => x.setAttribute('aria-selected', String(x === stb))); root.querySelectorAll('[data-sync-pane]').forEach(p => { p.hidden = p.dataset.syncPane !== stb.dataset.syncTab; }); return; }
   if(ev.target.closest('[data-fs-connect]')){ closeModal(); fsConnect(); return; }
   if(ev.target.closest('[data-fs-reconnect]')){ const tt = document.getElementById('toast'); if(tt) tt.hidden = true; closeModal(); fsReconnect(); return; }
@@ -3507,7 +3808,7 @@ function infoHTML(id){
   const st = stOf(e);
   return '<div class="info-grid"><p class="info-year">' + esc(e.y) + '</p><div>' +
     '<p class="info-au">' + (e.au ? esc(e.au) + ' · ' : '') + place + '</p>' +
-    '<p class="info-t">' + esc(e.t) + '</p>' + (e.v || e.doi ? '<p class="info-src">' + esc(e.v || '') + (e.doi ? (e.v ? ' · ' : '') + '<a href="https://doi.org/' + esc(e.doi) + '" target="_blank" rel="noopener">doi.org/' + esc(e.doi) + '</a>' : '') + '</p>' : '') + (e.f ? '<p class="info-f">' + esc(e.f) + '</p>' : '') + infoTagsHTML(e) + rels +
+    '<p class="info-t">' + esc(e.t) + '</p>' + (e.v || idLinksHTML(e) ? '<p class="info-src">' + esc(e.v || '') + (idLinksHTML(e) ? (e.v ? ' · ' : '') + idLinksHTML(e) : '') + '</p>' : '') + (e.f ? '<p class="info-f">' + esc(e.f) + '</p>' : '') + infoTagsHTML(e) + rels +
     '<p class="info-actions"><button type="button" class="stbtn want" data-st="want" data-id="' + e.id + '" aria-pressed="' + (st === 'want') + '">Want to read</button><button type="button" class="stbtn read" data-st="read" data-id="' + e.id + '" aria-pressed="' + (st === 'read') + '">Read</button><button type="button" class="linkbtn" data-goto="' + e.id + '">Show in table</button><button type="button" class="linkbtn" data-reader="' + e.id + '">Notes &amp; PDF</button>' +
     (ui.edit ? '<button type="button" class="linkbtn" data-edit="' + e.id + '">Modify</button>' : '') +
     '<button type="button" class="linkbtn" data-clear-sel="1">Clear selection</button></p></div></div>';
@@ -3849,7 +4150,7 @@ document.getElementById('btnAddPaper').addEventListener('click', () => openEntry
   btn.addEventListener('click', ev => { ev.stopPropagation(); show(menu.hidden); });
   menu.addEventListener('click', ev => {
     const b = ev.target.closest('[data-more]'); if(!b) return; show(false);
-    const go = {concept: () => { const a = document.querySelector('#addMenu [data-add="concept"]'); if(a) a.click(); }, filters: () => document.getElementById('filterToggle').click(), modify: () => document.getElementById('btnEdit').click(), settings: () => document.getElementById('btnSettings').click(), export: () => openExport(), import: () => openImport()}[b.dataset.more];
+    const go = {concept: () => { const a = document.querySelector('#addMenu [data-add="concept"]'); if(a) a.click(); }, filters: () => document.getElementById('filterToggle').click(), modify: () => document.getElementById('btnEdit').click(), settings: () => document.getElementById('btnSettings').click(), export: () => openExport(), exportList: () => openListExport(), exportBoth: () => openExport({list: true, format: 'pdf'}), import: () => openImport()}[b.dataset.more];
     if(go) go();
   });
   document.addEventListener('click', ev => { if(!menu.hidden && !ev.target.closest('.more-wrap')) show(false); });
@@ -4030,7 +4331,7 @@ function openEntryForm(id, preset){
   const doms = IDX.domains.slice();
   state.d.forEach(x => { if(!doms.includes(x)) doms.push(x); });
   const body = '<div class="form-grid">' +
-    '<div class="full doi-field"><label for="fDoi">DOI <span class="hint">optional · fills in the rest for you</span></label><div class="doi-row"><input type="text" id="fDoi" name="doi" value="' + esc(base.doi || '') + '" placeholder="10.1257/… or a doi.org link" autocomplete="off" spellcheck="false"><button type="button" class="btn" id="doiFill">Fill from DOI</button></div><p class="doi-msg hint" id="doiMsg" aria-live="polite"></p></div>' +
+    '<div class="full doi-field"><label for="fDoi">DOI, ISBN or other ID <span class="hint">optional · fills in the rest for you</span></label><div class="doi-row"><input type="text" id="fDoi" name="doi" value="' + esc(base.doi || base.isbn || (base.pmid ? 'PMID ' + base.pmid : '') || base.pii || '') + '" placeholder="DOI, ISBN, Elsevier PII, arXiv or PubMed ID" autocomplete="off" spellcheck="false"><button type="button" class="btn" id="doiFill">Fill in</button></div><p class="doi-msg hint" id="doiMsg" aria-live="polite"></p></div>' +
     '<label class="full">Title<input type="text" name="t" value="' + esc(base.t) + '" required></label>' +
     '<label class="full">Authors<input type="text" name="au" value="' + esc(base.au) + '" placeholder="Kahneman, D. &amp; Tversky, A."></label>' +
     '<label>Year<input type="number" name="y" value="' + esc(base.y) + '" inputmode="numeric"></label>' +
@@ -4099,7 +4400,7 @@ function cleanDoi(s){
   s = String(s || '').trim().replace(/^(?:https?:\/\/)?(?:dx\.)?doi\.org\//i, '').replace(/^doi:\s*/i, '').trim();
   return /^10\.\d{4,9}\/\S+$/.test(s) ? s : '';
 }
-function initials(given){ return String(given || '').split(/\s+/).filter(Boolean).map(p => p.split('-').map(q => q.charAt(0).toUpperCase() + '.').join('-')).join(' '); }
+function initials(given){ return String(given || '').split(/\s+/).filter(Boolean).map(p => p.split('-').map(q => { const m = /\p{L}/u.exec(q); return m ? m[0].toUpperCase() + '.' : ''; }).filter(Boolean).join('-')).filter(Boolean).join(' '); }
 function joinAuthors(list){
   const names = list.filter(a => a && (a.family || a.name)).map(a => a.family ? a.family + (a.given ? ', ' + initials(a.given) : '') : a.name);
   if(names.length <= 1) return names[0] || '';
@@ -4143,23 +4444,99 @@ async function lookupDoi(doi){
   }catch(e){}
   return viaDoiOrg();
 }
+
+/* ---------- other identifiers: ISBN, PII, arXiv, PubMed ---------- */
+function isbnValid(d){
+  if(d.length === 10){ let s = 0; for(let i = 0; i < 10; i++){ const v = d[i] === 'X' ? 10 : +d[i]; if(isNaN(v) || (d[i] === 'X' && i !== 9)) return false; s += v * (10 - i); } return s % 11 === 0; }
+  if(d.length === 13 && /^\d{13}$/.test(d)){ let s = 0; for(let i = 0; i < 13; i++) s += +d[i] * (i % 2 ? 3 : 1); return s % 10 === 0; }
+  return false;
+}
+function idKind(raw){
+  const s = String(raw || '').trim(); if(!s) return null;
+  const doi = cleanDoi(s) || ((/(10\.\d{4,9}\/[^\s"<>]+)/.exec(s) || [])[1] || '').replace(/[.,;)]+$/, '');
+  if(doi) return {kind: 'doi', id: doi};
+  const ax = /^(?:https?:\/\/(?:www\.)?arxiv\.org\/(?:abs|pdf)\/|arxiv:\s*)?(\d{4}\.\d{4,5}|[a-z-]+(?:\.[A-Z]{2})?\/\d{7})(?:v\d+)?(?:\.pdf)?$/i.exec(s);
+  if(ax) return {kind: 'arxiv', id: ax[1]};
+  const pmc = /^(?:pmcid:?\s*)?(PMC\d{4,9})$/i.exec(s); if(pmc) return {kind: 'pmcid', id: pmc[1].toUpperCase()};
+  const pm = /^(?:pmid:?\s*|https?:\/\/pubmed\.ncbi\.nlm\.nih\.gov\/)?(\d{1,9})\/?$/i.exec(s); if(pm) return {kind: 'pmid', id: pm[1]};
+  const digits = s.replace(/^isbn(?:-1[03])?[:\s]*/i, '').replace(/[\s-]/g, '').toUpperCase();
+  if(/^\d{9}[\dX]$|^\d{13}$/.test(digits) && isbnValid(digits)) return {kind: 'isbn', id: digits};
+  const pii = s.replace(/^pii:?\s*/i, '').replace(/[^\dA-Za-z]/g, '').toUpperCase();
+  if(/^[SB]\d{15}[\dX]$/.test(pii)) return {kind: 'pii', id: pii};
+  return null;
+}
+const ID_NAME = {doi: 'DOI', isbn: 'ISBN', pii: 'PII', arxiv: 'arXiv ID', pmid: 'PubMed ID', pmcid: 'PubMed Central ID'};
+async function lookupIsbn(isbn){
+  try{
+    const r = await fetch('https://openlibrary.org/api/books?bibkeys=ISBN:' + isbn + '&format=json&jscmd=data');
+    if(r.ok){ const b = (await r.json())['ISBN:' + isbn]; if(b && b.title) return {from: 'Open Library', t: b.title + (b.subtitle ? ': ' + b.subtitle : ''), au: joinAuthors((b.authors || []).map(a => personFrom(a.name)).filter(Boolean)), y: yearFrom(b.publish_date), v: ((b.publishers || [])[0] || {}).name || '', l: 'Book', isbn}; }
+  }catch(e){}
+  try{
+    const r = await fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:' + isbn);
+    if(r.ok){ const v = (((await r.json()).items || [])[0] || {}).volumeInfo; if(v && v.title) return {from: 'Google Books', t: v.title + (v.subtitle ? ': ' + v.subtitle : ''), au: joinAuthors((v.authors || []).map(personFrom).filter(Boolean)), y: yearFrom(v.publishedDate), v: v.publisher || '', l: 'Book', isbn}; }
+  }catch(e){}
+  return null;
+}
+async function lookupPii(pii){
+  /* Elsevier article numbers: Crossref keeps them alongside the DOI */
+  try{
+    const r = await fetch('https://api.crossref.org/works?filter=alternative-id:' + encodeURIComponent(pii) + '&rows=1');
+    if(r.ok){ const it = (((await r.json()).message || {}).items || [])[0]; if(it && it.DOI){ const m = await lookupDoi(it.DOI); if(m) return Object.assign(m, {doi: it.DOI}); } }
+  }catch(e){}
+  return null;
+}
+async function lookupPubmed(kind, id){
+  try{
+    const q = kind === 'pmcid' ? 'PMCID:' + id : 'EXT_ID:' + id + ' AND SRC:MED';
+    const r = await fetch('https://www.ebi.ac.uk/europepmc/webservices/rest/search?format=json&resultType=core&pageSize=1&query=' + encodeURIComponent(q));
+    if(!r.ok) return null;
+    const m = (((await r.json()).resultList || {}).result || [])[0]; if(!m || !m.title) return null;
+    const au = (m.authorList && m.authorList.author || []).map(a => a.lastName ? {family: a.lastName, given: a.firstName || a.initials || ''} : {name: a.fullName}).filter(Boolean);
+    const j = m.journalInfo || {}, jt = (j.journal || {}).title || m.journalTitle || '';
+    return {from: 'Europe PMC', t: String(m.title).replace(/\.$/, ''), au: au.length ? joinAuthors(au) : (m.authorString || '').replace(/\.$/, ''), y: yearFrom(m.pubYear || j.yearOfPublication), v: sourceFrom(jt, j.volume, j.issue, m.pageInfo), l: 'Paper', doi: m.doi || '', pmid: m.pmid || (kind === 'pmid' ? id : '')};
+  }catch(e){ return null; }
+}
+async function lookupAny(k){
+  if(k.kind === 'doi') return lookupDoi(k.id);
+  if(k.kind === 'isbn') return lookupIsbn(k.id);
+  if(k.kind === 'pii') return lookupPii(k.id);
+  if(k.kind === 'arxiv'){ const doi = '10.48550/arXiv.' + k.id; const m = await lookupDoi(doi); return m ? Object.assign(m, {doi}) : null; }
+  return lookupPubmed(k.kind, k.id);
+}
+/* where each identifier links to */
+function idLinksHTML(e){
+  const out = [];
+  if(e.doi) out.push('<a href="https://doi.org/' + esc(e.doi) + '" target="_blank" rel="noopener">doi.org/' + esc(e.doi) + '</a>');
+  if(e.isbn) out.push('<a href="https://openlibrary.org/isbn/' + esc(e.isbn) + '" target="_blank" rel="noopener">ISBN ' + esc(e.isbn) + '</a>');
+  if(e.pmid) out.push('<a href="https://pubmed.ncbi.nlm.nih.gov/' + esc(e.pmid) + '/" target="_blank" rel="noopener">PubMed ' + esc(e.pmid) + '</a>');
+  if(e.pii && !e.doi) out.push('<a href="https://www.sciencedirect.com/science/article/pii/' + esc(e.pii) + '" target="_blank" rel="noopener">PII ' + esc(e.pii) + '</a>');
+  return out.join(' · ');
+}
+
 function wireDoiFill(b, isNew){
   const btn = b.querySelector('#doiFill'), inp = b.querySelector('#fDoi'), msg = b.querySelector('#doiMsg');
   if(!btn) return;
   const run = async () => {
-    const doi = cleanDoi(inp.value);
-    if(!doi){ msg.textContent = 'That doesn’t look like a DOI. It starts with 10. and has a slash, like 10.1257/aer.91.2.73.'; msg.classList.add('warn-line'); return; }
-    inp.value = doi; msg.classList.remove('warn-line'); msg.textContent = 'Looking it up…'; btn.disabled = true;
-    const m = await lookupDoi(doi);
+    const k = idKind(inp.value);
+    if(!k){
+      const d = inp.value.replace(/^isbn(?:-1[03])?[:\s]*/i, '').replace(/[\s-]/g, '');
+      msg.textContent = /^\d{9}[\dXx]$|^\d{13}$/.test(d) ? 'That looks like an ISBN, but its last digit doesn’t check out. Look for a typo.' : 'That doesn’t look like a DOI (10.1257/…), an ISBN (978…), an Elsevier PII (S0…), an arXiv ID (2101.00001) or a PubMed ID.';
+      msg.classList.add('warn-line'); return;
+    }
+    inp.value = k.id; msg.classList.remove('warn-line'); msg.textContent = 'Looking up the ' + ID_NAME[k.kind] + '…'; btn.disabled = true;
+    const m = await lookupAny(k);
     btn.disabled = false;
-    if(!m){ msg.textContent = navigator.onLine === false ? 'You’re offline, so the DOI can’t be looked up now.' : 'No record found for this DOI. Check it, or fill in the fields yourself.'; msg.classList.add('warn-line'); return; }
+    if(!m){ msg.textContent = navigator.onLine === false ? 'You’re offline, so it can’t be looked up now.' : 'No record found for this ' + ID_NAME[k.kind] + '. Check it, or fill in the fields yourself.'; msg.classList.add('warn-line'); return; }
+    if(m.doi && k.kind !== 'doi'){ inp.value = m.doi; }
     const set = (n, v) => { const el = b.querySelector('[name="' + n + '"]'); if(!el || v === '' || v == null) return false; const cur = el.value.trim(); const empty = !cur || (n === 'y' && isNew && +cur === new Date().getFullYear()) || (n === 'l' && cur === 'Paper'); if(!empty) return false; if(el.tagName === 'SELECT' && ![...el.options].some(o => o.value === String(v))) return false; el.value = v; el.classList.add('just-filled'); setTimeout(() => el.classList.remove('just-filled'), 1800); return true; };
-    const filled = [['t', 'title'], ['au', 'authors'], ['y', 'year'], ['v', 'source'], ['l', 'type']].filter(([n]) => set(n, m[n])).map(x => x[1]);
-    msg.textContent = filled.length ? 'Filled in ' + filled.join(', ') + ' from ' + m.from + '. Fields you had already filled were left as they were.' : 'Found it on ' + m.from + ', but every field was already filled, so nothing changed.';
+    const filled = [['t', 'title'], ['au', 'authors'], ['y', 'year'], ['v', k.kind === 'isbn' ? 'publisher' : 'source'], ['l', 'type']].filter(([n]) => set(n, m[n])).map(x => x[1]);
+    b._ids = {isbn: m.isbn || (k.kind === 'isbn' ? k.id : ''), pmid: m.pmid || (k.kind === 'pmid' ? k.id : ''), pii: k.kind === 'pii' ? k.id : ''};
+    msg.textContent = (filled.length ? 'Filled in ' + filled.join(', ') + ' from ' + m.from + '.' : 'Found it on ' + m.from + ', but every field was already filled, so nothing changed.') + (m.doi && k.kind !== 'doi' ? ' Its DOI is ' + m.doi + '.' : '') + (filled.length ? ' Fields you had already filled were left as they were.' : '');
   };
   btn.addEventListener('click', run);
   inp.addEventListener('keydown', ev => { if(ev.key === 'Enter'){ ev.preventDefault(); run(); } });
 }
+
 function saveEntry(b, id, state, base){
   const val = n => { const el = b.querySelector('[name="' + n + '"]'); return el ? el.value.trim() : ''; };
   const t = val('t'), au = val('au'), y = parseInt(val('y'), 10);
@@ -4175,12 +4552,23 @@ function saveEntry(b, id, state, base){
     id: eid, kind:'paper', topic: IDX.topicOf[sub], sub, group: val('group'), y, au, t, v: val('v'), l: val('l'),
     p: pv ? +pv.value : 2,
     tags: state.tags.filter(x => lib.tags.some(z => z.id === x)),
-    d: state.d.slice(), f: val('f'), n: val('n'), doi: cleanDoi(val('doi')) || undefined,
+    d: state.d.slice(), f: val('f'), n: val('n'), doi: undefined,
     needs: state.needs.filter(x => lib.entries[x] && lib.entries[x].kind === 'concept')
   });
   const parent = val('parent');
   if(parent && lib.entries[parent] && lib.entries[parent].kind === 'concept') e.parent = parent; else delete e.parent;
-  if(!e.doi) delete e.doi;
+  {
+    const k = idKind(val('doi')), extra = b._ids || {};
+    delete e.doi; delete e.isbn; delete e.pmid; delete e.pii;
+    if(k && k.kind === 'doi') e.doi = k.id;
+    else if(k && k.kind === 'arxiv') e.doi = '10.48550/arXiv.' + k.id;
+    else if(k && k.kind === 'isbn') e.isbn = k.id;
+    else if(k && k.kind === 'pmid') e.pmid = k.id;
+    else if(k && k.kind === 'pii') e.pii = k.id;
+    if(extra.isbn && !e.isbn) e.isbn = extra.isbn;
+    if(extra.pmid && !e.pmid) e.pmid = extra.pmid;
+    if(extra.pii && !e.pii && !e.doi) e.pii = extra.pii;
+  }
   const before = clone(lib);
   const oldTopic = prev ? prev.topic : null;
   lib.entries[eid] = e;
@@ -4602,7 +4990,7 @@ function openSettings(){
       '<div class="set-section"><h3>Colour lines</h3><p class="hint">Named paths of ideas, with their colours. Add, rename, recolour or hide them, and see what is on each.</p><div class="set-actions"><button type="button" class="btn" id="setBrManage">Manage colour lines</button></div></div>' +
       syncSectionHTML() +
       '<div class="set-section"><h3>Data</h3><p class="hint">Saving status: <span data-save-state>' + esc(saveStateText()) + '</span>. A backup is one JSON file with all your topics, papers, lines and marks, in the same format as the data file in your repository.</p>' +
-      '<div class="set-actions"><button type="button" class="btn" id="setExport">Export backup</button><button type="button" class="btn" id="setImport">Import backup</button><button type="button" class="btn" id="setNotes">Export notes</button><button type="button" class="btn" id="setMapExport">Export map (PNG or PDF)</button><button type="button" class="btn" id="setPapersImport">Import papers (Zotero, CSV, BibTeX, RIS)</button><button type="button" class="btn" id="setReset">Start over</button>' + '</div></div>' +
+      '<div class="set-actions"><button type="button" class="btn" id="setExport">Export backup</button><button type="button" class="btn" id="setImport">Import backup</button><button type="button" class="btn" id="setNotes">Export notes</button><button type="button" class="btn" id="setMapExport">Export map (PNG or PDF)</button><button type="button" class="btn" id="setPapersImport">Import papers (Zotero, CSV, BibTeX, RIS)</button><button type="button" class="btn" id="setPapersExport">Export papers (CSV, BibTeX, RIS)</button><button type="button" class="btn" id="setReset">Start over</button>' + '</div></div>' +
       appSectionHTML() +
       '<p class="hint set-version" id="setVersion">Paper Map ' + APP_VERSION + ' · <a href="' + RELEASES_URL + '/tag/' + APP_VERSION + '" target="_blank" rel="noopener">What’s new</a><span id="setLatest"></span></p>',
     actions:[{label:'Done', primary:true}],
