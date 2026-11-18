@@ -12,11 +12,29 @@ The live preview (link at the top right of this page) shows the made-up example 
 
 ## How it works
 
+### Lines
+
 ![How each kind of line looks: builds on is solid, responds to is dashed, related to is dotted, needs runs in long dashes from a concept, related topics are an arc beside two rows](assets/lines-legend.svg)
 
 ![Linking a paper to one in another subtopic, then giving the line a note](assets/lines.gif)
 
+### Zoom the timeline
+
+![Dragging along the years to zoom in, dragging sideways to move, double-clicking a point](assets/zoom.gif)
+
+### Subtopics inside subtopics
+
+![Dragging a subtopic under another topic, then making it a topic of its own, then undoing](assets/drag.gif)
+
+Can't drag, on a phone say? Modify the subtopic and choose its new place under **Inside**.
+
+![Opening Exam season › Procrastination, adding a subtopic inside it, and seeing every level on the map](assets/subtopics.gif)
+
+### Lists
+
 Every topic also opens as a list, with status, notes, tags and concept cards.
+
+![Each topic as a table, with status, notes, tags and concept cards](assets/table.png)
 
 ---
 
@@ -64,13 +82,6 @@ PDFs need GitHub sync. To export every note at once, use **Settings → Data →
 - **Zoom:** drag along the year axis to zoom into a period, drag sideways to move, and double-click the map to zoom in on a point.
 - **Move a subtopic:** in Modify mode, drag its ⠿ handle in Contents. On a phone, modify the subtopic and choose its new place under **Inside**.
 - **One field at a time:** **Topics on the map → Current topic only**.
-
-<details>
-<summary>See subtopics inside subtopics</summary>
-
-![Opening Exam season › Procrastination, adding a subtopic inside it, and seeing every level on the map](assets/subtopics.gif)
-
-</details>
 
 ---
 
