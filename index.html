@@ -825,6 +825,43 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
 .hist-what{flex:1}
 
 #toast .toast-link{margin-left:.8em;color:inherit;font-weight:600;text-decoration:underline}
+
+/* ---------- phones ---------- */
+#btnMore,.more-wrap{display:none}
+.more-wrap{position:relative}
+.more-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:80;display:flex;flex-direction:column;min-width:180px;padding:6px;border-radius:12px;background:var(--surface);border:1px solid var(--rule-strong);box-shadow:0 12px 30px rgba(28,35,48,.16)}
+.more-menu[hidden]{display:none}
+.more-menu button{border:0;background:transparent;text-align:left;font:500 .95rem/1.2 var(--sans);color:var(--ink);padding:.7em .8em;border-radius:8px;cursor:pointer}
+.more-menu button:hover,.more-menu button:focus-visible{background:color-mix(in srgb, var(--ink) 6%, transparent)}
+@media (max-width: 640px){
+  .more-wrap{display:inline-block}
+  #btnMore{display:inline-flex;font-size:1.1rem;line-height:1;padding-inline:.7em}
+  #filterToggle,#btnEdit,#btnSettings,#btnAddMore{display:none}
+  .btn.add-paper{border-radius:var(--r-btn, 8px)}
+  .appbar-inner{flex-wrap:nowrap;gap:6px}
+  .toc-toggle{font-size:0;gap:0;padding:.5em .6em}
+  .toc-toggle svg{width:18px;height:18px}
+  .crumb{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  [data-save-state].save-state{display:none}
+  .appbar-actions{gap:6px;flex:none}
+  /* the map: whole names, a narrower label column, and a plot that pans sideways */
+  .map{grid-template-columns:calc(var(--lab-w-phone, 104px) + var(--lab-extra, 0px)) minmax(0,1fr)}
+  .map-axis{grid-template-columns:calc(var(--lab-w-phone, 104px) + var(--lab-extra, 0px)) minmax(0,1fr);overflow:hidden}
+  .map-labels .full{display:block}
+  .map-labels .short{display:none}
+  .map-labels .lt{display:none}
+  .map-labels button{font-size:.74rem;line-height:1.2;padding-left:calc(12px + var(--d,0) * 8px)}
+  .map-labels button.on::before{left:3px}
+  .tl-badges .tl-badge{font-size:.62rem}
+  .map-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .map-scroll::-webkit-scrollbar{display:none}
+  .net{touch-action:pan-x pan-y}
+}
+
+@media (max-width: 640px){ .map-box{max-height:max(280px, 56vh)} }
+
+.pb-short{display:none}
+@media (max-width: 640px){ .pb-long{display:none} .pb-short{display:inline} }
 </style>
 </head>
 <body>
@@ -849,6 +886,13 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
       <button type="button" class="filter-toggle" id="filterToggle" aria-expanded="false" aria-controls="filters">Filters</button>
       <button type="button" class="btn" id="btnEdit">Modify</button>
       <button type="button" class="btn" id="btnSettings">Settings</button>
+      <span class="more-wrap"><button type="button" class="btn" id="btnMore" aria-haspopup="true" aria-expanded="false" aria-controls="moreMenu" aria-label="More">⋯</button>
+        <span class="more-menu" id="moreMenu" hidden>
+          <button type="button" data-more="concept">New concept</button>
+          <button type="button" data-more="filters">Filters</button>
+          <button type="button" data-more="modify"><span class="mm-modify">Modify</span></button>
+          <button type="button" data-more="settings">Settings</button>
+        </span></span>
     </div>
   </div>
   <div class="install-card" id="installCard" hidden>
@@ -859,7 +903,7 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
     <button type="button" class="ic-pill" id="icPill" title="Install the Paper Map app"><img src="icons/icon-192.png?v=d" alt="" width="20" height="20">Install app</button>
   </div>
   <div class="preview-banner" id="previewBanner" hidden>
-    <div class="wrap preview-inner">This is a preview with example data. Nothing you change here is saved. To start your own, install the app (top right, in Chrome or Edge), <a href="./?app">open it here</a>, or <a href="index.html" download="index.html">download the page</a>.</div>
+    <div class="wrap preview-inner"><span class="pb-long">This is a preview with example data. Nothing you change here is saved. To start your own, install the app (top right, in Chrome or Edge), <a href="./?app">open it here</a>, or <a href="index.html" download="index.html">download the page</a>.</span><span class="pb-short">Example data: changes aren’t saved. <a href="./?app">Start your own</a></span></div>
   </div>
   <div class="edit-banner" id="editBanner" hidden>
     <div class="wrap edit-inner">
@@ -1074,10 +1118,8 @@ function browserKind(){
   return 'other';
 }
 async function installChecks(){
-  const out = {https: location.protocol === 'https:' || location.hostname === 'localhost', manifest: false, worker: false};
-  try{ const r = await fetch('manifest.webmanifest', {cache: 'no-cache'}); out.manifest = r.ok && !!(await r.json()).name; }catch(e){}
-  try{ out.worker = !!(navigator.serviceWorker && await navigator.serviceWorker.getRegistration()); }catch(e){}
-  return out;
+  const has = async u => { try{ const r = await fetch(u, {cache: 'no-cache'}); return r.ok; }catch(e){ return null; } };
+  return {manifest: await has('manifest.webmanifest'), worker: await has('sw.js')};
 }
 async function openInstallHelp(){
   const k = browserKind(), c = SERVED ? await installChecks() : null;
@@ -1085,7 +1127,7 @@ async function openInstallHelp(){
     chrome: 'In Chrome, click the install icon at the right end of the address bar, or open the ⋮ menu → <b>Cast, save and share</b> → <b>Install page as app</b>.',
     edge: 'In Edge, click the install icon at the right end of the address bar, or open the … menu → <b>Apps</b> → <b>Install this site as an app</b>.',
     safari: 'In Safari, choose <b>File → Add to Dock</b> (macOS Sonoma or later). Safari has no install button inside pages, so this menu is the way.',
-    ios: 'Tap <b>Share</b>, then <b>Add to Home Screen</b>.',
+    ios: 'Tap <b>Share</b> (the square with an arrow, in the address bar or at the bottom), then <b>Add to Home Screen</b>. This works in Safari, and in Chrome or Edge on recent iPhones.',
     firefox: 'Firefox on a computer cannot install web apps. Open this page in Chrome, Edge or Safari to install it.',
     other: 'Use your browser’s menu to install this page as an app, or add it to your home screen.'
   }[k];
@@ -1093,10 +1135,10 @@ async function openInstallHelp(){
   if(!SERVED) body = '<p>This copy is a file on your computer, which browsers cannot install. Open the website version with <b>?app</b> at the end (the README links to it) and install it from there.</p>';
   else{
     const missing = [];
-    if(!c.manifest) missing.push('<code>manifest.webmanifest</code>');
-    if(!c.worker) missing.push('<code>sw.js</code>');
+    if(c.manifest === false) missing.push('<code>manifest.webmanifest</code>');
+    if(c.worker === false) missing.push('<code>sw.js</code>');
     body = '<p>' + steps + '</p>' +
-      (missing.length ? '<p class="warn-line">This website is missing ' + missing.join(' and ') + '. Upload them, with the <code>icons</code> folder, next to <code>index.html</code> in your repository, wait a minute for GitHub Pages, then reload.</p>' : '<p class="hint">The app files are in place on this website (' + APP_VERSION + ').</p>') +
+      (missing.length ? '<p class="warn-line">This website is missing ' + missing.join(' and ') + '. Upload ' + (missing.length > 1 ? 'them' : 'it') + ', with the <code>icons</code> folder, next to <code>index.html</code> in your repository, wait a minute for GitHub Pages, then reload.</p>' : '') +
       '<p class="hint">Already installed? Open Paper Map from your Dock, Applications or home screen; browsers stop offering to install once it is there.</p>';
   }
   openModal({title: 'Install Paper Map', body, actions: [{label: 'OK', primary: true}]});
@@ -2055,6 +2097,8 @@ mapLabels.addEventListener('mouseover', ev => {
   });
 });
 mapLabels.addEventListener('mouseleave', clearTlHover);
+/* the year axis follows the plot when it is swiped sideways */
+mapScroll.addEventListener('scroll', () => { const ax = document.getElementById('netAxis'); if(ax) ax.style.transform = mapScroll.scrollLeft ? 'translateX(' + (-mapScroll.scrollLeft) + 'px)' : ''; }, {passive: true});
 function renderMapLabels(lanes, laneH){
   const onMap = new Set(lanes.map(l => l.sub.id));
   let maxD = 0;
@@ -2090,8 +2134,9 @@ function renderMapLabels(lanes, laneH){
   for(let pass = 0; pass < 3; pass++){
     let need = 0;
     mapLabels.querySelectorAll('.nm').forEach(nm => { const o = nm.scrollWidth - nm.clientWidth; if(o > need) need = o; });
-    if(need <= 1 || extra >= 170) break;
-    extra = Math.min(170, extra + Math.ceil(need) + 4);
+    const cap = window.matchMedia && matchMedia('(max-width: 640px)').matches ? 36 : 170;
+    if(need <= 1 || extra >= cap) break;
+    extra = Math.min(cap, extra + Math.ceil(need) + 4);
     root.style.setProperty('--lab-extra', extra + 'px');
   }
 }
@@ -2118,7 +2163,8 @@ function renderMap(force){
     return;
   }
   const me = document.getElementById('mapEmpty'); if(me) me.remove();
-  const W = Math.max(280, Math.floor(mapScroll.clientWidth)); lastMapW = Math.floor(mapScroll.clientWidth);
+  const PHONE = window.matchMedia && matchMedia('(max-width: 640px)').matches;
+  const W = Math.max(PHONE ? 760 : 280, Math.floor(mapScroll.clientWidth)); lastMapW = Math.floor(mapScroll.clientWidth);
   const top = 8, left = 12, right = 14;
   const laneIndex = {};
   lanes.forEach((ln, i) => { laneIndex[ln.sub.id] = i; });
@@ -2670,6 +2716,7 @@ function select(id, center){
   applyFocus(ui.selected);
   infoEl.innerHTML = infoHTML(ui.selected);
   if(ui.selected) revealInMap(ui.selected);
+  if(typeof phonePan === 'function') phonePan();
 }
 function revealInMap(id){
   const p = MAP.P[id]; if(!p || mapBox.scrollHeight <= mapBox.clientHeight + 1) return;
@@ -2773,6 +2820,17 @@ function toast(msg, undo){
 }
 document.getElementById('undoPill').addEventListener('click', () => runUndo());
 document.getElementById('btnAddPaper').addEventListener('click', () => openEntryForm(null));
+(() => {
+  const btn = document.getElementById('btnMore'), menu = document.getElementById('moreMenu');
+  const show = open => { menu.hidden = !open; btn.setAttribute('aria-expanded', String(open)); if(open){ const m = menu.querySelector('.mm-modify'); if(m) m.textContent = document.getElementById('btnEdit').textContent.trim() === 'Done' ? 'Done modifying' : 'Modify'; } };
+  btn.addEventListener('click', ev => { ev.stopPropagation(); show(menu.hidden); });
+  menu.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-more]'); if(!b) return; show(false);
+    const go = {concept: () => { const a = document.querySelector('#addMenu [data-add="concept"]'); if(a) a.click(); }, filters: () => document.getElementById('filterToggle').click(), modify: () => document.getElementById('btnEdit').click(), settings: () => document.getElementById('btnSettings').click()}[b.dataset.more];
+    if(go) go();
+  });
+  document.addEventListener('click', ev => { if(!menu.hidden && !ev.target.closest('.more-wrap')) show(false); });
+})();
 (() => {
   const more = document.getElementById('btnAddMore'), menu = document.getElementById('addMenu');
   const show = open => { menu.hidden = !open; more.setAttribute('aria-expanded', String(open)); };
@@ -3517,6 +3575,7 @@ async function ghWhoAmI(token){
   return j && j.login;
 }
 function wireGhSection(b){
+  if(!b.querySelector('#ghConnect')) return;   /* the preview has no sync form */
   const err = msg => { const el = b.querySelector('#ghFormErr'); el.hidden = !msg; el.textContent = msg || ''; };
   const go = b.querySelector('#ghConnect');
   go.addEventListener('click', async () => {
@@ -4404,8 +4463,24 @@ tocBody.addEventListener('drop', ev => {
 mapSvg.addEventListener('click', ev => {
   if(suppressMapClick) return;
   const n = ev.target.closest('.node');
-  if(n) select(n.dataset.id, false);
+  if(n){ select(n.dataset.id, false); if(isPhone()) setTimeout(() => infoEl.scrollIntoView({behavior: 'smooth', block: 'nearest'}), 80); }
 });
+/* phones: the plot is wider than the screen, so keep the interesting part in view */
+function isPhone(){ return !!(window.matchMedia && matchMedia('(max-width: 640px)').matches); }
+let phonePanned = false;
+function phonePan(){
+  if(!isPhone() || !MAP || !MAP.P) return;
+  const vw = mapScroll.clientWidth, x0 = mapScroll.scrollLeft;
+  if(!vw || mapScroll.scrollWidth <= vw) return;
+  const sel = ui.selected && MAP.P[ui.selected];
+  if(sel){ if(sel.x < x0 + 24 || sel.x > x0 + vw - 24) mapScroll.scrollLeft = Math.max(0, sel.x - vw / 2); return; }
+  if(phonePanned) return;
+  const xs = Object.values(MAP.P).map(q => q.x).filter(Number.isFinite).sort((a, b) => a - b);
+  if(!xs.length) return;
+  mapScroll.scrollLeft = Math.max(0, xs[Math.floor(xs.length * 0.6)] - vw / 2);
+  if(mapScroll.scrollLeft > 0 || xs[Math.floor(xs.length * 0.6)] < vw / 2) phonePanned = true;
+}
+{ const base = renderMap; renderMap = function(force){ const r = base.apply(this, arguments); requestAnimationFrame(() => { try{ phonePan(); }catch(e){} }); return r; }; }
 mapSvg.addEventListener('dblclick', ev => {
   if(ev.target.closest('.node')) return;
   const pt = svgPoint(ev);

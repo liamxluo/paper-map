@@ -44,7 +44,7 @@ A concept is an idea papers need, with the year it appeared, such as Nash equili
 ### I. Get the app
 
 1. Open **[liamxluo.github.io/paper-map](https://liamxluo.github.io/paper-map/)** in Chrome or Edge. It shows a made-up example.
-2. Click **Install** at the top right.
+2. Click **Install** at the top right. On iPhone or iPad, tap **Share → Add to Home Screen**.
 
 It opens in its own window, works offline, and updates itself with every release.
 
