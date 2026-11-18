@@ -26,7 +26,7 @@ Top-level topics are for big areas, such as a field or a project. Links between 
 
 ### Concepts
 
-A topic is where a paper lives; a concept is an idea it needs, with the year the idea appeared, such as Nash equilibrium (1950). Concepts sit in their own row at the top of the map and have their own page in Contents, and a paper in any topic can need several of them. Add one from **+ New paper ▾ → Concept**, or straight from a paper's Prerequisite concepts.
+A topic is where a paper lives; a concept is an idea it needs, with the year the idea appeared. Concepts sit in their own row at the top of the map and have their own page in Contents, and a paper in any topic can need several of them. Add one from **+ New paper ▾ → Concept**, or straight from a paper's Prerequisite concepts.
 
 ---
 
