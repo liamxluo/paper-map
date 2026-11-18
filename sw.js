@@ -1,6 +1,6 @@
 /* Paper Map, installed as an app: keep the page itself available offline.
    Your data is never cached here: it lives in this browser and in your own GitHub repository. */
-const CACHE = 'paper-map-1.4.0';
+const CACHE = 'paper-map-1.5.0';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
@@ -17,7 +17,8 @@ self.addEventListener('fetch', e => {
   if(url.hostname === 'api.github.com' || url.hostname.endsWith('githubusercontent.com')) return;
   /* the page: the newest version when online, the saved one when offline */
   if(req.mode === 'navigate'){
-    e.respondWith(fetch(req).then(r => { if(r.ok){ const copy = r.clone(); caches.open(CACHE).then(c => c.put('./index.html', copy)); } return r; })
+    /* ask the server every time (not the browser's 10-minute copy), so a new version shows up on the next reload */
+    e.respondWith(fetch(req.url, {cache: 'no-cache', credentials: 'same-origin'}).then(r => { if(r.ok){ const copy = r.clone(); caches.open(CACHE).then(c => c.put('./index.html', copy)); } return r; })
       .catch(() => caches.match('./index.html')));
     return;
   }
