@@ -1,37 +1,30 @@
 ![Paper Map: papers on a timeline, joined by hand-drawn lines](assets/preview.png)
 
-I built this simply because I wanted a better way to organise what I read and understand how ideas connect.
+I built this because I wanted a better way to organise what I read and understand how ideas connect.
 
 ![Structure: topics inside topics, to any depth. Connect: lines between papers, concepts and topics. Explore: a field laid out over time.](assets/features.svg)
 
+**[How it works](#how-it-works)** · **[Get started](#get-started)** · **[Good to know](#good-to-know)**
 
 The live preview (link at the top right of this page) shows the made-up example in [`example/displaydata.json`](example/displaydata.json).
 
-## Draw the lines
+---
+
+## How it works
 
 ![How each kind of line looks: builds on is solid, responds to is dashed, related to is dotted, needs runs in long dashes from a concept, related topics are an arc beside two rows](assets/lines-legend.svg)
 
 ![Linking a paper to one in another subtopic, then giving the line a note](assets/lines.gif)
 
-## Sync with GitHub (highly recommended)
+Every topic also opens as a list, with status, notes, tags and concept cards.
 
-The copy in your browser is lost if its data is cleared. A private repository of your own keeps every change and every earlier version, and works on any computer.
+![Each topic as a table, with status, notes, tags and concept cards](assets/table.png)
 
-1. [Create a private repository](https://github.com/new?name=paper-map-data&visibility=private) and tick **Add a README file**.
-2. [Create a token](https://github.com/settings/personal-access-tokens/new?name=Paper+Map&expires_in=366&contents=write). Under Repository access, choose **Only select repositories** and pick that repository. Under Permissions, the only one needed is **Contents: Read and write**. The link already sets it, and **Metadata (read-only)** comes with it automatically; remove anything else.
-3. In the page, open **Settings → GitHub sync**, paste the token and click **Connect**.
+---
 
-### First time
+## Get started
 
-When you click **Connect**, the page creates `data/paper-map.json` in your private repository. That one file is your whole list, so you don't need to make it yourself. Already have a backup? Import it first (**Settings → Data → Import backup**), then connect, and the backup becomes that file.
-
-Notes you write are copied into `notes/`, and PDFs you attach go into `pdfs/`. Edit notes in the page; the copies in `notes/` are for reading.
-
-If the page says the repository can't be found, the token doesn't include it yet: open the token on GitHub and add the repository under **Repository access**.
-
-On another computer, download `index.html` again and paste the token once more.
-
-## Use it
+### 1. Open it
 
 One HTML file, nothing to install.
 
@@ -41,38 +34,47 @@ One HTML file, nothing to install.
 
 To start from the example instead, use **Settings → Data → Import backup** and choose `displaydata.json`.
 
-## Notes and PDFs
+### 2. Sync with GitHub (highly recommended)
+
+The copy in your browser is lost if its data is cleared. A private repository of your own keeps every change and every earlier version, and works on any computer.
+
+1. [Create a private repository](https://github.com/new?name=paper-map-data&visibility=private) and tick **Add a README file**.
+2. [Create a token](https://github.com/settings/personal-access-tokens/new?name=Paper+Map&expires_in=366&contents=write). Under Repository access, choose **Only select repositories** and pick that repository. Under Permissions, the only one needed is **Contents: Read and write**. The link already sets it, and **Metadata (read-only)** comes with it automatically; remove anything else.
+3. In the page, open **Settings → GitHub sync**, paste the token and click **Connect**.
+
+<details>
+<summary>First time, and other computers</summary>
+
+When you click **Connect**, the page creates `data/paper-map.json` in your private repository. That one file is your whole list, so you don't need to make it yourself. Already have a backup? Import it first (**Settings → Data → Import backup**), then connect, and the backup becomes that file.
+
+Notes you write are copied into `notes/`, and PDFs you attach go into `pdfs/`. Edit notes in the page; the copies in `notes/` are for reading.
+
+If the page says the repository can't be found, the token doesn't include it yet: open the token on GitHub and add the repository under **Repository access**.
+
+On another computer, download `index.html` again and paste the token once more.
+
+</details>
+
+### 3. Notes and PDFs
 
 ![Opening a paper’s notes, attaching its PDF, writing Markdown notes beside it, exporting them](assets/notes.gif)
 
 PDFs need GitHub sync. To export every note at once, use **Settings → Data → Export notes**.
 
-## Zoom the timeline
+### Tips
 
-![Dragging along the years to zoom in, dragging sideways to move, double-clicking a point](assets/zoom.gif)
+- **Zoom:** drag along the year axis to zoom into a period, drag sideways to move, and double-click the map to zoom in on a point.
+- **Move a subtopic:** in Modify mode, drag its ⠿ handle in Contents. On a phone, modify the subtopic and choose its new place under **Inside**.
+- **One field at a time:** **Topics on the map → Current topic only**.
 
-## Subtopics inside subtopics
-
-![Dragging a subtopic under another topic, then making it a topic of its own, then undoing](assets/drag.gif)
-
-Can't drag, on a phone say? Modify the subtopic and choose its new place under **Inside**.
+<details>
+<summary>See subtopics inside subtopics</summary>
 
 ![Opening Exam season › Procrastination, adding a subtopic inside it, and seeing every level on the map](assets/subtopics.gif)
 
-## Structure
+</details>
 
-```
-/
-├── index.html              the whole app
-├── README.md
-├── .gitignore
-├── example/
-│   └── displaydata.json    the example shown in the live preview
-└── assets/
-    ├── *.png
-    ├── *.gif
-    └── *.svg
-```
+---
 
 ## Good to know
 
@@ -87,3 +89,21 @@ Can't drag, on a phone say? Modify the subtopic and choose its new place under *
 **Privacy.** The file holds no data and connects to nothing except your own repository, and only once you set one up.
 
 **Credits.** The interface and code were built with help from Claude, an AI model made by Anthropic.
+
+<details>
+<summary>What's in this repository</summary>
+
+```
+/
+├── index.html              the whole app
+├── README.md
+├── .gitignore
+├── example/
+│   └── displaydata.json    the example shown in the live preview
+└── assets/
+    ├── *.png
+    ├── *.gif
+    └── *.svg
+```
+
+</details>
