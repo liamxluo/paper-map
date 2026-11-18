@@ -18,8 +18,6 @@ The live preview (link at the top right of this page) shows the made-up example 
 
 Every topic also opens as a list, with status, notes, tags and concept cards.
 
-![Each topic as a table, with status, notes, tags and concept cards](assets/table.png)
-
 ---
 
 ## Get started
