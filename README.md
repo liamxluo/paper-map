@@ -25,7 +25,7 @@ I built this simply because I wanted a better way to organise what I read and un
 
 ![Linking a paper to one in another subtopic, giving the line a note and the Main line colour, seeing the whole colour line light up, then How far → Whole line](assets/lines.gif)
 
-Click a paper to light up the lines around it; notes on lines appear only then, so the map stays clean. **How far** in its panel goes further, up to **Whole line**; the further away a paper is, the fainter it looks, and a count says how much is lit. **Options** there limits it to what came earlier or later.
+The more papers build on one, the bigger its dot, and only the main ones carry their names; point at any dot to see its name. Drag one dot onto another to link them. Click a paper to light up the lines around it; notes on lines appear only then, so the map stays clean. **How far**, in the bar under the map, goes further, up to **Whole line**; the further away a paper is, the fainter it looks, and a count says how much is lit. **Options** there limits it to what came earlier or later.
 
 Give a main line of thought its own colour from a line's ✎. **Colour lines** above the map keeps them in one place: name a path, see what is on it, or hide it for a while.
 
@@ -106,7 +106,7 @@ PDFs need sync. **Settings → Data → Export notes** exports every note at onc
 <details>
 <summary>Can't drag, on a phone say?</summary>
 
-Modify the subtopic and choose its new place under **Inside**.
+Open the subtopic's **⋯ → Rename or describe…** and choose its new place under **Inside**.
 
 ![Opening Exam season › Procrastination, adding a subtopic inside it, and seeing every level on the map](assets/subtopics.gif)
 
@@ -153,7 +153,7 @@ Paste an identifier at the top of **New paper** and click **Fill in**: the title
 <details>
 <summary>Export a map as PNG or PDF</summary>
 
-**Export ▾ → The map**, next to Colour lines, lets you tick the topics to include. It shows which topics outside your choice are linked, and how many lines go there: add them, or leave them out and those lines are dropped (a colour line keeps the part inside your choice). Show all lines, only colour lines, or just the papers; a note on the picture says the lines are your own reading, not a citation network. Save it wherever you like, a Dropbox or iCloud Drive folder included.
+**Export ▾ → The map**, next to Colour lines, exports by topic, or just the lines you care about: **From a paper** (its lines, as far as How far reaches; a paper's panel has **Export its lines**), **Colour lines**, or **Pick papers**. Untick any single line or paper, and show everything else faintly for context or leave it out. By topic, you tick the topics to include. Every option sits on the left, folded; the right side previews exactly what you'll get, the list of papers included. It shows which topics outside your choice are linked, and how many lines go there: add them, or leave them out and those lines are dropped (a colour line keeps the part inside your choice). Show all lines, only colour lines, or just the papers; a note on the picture says the lines are your own reading, not a citation network. Save it wherever you like, a Dropbox or iCloud Drive folder included.
 
 ![An exported map: a title, the chosen topics with their lines, a legend, and a note that the lines are the author’s own reading](assets/export.png)
 
@@ -183,7 +183,7 @@ Paste an identifier at the top of **New paper** and click **Fill in**: the title
 <details>
 <summary>Fancy another style?</summary>
 
-![Contents in Mist, in Modify mode while hovering a row, in Warm white and in Dark](assets/styles.png)
+![Contents in Mist, while hovering a row, in Warm white and in Dark](assets/styles.png)
 
 Pick Mist, Warm white or Pure white in **Settings → Paper**, and Light, Dark or Match my system in the same place.
 

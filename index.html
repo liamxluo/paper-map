@@ -1007,11 +1007,133 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
 
 /* ---------- no Focus column: the notes get the room ---------- */
 .c-tags .doms,.c-tags .pres{display:block;margin-top:.35em}
-.c-note{width:34%}
+/* the columns line up across a topic and its nested subtopics: Labels and Notes keep the same width
+   everywhere and sit against the same right edge, so only the Paper column gives way to the indent */
+/* sized from the whole page column (#main), not from each table, so every table gets the same widths */
+#main{container-type:inline-size;container-name:mainCol}
+@media (min-width: 641px){
+  .table-wrap table{table-layout:fixed}
+  .table-wrap .c-ref{width:auto}
+  .table-wrap .c-tags{width:clamp(7.5rem, 18cqw, 17rem)}
+  .table-wrap .c-note{width:clamp(9rem, 26cqw, 28rem)}
+}
+@container mainCol (max-width: 860px){
+  .table-wrap .c-tags{width:clamp(7rem, 16cqw, 17rem)}
+  .table-wrap .c-note{width:clamp(8rem, 22cqw, 28rem)}
+}
+thead th.c-note{font-size:.8rem;color:var(--faint)}
 .more-fields{border:1px solid var(--rule);border-radius:10px;padding:.45em .7em}
 .more-fields > summary{cursor:pointer;color:var(--muted);font-size:.9rem}
 .more-fields[open] > summary{margin-bottom:.5em}
 .more-fields label{display:flex;flex-direction:column;gap:4px}
+
+/* ---------- export by lines ---------- */
+.ex-modes{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 .6em;padding:3px;border:1px solid var(--rule);border-radius:10px;background:var(--bg)}
+.ex-mode{flex:1 1 auto;border:0;background:none;border-radius:7px;padding:.35em .6em;font-size:.84rem;cursor:pointer;color:var(--muted)}
+.ex-mode.on{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--rule-strong)}
+.ex-paper{width:100%;max-width:100%}
+.ex-chips{display:flex;flex-wrap:wrap;gap:6px;margin:.35em 0;align-items:center}
+.ex-linepick{margin:.7em 0 .2em;font-size:.88rem}
+.ex-linepick > summary{cursor:pointer;color:var(--muted)}
+.ex-linelist,.ex-picklist{display:flex;flex-direction:column;gap:3px;max-height:26vh;overflow:auto;margin-top:.4em;padding:.4em .5em;border:1px solid var(--rule);border-radius:8px}
+.ex-linelist label,.ex-picklist label{display:flex;gap:7px;align-items:baseline;font-size:.86rem;line-height:1.35}
+.ex-brs{display:flex;flex-direction:column;gap:6px}
+.ex-brs label{display:flex;align-items:center;gap:8px}
+.ex-brs i{display:inline-block;width:22px;height:4px;border-radius:2px}
+.ex-rest{flex-direction:column;align-items:flex-start;gap:5px}
+#exQ{width:100%;box-sizing:border-box;margin:.2em 0 .1em}
+
+.ex-modes{display:grid;grid-template-columns:1fr 1fr}
+.ex-chips .dchip{border:1.5px solid var(--rule-strong);border-radius:999px;background:transparent;padding:.22em .75em;font-size:.82rem;cursor:pointer;color:var(--ink)}
+.ex-chips .dchip:hover{border-color:var(--ink)}
+.ex-chips .dchip.on{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.ex-wrap:not([data-mode="topics"]) .ex-topics-only{display:none}
+
+/* ---------- export, rebuilt: every control on the left, folded; only the preview on the right ---------- */
+.ex2{display:grid;grid-template-columns:minmax(280px, 340px) minmax(0, 1fr);gap:22px;align-items:start}
+.ex2 .ex-left{max-height:min(70vh, 720px);overflow:auto;padding-right:6px}
+.ex2 .ex-right{position:sticky;top:0;max-height:min(70vh, 720px);overflow:auto;background:var(--bg);border-radius:12px;padding:12px}
+.ex2 .ex-prev{border:0;background:transparent;padding:0}
+.ex2 .ex-prev img{display:block;width:100%;height:auto;border-radius:6px;box-shadow:0 1px 0 var(--rule), 0 6px 24px rgba(20, 30, 50, .07)}
+.ex-listprev{margin-top:12px}
+.ex-listprev.as-png img{display:block;width:100%;height:auto;border-radius:0 0 6px 6px;box-shadow:0 6px 24px rgba(20, 30, 50, .07)}
+.ex-listprev.as-pdf{display:grid;grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));gap:10px}
+.ex-listprev.as-pdf img{width:100%;height:auto;border-radius:3px;box-shadow:0 1px 0 var(--rule), 0 4px 14px rgba(20, 30, 50, .08)}
+.ex-sec{padding:6px 0 4px;border-top:1px solid var(--rule)}
+.ex-sec:first-of-type{border-top:0}
+.ex-fold{border-bottom:1px solid color-mix(in srgb, var(--rule) 65%, transparent)}
+.ex-fold:last-child{border-bottom:0}
+.ex-fold > summary{display:flex;align-items:baseline;gap:8px;padding:.5em 0;cursor:pointer;list-style:none;font-size:.9rem}
+.ex-fold > summary::-webkit-details-marker{display:none}
+.ex-fold > summary::before{content:'▸';font-size:.72rem;color:var(--faint);transition:transform .15s}
+.ex-fold[open] > summary::before{transform:rotate(90deg)}
+.ex-fk{color:var(--ink);font-weight:500}
+.ex-fs{color:var(--muted);font-size:.85rem;margin-left:auto;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%}
+.ex-fb{padding:.1em 0 .7em 1.05em;display:flex;flex-direction:column;gap:8px}
+.ex-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:.5em 0;font-size:.9rem}
+.ex-seg{display:inline-flex;border:1px solid var(--rule-strong);border-radius:999px;padding:2px;gap:2px}
+.ex-seg label{position:relative;padding:.18em .8em;border-radius:999px;font-size:.82rem;cursor:pointer;color:var(--muted)}
+.ex-seg label.on{background:var(--ink);color:var(--surface)}
+.ex-seg input{position:absolute;opacity:0;pointer-events:none}
+.ex-field{display:flex;flex-direction:column;gap:4px;font-size:.84rem;color:var(--muted)}
+.ex-field input,.ex-field select{font-size:.9rem}
+.ex-checks{display:flex;flex-direction:column;gap:5px;font-size:.88rem}
+.ex-checks label,.ex-on{display:flex;align-items:center;gap:8px}
+.ex-fmt-row{border-top:1px solid var(--rule);margin-top:4px;padding-top:.75em}
+.ex-where{margin:0;font-size:.8rem}
+.ex2 .ex-modes{margin-bottom:8px}
+.ex2 .ex-paper{margin:.2em 0 .1em}
+.ex2 .ex-tree{max-height:none;margin:.2em 0}
+.ex2 .ex-picklist,.ex2 .ex-linelist{max-height:30vh}
+.sz-scale{display:inline-flex;align-items:center;gap:5px}
+@media (max-width: 760px){
+  .ex2{grid-template-columns:1fr}
+  .ex2 .ex-left,.ex2 .ex-right{max-height:none;position:static}
+}
+
+/* ===================== v2: no Modify mode — actions where you point ===================== */
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;padding-inline:.55em;min-width:38px}
+.icon-btn svg{display:block}
+.more-btn{border:0;background:transparent;color:var(--muted);font:600 1rem/1 var(--sans);letter-spacing:1px;width:28px;height:28px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0 0 3px}
+.more-btn:hover,.more-btn.open{background:var(--bg);color:var(--ink)}
+h2.has-more{display:flex;align-items:center;gap:6px}
+h2.has-more .more-btn{opacity:.35;transition:opacity .15s}
+.branch-head:hover h2.has-more .more-btn,h2.has-more .more-btn.open{opacity:1}
+.row-more{display:inline-block;margin-left:6px}
+.row-more .more-btn{opacity:0;transition:opacity .12s}
+tr:hover .row-more .more-btn,tr:focus-within .row-more .more-btn,.row-more .more-btn.open{opacity:1}
+.toc-more{opacity:0;width:24px;height:24px;margin-left:2px;flex:none}
+.toc-row:hover .toc-more,.toc-sub:hover .toc-more,.toc-more.open{opacity:1}
+.toc-drag{opacity:0;transition:opacity .12s}
+.toc-row:hover .toc-drag,.toc-sub:hover .toc-drag{opacity:.6}
+.tl-row .tl-x,.tl-row .tl-add{opacity:0;transition:opacity .12s}
+.tl-row:hover .tl-x,.tl-row:hover .tl-add{opacity:1}
+.info-st .more-btn{margin-left:2px}
+.rel-list li{grid-template-columns:7.2em minmax(0,1fr) auto auto}
+.rl-act{display:inline-flex;gap:2px;opacity:0;transition:opacity .12s}
+.rel-list li:hover .rl-act{opacity:1}
+.rl-act button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:.85rem;padding:0 4px;border-radius:5px}
+.rl-act button:hover{background:var(--bg);color:var(--ink)}
+@media (hover: none){ .row-more .more-btn,.toc-more,.tl-row .tl-x,.tl-row .tl-add,.rl-act,h2.has-more .more-btn{opacity:1} }
+.float-menu{position:fixed;z-index:120;min-width:200px;max-width:340px;background:var(--surface);border-radius:12px;padding:5px;box-shadow:0 12px 32px rgba(20,30,50,.18),0 0 0 1px rgba(0,0,0,.05);animation:fmIn .12s ease-out}
+@keyframes fmIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+.fm-item{display:block;width:100%;text-align:left;border:0;background:transparent;padding:.5em .7em;border-radius:8px;font:inherit;font-size:.9rem;color:var(--ink);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fm-item:hover,.fm-item:focus-visible{background:var(--bg);outline:none}
+.fm-item.danger{color:var(--red-ink, #C2272D)}
+.fm-sep{height:1px;background:var(--rule);margin:4px 6px}
+/* dragging a line */
+.net.linking{cursor:crosshair}
+.net .link-drag{fill:none;stroke:var(--focus);stroke-width:1.8;stroke-dasharray:5 4;pointer-events:none}
+.net .drag-ghost,.net .lane-drop{pointer-events:none}
+.net .node.link-target .dot{stroke:var(--focus);stroke-width:3}
+/* names: the main ones always; the rest when you point at or select a paper */
+.net .lbl.hov:not(.hot){opacity:0 !important;pointer-events:none}
+.net .lbl.hov{transition:opacity .12s}
+/* How far, under the map */
+.hf-bar{margin:8px 0 0;padding:4px 12px;border-radius:12px;background:var(--surface);box-shadow:0 1px 0 var(--rule)}
+.hf-bar[hidden]{display:none}
+.hf-bar .depth-ctl{margin:.25em 0}
+.hf-bar .hf-count{display:inline}
 </style>
 </head>
 <body>
@@ -1034,14 +1156,12 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
       <span class="add-split"><button type="button" class="btn add-paper" id="btnAddPaper" title="Add a paper"><span aria-hidden="true">+</span><span class="add-label"> New paper</span></button><button type="button" class="btn add-more" id="btnAddMore" aria-haspopup="true" aria-expanded="false" aria-controls="addMenu" title="Add something else"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <span class="add-menu" id="addMenu" hidden><button type="button" data-add="paper"><b>Paper</b><span>a reading, placed on the map by its year</span></button><button type="button" data-add="concept"><b>Concept</b><span>one idea papers rely on, with the year it appeared</span></button><button type="button" data-add="import"><b>Import papers</b><span>from Zotero, or a CSV, BibTeX or RIS file</span></button></span></span>
       <button type="button" class="filter-toggle" id="filterToggle" aria-expanded="false" aria-controls="filters">Filters</button>
-      <button type="button" class="btn" id="btnEdit">Modify</button>
-      <button type="button" class="btn" id="btnSettings">Settings</button>
+      <button type="button" class="btn icon-btn" id="btnSettings" title="Settings" aria-label="Settings"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"/><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3.9a7.5 7.5 0 0 0-2.6-1.5L14.1 2.5h-4.2l-.4 2.5a7.5 7.5 0 0 0-2.6 1.5l-2.3-.9-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.4 2.3-.9a7.5 7.5 0 0 0 2.6 1.5l.4 2.5h4.2l.4-2.5a7.5 7.5 0 0 0 2.6-1.5l2.3.9 2-3.4-2-1.5Z"/></svg></button>
       <span class="more-wrap"><button type="button" class="btn" id="btnMore" aria-haspopup="true" aria-expanded="false" aria-controls="moreMenu" aria-label="More">⋯</button>
         <span class="more-menu" id="moreMenu" hidden>
           <button type="button" data-more="concept">New concept</button>
           <button type="button" data-more="import">Import papers</button>
           <button type="button" data-more="filters">Filters</button>
-          <button type="button" data-more="modify"><span class="mm-modify">Modify</span></button>
           <button type="button" data-more="export">Export map</button>
           <button type="button" data-more="exportList">Export papers</button>
           <button type="button" data-more="exportBoth">Export map and papers</button>
@@ -1129,6 +1249,7 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
   </div>
   <div class="map-axis" id="mapAxis"><div></div><svg class="net net-axis" id="netAxis" aria-hidden="true"></svg></div>
   </div>
+  <div class="hf-bar" id="hfBar" hidden></div>
 
   <div class="info" id="info" aria-live="polite"></div>
 
@@ -1138,9 +1259,7 @@ body.editing .toc-row:hover > .toc-link .n,body.editing .toc-sub:hover > .toc-li
       <span><i class="sw read"></i>Read</span>
       <span><i class="sw want"></i>Want to read</span>
       <span><i class="sw none"></i>Unmarked</span>
-      <span><i class="sz p3"></i>★ Must read</span>
-      <span><i class="sz p2"></i>○ Optional</span>
-      <span><i class="sz p1"></i>· Background</span>
+      <span class="sz-scale"><i class="sz p1"></i><i class="sz p2"></i><i class="sz p3"></i>Bigger: more papers build on it</span>
     </p>
     <p class="legend">
       <span><svg class="lsw" width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="29" y2="5"></line><path class="lsw-arr" d="M13 1.5 L17.5 5 L13 8.5"></path></svg>Builds on</span>
@@ -1211,7 +1330,7 @@ const DEFAULT_COLORS = {green:'#009473', red:'#E34234'};
 const PREVIEW_DATA = 'example/displaydata.json';
 let PREVIEW = false;
 /* Set this to the tag of the GitHub release you are about to publish (v1.3.0, v1.3.1, …). */
-const APP_VERSION = 'v1.3.2';
+const APP_VERSION = 'v2.0.0';
 const APP_REPO = 'liamxluo/paper-map';
 const RELEASES_URL = 'https://github.com/' + APP_REPO + '/releases';
 /* Installed as an app (or installable): only when the page comes from a website, never from a downloaded file */
@@ -2573,11 +2692,11 @@ function buildExportSVG(o){
   const keep = {lanes: settings.lanes, showConcepts: settings.showConcepts, sel: ui.selected, br: ui.branch, range: settings.range};
   const mapEl = document.getElementById('map'), prevW = mapEl.style.width;
   /* no concepts row unless the chosen papers actually use a concept */
-  if(o.concepts && !Object.values(lib.entries).some(e => e.kind === 'paper' && o.subs.includes(e.sub) && (e.needs || []).some(c => lib.entries[c]))) o = Object.assign({}, o, {concepts: false});
+  if(!o.keep && o.concepts && !Object.values(lib.entries).some(e => e.kind === 'paper' && o.subs.includes(e.sub) && (e.needs || []).some(c => lib.entries[c]))) o = Object.assign({}, o, {concepts: false});
   let cap = null;
   try{
     root.setAttribute('data-theme', 'light');
-    settings.lanes = o.subs.slice(); settings.showConcepts = !!o.concepts; ui.selected = null; ui.branch = null;
+    settings.lanes = o.subs.slice(); settings.showConcepts = !!o.concepts; ui.selected = null; ui.branch = null; MAP.allNames = o.names !== 'main';
     if(o.allYears) settings.range = null;
     mapEl.style.width = o.width + 'px';
     renderMap(true);
@@ -2591,13 +2710,23 @@ function buildExportSVG(o){
       labFont: getComputedStyle(document.querySelector('#mapLabels .nm') || document.body).fontFamily, sans: cs.getPropertyValue('--sans').trim(), serif: cs.getPropertyValue('--serif').trim()};
   }finally{
     if(prevTheme == null) root.removeAttribute('data-theme'); else root.setAttribute('data-theme', prevTheme);
+    MAP.allNames = false;
     settings.lanes = keep.lanes; settings.showConcepts = keep.showConcepts; ui.selected = keep.sel; ui.branch = keep.br; settings.range = keep.range;
     mapEl.style.width = prevW;
     renderMap(true);
   }
   if(!cap || !cap.lanes.length) return null;
+  /* only the papers and lines you picked; the rest left out, or drawn faintly for context */
+  if(o.keep){
+    const K = o.keep, faint = K.rest === 'faint';
+    cap.plot.querySelectorAll('[data-id]').forEach(n => { if(K.nodes.has(n.getAttribute('data-id'))) return; if(faint){ n.style.opacity = '0.14'; } else n.remove(); });
+    cap.plot.querySelectorAll('[data-a]').forEach(n => {
+      if(K.edges.has(n.getAttribute('data-a') + '|' + n.getAttribute('data-b'))) return;
+      if(faint && n.tagName.toLowerCase() !== 'text'){ n.style.opacity = '0.1'; n.removeAttribute('data-br'); } else n.remove();
+    });
+  }
   /* concepts: only the ones the chosen papers use */
-  if(o.concepts){
+  if(o.concepts && !o.keep){
     const used = new Set();
     Object.values(lib.entries).forEach(e => { if(e.kind === 'paper' && o.subs.includes(e.sub)) (e.needs || []).forEach(c => used.add(c)); });
     const drop = new Set(Object.values(lib.entries).filter(e => e.kind === 'concept' && !used.has(e.id)).map(e => e.id));
@@ -2628,7 +2757,7 @@ function buildExportSVG(o){
   s += '<rect width="' + Wt + '" height="' + Ht + '" fill="#FFFFFF"/>';
   if(o.title){
     s += '<text x="' + M + '" y="' + (M + 28) + '" style="font:900 30px ' + xmlEsc(serif) + ';fill:' + cap.ink + '">' + xmlEsc(o.title) + '</text>';
-    const np = Object.values(lib.entries).filter(e => e.kind === 'paper' && o.subs.includes(e.sub) && !e.parent).length;
+    const np = o.keep ? keptPapers(o.keep).length : Object.values(lib.entries).filter(e => e.kind === 'paper' && o.subs.includes(e.sub) && !e.parent).length;
     s += '<text x="' + M + '" y="' + (M + 52) + '" style="font:400 13px ' + xmlEsc(sans) + ';fill:' + cap.muted + '">' + xmlEsc(np + (np === 1 ? ' paper' : ' papers') + ' · ' + rows.filter(r => !r.concepts).length + ' rows · ' + new Date().toLocaleDateString([], {day: 'numeric', month: 'long', year: 'numeric'})) + '</text>';
   }
   const ox = M, oy = M + titleH;
@@ -2653,6 +2782,7 @@ function buildExportSVG(o){
     const ln = dash => '<line x1="0" y1="0" x2="24" y2="0" style="stroke:' + cap.ink + ';stroke-width:1.6' + (dash ? ';stroke-dasharray:' + dash : '') + '"/>';
     item(ln(''), 'builds on'); item(ln('5 3'), 'responds to'); item(ln('1.5 3'), 'related to');
     item('<circle cx="12" cy="0" r="5" style="fill:' + readColor() + '"/>', 'read'); item('<circle cx="12" cy="0" r="5" style="fill:' + wantColor() + '"/>', 'want to read');
+    item('<circle cx="5" cy="0" r="3" style="fill:none;stroke:' + cap.muted + ';stroke-width:1.2"/><circle cx="17" cy="0" r="6" style="fill:none;stroke:' + cap.muted + ';stroke-width:1.2"/>', 'bigger: more papers build on it');
     usedBranches.forEach(b => item('<line x1="0" y1="0" x2="24" y2="0" style="stroke:' + b.color + ';stroke-width:2.6"/>', b.name));
     ly += legendH - 18;
   }
@@ -2713,75 +2843,208 @@ function slugName(s){ return String(s || 'paper-map').toLowerCase().normalize('N
 function openExport(preset){
   preset = preset || {};
   const rows = allLaneRows();
+  const selPaper = preset.paper || (ui.selected && lib.entries[ui.selected] && MAP.P && MAP.P[ui.selected] ? ui.selected : null);
   const filled = new Set(Object.values(lib.entries).filter(e => e.kind === 'paper' && typeof e.y === 'number').map(e => e.sub));
   const start = ui.topic && IDX.topics[ui.topic] ? new Set(treeSubs(IDX.topics[ui.topic]).map(s => s.id)) : new Set(rows.map(r => r.sub.id));
-  const st = {sel: new Set([...start].filter(id => filled.has(id))), concepts: Object.values(lib.entries).some(e => e.kind === 'concept'), notes: false, legend: true, allYears: true, format: preset.format || 'png', title: '', lines: 'all', disclaimer: true, list: !!preset.list, listStatus: 'all', listNotes: false, listLines: true};
+  const st = {sel: new Set([...start].filter(id => filled.has(id))), concepts: Object.values(lib.entries).some(e => e.kind === 'concept'), notes: false, legend: true, allYears: true, format: preset.format || 'png', title: '', lines: 'all', disclaimer: true, list: !!preset.list, listStatus: 'all', listNotes: false, listLines: true,
+    mode: preset.mode || (selPaper ? 'paper' : 'topics'), paper: selPaper, pDepth: ui.depth || 1, pDir: settings.focusDir || 'all', branches: new Set(), pick: new Set(selPaper ? [selPaper] : []), dropEdges: new Set(), dropPapers: new Set(), rest: 'faint', q: '', names: 'all',
+    open: {how: false, lines: false, papers: false, pic: false, list: !!preset.list, sug: false}};
   if(!st.sel.size) rows.forEach(r => { if(filled.has(r.sub.id)) st.sel.add(r.sub.id); });
-  const defTitle = () => { const tps = lib.topics.filter(tp => treeSubs(tp).some(s => st.sel.has(s.id))); return tps.length === 1 ? tps[0].name : (lib.title || 'Paper Map'); };
+  const defTitle = () => {
+    if(st.mode === 'paper' && st.paper && lib.entries[st.paper]) return lib.entries[st.paper].t + ': how it connects';
+    if(st.mode === 'branches' && st.branches.size) return lib.branches.filter(b => st.branches.has(b.id)).map(b => b.name).join(' · ');
+    if(st.mode === 'papers') return 'Selected papers';
+    const tps = lib.topics.filter(tp => treeSubs(tp).some(s => st.sel.has(s.id))); return tps.length === 1 ? tps[0].name : (lib.title || 'Paper Map');
+  };
   st.title = defTitle();
   let titleTouched = false;
+  /* ---- pieces of the left column; every group folds, and its summary says how it is set ---- */
+  const fold = (key, label, sum, inner) => '<details class="ex-fold" data-ex-fold="' + key + '"' + (st.open[key] ? ' open' : '') + '><summary><span class="ex-fk">' + label + '</span><span class="ex-fs">' + esc(sum) + '</span></summary><div class="ex-fb">' + inner + '</div></details>';
+  const seg = (name, opts, cur) => '<span class="ex-seg" role="radiogroup">' + opts.map(o => '<label' + (String(cur) === String(o[0]) ? ' class="on"' : '') + '><input type="radio" name="' + name + '" value="' + o[0] + '"' + (String(cur) === String(o[0]) ? ' checked' : '') + '>' + o[1] + '</label>').join('') + '</span>';
   const treeHTML = () => lib.topics.map(tp => {
     const subs = rows.filter(r => r.topic.id === tp.id), on = subs.filter(r => st.sel.has(r.sub.id)).length;
     const head = '<label class="ex-topic"><input type="checkbox" data-ex-topic="' + tp.id + '"' + (on && on === subs.length ? ' checked' : '') + '> <b>' + esc(tp.name) + '</b></label>';
     const kids = subs.filter(r => !r.sub.hidden).map(r => '<label class="ex-sub" style="--d:' + r.depth + '"><input type="checkbox" data-ex-sub="' + r.sub.id + '"' + (st.sel.has(r.sub.id) ? ' checked' : '') + (filled.has(r.sub.id) ? '' : ' disabled') + '> ' + esc(r.name) + (filled.has(r.sub.id) ? '' : ' <span class="hint">no papers</span>') + '</label>').join('');
     return '<div class="ex-group">' + head + kids + '</div>';
   }).join('');
-  const suggestHTML = () => {
-    const L = exportLinks(st.sel);
-    if(!L.suggest.length) return '<p class="hint">Nothing you left out is linked to what you chose.</p>';
+  const suggestHTML = L => {
     const name = id => { const r = rows.find(x => x.sub.id === id); return r ? (r.sub.hidden ? r.topic.name : r.topic.name + ' › ' + r.name) : id; };
-    return '<p class="hint">' + L.left + (L.left === 1 ? ' line leads' : ' lines lead') + ' to topics you haven’t chosen. ' + (L.left ? 'They are left out, and colour lines show only the part inside your choice. Add a topic to keep its lines:' : 'Related topics outside your choice:') + '</p>' +
+    if(!L.suggest.length) return '<p class="hint">Nothing you left out is linked to what you chose.</p>';
+    return '<p class="hint">' + (L.left ? L.left + (L.left === 1 ? ' line leads' : ' lines lead') + ' out of your choice and are left out; colour lines keep only the part inside. Add a topic to keep its lines:' : 'Related topics outside your choice:') + '</p>' +
       '<div class="ex-sugs">' + L.suggest.slice(0, 8).map(x => '<button type="button" class="ex-sug" data-ex-add="' + x.id + '"><span aria-hidden="true">+</span> ' + esc(name(x.id)) + ' <span class="hint">' + [x.lines ? x.lines + (x.lines === 1 ? ' line' : ' lines') : '', x.related ? 'related topic' : ''].filter(Boolean).join(' · ') + '</span></button>').join('') + '</div>';
   };
+  const pLabel = e => (e.au ? shortAu(e.au) + ' · ' : '') + e.t;
+  const papersOnMap = () => Object.values(lib.entries).filter(e => typeof e.y === 'number' && !e.parent && (e.kind === 'paper' || e.kind === 'concept'));
+  const paperOptions = () => lib.topics.map(tp => { const es = papersOnMap().filter(e => e.kind === 'paper' && e.topic === tp.id).sort(byYear); return es.length ? '<optgroup label="' + esc(tp.name) + '">' + es.map(e => '<option value="' + e.id + '"' + (e.id === st.paper ? ' selected' : '') + '>' + esc(e.y + ' · ' + pLabel(e)) + '</option>').join('') + '</optgroup>' : ''; }).join('');
+  const chipRow = (name, opts, cur) => opts.map(o => '<button type="button" class="dchip small' + (String(cur) === String(o[0]) ? ' on' : '') + '" data-ex-' + name + '="' + o[0] + '">' + o[1] + '</button>').join('');
+  const DEPTHS = [[1, '1 step'], [2, '2 steps'], [3, '3 steps'], ['all', 'Whole line']], DIRS = [['all', 'All ways'], ['up', 'Earlier only'], ['down', 'Later only'], ['lineage', 'Earlier + later']];
+  const linesFold = () => {
+    const K = exportKeep(st); if(!K || !K.all.size) return '';
+    const keys = [...K.all].sort((x, y) => linkLabel(x).localeCompare(linkLabel(y)));
+    return fold('lines', 'Lines', K.edges.size + ' of ' + K.all.size, '<div class="ex-linelist">' + keys.map(k => '<label><input type="checkbox" data-ex-edge="' + esc(k) + '"' + (st.dropEdges.has(k) ? '' : ' checked') + '> ' + esc(linkLabel(k)) + '</label>').join('') + '</div>');
+  };
+  const restRow = () => '<div class="ex-row"><span class="ex-fk">Everything else</span>' + seg('exRest', [['faint', 'Faint'], ['out', 'Leave out']], st.rest) + '</div>';
+  const modeHTML = () => {
+    if(st.mode === 'paper') return '<select id="exPaper" class="ex-paper" aria-label="Paper"><option value="">Choose a paper…</option>' + paperOptions() + '</select>' +
+      fold('how', 'How far', (DEPTHS.find(d => String(d[0]) === String(st.pDepth)) || DEPTHS[0])[1] + ' · ' + DIRS.find(d => d[0] === st.pDir)[1], '<div class="ex-chips">' + chipRow('depth', DEPTHS, st.pDepth) + '</div><div class="ex-chips">' + chipRow('dir', DIRS, st.pDir) + '</div>') + linesFold() + restRow();
+    if(st.mode === 'branches') return ((lib.branches || []).length ? '<div class="ex-brs">' + lib.branches.map(b => { const n = Object.values(lib.lineBranch || {}).filter(x => x === b.id).length; return '<label><input type="checkbox" data-ex-br="' + b.id + '"' + (st.branches.has(b.id) ? ' checked' : '') + '><i style="background:' + b.color + '"></i> ' + esc(b.name) + ' <span class="hint">' + n + (n === 1 ? ' line' : ' lines') + '</span></label>'; }).join('') + '</div>' : '<p class="hint">No colour lines yet.</p>') + linesFold() + restRow();
+    if(st.mode === 'papers'){
+      const q = st.q.trim().toLowerCase(), es = papersOnMap().filter(e => !q || (e.t + ' ' + (e.au || '') + ' ' + e.y).toLowerCase().includes(q)).sort((a, b) => (a.topic || '').localeCompare(b.topic || '') || byYear(a, b));
+      return '<input type="search" id="exQ" placeholder="Find a paper to add" value="' + esc(st.q) + '">' +
+        '<div class="ex-picklist">' + es.slice(0, 300).map(e => '<label><input type="checkbox" data-ex-pick="' + e.id + '"' + (st.pick.has(e.id) ? ' checked' : '') + '> <span class="hint">' + esc(e.y) + '</span> ' + esc(e.kind === 'concept' ? 'Concept: ' + e.t : pLabel(e)) + '</label>').join('') + '</div>' +
+        '<div class="ex-chips"><button type="button" class="linkbtn" data-ex-grow="1">+ the papers they link to</button><button type="button" class="linkbtn" data-ex-clear="1">Clear</button></div>' + linesFold() + restRow();
+    }
+    const L = exportLinks(st.sel);
+    return '<div class="ex-tree" id="exTree">' + treeHTML() + '</div>' + fold('sug', 'Linked to your choice', L.suggest.length ? L.suggest.length + (L.suggest.length === 1 ? ' topic' : ' topics') : 'none', suggestHTML(L));
+  };
+  /* the papers that will be in it: untick one to drop it from the picture and the list */
+  const candidates = () => {
+    const K = exportKeep(st, true);
+    const es = K ? [...K.nodes].map(id => lib.entries[id]).filter(e => e && e.kind === 'paper' && !e.parent && typeof e.y === 'number') : Object.values(lib.entries).filter(e => e.kind === 'paper' && !e.parent && typeof e.y === 'number' && st.sel.has(e.sub));
+    const ord = listOrder(); return es.sort((a, b) => (ord[a.sub] ?? 9e9) - (ord[b.sub] ?? 9e9) || byYear(a, b));
+  };
+  const papersFold = () => { const es = candidates(); if(!es.length) return ''; const kept = es.filter(e => !st.dropPapers.has(e.id)).length;
+    return fold('papers', 'Papers', kept + ' of ' + es.length, '<div class="ex-picklist">' + es.map(e => '<label><input type="checkbox" data-ex-drop="' + e.id + '"' + (st.dropPapers.has(e.id) ? '' : ' checked') + '> <span class="hint">' + esc(e.y) + '</span> ' + esc(pLabel(e)) + '</label>').join('') + '</div>'); };
+  const picFold = () => fold('pic', 'Picture', [st.lines === 'colour' ? 'only colour lines' : st.lines === 'none' ? 'no lines' : '', st.legend ? 'legend' : '', st.notes ? 'notes' : ''].filter(Boolean).join(' · ') || 'plain',
+    '<label class="ex-field">Title<input type="text" id="exTitle" maxlength="80" value="' + esc(st.title) + '"></label>' +
+    '<label class="ex-field">Names<select id="exNames"><option value="all"' + (st.names !== 'main' ? ' selected' : '') + '>Every paper’s name</option><option value="main"' + (st.names === 'main' ? ' selected' : '') + '>Only the main ones, as on the map</option></select></label>' +
+    '<label class="ex-field">Lines<select id="exLines"><option value="all"' + (st.lines === 'all' ? ' selected' : '') + '>All lines</option><option value="colour"' + (st.lines === 'colour' ? ' selected' : '') + '>Only colour lines</option><option value="none"' + (st.lines === 'none' ? ' selected' : '') + '>No lines, just the papers</option></select></label>' +
+    '<div class="ex-checks">' + (st.mode === 'topics' ? '<label><input type="checkbox" id="exConcepts"' + (st.concepts ? ' checked' : '') + '> Concepts these papers use</label>' : '') + '<label><input type="checkbox" id="exNotes"' + (st.notes ? ' checked' : '') + '> Notes on lines</label><label><input type="checkbox" id="exLegend"' + (st.legend ? ' checked' : '') + '> Legend</label><label><input type="checkbox" id="exDisc"' + (st.disclaimer ? ' checked' : '') + '> Say the lines are my own reading</label>' + (settings.range ? '<label><input type="checkbox" id="exRange"' + (!st.allYears ? ' checked' : '') + '> Only the years in view</label>' : '') + '</div>');
+  const listN = () => { const o = exportOpts(st); return o.keep ? keptPapers(o.keep, st.listStatus).length : papersFor({subs: new Set(o.subs), status: st.listStatus}).length; };
+  const listFold = () => fold('list', 'List of papers', st.list ? listN() + ' papers' : 'off',
+    '<label class="ex-on"><input type="checkbox" id="exList"' + (st.list ? ' checked' : '') + '> Add the list of these papers</label>' +
+    (st.list ? '<label class="ex-field">Which<select id="exListSt"><option value="all">All of them</option><option value="read"' + (st.listStatus === 'read' ? ' selected' : '') + '>Only the ones I’ve read</option><option value="want"' + (st.listStatus === 'want' ? ' selected' : '') + '>Only the ones I want to read</option><option value="none"' + (st.listStatus === 'none' ? ' selected' : '') + '>Only the unmarked ones</option></select></label><div class="ex-checks"><label><input type="checkbox" id="exListLines"' + (st.listLines ? ' checked' : '') + '> The lines between them</label><label><input type="checkbox" id="exListNotes"' + (st.listNotes ? ' checked' : '') + '> Notes</label></div><p class="hint">' + (st.format === 'png' ? 'As a PNG it goes under the map, in one long picture.' : 'As a PDF it follows on A4 pages after the map.') + '</p>' : ''));
+  const fmtRow = () => '<div class="ex-row ex-fmt-row"><span class="ex-fk">Format</span>' + seg('exFmt', [['png', 'PNG'], ['pdf', 'PDF']], st.format) + '</div><p class="hint ex-where">' + (window.showSaveFilePicker ? 'You choose where to save it.' : 'It downloads to your device.') + '</p>';
+  const leftHTML = () => '<div class="ex-modes" role="tablist">' + [['topics', 'Topics'], ['paper', 'From a paper'], ['branches', 'Colour lines'], ['papers', 'Pick papers']].map(m => '<button type="button" role="tab" class="ex-mode' + (st.mode === m[0] ? ' on' : '') + '" aria-selected="' + (st.mode === m[0]) + '" data-ex-mode="' + m[0] + '">' + m[1] + '</button>').join('') + '</div>' +
+    '<div class="ex-sec">' + modeHTML() + '</div>' + '<div class="ex-sec">' + papersFold() + picFold() + listFold() + '</div>' + fmtRow();
   openModal({
     title: 'Export the map',
-    body: '<div class="ex-wrap"><div class="ex-left"><p class="ex-h">Topics to include</p><div class="ex-tree" id="exTree">' + treeHTML() + '</div>' +
-      '<p class="ex-h">Linked to your choice</p><div id="exSug">' + suggestHTML() + '</div></div>' +
-      '<div class="ex-right"><p class="ex-h">Preview</p><div class="ex-prev" id="exPrev"><p class="hint">Drawing…</p></div>' +
-      '<div class="form-grid"><label class="full">Title on the picture<input type="text" id="exTitle" maxlength="80" value="' + esc(st.title) + '"></label></div>' +
-      '<div class="ex-opts"><label>Lines <select id="exLines"><option value="all">All lines</option><option value="colour">Only colour lines</option><option value="none">No lines, just the papers</option></select></label></div>' +
-      '<div class="ex-opts"><label><input type="checkbox" id="exConcepts"' + (st.concepts ? ' checked' : '') + '> Concepts these papers use</label><label><input type="checkbox" id="exNotes"> Notes on lines</label><label><input type="checkbox" id="exLegend" checked> Legend</label><label><input type="checkbox" id="exDisc" checked> Say the lines are my own reading</label>' + (settings.range ? '<label><input type="checkbox" id="exRange"> Only the years in view</label>' : '') + '</div>' +
-      '<div class="ex-list"><label class="ex-list-on"><input type="checkbox" id="exList"' + (st.list ? ' checked' : '') + '> <b>Add the list of these papers</b> <span class="hint" id="exListN"></span></label>' +
-        '<div class="ex-list-opts"' + (st.list ? '' : ' hidden') + '><label>Which<select id="exListSt"><option value="all">All of them</option><option value="read">Only the ones I’ve read</option><option value="want">Only the ones I want to read</option><option value="none">Only the unmarked ones</option></select></label><label><input type="checkbox" id="exListLines" checked> The lines between them</label><label><input type="checkbox" id="exListNotes"> Notes</label></div>' +
-        '<p class="hint ex-list-hint"' + (st.list ? '' : ' hidden') + '>As a PNG, the list goes under the map in one long picture, handy for sharing in a chat. As a PDF, it follows on A4 pages after the map.</p></div>' +
-      '<div class="ex-fmt" role="radiogroup" aria-label="Format"><label><input type="radio" name="exFmt" value="png"' + (st.format === 'png' ? ' checked' : '') + '> PNG image</label><label><input type="radio" name="exFmt" value="pdf"' + (st.format === 'pdf' ? ' checked' : '') + '> PDF</label></div>' +
-      '<p class="hint" id="exWhere">' + (window.showSaveFilePicker ? 'You choose where to save it: a Dropbox or iCloud Drive folder works.' : 'It downloads to your device.') + '</p></div></div>',
+    body: '<div class="ex-wrap ex2"><div class="ex-left" id="exLeft">' + leftHTML() + '</div><div class="ex-right"><div class="ex-prev" id="exPrev"><p class="hint">Drawing…</p></div><div class="ex-listprev" id="exListPrev" hidden></div></div></div>',
     actions: [{label: 'Cancel'}, {label: 'Export', primary: true, onClick: () => { doExport(st); return false; }}],
     onOpen: bd => {
       bd.closest('.modal, #modal, [role="dialog"]') && bd.closest('.modal, #modal, [role="dialog"]').classList.add('modal-wide');
-      const prev = bd.querySelector('#exPrev');
-      let tm = 0;
-      const redraw = () => { clearTimeout(tm); tm = setTimeout(() => { const x = buildExportSVG(exportOpts(st)); prev.innerHTML = x ? '<img alt="Preview of the exported map" src="data:image/svg+xml;charset=utf-8,' + encodeURIComponent(x.svg) + '">' : '<p class="hint">Choose at least one topic with papers.</p>'; }, 120); };
-      const listCount = () => { const n = papersFor({subs: new Set(exportOpts(st).subs), status: st.listStatus}).length; const el = bd.querySelector('#exListN'); if(el) el.textContent = '(' + n + (n === 1 ? ' paper)' : ' papers)'); };
-      const refresh = () => { bd.querySelector('#exTree').innerHTML = treeHTML(); bd.querySelector('#exSug').innerHTML = suggestHTML(); if(!titleTouched){ st.title = defTitle(); bd.querySelector('#exTitle').value = st.title; } listCount(); redraw(); };
-      listCount();
-      bd.addEventListener('change', ev => {
-        const tsel = ev.target.closest('[data-ex-topic]'), ssel = ev.target.closest('[data-ex-sub]');
-        if(tsel){ rows.filter(r => r.topic.id === tsel.dataset.exTopic && filled.has(r.sub.id)).forEach(r => { if(tsel.checked) st.sel.add(r.sub.id); else st.sel.delete(r.sub.id); }); refresh(); return; }
-        if(ssel){ if(ssel.checked) st.sel.add(ssel.dataset.exSub); else st.sel.delete(ssel.dataset.exSub); refresh(); return; }
-        if(ev.target.id === 'exConcepts') st.concepts = ev.target.checked;
-        if(ev.target.id === 'exNotes') st.notes = ev.target.checked;
-        if(ev.target.id === 'exLegend') st.legend = ev.target.checked;
-        if(ev.target.id === 'exRange') st.allYears = !ev.target.checked;
-        if(ev.target.name === 'exFmt') st.format = ev.target.value;
-        if(ev.target.id === 'exLines') st.lines = ev.target.value;
-        if(ev.target.id === 'exList'){ st.list = ev.target.checked; bd.querySelector('.ex-list-opts').hidden = !st.list; bd.querySelector('.ex-list-hint').hidden = !st.list; }
-        if(ev.target.id === 'exListSt') st.listStatus = ev.target.value;
-        if(ev.target.id === 'exListLines') st.listLines = ev.target.checked;
-        if(ev.target.id === 'exListNotes') st.listNotes = ev.target.checked;
-        listCount();
-        if(ev.target.id === 'exDisc') st.disclaimer = ev.target.checked;
+      const left = bd.querySelector('#exLeft'), prev = bd.querySelector('#exPrev'), lp = bd.querySelector('#exListPrev');
+      let tm = 0, gen = 0;
+      const redraw = () => { clearTimeout(tm); tm = setTimeout(async () => {
+        const my = ++gen, o = exportOpts(st), x = buildExportSVG(o);
+        prev.innerHTML = x ? '<img alt="Preview of the exported map" src="data:image/svg+xml;charset=utf-8,' + encodeURIComponent(x.svg) + '">' : '<p class="hint">' + (st.mode === 'topics' ? 'Choose at least one topic with papers.' : 'Choose what to include on the left.') + '</p>';
+        const es = st.list && x ? (o.keep ? keptPapers(o.keep, st.listStatus) : papersFor({subs: new Set(o.subs), status: st.listStatus})) : [];
+        if(!es.length){ lp.hidden = true; lp.innerHTML = ''; return; }
+        try{
+          const imgs = st.format === 'png' ? [listCanvas(es, st, 900)] : await listPages(es, st, 150);
+          if(my !== gen) return;
+          lp.hidden = false;
+          lp.className = 'ex-listprev ' + (st.format === 'png' ? 'as-png' : 'as-pdf');
+          lp.innerHTML = imgs.map((c, i) => '<img alt="' + (st.format === 'png' ? 'The list under the map' : 'List page ' + (i + 2)) + '" src="' + c.toDataURL('image/png') + '">').join('');
+        }catch(e){ lp.hidden = true; }
+      }, 140); };
+      const refresh = () => {
+        const q = bd.querySelector('#exQ'), hadQ = q && document.activeElement === q, pos = hadQ ? q.selectionStart : 0, sc = left.scrollTop;
+        if(!titleTouched) st.title = defTitle();
+        left.innerHTML = leftHTML(); left.scrollTop = sc;
+        if(hadQ){ const q2 = bd.querySelector('#exQ'); if(q2){ q2.focus(); q2.setSelectionRange(pos, pos); } }
         redraw();
+      };
+      bd.addEventListener('toggle', ev => { const d = ev.target; if(d && d.dataset && d.dataset.exFold) st.open[d.dataset.exFold] = d.open; }, true);
+      bd.addEventListener('change', ev => {
+        const x = ev.target;
+        const tsel = x.closest('[data-ex-topic]'), ssel = x.closest('[data-ex-sub]');
+        if(tsel){ rows.filter(r => r.topic.id === tsel.dataset.exTopic && filled.has(r.sub.id)).forEach(r => { if(tsel.checked) st.sel.add(r.sub.id); else st.sel.delete(r.sub.id); }); return refresh(); }
+        if(ssel){ if(ssel.checked) st.sel.add(ssel.dataset.exSub); else st.sel.delete(ssel.dataset.exSub); return refresh(); }
+        if(x.id === 'exPaper'){ st.paper = x.value || null; st.dropEdges.clear(); st.dropPapers.clear(); return refresh(); }
+        if(x.dataset.exBr){ if(x.checked) st.branches.add(x.dataset.exBr); else st.branches.delete(x.dataset.exBr); st.dropEdges.clear(); return refresh(); }
+        if(x.dataset.exPick){ if(x.checked) st.pick.add(x.dataset.exPick); else st.pick.delete(x.dataset.exPick); return refresh(); }
+        if(x.dataset.exEdge){ if(x.checked) st.dropEdges.delete(x.dataset.exEdge); else st.dropEdges.add(x.dataset.exEdge); return refresh(); }
+        if(x.dataset.exDrop){ if(x.checked) st.dropPapers.delete(x.dataset.exDrop); else st.dropPapers.add(x.dataset.exDrop); return refresh(); }
+        if(x.name === 'exRest') st.rest = x.value;
+        if(x.name === 'exFmt') st.format = x.value;
+        if(x.id === 'exConcepts') st.concepts = x.checked;
+        if(x.id === 'exNotes') st.notes = x.checked;
+        if(x.id === 'exLegend') st.legend = x.checked;
+        if(x.id === 'exRange') st.allYears = !x.checked;
+        if(x.id === 'exLines') st.lines = x.value;
+        if(x.id === 'exNames') st.names = x.value;
+        if(x.id === 'exDisc') st.disclaimer = x.checked;
+        if(x.id === 'exList'){ st.list = x.checked; st.open.list = true; }
+        if(x.id === 'exListSt') st.listStatus = x.value;
+        if(x.id === 'exListLines') st.listLines = x.checked;
+        if(x.id === 'exListNotes') st.listNotes = x.checked;
+        refresh();
       });
-      bd.addEventListener('input', ev => { if(ev.target.id === 'exTitle'){ titleTouched = true; st.title = ev.target.value; redraw(); } });
-      bd.addEventListener('click', ev => { const a = ev.target.closest('[data-ex-add]'); if(a){ st.sel.add(a.dataset.exAdd); refresh(); } });
+      bd.addEventListener('input', ev => {
+        if(ev.target.id === 'exTitle'){ titleTouched = true; st.title = ev.target.value; redraw(); }
+        if(ev.target.id === 'exQ'){ st.q = ev.target.value; refresh(); }
+      });
+      bd.addEventListener('click', ev => {
+        const a = ev.target.closest('[data-ex-add]'); if(a){ st.sel.add(a.dataset.exAdd); return refresh(); }
+        const m = ev.target.closest('[data-ex-mode]'); if(m){ st.mode = m.dataset.exMode; st.dropEdges.clear(); st.dropPapers.clear(); return refresh(); }
+        const d = ev.target.closest('[data-ex-depth]'); if(d){ st.pDepth = d.dataset.exDepth === 'all' ? 'all' : +d.dataset.exDepth; st.dropEdges.clear(); return refresh(); }
+        const r = ev.target.closest('[data-ex-dir]'); if(r){ st.pDir = r.dataset.exDir; st.dropEdges.clear(); return refresh(); }
+        if(ev.target.closest('[data-ex-grow]')){ const add = []; st.pick.forEach(id => { (IDX.up[id] || []).concat(IDX.down[id] || []).forEach(x => add.push(x[0])); }); add.forEach(x => { if(lib.entries[x]) st.pick.add(x); }); return refresh(); }
+        if(ev.target.closest('[data-ex-clear]')){ st.pick.clear(); st.dropEdges.clear(); return refresh(); }
+      });
       redraw();
     }
   });
 }
+
+/* export by lines rather than by topics: one paper's lines (as How far lights them), chosen colour lines,
+   or papers you pick; then any single line can be taken out, and the rest is left out or drawn faintly */
+function exportKeep(st, noDrop){
+  const drop = noDrop ? new Set() : (st.dropPapers || new Set());
+  if(!st.mode || st.mode === 'topics'){
+    if(!drop.size) return null;
+    /* whole topics, minus the papers you unticked */
+    const nodes = new Set(), edges = new Set();
+    Object.values(lib.entries).forEach(e => { if(e.kind === 'paper' && !e.parent && typeof e.y === 'number' && st.sel.has(e.sub) && !drop.has(e.id)){ nodes.add(e.id); if(st.concepts) (e.needs || []).forEach(c => { if(lib.entries[c]) nodes.add(c); }); } });
+    lib.links.forEach(l => { if(nodes.has(l[0]) && nodes.has(l[1])) edges.add(EK(l[0], l[1])); });
+    Object.values(lib.entries).forEach(e => (e.needs || []).forEach(c => { if(nodes.has(c) && nodes.has(e.id)) edges.add(EK(c, e.id)); }));
+    const all = new Set(edges); (st.dropEdges || new Set()).forEach(k => edges.delete(k));
+    return {nodes, edges, all, rest: 'out'};
+  }
+  const nodes = new Set(), edges = new Set();
+  if(st.mode === 'paper' && st.paper && lib.entries[st.paper]){
+    const sv = {d: ui.depth, f: settings.focusDir};
+    ui.depth = st.pDepth; settings.focusDir = st.pDir;
+    try{ const F = focusSets(st.paper); F.nodes.forEach(x => nodes.add(x)); F.edges.forEach(k => edges.add(k)); }
+    finally{ ui.depth = sv.d; settings.focusDir = sv.f; }
+  }else if(st.mode === 'branches'){
+    Object.entries(lib.lineBranch || {}).forEach(([k, bid]) => { if(!st.branches.has(bid)) return; const [a, b] = k.split('|'); if(lib.entries[a] && lib.entries[b]){ nodes.add(a); nodes.add(b); edges.add(EK(a, b)); } });
+  }else if(st.mode === 'papers'){
+    st.pick.forEach(id => { if(lib.entries[id]) nodes.add(id); });
+    lib.links.forEach(l => { if(nodes.has(l[0]) && nodes.has(l[1])) edges.add(EK(l[0], l[1])); });
+    lib.entries && Object.values(lib.entries).forEach(e => (e.needs || []).forEach(c => { if(nodes.has(c) && nodes.has(e.id)) edges.add(EK(c, e.id)); }));
+  }
+  drop.forEach(id => nodes.delete(id));
+  [...edges].forEach(k => { const [a, b] = k.split('|'); if(!nodes.has(a) || !nodes.has(b)) edges.delete(k); });
+  const all = new Set(edges);
+  st.dropEdges.forEach(k => edges.delete(k));
+  return {nodes, edges, all, rest: st.rest};
+}
+function keptPapers(keep, status){
+  const ord = listOrder();
+  return [...keep.nodes].map(id => lib.entries[id]).filter(e => e && e.kind === 'paper' && !e.parent && (status === 'all' || !status || (status === 'none' ? !stOf(e) : stOf(e) === status)))
+    .sort((a, b) => (ord[a.sub] ?? 9e9) - (ord[b.sub] ?? 9e9) || byYear(a, b));
+}
+function linkLabel(k){
+  const [a, b] = k.split('|'), l = lib.links.find(x => x[0] === a && x[1] === b), ea = lib.entries[a], eb = lib.entries[b];
+  const kind = l ? ({b: 'builds on', c: 'responds to', r: 'related to', o: 'leads to'})[l[2]] || '' : 'needed by';
+  const nm = e => e ? (e.kind === 'concept' ? (e.short || e.t) : mapLabel(e)) + (e.y ? ' ' + e.y : '') : '?';
+  return l && (l[2] === 'b' || l[2] === 'c') ? nm(eb) + ' ' + kind + ' ' + nm(ea) : nm(ea) + ' · ' + kind + ' · ' + nm(eb);
+}
+
 function exportOpts(st){
+  const keep = exportKeep(st);
+  if(keep){
+    const subs = new Set([...keep.nodes].map(id => lib.entries[id]).filter(e => e && e.kind === 'paper' && typeof e.y === 'number').map(e => e.sub));
+    /* faint context means the rest of the map as it is on screen now; leaving it out keeps only the rows with chosen papers */
+    if(keep.rest === 'faint') (MAP.lanes || []).forEach(ln => { if(!ln.concepts && ln.sub) subs.add(ln.sub.id); });
+    const order = allLaneRows().map(r => r.sub.id).filter(id => subs.has(id));
+    const wantConcepts = [...keep.nodes].some(id => (lib.entries[id] || {}).kind === 'concept') || (keep.rest === 'faint' && settings.showConcepts !== false && (MAP.lanes || []).some(ln => ln.concepts));
+    return {subs: order, concepts: wantConcepts, notes: st.notes, legend: st.legend, allYears: st.allYears, title: st.title.trim(), width: 1400, lines: st.lines, disclaimer: st.disclaimer, keep, names: st.names};
+  }
   const order = allLaneRows().map(r => r.sub.id).filter(id => st.sel.has(id));
-  return {subs: order, concepts: st.concepts, notes: st.notes, legend: st.legend, allYears: st.allYears, title: st.title.trim(), width: 1400, lines: st.lines, disclaimer: st.disclaimer};
+  return {subs: order, concepts: st.concepts, notes: st.notes, legend: st.legend, allYears: st.allYears, title: st.title.trim(), width: 1400, lines: st.lines, disclaimer: st.disclaimer, names: st.names};
 }
 
 /* ---------- the map and its papers together: a long PNG, or a PDF with the list on the pages after the map ---------- */
@@ -2848,9 +3111,19 @@ async function longImage(x, es, o){
   blocks.forEach(b => { b.draw(g, pad, y); y += b.h; });
   return c;
 }
+/* the list on its own, as it will sit under the map in a long PNG (for the preview) */
+function listCanvas(es, o, W){
+  const k = 2, pad = 28 * k, probe = document.createElement('canvas').getContext('2d');
+  W = W * k;
+  const blocks = listBlocks(probe, es, W - pad * 2, o, k);
+  const c = document.createElement('canvas'); c.width = W; c.height = Math.min(30000, Math.round(blocks.reduce((s, b) => s + b.h, 0) + pad * 1.4));
+  const g = c.getContext('2d'); g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, c.width, c.height);
+  let y = pad * 0.5; blocks.forEach(b => { if(y < c.height){ b.draw(g, pad, y); } y += b.h; });
+  return c;
+}
 /* the list on A4 pages after the map */
-async function listPages(es, o){
-  const k = 150 / 72, PW = Math.round(595 * k), PH = Math.round(842 * k), M = Math.round(56 * k), W = PW - 2 * M;
+async function listPages(es, o, dpi){
+  const k = (dpi || 150) / 72, PW = Math.round(595 * k), PH = Math.round(842 * k), M = Math.round(56 * k), W = PW - 2 * M;
   const probe = document.createElement('canvas').getContext('2d');
   const blocks = listBlocks(probe, es, W, o, k);
   const pages = []; let cur = [], used = 0;
@@ -2902,7 +3175,7 @@ async function doExport(st){
   const btn = document.querySelector('#modalActions .primary'); if(btn){ btn.disabled = true; btn.textContent = 'Exporting…'; }
   try{
     const name = slugName(st.title) + (st.list ? '-map-and-papers-' : '-') + new Date().toISOString().slice(0, 10) + '.' + st.format;
-    const es = st.list ? papersFor({subs: new Set(exportOpts(st).subs), status: st.listStatus}) : [];
+    const eo = exportOpts(st), es = st.list ? (eo.keep ? keptPapers(eo.keep, st.listStatus) : papersFor({subs: new Set(eo.subs), status: st.listStatus})) : [];
     let blob;
     if(st.list && es.length && st.format === 'png'){
       const c = await longImage(x, es, st);
@@ -2912,7 +3185,7 @@ async function doExport(st){
       const mapC = await svgToCanvas(x, 2), pages = await listPages(es, st);
       blob = await picturesPdf([{c: mapC, w: 842, h: 842 * x.h / x.w}].concat(pages.map(c => ({c, w: 595, h: 842}))));
     }else{
-      const c = await svgToCanvas(x, 2);
+      const c = await svgToCanvas(x, 3);
       blob = st.format === 'pdf' ? await jpegPdf(c, 842, 842 * x.h / x.w) : await canvasBlob(c, 'image/png');
     }
     const r = await saveBlobAs(blob, name);
@@ -3041,9 +3314,9 @@ function renderTabs(){
     const n = topicCount(tp);
     const exp = vis.length > 0 && tocExpanded(tp);
     const topicOn = tp.id === ui.topic && !vis.length;
-    h += '<li class="toc-topic"><div class="toc-row"' + (ui.edit ? ' data-node="t:' + tp.id + '"' : '') + '>' +
+    h += '<li class="toc-topic"><div class="toc-row"' + (' data-node="t:' + tp.id + '"') + '>' +
       (vis.length ? '<button type="button" class="toc-caret" data-toc-toggle="' + tp.id + '" aria-expanded="' + exp + '" aria-label="' + (exp ? 'Collapse “' : 'Expand “') + esc(tp.name) + '”">' + CARET + '</button>' : '<span class="toc-caret-sp" aria-hidden="true"></span>') +
-      tocLink(tp.id, tp.name, n, topicOn, 'topic') + (ui.edit ? tocPlus(tp.id, null, tp.name) + DRAG : '') + '</div>';
+      tocLink(tp.id, tp.name, n, topicOn, 'topic') + tocMore('t', tp.id) + DRAG + '</div>';
     const showSubs = exp || (ui.edit && tp.id === ui.topic);
     if(showSubs){
       h += '<ul class="toc-subs">';
@@ -3051,18 +3324,17 @@ function renderTabs(){
       vis.forEach(s => {
         if(s.parent && (folded.has(s.parent) || tocClosedSet.has(s.parent))){ folded.add(s.id); return; }
         const kn = (IDX.kids[s.id] || []).length, open = kn && !tocClosedSet.has(s.id);
-        h += '<li class="toc-sub" style="--d:' + (IDX.depth[s.id] || 0) + '"' + (ui.edit ? ' data-node="s:' + s.id + '"' : '') + '>' +
+        h += '<li class="toc-sub" style="--d:' + (IDX.depth[s.id] || 0) + '"' + (' data-node="s:' + s.id + '"') + '>' +
           (kn ? '<button type="button" class="toc-caret sub" data-toc-toggle="' + s.id + '" aria-expanded="' + !!open + '" aria-label="' + (open ? 'Collapse “' : 'Expand “') + esc(s.name) + '”">' + CARET + '</button>' : '') +
-          tocLink(s.id, s.name, subCountDeep(s), s.id === ui.sub) + (ui.edit ? tocPlus(tp.id, s.id, s.name) + DRAG : '') + '</li>';
+          tocLink(s.id, s.name, subCountDeep(s), s.id === ui.sub) + tocMore('s', s.id) + DRAG + '</li>';
       });
       if(vis.length > 1) h += '<li>' + tocLink(tp.id + '-all', 'All (by year)', n, tp.id === ui.topic && !ui.sub, 'all') + '</li>';
-      if(ui.edit) h += '<li><button type="button" class="toc-link add" data-act="new-sub" data-topic="' + tp.id + '">+ New subtopic here</button></li>';
       h += '</ul>';
     }
     h += '</li>';
   });
   h += '</ul>';
-  if(ui.edit) h += '<div class="toc-add" data-node="e:end"><button type="button" class="toc-link add" data-act="new-topic">+ New topic</button></div>';
+  h += '<div class="toc-add" data-node="e:end"><button type="button" class="toc-link add" data-act="new-topic">+ New topic</button></div>';
   h += '<div class="toc-concepts"><div class="toc-row"><span class="toc-caret-sp" aria-hidden="true"></span><button type="button" class="toc-link topic' + (ui.page === 'concepts' ? ' on' : '') + '" data-view="__concepts"' + (ui.page === 'concepts' ? ' aria-current="page"' : '') + '><span><i class="sq" aria-hidden="true"></i>Concepts</span><span class="n">' + allConcepts().length + '</span></button></div></div>';
   tocBody.innerHTML = h;
   if(focusSel){ const f = tocBody.querySelector(focusSel); if(f) f.focus({preventScroll:true}); }
@@ -3109,7 +3381,7 @@ function statusDots(e){
     '<button type="button" class="st read" data-st="read" data-id="' + e.id + '" aria-pressed="' + (st === 'read') + '" aria-label="Read: ' + esc(lab) + '" title="Read"></button></span>';
 }
 function editButtons(id, isConcept){
-  if(!ui.edit) return '';
+  if(!isConcept) return '<span class="row-more">' + moreBtn('p:' + id) + '</span>';
   return '<span class="row-edit"><button type="button" class="linkbtn" data-edit="' + id + '">' + (isConcept ? 'Modify concept' : 'Modify') + '</button>' + (isConcept ? '' : '<button type="button" class="linkbtn" data-tagassign="' + id + '">Tags</button>') + '<button type="button" class="linkbtn danger" data-del="' + id + '">Delete</button></span>';
 }
 function rowHTML(e, withPlace){
@@ -3214,11 +3486,8 @@ function renderSubSection(s, tp, asPart, opts){
     const chips = s.groups.length ? '<div class="subs-row">' +
       '<button type="button" class="subchip' + (ui.group ? '' : ' on') + '" data-group="">All<span>' + papers.length + '</span></button>' +
       s.groups.map(g => '<button type="button" class="subchip' + (ui.group === g.id ? ' on' : '') + '" data-group="' + g.id + '">' + esc(g.name) + '<span>' + papers.filter(e => e.group === g.id).length + '</span></button>').join('') + '</div>' : '';
-    const edit = ui.edit ? '<div class="head-edit"><button type="button" class="btn" data-act="new-entry">Add paper</button>' +
-      (s.hidden ? '<button type="button" class="btn" data-act="edit-topic">Modify topic</button><button type="button" class="btn" data-act="new-sub" data-topic="' + tp.id + '">Add subtopic</button><button type="button" class="btn danger" data-act="del-topic">Delete topic</button>' : '<button type="button" class="btn" data-act="edit-sub" data-sub="' + s.id + '">Modify subtopic</button>') +
-      (!s.hidden ? '<button type="button" class="btn" data-act="new-sub" data-topic="' + tp.id + '" data-parent="' + s.id + '">Add subtopic inside</button>' : '') +
-      (!s.hidden ? '<button type="button" class="btn danger" data-act="del-sub" data-sub="' + s.id + '">Delete subtopic</button>' : '') + '</div>' : '';
-    h += '<div class="branch-head"><h2>' + esc(title) + '</h2>' +
+    const edit = '';
+    h += '<div class="branch-head"><h2 class="has-more">' + esc(title) + moreBtn(s.hidden ? 't:' + tp.id : 's:' + s.id) + '</h2>' +
       '<p class="branch-count">' + countText(opts.countEs || es) + ((opts.countEs || es).some(e => e.kind === 'paper') ? ' · <button type="button" class="linkbtn" data-export-papers="' + s.id + '">Export list</button>' : '') + '</p>' +
       ((s.hidden ? tp.desc : s.desc) ? '<p class="branch-desc">' + esc(s.hidden ? tp.desc : s.desc) + '</p>' : '') + relatedTopicsHTML(s.hidden ? tp.id : s.id) + conceptsUsedHTML(papers) +
       chips + edit + '</div>';
@@ -3228,20 +3497,20 @@ function renderSubSection(s, tp, asPart, opts){
     if(concepts.length && !asPart) h += '<h3 class="sub-h3">Other readings</h3>';
     h += rows.length ? tableHTML(rows, false) : '<p class="empty">No papers match the current filters. Check the counts on the labels, or set the filters back to “All”.</p>';
   }else if(!concepts.length && !asPart && !opts.kids){
-    h += '<p class="empty">No papers here yet. ' + (ui.edit ? 'Use “Add paper” above to start.' : 'Click “Modify” at the top right to add some.') + '</p>';
+    h += '<p class="empty">No papers here yet. Add one with + New paper at the top, or from ⋯ next to the title.</p>';
   }
   return h;
 }
 function emptyGuide(){
   return '<section class="branch"><div class="branch-head"><h2>Get started</h2></div>' +
-    '<ol class="guide"><li>Click <strong>Modify</strong> at the top right to add your first topic and paper. Everything saves in this browser automatically.</li>' +
+    '<ol class="guide"><li>Add your first topic with <strong>+ New topic</strong> in Contents, then a paper with <strong>+ New paper</strong>. Everything saves in this browser automatically.</li>' +
     '<li>To keep your list safe and use it on other devices, connect sync under <strong>Settings → Sync</strong>: Dropbox, a folder, or GitHub.</li>' +
     '<li>Already have papers in Zotero or a spreadsheet? <button type="button" class="linkbtn" data-start-import="1">Import them</button> from a CSV, BibTeX or RIS file.</li>' +
     '<li>Have a backup file? Use <strong>Settings → Data → Import backup</strong>.</li></ol></section>';
 }
 function renderMain(){
   if(ui.page === 'concepts'){ mainEl.innerHTML = renderConceptsPage(); return; }
-  if(!Object.keys(lib.entries).length && !ui.edit){ mainEl.innerHTML = emptyGuide(); return; }
+  if(!Object.keys(lib.entries).length && !lib.topics.some(tp => tp.subs.some(s => !s.hidden))){ mainEl.innerHTML = emptyGuide(); return; }
   const tp = IDX.topics[ui.topic];
   if(!tp){ mainEl.innerHTML = '<p class="empty">No topics yet.</p>'; return; }
   let html = '';
@@ -3257,9 +3526,8 @@ function renderMain(){
   }else{
     const es = topicEntries(tp.id);
     const anyConcept = es.some(e => e.kind === 'concept');
-    html = '<section class="branch" id="sec-' + tp.id + '-all"><div class="branch-head"><h2>' + esc(tp.name) + ': all</h2>' +
-      '<p class="branch-count">' + countText(es) + (es.some(e => e.kind === 'paper') ? ' · <button type="button" class="linkbtn" data-export-papers="' + tp.id + '-all">Export list</button>' : '') + '</p>' + (tp.desc ? '<p class="branch-desc">' + esc(tp.desc) + '</p>' : '') + relatedTopicsHTML(tp.id) +
-      (ui.edit ? '<div class="head-edit"><button type="button" class="btn" data-act="new-entry">Add paper</button><button type="button" class="btn" data-act="edit-topic">Modify topic</button><button type="button" class="btn" data-act="new-sub" data-topic="' + tp.id + '">Add subtopic</button><button type="button" class="btn danger" data-act="del-topic">Delete topic</button></div>' : '') + '</div>';
+    html = '<section class="branch" id="sec-' + tp.id + '-all"><div class="branch-head"><h2 class="has-more">' + esc(tp.name) + ': all' + moreBtn('t:' + tp.id) + '</h2>' +
+      '<p class="branch-count">' + countText(es) + (es.some(e => e.kind === 'paper') ? ' · <button type="button" class="linkbtn" data-export-papers="' + tp.id + '-all">Export list</button>' : '') + '</p>' + (tp.desc ? '<p class="branch-desc">' + esc(tp.desc) + '</p>' : '') + relatedTopicsHTML(tp.id) + + '</div>';
     if(anyConcept){
       html += visibleSubs(tp).concat(tp.subs.filter(s => s.hidden)).map(s => renderSubSection(s, tp, true)).join('');
     }else{
@@ -3309,7 +3577,18 @@ function renderTagLegend(show){
     '<span><i class="sw none"></i>No tags</span>' +
     '<button type="button" class="linkbtn" data-act="tags">Modify tags &amp; colours</button>';
 }
-function dotR(e, narrow){ return (e.p === 3 ? 7 : e.p === 2 ? 5 : 3.4) * (narrow ? 0.9 : 1); }
+/* a dot's size says how many papers build on it: none is small, and each one makes it bigger, by less as they add up */
+function builtOnBy(id){ return (IDX.down[id] || []).filter(x => x[1] === 'b').length; }
+/* the names that always show: in each row the two papers most built on (if at least two papers build on them),
+   and anywhere a paper that seven or more build on; every other name shows when you point at or select a paper */
+function labelKeepSet(items, laneIndex){
+  const keep = new Set(), byLane = {};
+  items.forEach(e => { if(e.kind === 'concept'){ keep.add(e.id); return; } const n = builtOnBy(e.id); if(n >= 7) keep.add(e.id); if(n >= 2) (byLane[laneOf(e)] = byLane[laneOf(e)] || []).push([n, e.id]); });
+  Object.values(byLane).forEach(arr => arr.sort((x, y) => y[0] - x[0]).slice(0, 2).forEach(x => keep.add(x[1])));
+  return keep;
+}
+function dotTier(e){ const n = builtOnBy(e.id); return n >= 3 ? 3 : n >= 1 ? 2 : 1; }
+function dotR(e, narrow){ return Math.min(8.6, 3.4 + 1.7 * Math.log2(1 + builtOnBy(e.id))) * (narrow ? 0.9 : 1); }
 function niceStep(span, maxTicks){
   const raw = span / Math.max(1, maxTicks);
   const steps = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500];
@@ -3569,7 +3848,7 @@ function renderMap(force){
     (e.needs || []).forEach(c => { if(P[c] && P[e.id]) s += '<path class="edge p" data-a="' + c + '" data-b="' + e.id + '" d="' + edgePath(P[c], P[e.id]) + '"></path>'; });
   });
   const useSrc = settings.mapColor !== 'plain';
-  items.slice().sort((a, b) => (a.p || 1) - (b.p || 1)).forEach(e => {
+  items.slice().sort((a, b) => (a.kind === 'concept' ? 0 : builtOnBy(a.id)) - (b.kind === 'concept' ? 0 : builtOnBy(b.id))).forEach(e => {
     const p = P[e.id];
     const label = e.kind === 'concept' ? ('Concept: ' + e.t) : ([e.y, shortAu(e.au)].filter(Boolean).join(' ') + ': ' + e.t);
     if(e.kind === 'concept'){
@@ -3596,7 +3875,8 @@ function renderMap(force){
       '<title>' + esc(label) + '</title></g>';
   });
   const slots = {};
-  items.slice().sort((a, b) => (b.kind === 'concept') - (a.kind === 'concept') || (b.p || 1) - (a.p || 1) || a.y - b.y).forEach(e => {
+  const keepLbl = labelKeepSet(items, laneIndex);
+  items.slice().sort((a, b) => (keepLbl.has(b.id) - keepLbl.has(a.id)) || (b.kind === 'concept') - (a.kind === 'concept') || builtOnBy(b.id) - builtOnBy(a.id) || a.y - b.y).forEach(e => {
     const p = P[e.id];
     if(p.x < left - 4 || p.x > W - right + 4) return;
     const lane = laneIndex[e.sub];
@@ -3607,12 +3887,13 @@ function renderMap(force){
     const sl = slots[lane] || (slots[lane] = {up:[], dn:[]});
     const free = arr => arr.every(([s0, e0]) => z < s0 - 4 || a > e0 + 4);
     const order = e.kind === 'concept' ? ['dn', 'up'] : ['up', 'dn'];
-    const lv = order.find(k => free(sl[k]));
-    if(!lv) return;
-    sl[lv].push([a, z]);
+    const keep = MAP.allNames || keepLbl.has(e.id);
+    let lv = order.find(k => free(sl[k]));
+    if(!lv){ if(keep) return; lv = order[0]; }
+    if(keep) sl[lv].push([a, z]);
     const r = e.kind === 'concept' ? 6 : dotR(e, narrow);
     const ty = lv === 'up' ? p.y - r - 5 : p.y + r + 12;
-    s += '<text class="lbl ' + (e.kind === 'concept' ? 'clbl' : 'p' + (e.p || 1)) + (ok[e.id] ? '' : ' muted') + '" data-id="' + e.id + '" x="' + cx.toFixed(1) + '" y="' + ty.toFixed(1) + '" text-anchor="middle">' + esc(txt) + '</text>';
+    s += '<text class="lbl ' + (e.kind === 'concept' ? 'clbl' : 'p' + dotTier(e)) + (keep ? ' keep' : ' hov') + (ok[e.id] ? '' : ' muted') + '" data-lk="' + (keep ? 'keep' : 'hov') + '" data-id="' + e.id + '" x="' + cx.toFixed(1) + '" y="' + ty.toFixed(1) + '" text-anchor="middle">' + esc(txt) + '</text>';
   });
   s += '</g>';
   mapSvg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
@@ -3684,14 +3965,19 @@ function depthWalk(id, depth, F, dir){
   }
 }
 /* A selected paper lights up one step around it (or more, with “How far”).
-   If it sits on a colour line, that whole line lights up end to end; if not, the colour lines it leads to show faintly. */
+   With All ways, a colour line it sits on shows faintly (end to end at Whole line), and colour lines it leads to show faintly. */
 function focusSets(id){
   const dir = settings.focusDir || 'all';
   const F = oneStep(id, dir);
   if(ui.depth && ui.depth !== 1) depthWalk(id, ui.depth, F, dir);
-  const R = branchesNear(id);
-  R.own.forEach(b => branchSets(b, F, false));
-  R.reach.forEach(b => branchSets(b, F, true));
+  /* How far and Direction decide what lights up, colour lines included: a colour line the paper is on lights
+     end to end only with Whole line and All ways; with fewer steps it shows faintly for context, and with a
+     direction chosen only the part in that direction lights (through the walk above), never the rest. */
+  if(dir === 'all'){
+    const R = branchesNear(id);
+    R.own.forEach(b => branchSets(b, F, ui.depth !== 'all'));
+    R.reach.forEach(b => branchSets(b, F, true));
+  }
   return F;
 }
 /* how far away something is shows as how strong it is: one step is full strength, then each step fades a little */
@@ -3778,13 +4064,9 @@ function setShowRelated(on){
   renderMap(true); infoEl.innerHTML = ui.branch ? branchInfoHTML(ui.branch) : infoHTML(ui.selected); applyFocus(ui.selected);
   toast(on ? 'Related-to lines shown' : 'Related-to lines hidden');
 }
-function focusNoteHTML(id){
-  const R = branchesNear(id);
+function hfBarHTML(id){
   let h = '';
-  if(R.own.length) h += '<p class="rel"><span class="rel-k">On colour lines</span>' + R.own.map(branchChip).join('') + '</p>';
-  else if(R.reach.length) h += '<p class="rel"><span class="rel-k">Leads to colour lines</span>' + R.reach.map(branchChip).join('') + '</p>';
-  const hasLines = lib.links.some(l => l[0] === id || l[1] === id) || (lib.entries[id] && (lib.entries[id].needs || []).length);
-  if(hasLines){
+  {
     const F = focusSets(id);
     const lit = [...F.nodes].filter(x => x !== id && lib.entries[x]);
     const np = lit.filter(x => lib.entries[x].kind !== 'concept').length, nc = lit.length - np;
@@ -3794,14 +4076,27 @@ function focusNoteHTML(id){
     const DEPTHS = [[1, '1 step'], [2, '2 steps'], [3, '3 steps'], ['all', 'Whole line']];
     const curDepth = (DEPTHS.find(o => String(o[0]) === String(ui.depth)) || DEPTHS[0])[1];
     const countTxt = np + (np === 1 ? ' paper' : ' papers') + (nc ? ', ' + nc + (nc === 1 ? ' concept' : ' concepts') : '');
-    h += '<details class="rel-fold hf-fold" data-hf-fold="1"' + (settings.hfFoldOpen ? ' open' : '') + '><summary><span class="rel-k">How far</span><span class="rel-sum">' + esc(curDepth) + (dir !== 'all' ? ' · ' + esc(DIRS.find(d => d[0] === dir)[1]) : '') + ' · ' + esc(countTxt) + '</span></summary>';
-    h += '<div class="rel depth-ctl">' + DEPTHS.map(o => '<button type="button" class="dchip' + (String(ui.depth) === String(o[0]) ? ' on' : '') + '" data-depth="' + o[0] + '">' + o[1] + '</button>').join('') +
+    h += '<div class="rel depth-ctl"><span class="rel-k">How far</span>' + DEPTHS.map(o => '<button type="button" class="dchip' + (String(ui.depth) === String(o[0]) ? ' on' : '') + '" data-depth="' + o[0] + '">' + o[1] + '</button>').join('') +
       '<span class="hf-count" title="How much is lit up now">' + np + (np === 1 ? ' paper' : ' papers') + (nc ? ', ' + nc + (nc === 1 ? ' concept' : ' concepts') : '') + '</span>' +
       '<button type="button" class="hf-more' + (dir !== 'all' || (hasR && settings.showRelated === false) ? ' changed' : '') + '" data-hf-open="1" aria-expanded="' + open + '" title="Direction and Related-to lines">' + (dir !== 'all' ? esc(DIRS.find(d => d[0] === dir)[1]) : 'Options') + ' <span aria-hidden="true">' + (open ? '▴' : '▾') + '</span></button>' +
       '<div class="hf-opts"' + (open ? '' : ' hidden') + '><span class="hf-k">Direction</span>' + DIRS.map(d => '<button type="button" class="dchip small' + (dir === d[0] ? ' on' : '') + '" data-hf-dir="' + d[0] + '" title="' + esc(d[2]) + '">' + d[1] + '</button>').join('') +
       (hasR ? '<span class="dsep" aria-hidden="true"></span><button type="button" class="dchip small rel-toggle' + (settings.showRelated !== false ? ' on' : '') + '" data-rel-toggle="1" aria-pressed="' + (settings.showRelated !== false) + '" title="Show or hide the dotted Related-to lines"' + (dir !== 'all' ? ' disabled' : '') + '><svg width="18" height="6" aria-hidden="true"><line x1="1" y1="3" x2="17" y2="3"></line></svg>Related to</button>' : '') +
-      '</div></div></details>';
+      '</div></div>';
   }
+  return h;
+}
+function renderHfBar(){
+  const el = document.getElementById('hfBar'); if(!el) return;
+  const id = ui.selected, e = id && lib.entries[id];
+  const has = !!(e && (lib.links.some(l => l[0] === id || l[1] === id) || (e.needs || []).length));
+  el.hidden = !has; el.innerHTML = has ? hfBarHTML(id) : '';
+}
+function refreshInfo(){ infoEl.innerHTML = infoHTML(ui.selected); renderHfBar(); }
+function focusNoteHTML(id){
+  const R = branchesNear(id);
+  let h = '';
+  if(R.own.length) h += '<p class="rel"><span class="rel-k">On colour lines</span>' + R.own.map(branchChip).join('') + '</p>';
+  else if(R.reach.length) h += '<p class="rel"><span class="rel-k">Leads to colour lines</span>' + R.reach.map(branchChip).join('') + '</p>';
   return h;
 }
 function branchInfoHTML(bid){
@@ -3834,6 +4129,7 @@ document.addEventListener('click', ev => {
   const ek = ev.target.closest('[data-export-kind]'); if(ek){ document.getElementById('exportMenu').hidden = true; document.getElementById('btnExport').setAttribute('aria-expanded', 'false'); if(ek.dataset.exportKind === 'map') openExport(); else if(ek.dataset.exportKind === 'both') openExport({list: true, format: 'pdf'}); else openListExport(); return; }
   if(!ev.target.closest('.export-wrap')){ const m = document.getElementById('exportMenu'); if(m && !m.hidden){ m.hidden = true; document.getElementById('btnExport').setAttribute('aria-expanded', 'false'); } }
   const lx = ev.target.closest('[data-export-papers]'); if(lx){ openListExport(lx.dataset.exportPapers); return; }
+  const xp = ev.target.closest('[data-export-paper]'); if(xp){ openExport({mode: 'paper', paper: xp.dataset.exportPaper}); return; }
   if(ev.target.closest('#setPapersExport')){ closeModal(); setTimeout(() => openListExport(), 0); return; }
   const stb = ev.target.closest('[data-sync-tab]'); if(stb){ const root = stb.closest('.sync-section'); root.querySelectorAll('[data-sync-tab]').forEach(x => x.setAttribute('aria-selected', String(x === stb))); root.querySelectorAll('[data-sync-pane]').forEach(p => { p.hidden = p.dataset.syncPane !== stb.dataset.syncTab; }); return; }
   if(ev.target.closest('[data-fs-connect]')){ closeModal(); fsConnect(); return; }
@@ -3850,25 +4146,26 @@ document.addEventListener('click', ev => {
   const bh = ev.target.closest('[data-branch-hide]'); if(bh){ setBranchHidden(bh.dataset.branchHide, true); toast('Hidden on the map. Show it again from Colour lines.'); return; }
   const bf = ev.target.closest('[data-branch-focus]'); if(bf){ ev.preventDefault(); if(ui.branch === bf.dataset.branchFocus){ ui.branch = null; select(null); renderMap(true); renderBranchRow(); } else focusBranch(bf.dataset.branchFocus); return; }
   const rt = ev.target.closest('[data-rel-toggle]'); if(rt){ setShowRelated(settings.showRelated === false); return; }
-  const ho = ev.target.closest('[data-hf-open]'); if(ho){ settings.hfOpen = !settings.hfOpen; persistSettings({remote:false}); infoEl.innerHTML = infoHTML(ui.selected); return; }
-  const hd = ev.target.closest('[data-hf-dir]'); if(hd){ settings.focusDir = hd.dataset.hfDir; persistSettings({remote:false}); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); return; }
-  const dp = ev.target.closest('[data-depth]'); if(dp){ ui.depth = dp.dataset.depth === 'all' ? 'all' : +dp.dataset.depth; settings.focusDepth = ui.depth; persistSettings({remote:false}); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); }
+  const ho = ev.target.closest('[data-hf-open]'); if(ho){ settings.hfOpen = !settings.hfOpen; persistSettings({remote:false}); refreshInfo(); return; }
+  const hd = ev.target.closest('[data-hf-dir]'); if(hd){ settings.focusDir = hd.dataset.hfDir; persistSettings({remote:false}); refreshInfo(); applyFocus(ui.selected); return; }
+  const dp = ev.target.closest('[data-depth]'); if(dp){ ui.depth = dp.dataset.depth === 'all' ? 'all' : +dp.dataset.depth; settings.focusDepth = ui.depth; persistSettings({remote:false}); refreshInfo(); applyFocus(ui.selected); }
 });
 /* a paper's lines, folded: one line per related paper, with its note in full */
 function linesFoldHTML(id, e){
   const up = IDX.up[id] || [], down = IDX.down[id] || [], rows = [];
-  const add = (label, arr) => arr.filter(x => lib.entries[x[0]]).forEach(x => rows.push({label, id: x[0], note: x[2] || ''}));
-  add('Builds on', up.filter(x => x[1] === 'b'));
-  add('Responds to', up.filter(x => x[1] === 'c'));
-  add('Built on by', down.filter(x => x[1] === 'b'));
-  add('Challenged by', down.filter(x => x[1] === 'c'));
-  add('Related to', up.filter(x => x[1] === 'r').concat(down.filter(x => x[1] === 'r')));
+  const keyOfLine = (a, b, t) => { const l = lib.links.find(l => l[2] === t && ((l[0] === a && l[1] === b) || (t === 'r' && l[0] === b && l[1] === a))); return l ? l[0] + '|' + l[1] + '|' + l[2] : ''; };
+  const add = (label, arr, mk) => arr.filter(x => lib.entries[x[0]]).forEach(x => rows.push({label, id: x[0], note: x[2] || '', key: mk(x)}));
+  add('Builds on', up.filter(x => x[1] === 'b'), x => keyOfLine(x[0], id, 'b'));
+  add('Responds to', up.filter(x => x[1] === 'c'), x => keyOfLine(x[0], id, 'c'));
+  add('Built on by', down.filter(x => x[1] === 'b'), x => keyOfLine(id, x[0], 'b'));
+  add('Challenged by', down.filter(x => x[1] === 'c'), x => keyOfLine(id, x[0], 'c'));
+  add('Related to', up.filter(x => x[1] === 'r').concat(down.filter(x => x[1] === 'r')), x => keyOfLine(x[0], id, 'r'));
   (e.needs || []).filter(c => lib.entries[c]).forEach(c => rows.push({label: 'Needs', id: c, note: ''}));
   if(!rows.length) return '';
   const counts = {}; rows.forEach(r => { counts[r.label] = (counts[r.label] || 0) + 1; });
   const sum = Object.entries(counts).map(([k, n]) => n + ' ' + k.toLowerCase()).join(' · ');
   return '<details class="rel-fold" data-rel-fold="1"' + (settings.relOpen ? ' open' : '') + '><summary><span class="rel-k">Lines</span><span class="rel-sum">' + esc(sum) + '</span></summary><ul class="rel-list">' +
-    rows.map(r => { const o = lib.entries[r.id]; return '<li><span class="rl-k">' + r.label + '</span><span class="rl-main"><button type="button" class="rl-t" data-select="' + r.id + '" title="' + esc(o.t) + '">' + esc(o.kind === 'concept' ? (o.short || o.t) : (o.au ? shortAu(o.au) + ' · ' : '') + o.t) + '</button>' + (r.note ? '<span class="rl-note">' + esc(r.note) + '</span>' : '') + '</span><span class="rl-y">' + esc(o.y || '') + '</span></li>'; }).join('') +
+    rows.map(r => { const o = lib.entries[r.id]; return '<li><span class="rl-k">' + r.label + '</span><span class="rl-main"><button type="button" class="rl-t" data-select="' + r.id + '" title="' + esc(o.t) + '">' + esc(o.kind === 'concept' ? (o.short || o.t) : (o.au ? shortAu(o.au) + ' · ' : '') + o.t) + '</button>' + (r.note ? '<span class="rl-note">' + esc(r.note) + '</span>' : '') + '</span><span class="rl-y">' + esc(o.y || '') + '</span>' + (r.key ? '<span class="rl-act"><button type="button" data-link-note="' + esc(r.key) + '" title="Note and colour" aria-label="Note and colour of this line">✎</button><button type="button" data-link-del="' + esc(r.key) + '" title="Remove this line" aria-label="Remove this line">×</button></span>' : '') + '</li>'; }).join('') +
     '</ul></details>';
 }
 function relGroup(title, items){
@@ -3901,8 +4198,8 @@ function infoHTML(id){
   const st = stOf(e);
   return '<div class="info-grid"><p class="info-year">' + esc(e.y) + '</p><div>' +
     '<p class="info-au">' + (e.au ? esc(e.au) + ' · ' : '') + place + '</p>' +
-    '<div class="info-head"><p class="info-t">' + esc(e.t) + '</p><span class="info-st"><button type="button" class="stbtn want" data-st="want" data-id="' + e.id + '" aria-pressed="' + (st === 'want') + '">Want to read</button><button type="button" class="stbtn read" data-st="read" data-id="' + e.id + '" aria-pressed="' + (st === 'read') + '">Read</button></span></div>' + (e.v || idLinksHTML(e) ? '<p class="info-src">' + esc(e.v || '') + (idLinksHTML(e) ? (e.v ? ' · ' : '') + idLinksHTML(e) : '') + '</p>' : '') + infoTagsHTML(e) + rels +
-    '<p class="info-actions"><button type="button" class="linkbtn" data-goto="' + e.id + '">Show in table</button><button type="button" class="linkbtn" data-reader="' + e.id + '">Notes &amp; PDF</button>' +
+    '<div class="info-head"><p class="info-t">' + esc(e.t) + '</p><span class="info-st"><button type="button" class="stbtn want" data-st="want" data-id="' + e.id + '" aria-pressed="' + (st === 'want') + '">Want to read</button><button type="button" class="stbtn read" data-st="read" data-id="' + e.id + '" aria-pressed="' + (st === 'read') + '">Read</button>' + moreBtn('p:' + e.id) + '</span></div>' + (e.v || idLinksHTML(e) ? '<p class="info-src">' + esc(e.v || '') + (idLinksHTML(e) ? (e.v ? ' · ' : '') + idLinksHTML(e) : '') + '</p>' : '') + infoTagsHTML(e) + rels +
+    '<p class="info-actions"><button type="button" class="linkbtn" data-goto="' + e.id + '">Show in table</button><button type="button" class="linkbtn" data-export-paper="' + e.id + '">Export its lines</button><button type="button" class="linkbtn" data-reader="' + e.id + '">Notes &amp; PDF</button>' +
     (ui.edit ? '<button type="button" class="linkbtn" data-edit="' + e.id + '">Modify</button>' : '') +
     '<button type="button" class="linkbtn" data-clear-sel="1">Clear selection</button></p></div></div>';
 }
@@ -4056,7 +4353,7 @@ function openLinkNote(a, b, ty){
         if(br){ if(nm) br.name = nm.slice(0, 40); if(HEX_RE.test(col)) br.color = col; }
       }
       if(bid) lib.lineBranch[key] = bid; else delete lib.lineBranch[key];
-      reindex(); touchLib(); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected);
+      reindex(); touchLib(); renderMap(true); refreshInfo(); applyFocus(ui.selected);
       toast('Line saved', () => { lib = before; reindex(); touchLib(); renderAll(); toast('Undone'); });
     }}],
     onOpen: b2 => {
@@ -4090,7 +4387,7 @@ function openLinkPicker(id, type){
         const u = ev.target.closest('[data-unlink]'); if(!u) return;
         const o = u.dataset.unlink, before = clone(lib);
         lib.links = lib.links.filter(l => !(l[2] === type && ((l[0] === o && l[1] === id) || (type === 'r' && l[0] === id && l[1] === o))));
-        reindex(); touchLib([]); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected);
+        reindex(); touchLib([]); renderMap(true); refreshInfo(); applyFocus(ui.selected);
         drawDone(); draw();
         toast('Unlinked', () => { lib = before; reindex(); touchLib([]); renderAll(); toast('Undone'); });
       });
@@ -4108,7 +4405,7 @@ function openLinkPicker(id, type){
         const before = clone(lib);
         lib.links.push([o.id, id, type]);
         reindex(); touchLib([]);
-        renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected);
+        renderMap(true); refreshInfo(); applyFocus(ui.selected);
         inp.value = ''; draw(); drawDone(o.id); inp.focus();
         toast('Linked: ' + mapLabel(e) + (type === 'r' ? ' is related to ' : type === 'c' ? ' responds to ' : ' builds on ') + mapLabel(o), () => { lib = before; reindex(); touchLib([]); renderAll(); toast('Undone'); });
       });
@@ -4130,7 +4427,7 @@ function select(id, center){
     }
   }
   applyFocus(ui.selected);
-  infoEl.innerHTML = infoHTML(ui.selected);
+  refreshInfo();
   if(ui.selected) revealInMap(ui.selected);
   if(typeof phonePan === 'function') phonePan();
 }
@@ -4151,7 +4448,7 @@ function toggleStatus(id, st){
   renderTabs();
   renderMain();
   renderMap(true);
-  infoEl.innerHTML = infoHTML(ui.selected);
+  refreshInfo();
 }
 
 /* ===================== navigation helpers ===================== */
@@ -4191,7 +4488,7 @@ function updateFilterToggle(){
 function rerenderAfterFilter(){ updateFilterToggle(); renderTabs(); renderMain(); renderMap(true); }
 function appTitle(){ return String(lib.title || '').trim() || 'Paper Map'; }
 function applyTitle(){ const n = appTitle(); document.title = n; const h = document.getElementById('appTitle'); if(h) h.textContent = n; }
-function renderAll(){ applyTitle(); reindex(); syncControls(); renderTabs(); renderMain(); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); setEditUI(); }
+function renderAll(){ applyTitle(); reindex(); syncControls(); renderTabs(); renderMain(); renderMap(true); refreshInfo(); setEditUI(); }
 function setBarH(){ document.documentElement.style.setProperty('--bar-h', document.getElementById('bar').offsetHeight + 'px'); }
 
 /* ===================== modal & toast ===================== */
@@ -4239,11 +4536,11 @@ document.getElementById('undoPill').addEventListener('click', () => runUndo());
 document.getElementById('btnAddPaper').addEventListener('click', () => openEntryForm(null));
 (() => {
   const btn = document.getElementById('btnMore'), menu = document.getElementById('moreMenu');
-  const show = open => { menu.hidden = !open; btn.setAttribute('aria-expanded', String(open)); if(open){ const m = menu.querySelector('.mm-modify'); if(m) m.textContent = document.getElementById('btnEdit').textContent.trim() === 'Done' ? 'Done modifying' : 'Modify'; } };
+  const show = open => { menu.hidden = !open; btn.setAttribute('aria-expanded', String(open));  };
   btn.addEventListener('click', ev => { ev.stopPropagation(); show(menu.hidden); });
   menu.addEventListener('click', ev => {
     const b = ev.target.closest('[data-more]'); if(!b) return; show(false);
-    const go = {concept: () => { const a = document.querySelector('#addMenu [data-add="concept"]'); if(a) a.click(); }, filters: () => document.getElementById('filterToggle').click(), modify: () => document.getElementById('btnEdit').click(), settings: () => document.getElementById('btnSettings').click(), export: () => openExport(), exportList: () => openListExport(), exportBoth: () => openExport({list: true, format: 'pdf'}), import: () => openImport()}[b.dataset.more];
+    const go = {concept: () => { const a = document.querySelector('#addMenu [data-add="concept"]'); if(a) a.click(); }, filters: () => document.getElementById('filterToggle').click(), settings: () => document.getElementById('btnSettings').click(), export: () => openExport(), exportList: () => openListExport(), exportBoth: () => openExport({list: true, format: 'pdf'}), import: () => openImport()}[b.dataset.more];
     if(go) go();
   });
   document.addEventListener('click', ev => { if(!menu.hidden && !ev.target.closest('.more-wrap')) show(false); });
@@ -4310,34 +4607,100 @@ document.addEventListener('keydown', ev => {
   ev.preventDefault(); runUndo();
 });
 
+
+/* ===================== menus that appear where you point (no Modify mode) ===================== */
+function moreBtn(key){ return '<button type="button" class="more-btn" data-more-of="' + esc(key) + '" aria-label="More" title="More">⋯</button>'; }
+function tocMore(kind, id){ return '<button type="button" class="toc-more more-btn" data-more-of="' + kind + ':' + id + '" aria-label="More" title="More">⋯</button>'; }
+function moreItems(key){
+  const [k, id] = [key.slice(0, 1), key.slice(2)];
+  if(k === 'p'){ const e = lib.entries[id]; if(!e) return [];
+    return [{label: 'Modify…', a: {edit: id}}, {label: 'Tags…', a: {tagassign: id}}, {sep: 1},
+      {label: 'It builds on…', a: {linkAdd: 'b', id}}, {label: 'It responds to…', a: {linkAdd: 'c', id}}, {label: 'Related to…', a: {linkAdd: 'r', id}}, {sep: 1},
+      {label: 'Delete', a: {del: id}, danger: 1}]; }
+  if(k === 's'){ const s = IDX.subs[id]; if(!s) return []; const tid = IDX.topicOf[id];
+    return [{label: 'Add a paper here', a: {act: 'new-entry', view: id}}, {label: 'Add a subtopic inside', a: {act: 'new-sub', topic: tid, parent: id}}, {label: 'Rename or describe…', a: {act: 'edit-sub', sub: id}}, {label: 'Related topic…', a: {tlinkAdd: id}}, {sep: 1}, {label: 'Delete subtopic', a: {act: 'del-sub', sub: id}, danger: 1}]; }
+  if(k === 't'){ const tp = IDX.topics[id]; if(!tp) return [];
+    return [{label: 'Add a paper here', a: {act: 'new-entry', view: id}}, {label: 'Add a subtopic', a: {act: 'new-sub', topic: id}}, {label: 'Rename or describe…', a: {act: 'edit-topic', topic: id}}, {label: 'Related topic…', a: {tlinkAdd: id}}, {sep: 1}, {label: 'Delete topic', a: {act: 'del-topic', topic: id}, danger: 1}]; }
+  return [];
+}
+function closeFloatMenu(){ const m = document.getElementById('floatMenu'); if(m) m.remove(); document.querySelectorAll('.more-btn.open').forEach(b => b.classList.remove('open')); }
+function openFloatMenu(x, y, items, from){
+  closeFloatMenu(); if(!items.length) return;
+  const m = document.createElement('div'); m.className = 'float-menu'; m.id = 'floatMenu'; m.setAttribute('role', 'menu');
+  m.innerHTML = items.map((it, i) => it.sep ? '<div class="fm-sep"></div>' : '<button type="button" role="menuitem" class="fm-item' + (it.danger ? ' danger' : '') + '" data-fm="' + i + '">' + esc(it.label) + '</button>').join('');
+  document.body.appendChild(m);
+  const r = m.getBoundingClientRect(), W = innerWidth, H = innerHeight;
+  m.style.left = Math.max(8, Math.min(x, W - r.width - 8)) + 'px'; m.style.top = Math.max(8, Math.min(y, H - r.height - 8)) + 'px';
+  if(from) from.classList.add('open');
+  m.addEventListener('click', ev => { const b = ev.target.closest('[data-fm]'); if(!b) return; const it = items[+b.dataset.fm]; closeFloatMenu(); setTimeout(() => it.fn ? it.fn() : runMenuItem(it.a), 0); });
+  const f = m.querySelector('.fm-item'); if(f) f.focus({preventScroll: true});
+}
+function runMenuItem(a){
+  if(a.select) return select(a.select, false);
+  if(a.edit){ const e = lib.entries[a.edit]; if(e) return e.kind === 'concept' ? openConceptForm(e.id) : openEntryForm(e.id); return; }
+  if(a.tagassign) return openTagAssign(a.tagassign);
+  if(a.linkAdd) return openLinkPicker(a.id, a.linkAdd);
+  if(a.del) return deleteEntry(a.del);
+  if(a.tlinkAdd) return openTopicLinkPicker(a.tlinkAdd);
+  if(a.act){
+    if(a.view && a.act === 'new-entry'){ if(IDX.subs[a.view]){ ui.topic = IDX.topicOf[a.view]; ui.sub = a.view; } else if(IDX.topics[a.view]){ ui.topic = a.view; } }
+    if(a.act === 'edit-topic' && a.topic){ ui.topic = a.topic; }
+    if(a.act === 'del-topic' && a.topic){ ui.topic = a.topic; }
+    const el = document.createElement('span'); Object.entries(a).forEach(([k, v]) => { if(k !== 'act') el.dataset[k] = v; });
+    return handleAct(a.act, el);
+  }
+}
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('.more-btn[data-more-of]'); if(!b) return;
+  ev.preventDefault(); ev.stopPropagation();
+  if(b.classList.contains('open')){ closeFloatMenu(); return; }
+  const r = b.getBoundingClientRect(); openFloatMenu(r.left, r.bottom + 4, moreItems(b.dataset.moreOf), b);
+}, true);
+document.addEventListener('pointerdown', ev => { if(!ev.target.closest('#floatMenu') && !ev.target.closest('.more-btn')) closeFloatMenu(); }, true);
+document.addEventListener('keydown', ev => { if(ev.key === 'Escape' && document.getElementById('floatMenu')){ closeFloatMenu(); ev.stopPropagation(); } }, true);
+window.addEventListener('scroll', closeFloatMenu, {passive: true});
+/* right-click (or long-press) a dot on the map */
+mapSvg.addEventListener('contextmenu', ev => {
+  const n = ev.target.closest('.node'); if(!n) return;
+  ev.preventDefault();
+  const id = n.dataset.id, e = lib.entries[id]; if(!e) return;
+  const items = [{label: 'Open card', a: {select: id}}, {sep: 1}].concat(moreItems('p:' + id));
+  openFloatMenu(ev.clientX + 2, ev.clientY + 2, items);
+});
+
+
+/* ===================== drag from one dot to another to link them ===================== */
+/* say how they are linked: the later paper builds on (or responds to) the earlier one, unless you turn it round */
+function openLinkChooser(a, b, x, y, swapped){
+  const ea = lib.entries[a], eb = lib.entries[b]; if(!ea || !eb) return;
+  let src = ea, dst = eb;
+  if((eb.y || 0) < (ea.y || 0)){ src = eb; dst = ea; }
+  if(swapped){ const s = src; src = dst; dst = s; }
+  const nm = e => (e.au ? shortAu(e.au) : mapLabel(e)) + (e.y ? ' ' + e.y : '');
+  openFloatMenu(x + 6, y + 6, [
+    {label: nm(dst) + ' builds on ' + nm(src), fn: () => makeLink(src.id, dst.id, 'b')},
+    {label: nm(dst) + ' responds to ' + nm(src), fn: () => makeLink(src.id, dst.id, 'c')},
+    {label: 'They are related', fn: () => makeLink(src.id, dst.id, 'r')},
+    {sep: 1},
+    {label: '⇄ The other way round', fn: () => openLinkChooser(a, b, x, y, !swapped)}
+  ]);
+}
+function makeLink(from, to, type){
+  const dup = lib.links.find(l => l[2] === type && ((l[0] === from && l[1] === to) || (l[0] === to && l[1] === from)));
+  if(dup){ toast('They are already linked that way'); return; }
+  const before = clone(lib);
+  lib.links.push([from, to, type]);
+  reindex(); touchLib([]); renderMap(true); refreshInfo();
+  const ef = lib.entries[from], et = lib.entries[to], nm = e => (e.au ? shortAu(e.au) : mapLabel(e));
+  toast('Linked: ' + nm(et) + ({b: ' builds on ', c: ' responds to ', r: ' and '})[type] + nm(ef) + (type === 'r' ? ' are related' : ''), () => { lib = before; reindex(); touchLib([]); renderAll(); toast('Undone'); });
+}
+
 /* ===================== edit mode ===================== */
-function setEditUI(){
-  document.getElementById('editBanner').hidden = !ui.edit;
-  document.body.classList.toggle('editing', !!ui.edit);
-  document.getElementById('btnEdit').textContent = ui.edit ? 'Done' : 'Modify';
-  setBarH();
-}
-function enterEditMode(then){ ui.edit = true; setEditUI(); renderTabs(); renderMain(); infoEl.innerHTML = infoHTML(ui.selected); toast('Modify mode on'); if(typeof then === 'function') setTimeout(then, 0); }
-function askEditMode(then){
-  if(ui.edit){ ui.edit = false; setEditUI(); renderTabs(); renderMain(); infoEl.innerHTML = infoHTML(ui.selected); toast('Modify mode off'); return; }
-  if(settings.skipModifyConfirm || PREVIEW){ enterEditMode(then); return; }
-  openModal({
-    title:'Turn on Modify mode',
-    body:'<p>In Modify mode you can change everything in your list:</p><ul>' +
-      '<li>Create, rename and delete topics and subtopics. A topic can have subtopics or hold papers directly.</li>' +
-      '<li>Create, change and delete papers and concepts, and add “builds on” or “responds to” lines.</li>' +
-      '<li>Changes save straight away: to your private repository when GitHub is connected, otherwise only in this browser.</li>' +
-      '<li>Every deletion asks again and can be undone right after. Before big changes, consider exporting a backup.</li></ul>' +
-      '<label style="display:flex;gap:.5em;align-items:center;margin-top:.6em"><input type="checkbox" id="editAgree"> I understand changes save immediately</label>' +
-      '<label style="display:flex;gap:.5em;align-items:center;margin-top:.4em"><input type="checkbox" id="editSkip"> Don’t show this again</label>',
-    actions:[{label:'Cancel'}, {label:'Turn on Modify mode', primary:true, disabled:true, onClick: b => { if(b.querySelector('#editSkip').checked){ settings.skipModifyConfirm = true; persistSettings(); } enterEditMode(then); }}],
-    onOpen: (body, actions) => {
-      const cb = body.querySelector('#editAgree');
-      const go = actions.querySelector('[data-mi="1"]');
-      cb.addEventListener('change', () => { go.disabled = !cb.checked; });
-    }
-  });
-}
+/* there is no Modify mode any more: everything can be changed at any time, and Undo is always there */
+function setEditUI(){ ui.edit = false; const b = document.getElementById('editBanner'); if(b) b.hidden = true; document.body.classList.remove('editing'); setBarH(); }
+function enterEditMode(then){ if(typeof then === 'function') setTimeout(then, 0); }
+function askEditMode(then){ if(typeof then === 'function') setTimeout(then, 0); }
+
 
 /* ---------- pickers ---------- */
 function pickerHTML(name, label, ids, hint){
@@ -4923,14 +5286,14 @@ function deleteTopic(tid){
 function nextTagColor(){ const used = new Set(lib.tags.map(x => String(x.color).toLowerCase())); return TAG_PALETTE.find(c => !used.has(c.toLowerCase())) || TAG_PALETTE[lib.tags.length % TAG_PALETTE.length]; }
 function newTag(name){ let id; do{ id = rid('tag'); }while(lib.tags.some(x => x.id === id)); const x = {id, name, color: nextTagColor(), map:true}; lib.tags.push(x); reindex(); touchLib([]); syncControls(); return x; }
 const persistTagsSoon = debounce(() => { touchLib([]); }, 400);
-function refreshAfterTags(){ reindex(); syncControls(); renderMain(); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); }
+function refreshAfterTags(){ reindex(); syncControls(); renderMain(); renderMap(true); refreshInfo(); applyFocus(ui.selected); }
 function toggleTag(id, tid){
   const e = lib.entries[id]; if(!e) return;
   const ts = Array.isArray(e.tags) ? e.tags : (e.tags = []);
   const i = ts.indexOf(tid);
   if(i >= 0) ts.splice(i, 1); else ts.push(tid);
   reindex(); touchLib([e.topic]);
-  renderMain(); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected);
+  renderMain(); renderMap(true); refreshInfo(); applyFocus(ui.selected);
 }
 function openTagAssign(id){
   const e = lib.entries[id]; if(!e) return;
@@ -4944,7 +5307,6 @@ function openTagAssign(id){
 }
 function viewPapers(){ return listPapers(ui.sub ? entriesOfSub(ui.sub) : topicEntries(ui.topic)).filter(matches); }
 function openTagManager(){
-  if(!ui.edit){ askEditMode(openTagManager); return; }
   const counts = () => { const c = {}; Object.values(lib.entries).forEach(e => (e.tags || []).forEach(x => { c[x] = (c[x] || 0) + 1; })); return c; };
   const rowsHTML = () => {
     const c = counts();
@@ -5079,7 +5441,7 @@ function openSettings(){
       '<div class="set-section"><h3>Paper</h3><div class="form-grid"><fieldset class="full"><legend>Light or dark</legend>' + [['auto', 'Match my system'], ['light', 'Light'], ['dark', 'Dark']].map(p => '<label><input type="radio" name="theme" value="' + p[0] + '"' + ((settings.theme || 'auto') === p[0] ? ' checked' : '') + '> ' + p[1] + '</label>').join('') + '</fieldset><fieldset class="full"><legend>Page background in light mode</legend>' +
         [['mist','Mist (cool, default)'],['warm','Warm white'],['white','Pure white']].map(p => '<label><input type="radio" name="paper" value="' + p[0] + '"' + ((settings.paper || 'mist') === p[0] ? ' checked' : '') + '> ' + p[1] + '</label>').join('') + '</fieldset></div></div>' +
       '<div class="set-section"><h3>Map</h3><label style="display:flex;gap:.5em;align-items:center"><input type="checkbox" id="srcColors"' + (settings.mapColor !== 'plain' ? ' checked' : '') + '> Colour unmarked dots by tag</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.4em"><input type="checkbox" id="setShowPre"' + (settings.showPre ? ' checked' : '') + '> Always show prerequisite lines</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.4em"><input type="checkbox" id="setShowRel"' + (settings.showRelated !== false ? ' checked' : '') + '> Show Related-to lines (dotted)</label><label class="set-arrows">Arrows on lines<select id="setArrows"><option value="flow"' + (settings.arrows === 'flow' ? ' selected' : '') + '>Point to the later paper: how ideas flow</option><option value="cite"' + (settings.arrows === 'cite' ? ' selected' : '') + '>Point to the paper it builds on: how citations go</option><option value="off"' + (settings.arrows === 'off' ? ' selected' : '') + '>Don’t show arrows</option></select></label><div class="set-actions"><button type="button" class="btn" id="setTags">Manage tags &amp; colours</button></div></div>' +
-      '<div class="set-section"><h3>Modify</h3><label style="display:flex;gap:.5em;align-items:center"><input type="checkbox" id="setAskEdit"' + (settings.skipModifyConfirm ? '' : ' checked') + '> Ask before turning on Modify mode</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.5em">Undo stays available for <select id="setUndoWin">' + [[5, '5 minutes'], [10, '10 minutes'], [30, '30 minutes'], [0, 'until my next change']].map(o => '<option value="' + o[0] + '"' + (undoMinutes() === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label><p class="hint" style="margin:.4em 0 0">Undo always covers your last change, until you make another one. ' + (ghCfg() ? 'Every version saved before that stays in <a href="https://github.com/' + encodeURIComponent(ghCfg().owner) + '/' + encodeURIComponent(ghCfg().repo) + '/commits/' + encodeURIComponent(ghCfg().branch || 'main') + '/' + ghCfg().path.split('/').map(encodeURIComponent).join('/') + '" target="_blank" rel="noopener">your repository’s history</a>.' : 'With sync, earlier versions are kept too: Settings → Sync → Earlier versions.') + '</p><div class="set-actions"><button type="button" class="btn" id="setEdit">' + (ui.edit ? 'Turn off Modify mode' : 'Turn on Modify mode') + '</button></div></div>' +
+      '<div class="set-section"><h3>Undo</h3><label style="display:flex;gap:.5em;align-items:center">Undo stays available for <select id="setUndoWin">' + [[5, '5 minutes'], [10, '10 minutes'], [30, '30 minutes'], [0, 'until my next change']].map(o => '<option value="' + o[0] + '"' + (undoMinutes() === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label><p class="hint" style="margin:.4em 0 0">Undo always covers your last change, until you make another one. ' + (ghCfg() ? 'Every version saved before that stays in <a href="https://github.com/' + encodeURIComponent(ghCfg().owner) + '/' + encodeURIComponent(ghCfg().repo) + '/commits/' + encodeURIComponent(ghCfg().branch || 'main') + '/' + ghCfg().path.split('/').map(encodeURIComponent).join('/') + '" target="_blank" rel="noopener">your repository’s history</a>.' : 'With sync, earlier versions are kept too: Settings → Sync → Earlier versions.') + '</p></div>' +
       '<div class="set-section"><h3>Colour lines</h3><p class="hint">Named paths of ideas, with their colours. Add, rename, recolour or hide them, and see what is on each.</p><div class="set-actions"><button type="button" class="btn" id="setBrManage">Manage colour lines</button></div></div>' +
       syncSectionHTML() +
       '<div class="set-section"><h3>Data</h3><p class="hint">Saving status: <span data-save-state>' + esc(saveStateText()) + '</span>. A backup is one JSON file with all your topics, papers, lines and marks, in the same format as the data file in your repository.</p>' +
@@ -5099,13 +5461,11 @@ function openSettings(){
       showLatest();
       const inst = b.querySelector('#setInstall');
       if(inst) inst.addEventListener('click', () => { closeModal(); runInstall(); });
-      b.querySelector('#setShowRel').addEventListener('change', ev => { settings.showRelated = ev.target.checked; persistSettings({remote:false}); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); });
+      b.querySelector('#setShowRel').addEventListener('change', ev => { settings.showRelated = ev.target.checked; persistSettings({remote:false}); renderMap(true); refreshInfo(); applyFocus(ui.selected); });
       b.querySelector('#setUndoWin').addEventListener('change', ev => { settings.undoWindow = +ev.target.value; persistSettings({remote:false}); renderUndo(); });
       b.querySelectorAll('input[name=paper]').forEach(rb => rb.addEventListener('change', () => { if(rb.checked){ settings.paper = rb.value; applyColors(); persistSettings(); renderMap(true); } }));
       b.querySelectorAll('input[name=theme]').forEach(rb => rb.addEventListener('change', () => { if(rb.checked){ settings.theme = rb.value; applyColors(); persistSettings({remote:false}); renderMap(true); } }));
       wireGhSection(b);
-      b.querySelector('#setEdit').addEventListener('click', () => { closeModal(); askEditMode(); });
-      b.querySelector('#setAskEdit').addEventListener('change', ev => { settings.skipModifyConfirm = !ev.target.checked; persistSettings(); });
       b.querySelector('#setTags').addEventListener('click', () => { closeModal(); setTimeout(openTagManager, 0); });
       b.querySelector('#setExport').addEventListener('click', () => { closeModal(); exportBackup(); });
       b.querySelector('#setImport').addEventListener('click', () => { closeModal(); importBackup(); });
@@ -5643,7 +6003,7 @@ function closeReader(){
   readerEl.hidden = true;
   document.body.classList.remove('reader-open');
   reader.id = null;
-  renderMain(); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected);
+  renderMain(); refreshInfo(); applyFocus(ui.selected);
 }
 document.getElementById('readerClose').addEventListener('click', closeReader);
 document.getElementById('readerExport').addEventListener('click', () => { flushNotes(); const e = lib.entries[reader.id]; if(e) openNotesExport([e], true); });
@@ -5771,7 +6131,7 @@ function clearDrop(){ dndOver = null; tocBody.querySelectorAll('.drop-before,.dr
 tocBody.addEventListener('dragstart', ev => {
   const h = ev.target.closest && ev.target.closest('.toc-drag');
   const row = h && h.closest('[data-node]');
-  if(!row || !ui.edit){ ev.preventDefault(); return; }
+  if(!row){ ev.preventDefault(); return; }
   dnd = parseNode(row.dataset.node);
   row.classList.add('dragging');
   try{ ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', row.dataset.node); ev.dataTransfer.setDragImage(row, 16, 14); }catch(e){}
@@ -5807,10 +6167,10 @@ function topicNodeName(id){ if(IDX.topics[id]) return IDX.topics[id].name; const
 function topicNodeView(id){ return IDX.topics[id] ? id + '-all' : id; }
 function relatedTopicsHTML(id){
   const L = IDX.tlinksOf[id] || [];
-  if(!L.length && !ui.edit) return '';
+  if(!L.length) return '';
   const chips = L.map(([o, note, l]) => '<span class="tl-item"><button type="button" class="relchip" data-view="' + esc(topicNodeView(o)) + '">' + (tlBranch(l) ? '<i class="tl-dot" style="--tlc:' + tlBranch(l).color + '" aria-hidden="true"></i>' : '') + esc(topicNodeName(o)) + '</button>' + (tlBranch(l) ? '<span class="tl-path" style="--tlc:' + tlBranch(l).color + '">' + esc(tlBranch(l).name) + '</span>' : '') + (note ? '<span class="rel-note">' + esc(note) + '</span>' : '') +
-    (ui.edit ? '<button type="button" class="tl-x" data-tlink-note="' + esc(l[0] + '|' + l[1]) + '" title="Note and colour" aria-label="Note and colour of this link">✎</button><button type="button" class="tl-x" data-tlink-del="' + esc(l[0] + '|' + l[1]) + '" aria-label="Remove this link">×</button>' : '') + '</span>').join('');
-  return '<p class="rel tl-row"><span class="rel-k">Related topics</span>' + chips + (ui.edit ? '<button type="button" class="linkbtn" data-tlink-add="' + esc(id) + '">+ Related topic…</button>' : '') + '</p>';
+    ('<button type="button" class="tl-x" data-tlink-note="' + esc(l[0] + '|' + l[1]) + '" title="Note and colour" aria-label="Note and colour of this link">✎</button><button type="button" class="tl-x" data-tlink-del="' + esc(l[0] + '|' + l[1]) + '" aria-label="Remove this link">×</button>') + '</span>').join('');
+  return '<p class="rel tl-row"><span class="rel-k">Related topics</span>' + chips + '<button type="button" class="linkbtn tl-add" data-tlink-add="' + esc(id) + '">+ Related topic…</button></p>';
 }
 function findTlink(key){ const [a, b] = key.split('|'); return lib.tlinks.find(l => l[0] === a && l[1] === b); }
 function openTopicLinkPicker(id){
@@ -5906,10 +6266,9 @@ function handleAct(act, el){
   if(act === 'new-concept') return openConceptForm(null);
   if(act === 'export') return exportBackup();
   if(act === 'tags') return openTagManager();
-  if(act === 'exit-edit'){ ui.edit = false; setEditUI(); renderTabs(); renderMain(); infoEl.innerHTML = infoHTML(ui.selected); toast('Modify mode off'); }
+  if(act === 'exit-edit'){ ui.edit = false; setEditUI(); renderTabs(); renderMain(); refreshInfo(); toast('Modify mode off'); }
 }
 document.getElementById('editBanner').addEventListener('click', ev => { const b = ev.target.closest('[data-act]'); if(b) handleAct(b.dataset.act, b); });
-document.getElementById('btnEdit').addEventListener('click', askEditMode);
 document.getElementById('btnSettings').addEventListener('click', openSettings);
 document.getElementById('srcLegend').addEventListener('click', ev => { if(ev.target.closest('[data-act="tags"]')) openTagManager(); });
 tocBody.addEventListener('click', ev => {
@@ -5960,7 +6319,7 @@ infoEl.addEventListener('click', ev => {
     const [a, b, ty] = ld.dataset.linkDel.split('|');
     const before = clone(lib);
     lib.links = lib.links.filter(l => !(l[0] === a && l[1] === b && l[2] === ty));
-    reindex(); touchLib([]); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected);
+    reindex(); touchLib([]); renderMap(true); refreshInfo(); applyFocus(ui.selected);
     toast('Line deleted', () => { lib = before; reindex(); touchLib([]); renderAll(); toast('Undone'); });
     return;
   }
@@ -6073,38 +6432,60 @@ function moveEntryTo(id, s, where){
 }
 mapSvg.addEventListener('pointerdown', ev => {
   const n = ev.target.closest('.node'); if(!n || ev.button !== 0) return;
-  nodeDrag = {id: n.dataset.id, y0: ev.clientY, started: false};
+  nodeDrag = {id: n.dataset.id, x0: ev.clientX, y0: ev.clientY, started: false};
 }, true);
 function cleanupNodeDrag(){
   mapSvg.classList.remove('node-dragging');
-  ['laneDrop', 'dragGhost'].forEach(x => { const el = document.getElementById(x); if(el) el.remove(); });
+  ['laneDrop', 'dragGhost', 'linkDragPath'].forEach(x => { const el = document.getElementById(x); if(el) el.remove(); });
+  mapSvg.querySelectorAll('.node.link-target').forEach(x => x.classList.remove('link-target'));
   mapLabels.querySelectorAll('.drop-target').forEach(b => b.classList.remove('drop-target'));
   dragHint.hidden = true;
 }
 window.addEventListener('pointermove', ev => {
   const d = nodeDrag; if(!d) return;
   if(!d.started){
-    if(Math.abs(ev.clientY - d.y0) < 8) return;
+    if(Math.hypot(ev.clientX - d.x0, ev.clientY - d.y0) < 7) return;
     const p = MAP.P[d.id], e = lib.entries[d.id]; if(!p || !e || e.kind === 'concept'){ nodeDrag = null; return; }
     d.started = true; d.from = (MAP.lanes || []).findIndex(ln => ln.sub.id === e.sub);
     mapSvg.classList.add('node-dragging');
     mapSvg.insertAdjacentHTML('afterbegin', '<rect class="lane-drop" id="laneDrop" x="0" width="' + MAP.W + '" height="' + MAP.laneH + '" y="' + MAP.top + '"></rect>');
-    mapSvg.insertAdjacentHTML('beforeend', '<circle class="drag-ghost" id="dragGhost" cx="' + p.x + '" cy="' + p.y + '" r="7"></circle>');
+    mapSvg.insertAdjacentHTML('beforeend', '<circle class="drag-ghost" id="dragGhost" cx="' + p.x + '" cy="' + p.y + '" r="7"></circle><path class="link-drag" id="linkDragPath" d=""></path>');
+    closeFloatMenu();
+  }
+  /* over another dot: link to it; anywhere else: move to that row */
+  {
+    const p = MAP.P[d.id], pt = svgPoint(ev), mx = (p.x + pt.x) / 2, lp = document.getElementById('linkDragPath');
+    if(lp) lp.setAttribute('d', 'M' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ' C' + mx.toFixed(1) + ' ' + p.y.toFixed(1) + ' ' + mx.toFixed(1) + ' ' + pt.y.toFixed(1) + ' ' + pt.x.toFixed(1) + ' ' + pt.y.toFixed(1));
+    const el = document.elementFromPoint(ev.clientX, ev.clientY), tn = el && el.closest ? el.closest('#net .node') : null;
+    const tid = tn && tn.dataset.id !== d.id && lib.entries[tn.dataset.id] && lib.entries[tn.dataset.id].kind !== 'concept' ? tn.dataset.id : null;
+    mapSvg.querySelectorAll('.node.link-target').forEach(x => x.classList.remove('link-target'));
+    d.link = tid;
+    if(tid){
+      tn.classList.add('link-target'); mapSvg.classList.add('linking');
+      ['laneDrop', 'dragGhost'].forEach(x => { const q = document.getElementById(x); if(q) q.style.opacity = 0; });
+      mapLabels.querySelectorAll('.drop-target').forEach(b => b.classList.remove('drop-target'));
+      dragHint.hidden = false; dragHint.textContent = 'Link to “' + mapLabel(lib.entries[tid]) + '”';
+      dragHint.style.left = (ev.clientX + 14) + 'px'; dragHint.style.top = (ev.clientY + 12) + 'px';
+      return;
+    }
+    mapSvg.classList.remove('linking');
+    ['laneDrop', 'dragGhost'].forEach(x => { const q = document.getElementById(x); if(q) q.style.opacity = ''; });
   }
   const L = laneAt(ev.clientY), ln = MAP.lanes[L.i]; if(!ln) return;
   d.to = ln.concepts ? d.from : L.i;
   const g = document.getElementById('dragGhost'); if(g) g.setAttribute('cy', Math.max(MAP.top + 4, Math.min(MAP.H - 4, L.y)));
   const r = document.getElementById('laneDrop'); if(r) r.setAttribute('y', MAP.top + L.i * MAP.laneH);
   mapLabels.querySelectorAll('button').forEach((b, k) => b.classList.toggle('drop-target', k === L.i));
-  dragHint.hidden = false; dragHint.textContent = ln.concepts ? 'Papers can’t go in the Concepts row' : L.i === d.from ? 'Drop it on another row to move it' : 'Move to “' + laneName(ln) + '”';
+  dragHint.hidden = false; dragHint.textContent = ln.concepts ? 'Papers can’t go in the Concepts row' : L.i === d.from ? 'Drop it on a dot to link them, or on another row to move it' : 'Move to “' + laneName(ln) + '”';
   dragHint.style.left = (ev.clientX + 14) + 'px'; dragHint.style.top = (ev.clientY + 12) + 'px';
   const bx = mapBox.getBoundingClientRect();
   if(ev.clientY < bx.top + 28) mapBox.scrollTop -= 14; else if(ev.clientY > bx.bottom - 44) mapBox.scrollTop += 14;
 });
-window.addEventListener('pointerup', () => {
+window.addEventListener('pointerup', ev => {
   const d = nodeDrag; nodeDrag = null; if(!d || !d.started) return;
   suppressMapClick = true; setTimeout(() => { suppressMapClick = false; }, 0);
-  cleanupNodeDrag();
+  cleanupNodeDrag(); mapSvg.classList.remove('linking'); applyFocus(ui.selected);
+  if(d.link){ openLinkChooser(d.id, d.link, ev.clientX, ev.clientY); return; }
   const ln = MAP.lanes[d.to]; if(ln && d.to !== d.from) moveEntryTo(d.id, ln.sub, laneName(ln));
 });
 window.addEventListener('pointercancel', () => { if(nodeDrag && nodeDrag.started) cleanupNodeDrag(); nodeDrag = null; });
@@ -6258,7 +6639,7 @@ if('ResizeObserver' in window) new ResizeObserver(onResize).observe(mapScroll);
 window.addEventListener('resize', onResize);
 if(location.hash.length > 1) setTimeout(() => scrollToEl(mainEl, 'start'), 80);
 fsRestore().catch(() => {}).then(() => { if(!PREVIEW && ghCfg()) ghLoad(); });
-const reTheme = () => { renderMain(); renderMap(true); infoEl.innerHTML = infoHTML(ui.selected); applyFocus(ui.selected); };
+const reTheme = () => { renderMain(); renderMap(true); refreshInfo(); applyFocus(ui.selected); };
 if(window.matchMedia){ const mq = window.matchMedia('(prefers-color-scheme: dark)'); if(mq.addEventListener) mq.addEventListener('change', reTheme); }
 if('MutationObserver' in window) new MutationObserver(reTheme).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
 document.addEventListener('visibilitychange', () => {
