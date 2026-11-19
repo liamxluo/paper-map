@@ -43,7 +43,7 @@ Press **L**, or **Lens** under the map, to see one paper's line of thought on it
 
 ### Zoom through time
 
-![Dragging along the years from 2005 to 2020 to zoom in, where every paper gets its name; dragging the map sideways to move through time; double-clicking a year to zoom in further; then Years → All years](assets/zoom.gif)
+![Dragging along the years from 1960 to 1980 to zoom in, where every paper gets its name; dragging the map sideways to move through time; double-clicking a year to zoom in further; then Years → All years](assets/zoom.gif)
 
 Drag along the years to zoom in on a stretch of time, and drag the map sideways to move through it. Double-click a year to zoom in further; **Years ▾ → All years** shows everything again. Zoom in far enough and every paper is named.
 
@@ -55,7 +55,7 @@ A paper can reach into another field without linking to any paper in it: double-
 
 ### Watch it grow
 
-![The map growing year by year, from 1979 to 2019](assets/grow.gif)
+![The map growing year by year, from 1951 to 2022](assets/grow.gif)
 
 **Export ▾ → The map → GIF** makes a moving picture of your map growing, year by year.
 

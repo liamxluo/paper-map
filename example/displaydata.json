@@ -7,311 +7,316 @@
   "title": "Paper Map",
   "topics": [
    {
-    "id": "pile",
-    "name": "My reading",
-    "desc": "Everything I am reading at the moment.",
+    "id": "lanterns",
+    "name": "Lantern Grammar",
+    "desc": "",
     "subs": [
      {
-      "id": "psych",
-      "name": "Psychology",
-      "desc": "How people think and decide.",
-      "groups": []
-     },
-     {
-      "id": "space",
-      "name": "Space",
-      "desc": "Stars, planets and galaxies.",
-      "groups": []
-     },
-     {
-      "id": "dinner",
-      "name": "Dinner",
-      "desc": "Recipes and cooking.",
-      "groups": []
-     },
-     {
-      "id": "exams",
-      "name": "Exam season",
-      "desc": "Revision for the summer exams.",
-      "groups": []
-     },
-     {
-      "id": "procrastination",
-      "name": "Procrastination",
-      "desc": "Why we put things off.",
-      "groups": [],
-      "parent": "exams"
-     },
-     {
-      "id": "panic",
-      "name": "Deadlines",
+      "id": "wicks",
+      "name": "Wicks",
       "desc": "",
-      "groups": [],
-      "parent": "procrastination"
+      "groups": []
      },
      {
-      "id": "games",
-      "name": "Board games",
-      "desc": "Chess, cards and other table games.",
+      "id": "flames",
+      "name": "Flames",
+      "desc": "",
+      "groups": []
+     },
+     {
+      "id": "glow",
+      "name": "Glow",
+      "desc": "",
+      "groups": []
+     },
+     {
+      "id": "paper",
+      "name": "Lantern paper",
+      "desc": "",
+      "groups": []
+     },
+     {
+      "id": "festivals",
+      "name": "Festivals",
+      "desc": "",
       "groups": []
      }
     ]
    }
   ],
   "entries": {
-   "psyecon1979": {
-    "id": "psyecon1979",
+   "glow1988": {
+    "id": "glow1988",
     "kind": "paper",
-    "topic": "pile",
-    "sub": "psych",
+    "topic": "lanterns",
+    "sub": "glow",
     "group": "",
-    "y": 1979,
-    "au": "",
-    "t": "A Perspective on Psychology and Economics",
-    "v": "",
+    "y": 1988,
+    "au": "Ashgrove, N.",
+    "t": "The Grammar of Glow",
+    "v": "Journal of Lantern Studies 14(2)",
     "l": "Paper",
-    "p": 3,
-    "tags": [
-     "must"
-    ],
-    "d": [
-     "Decisions"
-    ],
-    "f": "Why losses feel bigger than gains.",
-    "n": "Read the first ten pages.",
-    "short": "A perspective on psychology and economics"
-   },
-   "chem2015": {
-    "id": "chem2015",
-    "kind": "paper",
-    "topic": "pile",
-    "sub": "exams",
-    "group": "",
-    "y": 2015,
-    "au": "Some Exam Board",
-    "t": "A Level Chemistry, Year 1",
-    "v": "Second edition",
-    "l": "Textbook",
     "p": 3,
     "tags": [
      "must",
-     "coffee"
+     "classic"
     ],
-    "d": [
-     "Revision"
-    ],
-    "f": "Moles, bonding and energy.",
-    "n": "Exam on Tuesday.\n\n## To revise\n- Moles: 6.02 × 10²³ of anything\n- Titrations\n- Rates of reaction\n\n> See *Salt, Fat, Acid, Heat* for the chemistry of cooking.",
-    "short": "A Level Chemistry"
+    "d": [],
+    "f": "",
+    "n": "The paper the rest of the field answers to.\n\n## Why read it\n- Sets out the grammar of glow in three rules\n- Section 2 is worth reading twice"
    },
-   "cooking2017": {
-    "id": "cooking2017",
+   "wick1960": {
+    "id": "wick1960",
     "kind": "paper",
-    "topic": "pile",
-    "sub": "dinner",
+    "topic": "lanterns",
+    "sub": "wicks",
     "group": "",
-    "y": 2017,
-    "au": "",
-    "t": "Salt, Fat, Acid, Heat",
-    "v": "",
-    "l": "Book",
+    "y": 1960,
+    "au": "Wren, T.",
+    "t": "A Wick Is a Word",
+    "v": "Proceedings of the Lamplighters 3",
+    "l": "Paper",
     "p": 1,
     "tags": [
-     "dinner"
+     "classic"
     ],
-    "d": [
-     "Snacks"
-    ],
-    "f": "Four elements of good cooking.",
-    "n": "Good for weeknight cooking.",
-    "short": "Salt, Fat, Acid, Heat"
+    "d": [],
+    "f": "",
+    "n": "Short and strange; the first rule comes from here."
    },
-   "astro1996": {
-    "id": "astro1996",
+   "flame1968": {
+    "id": "flame1968",
     "kind": "paper",
-    "topic": "pile",
-    "sub": "space",
+    "topic": "lanterns",
+    "sub": "flames",
     "group": "",
-    "y": 1996,
-    "au": "",
-    "t": "An Introduction to Modern Astrophysics",
-    "v": "",
-    "l": "Textbook",
-    "p": 2,
-    "tags": [
-     "maybe"
-    ],
-    "d": [
-     "Stars"
-    ],
-    "f": "How stars form, live and die.",
-    "n": "Long, but clearly written.",
-    "short": "Modern astrophysics"
-   },
-   "timetable2015": {
-    "id": "timetable2015",
-    "kind": "paper",
-    "topic": "pile",
-    "sub": "procrastination",
-    "group": "",
-    "y": 2017,
-    "au": "",
-    "t": "Colour-coding the revision timetable",
-    "v": "",
-    "l": "Other",
+    "y": 1968,
+    "au": "Brightwater, O.",
+    "t": "Flame Clauses",
+    "v": "Lantern Review 7(1)",
+    "l": "Paper",
     "p": 1,
     "tags": [],
-    "d": [
-     "Revision"
-    ],
-    "f": "A colour for each subject.",
-    "n": "Seven colours, one per subject.",
-    "short": "Colour-coded timetable"
-   },
-   "tomorrow2009": {
-    "id": "tomorrow2009",
-    "kind": "paper",
-    "topic": "pile",
-    "sub": "procrastination",
-    "group": "",
-    "y": 2009,
-    "au": "Lindqvist, A.",
-    "t": "Putting tasks off",
-    "v": "",
-    "l": "Paper",
-    "p": 3,
-    "tags": [],
     "d": [],
-    "f": "Why people delay the tasks they plan to do.",
-    "n": "Read chapters 1 and 2.",
-    "mentions": []
-   },
-   "snack2011": {
-    "id": "snack2011",
-    "kind": "paper",
-    "topic": "pile",
-    "sub": "dinner",
-    "group": "",
-    "y": 2011,
-    "au": "Moreau, L.",
-    "t": "Cooking a steak",
-    "v": "",
-    "l": "Paper",
-    "p": 2,
-    "tags": [],
-    "d": [],
-    "f": "Heat, time and resting.",
+    "f": "",
     "n": ""
    },
-   "deadline2019": {
-    "id": "deadline2019",
+   "paper1966": {
+    "id": "paper1966",
     "kind": "paper",
-    "topic": "pile",
-    "sub": "panic",
+    "topic": "lanterns",
+    "sub": "paper",
+    "group": "",
+    "y": 1966,
+    "au": "Larkspur, P.",
+    "t": "Paper That Holds Light",
+    "v": "Paper and Light 2",
+    "l": "Paper",
+    "p": 1,
+    "tags": [],
+    "d": [],
+    "f": "",
+    "n": "Why thin paper holds light better than thick."
+   },
+   "festival1972": {
+    "id": "festival1972",
+    "kind": "paper",
+    "topic": "lanterns",
+    "sub": "festivals",
+    "group": "",
+    "y": 1972,
+    "au": "Calloway, I.",
+    "t": "Festival Speech",
+    "v": "Festival Quarterly 9",
+    "l": "Paper",
+    "p": 1,
+    "tags": [],
+    "d": [],
+    "f": "",
+    "n": ""
+   },
+   "wick2010": {
+    "id": "wick2010",
+    "kind": "paper",
+    "topic": "lanterns",
+    "sub": "wicks",
+    "group": "",
+    "y": 2010,
+    "au": "Marrow, E.",
+    "t": "Wicks After Glow",
+    "v": "Journal of Lantern Studies 36(4)",
+    "l": "Paper",
+    "p": 1,
+    "tags": [],
+    "d": [],
+    "f": "",
+    "n": ""
+   },
+   "flame2004": {
+    "id": "flame2004",
+    "kind": "paper",
+    "topic": "lanterns",
+    "sub": "flames",
+    "group": "",
+    "y": 2004,
+    "au": "Quillon, S.",
+    "t": "Flames, Corrected",
+    "v": "Lantern Review 43(2)",
+    "l": "Paper",
+    "p": 1,
+    "tags": [],
+    "d": [],
+    "f": "",
+    "n": "Argues the second rule is wrong; worth the argument."
+   },
+   "paper2008": {
+    "id": "paper2008",
+    "kind": "paper",
+    "topic": "lanterns",
+    "sub": "paper",
+    "group": "",
+    "y": 2008,
+    "au": "Fenwick, A.",
+    "t": "Thin Light",
+    "v": "Paper and Light 31",
+    "l": "Paper",
+    "p": 2,
+    "tags": [],
+    "d": [],
+    "f": "",
+    "n": "Read chapters 1 and 2."
+   },
+   "festival2016": {
+    "id": "festival2016",
+    "kind": "paper",
+    "topic": "lanterns",
+    "sub": "festivals",
+    "group": "",
+    "y": 2016,
+    "au": "Oduya, M.",
+    "t": "Lanterns at Scale",
+    "v": "Festival Quarterly 53",
+    "l": "Paper",
+    "p": 1,
+    "tags": [],
+    "d": [],
+    "f": "",
+    "n": "On the list for the summer."
+   },
+   "wick1951": {
+    "id": "wick1951",
+    "kind": "paper",
+    "topic": "lanterns",
+    "sub": "wicks",
+    "group": "",
+    "y": 1951,
+    "au": "Halloran, B.",
+    "t": "Early Wicks",
+    "v": "Notes and Queries on Light 1",
+    "l": "Paper",
+    "p": 1,
+    "tags": [],
+    "d": [],
+    "f": "",
+    "n": ""
+   },
+   "wick2022": {
+    "id": "wick2022",
+    "kind": "paper",
+    "topic": "lanterns",
+    "sub": "wicks",
+    "group": "",
+    "y": 2022,
+    "au": "Vesper, L.",
+    "t": "Low Light",
+    "v": "Journal of Lantern Studies 48(1)",
+    "l": "Paper",
+    "p": 1,
+    "tags": [],
+    "d": [],
+    "f": "",
+    "n": ""
+   },
+   "glow2019": {
+    "id": "glow2019",
+    "kind": "paper",
+    "topic": "lanterns",
+    "sub": "glow",
     "group": "",
     "y": 2019,
-    "au": "Park, S.",
-    "t": "Working to deadlines",
-    "v": "",
+    "au": "Thistle, R.",
+    "t": "Glow, Thirty Years On",
+    "v": "Journal of Lantern Studies 45(3)",
     "l": "Paper",
-    "p": 2,
+    "p": 1,
     "tags": [],
     "d": [],
-    "f": "What changes as a deadline gets close.",
-    "n": ""
-   },
-   "monopoly2012": {
-    "id": "monopoly2012",
-    "kind": "paper",
-    "topic": "pile",
-    "sub": "games",
-    "group": "",
-    "y": 2012,
-    "au": "Varga, I.",
-    "t": "Chess openings",
-    "v": "",
-    "l": "Paper",
-    "p": 2,
-    "tags": [],
-    "d": [],
-    "f": "The first ten moves.",
-    "n": ""
-   },
-   "catan2018": {
-    "id": "catan2018",
-    "kind": "paper",
-    "topic": "pile",
-    "sub": "games",
-    "group": "",
-    "y": 2018,
-    "au": "Cole, H.",
-    "t": "Card games",
-    "v": "",
-    "l": "Paper",
-    "p": 2,
-    "tags": [],
-    "d": [],
-    "f": "Rules, luck and skill.",
-    "n": ""
+    "f": "",
+    "n": "A look back at the grammar, thirty years on."
    }
   },
   "links": [
    [
-    "psyecon1979",
-    "astro1996",
+    "wick1960",
+    "glow1988",
     "b",
-    "a wider view"
+    "the first rule"
    ],
    [
-    "astro1996",
-    "chem2015",
+    "flame1968",
+    "glow1988",
+    "b",
+    "flames as clauses"
+   ],
+   [
+    "paper1966",
+    "glow1988",
+    "b",
+    "holding the light"
+   ],
+   [
+    "festival1972",
+    "glow1988",
     "c",
-    "questions it"
+    "disputes the scale"
    ],
    [
-    "chem2015",
-    "cooking2017",
-    "b",
-    "applies it"
-   ],
-   [
-    "chem2015",
-    "timetable2015",
-    "c",
-    "plans around it"
-   ],
-   [
-    "psyecon1979",
-    "tomorrow2009",
-    "b",
-    "the starting point"
-   ],
-   [
-    "tomorrow2009",
-    "timetable2015",
+    "glow1988",
+    "wick2010",
     "b"
    ],
    [
-    "tomorrow2009",
-    "deadline2019",
+    "glow1988",
+    "flame2004",
+    "c",
+    "corrects rule two"
+   ],
+   [
+    "glow1988",
+    "paper2008",
     "b",
     "applies it"
    ],
    [
-    "tomorrow2009",
-    "monopoly2012",
+    "glow1988",
+    "festival2016",
+    "b"
+   ],
+   [
+    "wick1951",
+    "wick1960",
+    "b"
+   ],
+   [
+    "wick2010",
+    "wick2022",
+    "b"
+   ],
+   [
+    "glow1988",
+    "glow2019",
     "b",
-    "a similar case"
-   ],
-   [
-    "monopoly2012",
-    "catan2018",
-    "c"
-   ],
-   [
-    "snack2011",
-    "tomorrow2009",
-    "r"
+    "revisits it"
    ]
   ],
   "tags": [
@@ -319,68 +324,38 @@
     "id": "must",
     "name": "Must read",
     "color": "#7058A3",
-    "map": true
+    "map": false
    },
    {
-    "id": "maybe",
-    "name": "Optional",
-    "color": "#9C88CF",
-    "map": true
-   },
-   {
-    "id": "coffee",
-    "name": "Borrowed",
-    "color": "#8B5E3C",
-    "map": true
-   },
-   {
-    "id": "dinner",
-    "name": "Cooking",
-    "color": "#E7609E",
-    "map": true
+    "id": "classic",
+    "name": "Classic",
+    "color": "#D29A2E",
+    "map": false
    }
   ],
   "updatedAt": 1,
-  "tlinks": [
-   [
-    "procrastination",
-    "games",
-    "similar choices"
-   ],
-   [
-    "games",
-    "dinner",
-    "evening plans"
-   ]
-  ],
+  "tlinks": [],
   "branches": [
    {
-    "id": "bmain",
+    "id": "b0",
     "name": "Main line",
     "color": "#7058A3"
-   },
-   {
-    "id": "byellow",
-    "name": "Evenings",
-    "color": "#E2A72E"
    }
   ],
   "lineBranch": {
-   "caffeine|psyecon1979|b": "bmain",
-   "psyecon1979|astro1996|b": "bmain",
-   "astro1996|chem2015|c": "bmain"
+   "wick1951|wick1960|b": "b0",
+   "wick1960|glow1988|b": "b0",
+   "glow1988|glow2019|b": "b0"
   },
-  "tlinkColor": {
-   "games|dinner": "byellow"
-  }
+  "tlinkColor": {}
  },
  "status": {
   "map": {
-   "cooking2017": "read",
-   "astro1996": "want",
-   "tomorrow2009": "read",
-   "deadline2019": "want",
-   "monopoly2012": "read"
+   "glow1988": "read",
+   "wick1960": "read",
+   "paper2008": "read",
+   "glow2019": "want",
+   "festival2016": "want"
   },
   "updatedAt": 1
  },
