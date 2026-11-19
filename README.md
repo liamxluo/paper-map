@@ -19,8 +19,6 @@ A personal map of research, ideas and reading. I built it simply because I wante
 
 ## How it works
 
-Each paper is a dot in its topic's row, at its year. The more papers build on one, the bigger its dot. Each row names up to two of its most connected papers; point at any dot to see its title and authors. Click a dot and its lines light up; **How far**, in the bar under the map, reaches further, up to **Whole line**.
-
 ### Cards
 
 ![Pressing a paper's card in a topic's list; it turns over into the full card with where it sits, its lines on a small timeline, its labels and notes; closing it turns it back](assets/card.gif)
@@ -28,6 +26,8 @@ Each paper is a dot in its topic's row, at its year. The more papers build on on
 Every topic lists its papers as cards, in time order: green for read, red for want to read. Press one and it turns over into the full card: where it sits (change it right there), its lines on a small timeline, its labels and notes, and its PDF. Its **⋯** edits or deletes it.
 
 ### Link with +
+
+Each paper is a dot in its topic's row, at its year. The more papers build on one, the bigger its dot. Each row names up to two of its most connected papers; point at any dot to see its title and authors. Click a dot and its lines light up; **How far**, in the bar under the map, reaches further, up to **Whole line**.
 
 ![How each kind of line looks: builds on is solid, responds to is dashed, related to is dotted, a mention leaves a faint shadow in another field, related topics are marked ⇄](assets/lines-legend.svg)
 
