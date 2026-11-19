@@ -1305,6 +1305,41 @@ tr:hover .row-more .more-btn,tr:focus-within .row-more .more-btn,.row-more .more
 #btnSettings:active{transform:none;opacity:.7}
 #btnSettings:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:8px}
 #btnSettings svg{width:20px;height:20px}
+
+/* the card's ✕ and ⋯ stay at hand while you scroll it */
+.bc-top{position:sticky;top:-16px;z-index:3;margin:-16px -18px 0;padding:16px 18px 10px;background:linear-gradient(#F2F2F6 72%, rgba(242,242,246,0))}
+:root[data-theme="dark"] .bc-top{background:linear-gradient(#1C1F26 72%, rgba(28,31,38,0))}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .bc-top{background:linear-gradient(#1C1F26 72%, rgba(28,31,38,0))} }
+
+/* names on the map sit on a halo of their row's colour, so lines never run through them */
+.net .lbl,.net .lbl-au{paint-order:stroke fill;stroke:var(--bg);stroke-width:3.4px;stroke-linejoin:round}
+.net .lbl.on-band,.net .lbl-au.on-band{stroke:var(--band)}
+/* the card's Where row: the chooser stays inside its box */
+.bc-where{min-width:0}
+.bc-where select{min-width:0;width:100%;text-overflow:ellipsis;border-radius:8px}
+.bc-where select:focus{outline:none}
+.bc-where select:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.bc-box{overflow:hidden}
+.bc-box:has(.bc-where){overflow:visible;padding:12px 14px}
+/* the card's little timeline, with names */
+.bc-mini .bm-band{fill:var(--band);opacity:.55}
+.bc-mini .bm-t{font:600 11px var(--sans);fill:var(--ink)}
+.bc-mini .bm-t.me{font-weight:800}
+.bc-mini .bm-a{font:400 9.5px var(--sans);fill:var(--muted)}
+.bc-mini .bm-node{cursor:pointer}
+.bc-mini .bm-node:hover .bm-t{text-decoration:underline}
+#info .info-actions .hint{margin-right:12px}
+
+.bc-mini .bm-t,.bc-mini .bm-a{paint-order:stroke fill;stroke:var(--surface);stroke-width:3.5px;stroke-linejoin:round}
+
+/* Contents, compact: a subtopic is one line; its caret sits in the indent, ⋯ and the handle float at the right */
+.toc-subs > li.toc-sub{display:block;position:relative}
+.toc-sub > .toc-caret.sub{position:absolute;left:calc(8px + var(--d,0) * 16px);top:0;bottom:0;width:26px;z-index:1}
+.toc-sub > .toc-more{position:absolute;right:24px;top:50%;transform:translateY(-50%);margin:0;z-index:2}
+.toc-row > .toc-more{align-self:center}
+.toc-sub:hover > .toc-link .n,.toc-sub:focus-within > .toc-link .n{opacity:0}
+.toc-subs .toc-link{padding-top:.36em;padding-bottom:.36em}
+.toc-subs > li{margin:1px 0}
 </style>
 </head>
 <body>
@@ -1685,8 +1720,25 @@ function loadAll(){
   settings = normalizeSettings(Object.assign(defaultSettings(), (G && typeof G === 'object') ? G : {}));
 }
 
+/* a topic always has a row of its own (a hidden subtopic holding the papers about the topic as a whole), listed first */
+function ensureOwnRow(L){
+  (L.topics || []).forEach(tp => {
+    if(!Array.isArray(tp.subs)) tp.subs = [];
+    let own = tp.subs.find(s => s.hidden);
+    if(!own){
+      const taken = new Set(); (L.topics || []).forEach(x => (x.subs || []).forEach(s => taken.add(s.id))); (L.topics || []).forEach(x => taken.add(x.id));
+      let id = tp.id + '-own', k = 1; while(taken.has(id)) id = tp.id + '-own' + (++k);
+      own = {id, name: tp.name, desc: '', groups: [], hidden: true};
+      if(Array.isArray(settings.lanes) && tp.subs.some(s => settings.lanes.includes(s.id))) settings.lanes.push(id);
+      tp.subs.unshift(own);
+    }else if(tp.subs[0] !== own){ tp.subs = [own].concat(tp.subs.filter(s => s !== own)); }
+    tp.subs.filter(s => s.hidden && s !== own).forEach(s => { delete s.hidden; });
+    own.name = tp.name; delete own.parent;
+  });
+}
 function reindex(){
   if(!Array.isArray(lib.tags)) lib.tags = defaultTags();
+  ensureOwnRow(lib);
   const subs = {}, topicOf = {};
   lib.topics.forEach(tp => tp.subs.forEach(s => { subs[s.id] = s; topicOf[s.id] = tp.id; }));
   const topics = Object.fromEntries(lib.topics.map(tp => [tp.id, tp]));
@@ -2623,7 +2675,7 @@ function importReview(bd, r, srcName){
     if(!st.pick.size || st.pick.__n !== r.items.length){ st.pick = new Set(r.items.filter(x => !x.dup).map(x => x.i)); st.pick.__n = r.items.length; }
     const nd = r.items.filter(x => x.dup).length, ny = r.items.filter(x => !x.y).length, tagSet = new Set(r.items.flatMap(x => x.tags || [])), nn = r.items.filter(x => x.n).length;
     const tp = IDX.topics[st.topic];
-    const subOpts = tp ? treeSubs(tp).filter(s => !s.hidden).map(s => '<option value="' + s.id + '"' + (st.sub === s.id ? ' selected' : '') + '>' + esc(subPath(s).join(' › ')) + '</option>').join('') : '';
+    const subOpts = tp ? treeSubs(tp).map(s => '<option value="' + s.id + '"' + (st.sub === s.id ? ' selected' : '') + '>' + esc(s.hidden ? tp.name + ' itself (no subtopic)' : subPath(s).join(' › ')) + '</option>').join('') : '';
     const cols = r.head ? '<details class="imp-cols" id="impCols"' + (r.map.t == null || st.colsOpen ? ' open' : '') + '><summary>Columns</summary><div class="imp-colgrid">' + [['t', 'Title'], ['au', 'Authors'], ['y', 'Year'], ['box', 'Journal or book'], ['vol', 'Volume'], ['iss', 'Issue'], ['pages', 'Pages'], ['doi', 'DOI'], ['tags', 'Tags'], ['n', 'Notes'], ['type', 'Type']].map(([k, label]) => '<label>' + label + '<select data-imp-col="' + k + '"><option value="">(none)</option>' + r.head.map((h, i) => '<option value="' + i + '"' + (r.map[k] === i ? ' selected' : '') + '>' + esc(h || 'Column ' + (i + 1)) + '</option>').join('') + '</select></label>').join('') + '</div></details>' : '';
     const n = [...st.pick].length;
     bd.querySelector('#impBody').innerHTML =
@@ -3338,9 +3390,35 @@ async function picturesPdf(pages){
 }
 
 
-/* a small GIF writer: a fixed 256-colour palette and LZW, enough for maps */
-function gifPalette(){ const p = []; for(let r = 0; r < 6; r++) for(let g = 0; g < 7; g++) for(let b = 0; b < 6; b++) p.push([Math.round(r * 255 / 5), Math.round(g * 255 / 6), Math.round(b * 255 / 5)]); while(p.length < 256){ const v = Math.round((p.length - 252) * 255 / 3); p.push([v, v, v]); } return p; }
-function gifIndex(r, g, b){ return Math.round(r * 5 / 255) * 42 + Math.round(g * 6 / 255) * 6 + Math.round(b * 5 / 255); }
+/* a GIF writer: a palette made from the map's own colours (median cut), LZW, and only the part that changed in each frame */
+function gifPalette(datas){
+  const N = 32768, cnt = new Float64Array(N), sr = new Float64Array(N), sg = new Float64Array(N), sb = new Float64Array(N);
+  datas.forEach(d => { for(let j = 0; j < d.length; j += 8){ const r = d[j], g = d[j + 1], b = d[j + 2], k = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3); cnt[k]++; sr[k] += r; sg[k] += g; sb[k] += b; } });
+  const keys = []; for(let k = 0; k < N; k++) if(cnt[k]) keys.push(k);
+  const ch = (k, c) => c === 0 ? (k >> 10) & 31 : c === 1 ? (k >> 5) & 31 : k & 31;
+  let boxes = [keys];
+  while(boxes.length < 256){
+    let bi = -1, best = 0, bc = 0;
+    boxes.forEach((bx, n) => { if(bx.length < 2) return; for(let c = 0; c < 3; c++){ let lo = 31, hi = 0, w = 0; bx.forEach(k => { const v = ch(k, c); if(v < lo) lo = v; if(v > hi) hi = v; w += cnt[k]; }); const score = (hi - lo) * Math.sqrt(w); if(score > best){ best = score; bi = n; bc = c; } } });
+    if(bi < 0) break;
+    const bx = boxes[bi].slice().sort((a, b) => ch(a, bc) - ch(b, bc));
+    let tot = 0; bx.forEach(k => tot += cnt[k]); let acc = 0, m = 0;
+    for(; m < bx.length - 1; m++){ acc += cnt[bx[m]]; if(acc >= tot / 2) break; }
+    m = Math.min(m, bx.length - 2);
+    boxes.splice(bi, 1, bx.slice(0, m + 1), bx.slice(m + 1));
+  }
+  const pal = boxes.filter(bx => bx.length).map(bx => { let c = 0, r = 0, g = 0, b = 0; bx.forEach(k => { c += cnt[k]; r += sr[k]; g += sg[k]; b += sb[k]; }); return [Math.round(r / c), Math.round(g / c), Math.round(b / c)]; });
+  while(pal.length < 256) pal.push([0, 0, 0]);
+  return pal;
+}
+function gifMapper(pal){
+  const lut = new Int16Array(32768).fill(-1);
+  return (r, g, b) => {
+    const k = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3); let v = lut[k];
+    if(v < 0){ let bd = 1e9; for(let i = 0; i < 256; i++){ const p = pal[i], d = (p[0] - r) * (p[0] - r) * 3 + (p[1] - g) * (p[1] - g) * 4 + (p[2] - b) * (p[2] - b) * 2; if(d < bd){ bd = d; v = i; } } lut[k] = v; }
+    return v;
+  };
+}
 function gifLZW(pix){
   const out = [], CLEAR = 256, EOI = 257; let size = 9, next = 258, cur = 0, bits = 0, dict = new Map();
   const emit = c => { cur |= c << bits; bits += size; while(bits >= 8){ out.push(cur & 255); cur >>= 8; bits -= 8; } };
@@ -3358,17 +3436,24 @@ function gifLZW(pix){
   return out;
 }
 function encodeGIF(frames, w, h, delays){
-  const pal = gifPalette(), bytes = [];
-  const str = s => { for(const ch of s) bytes.push(ch.charCodeAt(0)); }, u16 = v => bytes.push(v & 255, (v >> 8) & 255);
+  const pal = gifPalette([frames[frames.length - 1], frames[Math.floor(frames.length / 2)], frames[0]]), near = gifMapper(pal);
+  const bytes = [], str = s => { for(const ch of s) bytes.push(ch.charCodeAt(0)); }, u16 = v => bytes.push(v & 255, (v >> 8) & 255);
   str('GIF89a'); u16(w); u16(h); bytes.push(0xF7, 0, 0); pal.forEach(c => bytes.push(c[0], c[1], c[2]));
   bytes.push(0x21, 0xFF, 11); str('NETSCAPE2.0'); bytes.push(3, 1, 0, 0, 0);
-  frames.forEach((data, fi) => {
-    bytes.push(0x21, 0xF9, 4, 0); u16(Math.round((delays[fi] || 60) / 10)); bytes.push(0, 0);
-    bytes.push(0x2C); u16(0); u16(0); u16(w); u16(h); bytes.push(0);
-    const pix = new Uint16Array(w * h); for(let i = 0, j = 0; i < pix.length; i++, j += 4) pix[i] = gifIndex(data[j], data[j + 1], data[j + 2]);
-    const lz = gifLZW(pix); bytes.push(8);
+  let prev = null;
+  const idxs = frames.map(data => { const a = new Uint8Array(w * h); for(let i = 0, j = 0; i < a.length; i++, j += 4) a[i] = near(data[j], data[j + 1], data[j + 2]); return a; });
+  idxs.forEach((a, fi) => {
+    let x0 = 0, y0 = 0, x1 = w - 1, y1 = h - 1;
+    if(prev){ x0 = w; y0 = h; x1 = -1; y1 = -1;
+      for(let y = 0; y < h; y++){ const o = y * w; for(let x = 0; x < w; x++) if(a[o + x] !== prev[o + x]){ if(x < x0) x0 = x; if(x > x1) x1 = x; if(y < y0) y0 = y; if(y > y1) y1 = y; } }
+      if(x1 < 0){ x0 = y0 = 0; x1 = y1 = 0; } }
+    const cw = x1 - x0 + 1, chh = y1 - y0 + 1, sub = new Uint8Array(cw * chh);
+    for(let y = 0; y < chh; y++) sub.set(a.subarray((y + y0) * w + x0, (y + y0) * w + x0 + cw), y * cw);
+    bytes.push(0x21, 0xF9, 4, 0x04); u16(Math.round((delays[fi] || 60) / 10)); bytes.push(0, 0);
+    bytes.push(0x2C); u16(x0); u16(y0); u16(cw); u16(chh); bytes.push(0);
+    const lz = gifLZW(sub); bytes.push(8);
     for(let i = 0; i < lz.length; i += 255){ const n = Math.min(255, lz.length - i); bytes.push(n); for(let k = 0; k < n; k++) bytes.push(lz[i + k]); }
-    bytes.push(0);
+    bytes.push(0); prev = a;
   });
   bytes.push(0x3B);
   return new Blob([new Uint8Array(bytes)], {type: 'image/gif'});
@@ -3381,13 +3466,13 @@ async function growthGIF(x){
   if(!ys.length) return null;
   const step = Math.max(1, Math.ceil((ys[ys.length - 1] - ys[0]) / 22));
   const marks = []; for(let y = ys[0]; y < ys[ys.length - 1]; y += step) marks.push(y); marks.push(ys[ys.length - 1]);
-  const sc = Math.min(1, 1100 / x.w), w = Math.round(x.w * sc), h = Math.round(x.h * sc), frames = [], delays = [];
+  const sc = Math.min(2, 2800 / x.w), w = Math.round(x.w * sc), h = Math.round(x.h * sc), frames = [], delays = [];
   for(const Y of marks){
     const d = doc.cloneNode(true);
     d.querySelectorAll('[data-id]').forEach(n => { const y = yearOf(n.getAttribute('data-id')); if(typeof y === 'number' && y > Y) n.remove(); });
     d.querySelectorAll('[data-a]').forEach(n => { const a = yearOf(n.getAttribute('data-a')), b = yearOf(n.getAttribute('data-b')); if((typeof a === 'number' && a > Y) || (typeof b === 'number' && b > Y)) n.remove(); });
     const svgEl = d.documentElement, ns = 'http://www.w3.org/2000/svg', tx = d.createElementNS(ns, 'text');
-    tx.setAttribute('x', String(x.w - 40)); tx.setAttribute('y', '64'); tx.setAttribute('text-anchor', 'end'); tx.setAttribute('style', 'font:800 34px Georgia, serif;fill:#1C2330;opacity:.85'); tx.textContent = String(Y); svgEl.appendChild(tx);
+    tx.setAttribute('x', String(x.w - 40)); tx.setAttribute('y', '64'); tx.setAttribute('text-anchor', 'end'); tx.setAttribute('style', 'font:700 34px Georgia, serif;fill:#1C2330;opacity:.82'); tx.textContent = String(Y); svgEl.appendChild(tx);
     const c = await svgToCanvas({svg: new XMLSerializer().serializeToString(d), w: x.w, h: x.h}, sc);
     frames.push(c.getContext('2d').getImageData(0, 0, w, h).data); delays.push(Y === marks[marks.length - 1] ? 2400 : 380);
   }
@@ -3755,7 +3840,7 @@ function renderMain(){
     html = '<section class="branch" id="sec-' + tp.id + '-all"><div class="branch-head"><h2 class="has-more">' + esc(tp.name) + ': all' + moreBtn('t:' + tp.id) + '</h2>' +
       '<p class="branch-count">' + countText(es) + (es.some(e => e.kind === 'paper') ? ' · <button type="button" class="linkbtn" data-export-papers="' + tp.id + '-all">Export list</button>' : '') + '</p>' + (tp.desc ? '<p class="branch-desc">' + esc(tp.desc) + '</p>' : '') + relatedTopicsHTML(tp.id) + + '</div>';
     if(anyConcept){
-      html += visibleSubs(tp).concat(tp.subs.filter(s => s.hidden)).map(s => renderSubSection(s, tp, true)).join('');
+      html += tp.subs.filter(s => s.hidden).concat(visibleSubs(tp)).map(s => renderSubSection(s, tp, true)).join('');
     }else{
       const rows = listPapers(es).filter(matches).sort(byYear);
       html += rows.length ? tableHTML(rows, true) : '<p class="empty">No papers match the current filters.</p>';
@@ -3812,7 +3897,8 @@ function labelKeepSet(items, laneIndex){
   const keep = new Set(), byLane = {};
   const lines = id => ((IDX.up[id] || []).length + (IDX.down[id] || []).length);
   items.forEach(e => { if(e.kind !== 'paper') return; (byLane[laneOf(e)] = byLane[laneOf(e)] || []).push(e); });
-  Object.values(byLane).forEach(arr => arr.sort((x, y) => builtOnBy(y.id) - builtOnBy(x.id) || lines(y.id) - lines(x.id) || x.y - y.y).slice(0, 3).forEach(e => keep.add(e.id)));
+  /* at most two names a row, and only for papers that matter on the map: built on by others, or with two lines or more */
+  Object.values(byLane).forEach(arr => arr.filter(e => builtOnBy(e.id) >= 1 || lines(e.id) >= 2).sort((x, y) => builtOnBy(y.id) - builtOnBy(x.id) || lines(y.id) - lines(x.id) || x.y - y.y).slice(0, 2).forEach(e => keep.add(e.id)));
   return keep;
 }
 /* on the map a paper is known by its title; its authors sit underneath, smaller and grey */
@@ -4138,8 +4224,9 @@ function renderMap(force){
     const r = e.kind === 'concept' ? 6 : dotR(e, narrow);
     const ty = lv === 'up' ? p.y - r - 5 : p.y + r + 12;
     /* the title; when the paper is pointed at or lit, its authors appear underneath and an upper title steps up to make room */
-    s += '<text class="lbl ' + lv + ' p' + dotTier(e) + (keep ? ' keep' : ' hov') + (ok[e.id] ? '' : ' muted') + '" data-lk="' + (keep ? 'keep' : 'hov') + '" data-id="' + e.id + '" x="' + x0.toFixed(1) + '" y="' + ty.toFixed(1) + '" text-anchor="start">' + esc(txt) + '</text>';
-    if(au) s += '<text class="lbl-au" data-id="' + e.id + '" x="' + x0.toFixed(1) + '" y="' + (lv === 'up' ? ty : ty + 11).toFixed(1) + '" text-anchor="start">' + esc(au) + '</text>';
+    const band = lane % 2 === 0 ? ' on-band' : '';
+    s += '<text class="lbl ' + lv + ' p' + dotTier(e) + (keep ? ' keep' : ' hov') + (ok[e.id] ? '' : ' muted') + band + '" data-lk="' + (keep ? 'keep' : 'hov') + '" data-id="' + e.id + '" x="' + x0.toFixed(1) + '" y="' + ty.toFixed(1) + '" text-anchor="start">' + esc(txt) + '</text>';
+    if(au) s += '<text class="lbl-au' + band + '" data-id="' + e.id + '" x="' + x0.toFixed(1) + '" y="' + (lv === 'up' ? ty : ty + 11).toFixed(1) + '" text-anchor="start">' + esc(au) + '</text>';
   });
   s += '</g>';
   mapSvg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
@@ -4423,7 +4510,7 @@ function relGroup(title, items){
 }
 function infoHTML(id){
   const e = id && lib.entries[id];
-  if(!e) return '<p class="info-empty">Click a dot to see its card here; point at one to see its name and its lines.</p>';
+  if(!e) return '<p class="info-empty">Click a dot to see its card here; double-click it to link it to another paper.</p>';
   const tp = IDX.topics[e.topic], s = IDX.subs[e.sub];
   const place = e.kind === 'concept' ? 'Concept' : esc(tp ? tp.name : '') + (s && !s.hidden ? ' / ' + esc(s.name) : '');
   if(e.kind === 'concept'){
@@ -4934,13 +5021,15 @@ function moreItems(key){
     return [{label: 'Add a paper here', a: {act: 'new-entry', view: id}}, {label: 'Add a subtopic', a: {act: 'new-sub', topic: id}}, {label: 'Rename or describe…', a: {act: 'edit-topic', topic: id}}, {label: 'Related topic…', a: {tlinkAdd: id}}, {sep: 1}, {label: 'Delete topic', a: {act: 'del-topic', topic: id}, danger: 1}]; }
   return [];
 }
-function closeFloatMenu(){ const m = document.getElementById('floatMenu'); if(m) m.remove(); document.querySelectorAll('.more-btn.open').forEach(b => b.classList.remove('open')); }
+function closeFloatMenu(){ const m = document.getElementById('floatMenu'); if(m){ m.remove(); if(m.classList.contains('plus-menu') && typeof hidePlus === 'function') hidePlus(); } document.querySelectorAll('.more-btn.open').forEach(b => b.classList.remove('open')); }
 function openFloatMenu(x, y, items, from){
   closeFloatMenu(); if(!items.length) return;
   const m = document.createElement('div'); m.className = 'float-menu'; m.id = 'floatMenu'; m.setAttribute('role', 'menu');
   m.innerHTML = items.map((it, i) => it.sep ? '<div class="fm-sep"></div>' : '<button type="button" role="menuitem" class="fm-item' + (it.danger ? ' danger' : '') + '" data-fm="' + i + '">' + esc(it.label) + '</button>').join('');
+  m.style.left = '0px'; m.style.top = '0px'; m.style.animation = 'none';
   document.body.appendChild(m);
   const r = m.getBoundingClientRect(), W = innerWidth, H = innerHeight;
+  m.style.animation = '';
   m.style.left = Math.max(8, Math.min(x, W - r.width - 8)) + 'px'; m.style.top = Math.max(8, Math.min(y, H - r.height - 8)) + 'px';
   if(from) from.classList.add('open');
   m.addEventListener('click', ev => { const b = ev.target.closest('[data-fm]'); if(!b) return; const it = items[+b.dataset.fm]; closeFloatMenu(); setTimeout(() => it.fn ? it.fn() : runMenuItem(it.a), 0); });
@@ -5008,23 +5097,33 @@ function smallCardHTML(e){
     '<span class="pc-main"><span class="pc-title">' + esc(e.t) + '</span><span class="pc-meta">' + esc([e.au, place].filter(Boolean).join(' · ')) + '</span></span>' +
     '<span class="info-st"><button type="button" class="stbtn want" data-st="want" data-id="' + e.id + '" aria-pressed="' + (st === 'want') + '">Want to read</button><button type="button" class="stbtn read" data-st="read" data-id="' + e.id + '" aria-pressed="' + (st === 'read') + '">Read</button>' + moreBtn('p:' + e.id) + '</span>' +
     '<span class="pc-open" aria-hidden="true">›</span></div>' +
-    '<p class="info-actions"><button type="button" class="linkbtn" data-reader="' + e.id + '">Notes &amp; PDF</button><button type="button" class="linkbtn" data-export-paper="' + e.id + '">Export its lines</button><button type="button" class="linkbtn" data-goto="' + e.id + '">Show in list</button><button type="button" class="linkbtn" data-clear-sel="1">Clear selection</button></p>';
+    '<p class="info-actions"><span class="hint">Double-click its dot to link it</span><button type="button" class="linkbtn" data-reader="' + e.id + '">Notes &amp; PDF</button><button type="button" class="linkbtn" data-export-paper="' + e.id + '">Export its lines</button><button type="button" class="linkbtn" data-goto="' + e.id + '">Show in list</button><button type="button" class="linkbtn" data-clear-sel="1">Clear selection</button></p>';
 }
 /* the paper and the papers one line away, on a little timeline of their own */
 function miniMapSVG(id){
   const e = lib.entries[id]; const near = [];
   (IDX.up[id] || []).forEach(x => near.push([x[0], x[1], 'up'])); (IDX.down[id] || []).forEach(x => near.push([x[0], x[1], 'down']));
-  const pts = [id].concat(near.map(x => x[0])).map(k => lib.entries[k]).filter(x => x && typeof x.y === 'number');
-  if(pts.length < 2) return '<p class="hint">No lines yet: link it with the + on its dot.</p>';
+  const pts = [id].concat([...new Set(near.map(x => x[0]))]).map(k => lib.entries[k]).filter(x => x && typeof x.y === 'number');
+  if(pts.length < 2) return '<p class="hint">No lines yet: double-click its dot on the map to link it.</p>';
   const ys = pts.map(x => x.y), y0 = Math.min(...ys), y1 = Math.max(...ys), span = Math.max(1, y1 - y0);
-  const W = 440, H = 96, L = 24, R = 24, X = y => L + (y - y0) / span * (W - L - R);
-  const rowOf = {}; let up = 0, dn = 0;
-  near.forEach(([k, ty, dir]) => { if(rowOf[k] != null) return; rowOf[k] = dir === 'up' ? -(++up) : ++dn; });
-  const Y = k => k === id ? 48 : 48 + Math.max(-2, Math.min(2, rowOf[k])) * 17;
-  let s = '<svg class="bc-mini" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Its lines on a small timeline"><line class="bm-axis" x1="' + L + '" x2="' + (W - R) + '" y1="' + (H - 12) + '" y2="' + (H - 12) + '"/>';
-  near.forEach(([k, ty]) => { const o = lib.entries[k]; if(!o || typeof o.y !== 'number') return; const a = [X(o.y), Y(k)], b = [X(e.y), Y(id)], mx = (a[0] + b[0]) / 2; s += '<path class="bm-line ' + ty + '" d="M' + a[0].toFixed(1) + ' ' + a[1] + ' C' + mx.toFixed(1) + ' ' + a[1] + ' ' + mx.toFixed(1) + ' ' + b[1] + ' ' + b[0].toFixed(1) + ' ' + b[1] + '"/>'; });
-  pts.forEach(o => { const me = o.id === id, st = stOf(o); s += '<circle class="bm-dot' + (me ? ' me' : '') + ' st-' + (st || 'none') + '" cx="' + X(o.y).toFixed(1) + '" cy="' + Y(o.id) + '" r="' + (me ? 6.5 : 4.2) + '"><title>' + esc(o.y + ' · ' + o.t) + '</title></circle>'; });
-  [y0, y1].concat(span > 8 ? [Math.round((y0 + y1) / 2)] : []).forEach(y => { s += '<text class="bm-year" x="' + X(y).toFixed(1) + '" y="' + (H - 1) + '" text-anchor="middle">' + y + '</text>'; });
+  const W = 460, L = 16, R = 16, X = y => L + 6 + (y - y0) / span * (W - L - R - 12);
+  /* earlier papers it builds on above, later ones below; each paper on its own line so its name has room */
+  const ups = [...new Set(near.filter(x => x[2] === 'up').map(x => x[0]))].filter(k => lib.entries[k] && typeof lib.entries[k].y === 'number').sort((a, b) => lib.entries[a].y - lib.entries[b].y);
+  const dns = [...new Set(near.filter(x => x[2] === 'down').map(x => x[0]))].filter(k => !ups.includes(k) && lib.entries[k] && typeof lib.entries[k].y === 'number').sort((a, b) => lib.entries[a].y - lib.entries[b].y);
+  const RowH = 34, top = 18, rows = ups.concat([id], dns), Yof = {}; rows.forEach((k, i) => { Yof[k] = top + i * RowH; });
+  const H = top + rows.length * RowH + 6;
+  let s = '<svg class="bc-mini" viewBox="0 0 ' + W + ' ' + (H + 16) + '" role="img" aria-label="Its lines on a small timeline">';
+  s += '<line class="bm-axis" x1="' + L + '" x2="' + (W - R) + '" y1="' + (H + 1) + '" y2="' + (H + 1) + '"/>';
+  near.forEach(([k, ty, dir]) => { const o = lib.entries[k]; if(!o || typeof o.y !== 'number') return;
+    const a = dir === 'up' ? [X(o.y), Yof[k]] : [X(e.y), Yof[id]], b = dir === 'up' ? [X(e.y), Yof[id]] : [X(o.y), Yof[k]], mx = (a[0] + b[0]) / 2;
+    s += '<path class="bm-line ' + ty + '" d="M' + a[0].toFixed(1) + ' ' + a[1] + ' C' + mx.toFixed(1) + ' ' + a[1] + ' ' + mx.toFixed(1) + ' ' + b[1] + ' ' + b[0].toFixed(1) + ' ' + b[1] + '"/>'; });
+  rows.forEach(k => { const o = lib.entries[k], me = k === id, st = stOf(o), cx = X(o.y), cy = Yof[k];
+    const left = cx > W * 0.58, tx = left ? cx - 11 : cx + 11, anc = left ? 'end' : 'start';
+    const title = (o.t || '').length > 40 ? o.t.slice(0, 38).replace(/[\s,.:;–-]+$/, '') + '…' : (o.t || '');
+    s += '<g class="bm-node" data-select="' + esc(k) + '"><circle class="bm-dot' + (me ? ' me' : '') + ' st-' + (st || 'none') + '" cx="' + cx.toFixed(1) + '" cy="' + cy + '" r="' + (me ? 6.5 : 4.5) + '"><title>' + esc(o.y + ' · ' + o.t) + '</title></circle>' +
+      '<text class="bm-t' + (me ? ' me' : '') + '" x="' + tx.toFixed(1) + '" y="' + (cy - 1) + '" text-anchor="' + anc + '">' + esc(title) + '</text>' +
+      '<text class="bm-a" x="' + tx.toFixed(1) + '" y="' + (cy + 11) + '" text-anchor="' + anc + '">' + esc([shortAu(o.au), o.y].filter(Boolean).join(' · ')) + '</text></g>'; });
+  [y0, y1].concat(span > 8 ? [Math.round((y0 + y1) / 2)] : []).forEach(y => { s += '<text class="bm-year" x="' + X(y).toFixed(1) + '" y="' + (H + 14) + '" text-anchor="middle">' + y + '</text>'; });
   return s + '</svg>';
 }
 function bigCardHTML(id){
@@ -5246,7 +5345,18 @@ function openPlusMenu(id){
     {sep: 1},
     {label: '↧ Mentions another field…', fn: () => startLinkMode(id, 'field')}
   ]);
-  const m = document.getElementById('floatMenu'); if(m) m.classList.add('plus-menu');
+  const m = document.getElementById('floatMenu'); if(m){ m.classList.add('plus-menu'); keepMenuOnMap(m); }
+}
+/* menus opened from the map stay over the map: shifted in from its right edge, and above the point when there is no room below it */
+function keepMenuOnMap(m, y){
+  const box = document.getElementById('mapBox'); if(!box || !m) return;
+  const mb = box.getBoundingClientRect(), r = m.getBoundingClientRect();
+  if(r.right > mb.right - 4) m.style.left = Math.max(8, mb.right - 4 - r.width) + 'px';
+  if(y != null && r.bottom > mb.bottom - 4){
+    /* no room below on the map: open above if it fits there, otherwise sit within the map beside the point */
+    if(y - r.height - 8 >= mb.top + 4) m.style.top = (y - r.height - 8) + 'px';
+    else m.style.top = Math.max(mb.top + 4, Math.min(y - r.height / 2, mb.bottom - r.height - 4)) + 'px';
+  }
 }
 const LINK_HINT = {in: 'Click the paper it builds on', out: 'Click the paper it leads to', rel: 'Click the paper it is related to', field: 'Click the row of the field it mentions'};
 function startLinkMode(from, kind){
@@ -5269,7 +5379,7 @@ function linkTargetAt(ev){
 }
 window.addEventListener('pointermove', ev => {
   if(!linkMode) return;
-  linkHint.style.left = (ev.clientX + 14) + 'px'; linkHint.style.top = (ev.clientY + 12) + 'px';
+  { const hw = linkHint.offsetWidth || 240; linkHint.style.left = (ev.clientX + 14 + hw > innerWidth - 8 ? ev.clientX - 14 - hw : ev.clientX + 14) + 'px'; linkHint.style.top = (ev.clientY + 12) + 'px'; }
   const p = MAP.P[linkMode.from]; if(!p) return;
   const pt = svgPoint(ev), path = document.getElementById('linkModePath'), arr = document.getElementById('linkModeArr');
   mapSvg.querySelectorAll('.node.link-target').forEach(x => x.classList.remove('link-target'));
@@ -5345,7 +5455,7 @@ function openLineMenu(a, b, t, x, y){
     {label: 'Note and colour…', fn: () => openLinkNote(a, b, t)},
     {label: 'Remove this line', danger: 1, fn: () => removeLine(a, b, t)}
   ]));
-  const m = document.getElementById('floatMenu'); if(m){ const f = m.querySelector('.fm-item'); if(f){ f.classList.add('fm-title'); f.disabled = true; } }
+  const m = document.getElementById('floatMenu'); if(m){ const f = m.querySelector('.fm-item'); if(f){ f.classList.add('fm-title'); f.disabled = true; } keepMenuOnMap(m, y); }
 }
 
 /* say how they are linked: the later paper builds on (or responds to) the earlier one, unless you turn it round */
@@ -5449,7 +5559,7 @@ function bindPickers(body, state, selfId){
 
 /* ---------- entry form ---------- */
 function optionList(items, val){ return items.map(([v, l]) => '<option value="' + esc(v) + '"' + (v === val ? ' selected' : '') + '>' + esc(l) + '</option>').join(''); }
-function subOptions(tid, val){ const tp = IDX.topics[tid]; return tp ? optionList(treeSubs(tp).map(s => { const d = IDX.depth[s.id] || 0; return [s.id, s.hidden ? '(no subtopics)' : '\u00a0\u00a0\u00a0'.repeat(d) + (d ? '↳ ' : '') + s.name]; }), val) : ''; }
+function subOptions(tid, val){ const tp = IDX.topics[tid]; return tp ? optionList(treeSubs(tp).map(s => { const d = IDX.depth[s.id] || 0; return [s.id, s.hidden ? (tp.subs.length > 1 ? tp.name + ' itself (no subtopic)' : '(no subtopics)') : '\u00a0\u00a0\u00a0'.repeat(d) + (d ? '↳ ' : '') + s.name]; }), val) : ''; }
 function groupOptions(sid, val){ const s = IDX.subs[sid]; return '<option value="">No group</option>' + (s ? optionList(s.groups.map(g => [g.id, g.name]), val) : ''); }
 function parentOptions(sid, val){ const cs = entriesOfSub(sid).filter(e => e.kind === 'concept').sort(byYear); return '<option value="">Not under a concept</option>' + optionList(cs.map(c => [c.id, c.t]), val); }
 function openEntryForm(id, preset){
@@ -6078,7 +6188,7 @@ function renderLanePicker(){
       const n = ids.filter(x => shown.has(x)).length;
       const hiddenOnly = tp.subs.length === 1 && tp.subs[0].hidden;
       return '<div class="lp-topic"><label><input type="checkbox" data-lpt="' + tp.id + '"' + (n === ids.length ? ' checked' : '') + (n && n < ids.length ? ' data-mixed="1"' : '') + '>' + esc(tp.name) + '</label>' +
-        (hiddenOnly ? '' : '<div class="lp-subs">' + treeSubs(tp).map(s => '<label><input type="checkbox" data-lps="' + s.id + '"' + (shown.has(s.id) ? ' checked' : '') + '>' + esc(s.hidden ? 'Ungrouped' : subPath(s).join(' › ')) + '</label>').join('') + '</div>') + '</div>';
+        (hiddenOnly ? '' : '<div class="lp-subs">' + treeSubs(tp).map(s => '<label><input type="checkbox" data-lps="' + s.id + '"' + (shown.has(s.id) ? ' checked' : '') + '>' + esc(s.hidden ? tp.name + ' itself' : subPath(s).join(' › ')) + '</label>').join('') + '</div>') + '</div>';
     }).join('');
   lanePicker.querySelectorAll('[data-mixed]').forEach(cb => { cb.indeterminate = true; });
 }
@@ -6719,7 +6829,7 @@ function freshId(prefix){ let x; do{ x = rid(prefix); }while(lib.topics.some(t =
 function topicHolding(sid){ return lib.topics.find(t => t.subs.some(s => s.id === sid)); }
 function liveBelow(T, sid){ const out = []; const walk = id => T.subs.forEach(s => { if(s.parent === id){ out.push(s.id); walk(s.id); } }); walk(sid); return out; }
 function hasEntries(sid){ return Object.values(lib.entries).some(e => e.sub === sid); }
-function absorbHidden(T){ T.subs.filter(x => x.hidden).forEach(h => { if(hasEntries(h.id)){ delete h.hidden; h.name = 'Ungrouped'; } else T.subs = T.subs.filter(x => x !== h); }); }
+function absorbHidden(T){ /* the topic keeps its own row */ }
 function detachNode(node){
   if(node.k === 's'){
     const A = topicHolding(node.id); if(!A) return null;
@@ -6755,7 +6865,7 @@ function attachSubtree(D, target, zone){
     kids.forEach(s => { if(s.parent === R.id) delete s.parent; });
     delete R.parent;
     if(!kids.length){ R.hidden = true; T2.subs = [R]; }
-    else{ T2.subs = kids; if(hasEntries(R.id)){ R.name = 'Ungrouped'; T2.subs.unshift(R); } }
+    else{ R.hidden = true; R.name = T2.name; T2.subs = [R].concat(kids); }
     rekeyTl(R.id, T2.id);
     (lib.tlinks || []).forEach(l => { if(l[0] === R.id) l[0] = T2.id; if(l[1] === R.id) l[1] = T2.id; });
     const i = lib.topics.findIndex(x => x.id === target.id);
@@ -7043,9 +7153,8 @@ mapSvg.addEventListener('pointerover', ev => {
   mapSvg.classList.toggle('hovering', !!id && id !== ui.selected);
   mapSvg.querySelectorAll('.me').forEach(x => x.classList.remove('me'));
   if(id) mapSvg.querySelectorAll('[data-id="' + id + '"].lbl, [data-id="' + id + '"].lbl-au').forEach(x => x.classList.add('me'));
-  if(ev.pointerType !== 'touch' && n && !linkMode) showPlus(id); else if(!n) hidePlus();
 });
-mapSvg.addEventListener('pointerleave', () => { hidePlus(); mapSvg.classList.remove('hovering'); mapSvg.querySelectorAll('.me').forEach(x => x.classList.remove('me')); if(!drag) applyFocus(ui.selected); });
+mapSvg.addEventListener('pointerleave', () => { mapSvg.classList.remove('hovering'); mapSvg.querySelectorAll('.me').forEach(x => x.classList.remove('me')); if(!drag) applyFocus(ui.selected); });
 mapSvg.addEventListener('pointerdown', ev => {
   if(ev.button !== 0) return;
   if(ev.target.closest('.node, .ghost, .edge-hit') || linkMode) return;
@@ -7205,7 +7314,7 @@ mapSvg.addEventListener('click', ev => {
   const eh = ev.target.closest('.edge-hit'); if(eh){ openLineMenu(eh.dataset.a, eh.dataset.b, eh.dataset.t, ev.clientX, ev.clientY); return; }
   const gh = ev.target.closest('.ghost'); if(gh){ select(gh.dataset.ghostOf, false); return; }
   const n = ev.target.closest('.node');
-  if(n){ select(n.dataset.id, false); if(isPhone()) setTimeout(() => infoEl.scrollIntoView({behavior: 'smooth', block: 'nearest'}), 80); else if(lib.entries[n.dataset.id] && lib.entries[n.dataset.id].kind === 'paper') setTimeout(() => openPlusMenu(n.dataset.id), 0); }
+  if(n){ select(n.dataset.id, false); if(isPhone()) setTimeout(() => infoEl.scrollIntoView({behavior: 'smooth', block: 'nearest'}), 80); }
 });
 /* phones: the plot is wider than the screen, so keep the interesting part in view */
 function isPhone(){ return !!(window.matchMedia && matchMedia('(max-width: 640px)').matches); }
@@ -7224,7 +7333,8 @@ function phonePan(){
 }
 { const base = renderMap; renderMap = function(force){ const r = base.apply(this, arguments); requestAnimationFrame(() => { try{ phonePan(); }catch(e){} }); return r; }; }
 mapSvg.addEventListener('dblclick', ev => {
-  if(ev.target.closest('.node')) return;
+  const dn = ev.target.closest('.node');
+  if(dn){ const id = dn.dataset.id; if(lib.entries[id] && lib.entries[id].kind === 'paper' && !linkMode){ ev.preventDefault(); if(ui.selected !== id) select(id, false); openPlusMenu(id); showPlus(id); } return; }
   const pt = svgPoint(ev);
   zoomBy(2, MAP.x.inv(pt.x));
 });

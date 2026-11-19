@@ -19,15 +19,15 @@ A personal map of research, ideas and reading. I built it simply because I wante
 
 ## How it works
 
-Each paper is a dot in its topic's row, at its year. The more papers build on one, the bigger its dot. Each row names its three most connected papers; point at any dot to see its title and authors. Click a dot and its lines light up; **How far**, in the bar under the map, reaches further, up to **Whole line**.
+Each paper is a dot in its topic's row, at its year. The more papers build on one, the bigger its dot. Each row names up to two of its most connected papers; point at any dot to see its title and authors. Click a dot and its lines light up; **How far**, in the bar under the map, reaches further, up to **Whole line**.
 
 ![How each kind of line looks: builds on is solid, responds to is dashed, related to is dotted, a mention leaves a faint shadow in another field, related topics are marked ⇄](assets/lines-legend.svg)
 
 ### Link with +
 
-![Pointing at a paper, clicking its +, choosing Builds on, clicking the paper it builds on, then clicking the new line and changing it to Responds to](assets/link.gif)
+![Double-clicking a paper, choosing Builds on, clicking the paper it builds on, then clicking the new line and changing it to Responds to](assets/link.gif)
 
-Point at a dot and click its **+**. Say how it connects first, **Builds on**, **Leads to** or **Related to**, then click the other paper: the arrow points the right way from the start. Linked it wrongly? Click the line to change it, turn it round, give it a note and a colour, or remove it. Dragging a dot only ever moves it to another row.
+Double-click a dot and it turns into a black **+**. Say how it connects first, **Builds on**, **Leads to** or **Related to**, then click the other paper: the arrow points the right way from the start. Linked it wrongly? Click the line to change it, turn it round, give it a note and a colour, or remove it. Dragging a dot only ever moves it to another row.
 
 ### Cards
 
@@ -41,11 +41,17 @@ Every topic lists its papers as cards, in time order: green for read, red for wa
 
 Press **L**, or **Lens** under the map, to see one paper's line of thought on its own: what it builds on to the left, what it leads to on the right. **Path…** shows the chain that joins any papers you tick, and **Metro** draws it like a metro map.
 
+### Zoom through time
+
+![Dragging along the years from 2005 to 2020 to zoom in, where every paper gets its name; dragging the map sideways to move through time; double-clicking a year to zoom in further; then Years → All years](assets/zoom.gif)
+
+Drag along the years to zoom in on a stretch of time, and drag the map sideways to move through it. Double-click a year to zoom in further; **Years ▾ → All years** shows everything again. Zoom in far enough and every paper is named.
+
 ### Mentions another field
 
-![Choosing Mentions another field from a paper's +, clicking the row of that field, and seeing the paper's faint shadow there, joined to it by a dashed line](assets/mentions.gif)
+![Double-clicking a paper, choosing Mentions another field, clicking the row of that field, and seeing the paper's faint shadow there, joined to it by a dashed line](assets/mentions.gif)
 
-A paper can reach into another field without linking to any paper in it: choose **↧ Mentions another field** from its **+** and click that field's row. A faint shadow of its dot appears there, at the same year.
+A paper can reach into another field without linking to any paper in it: double-click it, choose **↧ Mentions another field** and click that field's row. A faint shadow of its dot appears there, at the same year.
 
 ### Watch it grow
 
@@ -155,16 +161,9 @@ Give a main line of thought its own colour from a line's menu. **Colour lines** 
 <details>
 <summary>Topics, subtopics and related topics</summary>
 
-Top-level topics are big areas, such as a field or a project, with subtopics inside to any depth. Drag them around in **Contents**, or use a topic's **⋯** to add, rename, move or delete. Related topics carry ⇄ beside their names and light up together.
+Top-level topics are big areas, such as a field or a project, with subtopics inside to any depth. A topic has a row of its own too, level with its subtopics, for papers about the topic as a whole: choose **“… itself”** under Subtopic. Drag them around in **Contents**, or use a topic's **⋯** to add, rename, move or delete. Related topics carry ⇄ beside their names and light up together.
 
 ![Board games is related to Procrastination by a blue link and to Dinner by a yellow one; in Board games both light up in their colours](assets/related-topics.png)
-
-</details>
-
-<details>
-<summary>Zoom the timeline</summary>
-
-Drag along the years to zoom in, drag sideways to move, double-click to zoom out. Zoom in far enough and every paper is named.
 
 </details>
 
