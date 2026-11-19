@@ -33,7 +33,7 @@ Double-click a dot and it turns into a black **+**. Say how it connects first, *
 
 ![Pressing a paper's card in a topic's list; it turns over into the full card with where it sits, its lines on a small timeline, its labels and notes; closing it turns it back](assets/card.gif)
 
-Every topic lists its papers as cards, in time order: green for read, red for want to read. Press one and it turns over into the full card: where it sits (change it right there), its lines on a small timeline, its labels and notes, and its PDF. Its **⋯** edits or deletes it.
+Every topic lists its papers as cards, in time order: green for read, red for want to read. Press one and it turns over into the full card: where it sits, its lines on a small timeline, its labels, priority and notes, and its PDF. Change where it sits, its tags or its priority right there. Its **⋯** edits or deletes it.
 
 ### Lens
 
@@ -143,7 +143,7 @@ Open a paper's **Notes & PDF** to write Markdown notes beside its PDF. PDFs need
 <details>
 <summary>Export the map, the list, or both</summary>
 
-**Export ▾** next to Colour lines. **The map** exports by topic, from one paper (as far as How far reaches), along colour lines, or just the papers you pick, as PNG, PDF or GIF; the options sit on the left and the right shows exactly what you'll get. **The papers** saves a list as CSV, BibTeX, RIS or a Markdown reading list. **Both together** puts the map and its list in one PDF, or one long picture for a chat.
+**Export ▾** next to Colour lines. **The map** exports by topic, from one paper (as far as How far reaches), along colour lines, or just the papers you pick, as PNG, PDF or GIF; the options sit on the left and the right shows exactly what you'll get. **The papers** saves a list as CSV, BibTeX, RIS or a Markdown reading list. **Both together** puts the map and its list in one PDF, or one long picture for a chat. PDFs are made of real text and lines, not a picture: you can select, search and edit every word.
 
 ![An exported map: a title, the chosen topics with their lines, a legend, and a note that the lines are the author’s own reading](assets/export.png)
 
@@ -161,7 +161,7 @@ Give a main line of thought its own colour from a line's menu. **Colour lines** 
 <details>
 <summary>Topics, subtopics and related topics</summary>
 
-Top-level topics are big areas, such as a field or a project, with subtopics inside to any depth. A topic has a row of its own too, level with its subtopics, for papers about the topic as a whole: choose **“… itself”** under Subtopic. Drag them around in **Contents**, or use a topic's **⋯** to add, rename, move or delete. Related topics carry ⇄ beside their names and light up together.
+Top-level topics are big areas, such as a field or a project, with subtopics inside to any depth. A topic has a row of its own too, heading its subtopics on the map, for papers about the topic as a whole: choose **“… itself”** under Subtopic. Drag them around in **Contents**, or use a topic's **⋯** to add, rename, move or delete. Related topics carry ⇄ beside their names and light up together.
 
 ![Board games is related to Procrastination by a blue link and to Dinner by a yellow one; in Board games both light up in their colours](assets/related-topics.png)
 

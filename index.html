@@ -1467,6 +1467,35 @@ button,.btn,[role="button"],label.on,.ex-seg label{-webkit-tap-highlight-color:t
 /* the current row is marked once: a bar at its edge (no extra arrow) */
 .map-labels button.on::before{display:none}
 .map-labels button.on .nm{font-weight:700}
+
+/* the map's topic rows: a topic heads its subtopics; nested rows sit on a quiet guide */
+.map-labels button.own .nm{font-size:1.02rem;font-weight:700;letter-spacing:-.005em}
+.map-labels button{background-image:none}
+.map-labels button.nest{background-image:linear-gradient(var(--rule-strong),var(--rule-strong));background-repeat:no-repeat;background-size:1px 44%;background-position:calc(var(--d, 1) * 14px - 2px) 50%}
+.map-labels button.nest.tl-rel,.map-labels button.nest.tl-hover,.map-labels button.nest.drop-target{background-image:none}
+/* names laid out when lit: no transform tricks, and a fine leader when a name had to step away */
+.net .lbl.up.hot{transform:none}
+.net.focus .lbl:not(.hot),.net.focus .lbl-au:not(.hot){opacity:0}
+.net .lbl-lead{stroke:var(--ink);stroke-width:.8;opacity:.4;pointer-events:none}
+/* the card: Where is a path you can read in full, with a chooser */
+.bc-where2{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;padding:2px 0;text-align:left;font:inherit;font-size:.95rem;color:var(--ink);cursor:pointer;border-radius:8px}
+.bc-where2 .bc-path{flex:1;min-width:0;line-height:1.4;overflow-wrap:anywhere}
+.bc-where2 .bc-sep{color:var(--faint)}
+.bc-where2 .bc-dot{flex:none;margin:0}
+.bc-updown{flex:none;width:16px;height:16px;fill:none;stroke:var(--muted);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.bc-where2:hover .bc-updown{stroke:var(--ink)}
+.bc-where2:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.float-menu.where-menu{max-height:60vh;overflow:auto}
+/* labels and priority, right in the card */
+.bc-tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;width:100%}
+.bc-tag .bc-x-s{margin-left:4px;color:var(--faint);font-size:.95em}
+.bc-tag:hover .bc-x-s{color:var(--red)}
+.bc-addtag{border:1px dashed var(--rule-strong);background:transparent;border-radius:999px;padding:.12em .75em;font:inherit;font-size:.8rem;color:var(--muted);cursor:pointer}
+.bc-addtag:hover{color:var(--ink);border-color:var(--ink)}
+.bc-addtag:active{transform:scale(.95)}
+.bc-prio{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin-top:10px;padding-top:10px;border-top:1px solid var(--rule)}
+.bc-prio-k{font-size:.85rem;color:var(--muted)}
+.bc-box:has(.bc-tags){display:block}
 </style>
 </head>
 <body>
@@ -2998,7 +3027,7 @@ async function doListExport(st, subs, title){
 }
 
 /* ===================== export: a picture of the topics you choose ===================== */
-const EXPORT_PROPS = ['fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'stroke-dasharray', 'stroke-linecap', 'stroke-linejoin', 'opacity', 'display', 'visibility', 'font-family', 'font-size', 'font-weight', 'font-style', 'letter-spacing', 'text-anchor', 'paint-order'];
+const EXPORT_PROPS = ['fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'stroke-dasharray', 'stroke-linecap', 'stroke-linejoin', 'opacity', 'display', 'visibility', 'font-family', 'font-size', 'font-weight', 'font-style', 'letter-spacing', 'text-anchor', 'paint-order', 'text-transform'];
 function cloneWithStyles(src){
   const out = src.cloneNode(true);
   const a = [src, ...src.querySelectorAll('*')], b = [out, ...out.querySelectorAll('*')];
@@ -3043,7 +3072,8 @@ function buildExportSVG(o){
   let cap = null;
   try{
     root.setAttribute('data-theme', 'light');
-    settings.lanes = o.subs.slice(); settings.showConcepts = !!o.concepts; ui.selected = null; ui.branch = null; MAP.allNames = o.names !== 'main';
+    { const subsPlus = o.subs.slice(); lib.topics.forEach(tp => { const own = tp.subs.find(s => s.hidden); if(own && !subsPlus.includes(own.id) && tp.subs.some(s => subsPlus.includes(s.id))) subsPlus.push(own.id); }); settings.lanes = subsPlus; }
+    settings.showConcepts = !!o.concepts; ui.selected = null; ui.branch = null; MAP.allNames = o.names !== 'main';
     if(o.allYears) settings.range = null;
     mapEl.style.width = o.width + 'px';
     renderMap(true);
@@ -3091,9 +3121,10 @@ function buildExportSVG(o){
   /* the label column */
   const labFont = '600 14px ' + (cap.labFont || '').replace(/,?\s*serif\s*$/, '') + ", Georgia, 'Times New Roman', serif", ctxFont = '400 11px ' + cap.sans;
   const rows = cap.lanes.map((ln, i) => {
-    const s = ln.sub, depth = ln.concepts ? 0 : subAncestors(s).filter(x => !x.hidden).length;
+    const s = ln.sub, headed = !ln.concepts && !s.hidden && cap.lanes.some(l => l.topic && l.topic.id === ln.topic.id && l.sub.hidden);
+    const depth = ln.concepts ? 0 : subAncestors(s).filter(x => !x.hidden).length + (headed ? 1 : 0);
     const first = !ln.concepts && (i === 0 || cap.lanes[i - 1].topic.id !== ln.topic.id) && !s.hidden;
-    return {name: ln.concepts ? 'Concepts' : (s.hidden ? ln.topic.name : s.name), depth, ctx: first ? ln.topic.name : '', concepts: !!ln.concepts};
+    return {name: ln.concepts ? 'Concepts' : (s.hidden ? ln.topic.name : s.name), depth, ctx: first ? ln.topic.name : '', concepts: !!ln.concepts, own: !!s.hidden && cap.lanes.some(l => l.topic && l.topic.id === ln.topic.id && !l.sub.hidden)};
   });
   const labW = Math.min(300, Math.max(130, ...rows.map(r => measureText(r.name, labFont) + 18 + r.depth * 14 + (r.depth ? 12 : 0)), ...rows.map(r => r.ctx ? measureText(r.ctx, ctxFont) + 18 : 0)));
   const M = 36, titleH = o.title ? 70 : 8, axisH = 30;
@@ -3115,8 +3146,8 @@ function buildExportSVG(o){
     const tx = ox + 10 + r.depth * 14;
     if(r.ctx) s += '<text x="' + tx + '" y="' + (y + cap.laneH / 2 - 8) + '" style="font:700 8.5px ' + xmlEsc(sans) + ';letter-spacing:1.3px;fill:' + cap.ink + ';opacity:.5">' + xmlEsc(String(r.ctx).toUpperCase()) + '</text>';
     const ny = y + cap.laneH / 2 + (r.ctx ? 9 : 5);
-    if(r.depth >= 2) s += '<line x1="' + (tx - 8) + '" x2="' + (tx - 8) + '" y1="' + (y + cap.laneH * .27) + '" y2="' + (y + cap.laneH * .73) + '" style="stroke:' + (cap.ruleStrong || '#C9CED6') + ';stroke-width:1"/>';
-    s += '<text x="' + tx + '" y="' + ny + '" style="font:' + (r.concepts ? '600 13px ' + xmlEsc(sans) : labFont.replace(/"/g, "'")) + ';fill:' + (r.concepts ? cap.muted : cap.ink) + '">' + xmlEsc(r.name) + '</text>';
+    if(r.depth >= 1) s += '<line x1="' + (tx - 8) + '" x2="' + (tx - 8) + '" y1="' + (y + cap.laneH * .27) + '" y2="' + (y + cap.laneH * .73) + '" style="stroke:' + (cap.ruleStrong || '#C9CED6') + ';stroke-width:1"/>';
+    s += '<text x="' + tx + '" y="' + ny + '" style="font:' + (r.concepts ? '600 13px ' + xmlEsc(sans) : (r.own ? labFont.replace(/^600 14px/, '700 15px') : labFont).replace(/"/g, "'")) + ';fill:' + (r.concepts ? cap.muted : cap.ink) + '">' + xmlEsc(r.name) + '</text>';
   });
   const plot = cap.plot; plot.setAttribute('x', ox + labW); plot.setAttribute('y', oy); plot.setAttribute('width', cap.W); plot.setAttribute('height', cap.H);
   plot.removeAttribute('style');
@@ -3150,6 +3181,286 @@ async function svgToCanvas(x, scale){
   return c;
 }
 function canvasBlob(c, type, q){ return new Promise(res => c.toBlob(res, type, q)); }
+/* ===================== vector PDF: real text you can select and edit, and real lines ===================== */
+/* Latin text uses the PDF standard fonts (Helvetica and Times, no embedding needed); Chinese and other
+   characters use the standard Chinese font STSong-Light, which PDF readers supply themselves. */
+const PDF_LATIN = {H: 'Helvetica', HB: 'Helvetica-Bold', HI: 'Helvetica-Oblique', HBI: 'Helvetica-BoldOblique', T: 'Times-Roman', TB: 'Times-Bold', TI: 'Times-Italic', TBI: 'Times-BoldItalic'};
+const PDF_WIN = {0x20AC:0x80,0x201A:0x82,0x0192:0x83,0x201E:0x84,0x2026:0x85,0x2020:0x86,0x2021:0x87,0x02C6:0x88,0x2030:0x89,0x0160:0x8A,0x2039:0x8B,0x0152:0x8C,0x017D:0x8E,0x2018:0x91,0x2019:0x92,0x201C:0x93,0x201D:0x94,0x2022:0x95,0x2013:0x96,0x2014:0x97,0x02DC:0x98,0x2122:0x99,0x0161:0x9A,0x203A:0x9B,0x0153:0x9C,0x017E:0x9E,0x0178:0x9F};
+function pdfWinByte(ch){ const c = ch.codePointAt(0); if(c >= 32 && c < 127) return c; if(c >= 160 && c <= 255) return c; return PDF_WIN[c] ?? -1; }
+function pdfIsSerif(family){ const first = String(family || '').split(',')[0].replace(/["']/g, '').trim(); return /serif|georgia|times|song|garamond|minion|baskerville|palatino/i.test(first) && !/sans/i.test(first); }
+function pdfFontKey(family, weight, italic){ const w = parseInt(weight, 10) || (/bold/i.test(weight) ? 700 : 400); return (pdfIsSerif(family) ? 'T' : 'H') + (w >= 600 ? 'B' : '') + (italic ? 'I' : ''); }
+const pdfMeasureCtx = (() => { let g = null; return () => g || (g = document.createElement('canvas').getContext('2d')); })();
+function pdfCssFont(key, size){
+  const fam = key[0] === 'T' ? '"Times New Roman", Times, "Liberation Serif", serif' : 'Helvetica, Arial, "Liberation Sans", sans-serif';
+  return (key.includes('I') ? 'italic ' : '') + (key.includes('B') ? '700 ' : '400 ') + size + 'px ' + fam;
+}
+/* split text into runs the Latin font can show and runs for the Chinese font */
+/* ticks and crosses come from the standard Zapf Dingbats font */
+const PDF_ZD = {'✓': '3', '✔': '4', '✕': '6', '✗': '7', '✘': '8'};
+function pdfRuns(text){
+  const runs = []; let cur = null;
+  for(const ch of String(text)){
+    const zd = PDF_ZD[ch] != null, cjk = !zd && pdfWinByte(ch) < 0, kind = zd ? 'zd' : cjk ? 'cjk' : 'latin';
+    if(!cur || cur.kind !== kind){ cur = {kind, cjk, zd, s: ''}; runs.push(cur); }
+    cur.s += zd ? PDF_ZD[ch] : ch;
+  }
+  return runs;
+}
+function pdfRunWidth(run, key, size){
+  if(run.zd) return [...run.s].length * size * 0.78;
+  if(run.cjk) return [...run.s].length * size;
+  const g = pdfMeasureCtx(); g.font = pdfCssFont(key, size); return g.measureText(run.s).width;
+}
+function pdfTextWidth(text, key, size, spacing){ const n = [...String(text)].length; return pdfRuns(text).reduce((s, r) => s + pdfRunWidth(r, key, size), 0) + (spacing || 0) * Math.max(0, n - 1); }
+function pdfLatinString(s){ let o = '('; for(const ch of s){ const b = pdfWinByte(ch); const c = b < 0 ? 63 : b; if(c === 40 || c === 41 || c === 92) o += '\\' + String.fromCharCode(c); else if(c < 32 || c > 126) o += '\\' + c.toString(8).padStart(3, '0'); else o += String.fromCharCode(c); } return o + ')'; }
+function pdfCjkString(s){ let o = '<'; for(const ch of s){ const c = ch.codePointAt(0); o += (c > 0xFFFF ? 0x3013 : c).toString(16).padStart(4, '0').toUpperCase(); } return o + '>'; }
+function pdfNum(v){ const r = Math.round(v * 1000) / 1000; return Object.is(r, -0) ? '0' : String(r); }
+/* colours as CSS gives them: #hex, rgb(), rgba(), color(srgb …) */
+function pdfColor(str){
+  const s = String(str || '').trim();
+  if(!s || s === 'none' || s === 'transparent' || s.startsWith('url(')) return null;
+  let m = s.match(/^#([0-9a-f]{3,8})$/i);
+  if(m){ let h = m[1]; if(h.length <= 4) h = [...h].map(c => c + c).join(''); return {r: parseInt(h.slice(0, 2), 16) / 255, g: parseInt(h.slice(2, 4), 16) / 255, b: parseInt(h.slice(4, 6), 16) / 255, a: h.length >= 8 ? parseInt(h.slice(6, 8), 16) / 255 : 1}; }
+  m = s.match(/^rgba?\(\s*([\d.]+)[ ,]+([\d.]+)[ ,]+([\d.]+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)$/i);
+  if(m){ const a = m[4] == null ? 1 : m[4].endsWith('%') ? parseFloat(m[4]) / 100 : +m[4]; return {r: +m[1] / 255, g: +m[2] / 255, b: +m[3] / 255, a}; }
+  m = s.match(/^color\(srgb\s+([\d.e-]+)\s+([\d.e-]+)\s+([\d.e-]+)(?:\s*\/\s*([\d.]+%?))?\s*\)$/i);
+  if(m){ const a = m[4] == null ? 1 : m[4].endsWith('%') ? parseFloat(m[4]) / 100 : +m[4]; return {r: +m[1], g: +m[2], b: +m[3], a}; }
+  const g = pdfMeasureCtx(); g.fillStyle = '#000'; g.fillStyle = s; const v = g.fillStyle;
+  if(v !== s) return pdfColor(v);
+  return null;
+}
+/* one page being drawn */
+class PdfPage{
+  constructor(w, h){ this.w = w; this.h = h; this.ops = []; this.fonts = new Set(); this.gs = new Map(); }
+  alpha(fa, sa){ const k = pdfNum(Math.max(0, Math.min(1, fa))) + '/' + pdfNum(Math.max(0, Math.min(1, sa))); if(k === '1/1') return; if(!this.gs.has(k)) this.gs.set(k, 'GS' + (PdfPage.gsCount = (PdfPage.gsCount || 0) + 1)); this.ops.push('/' + this.gs.get(k) + ' gs'); }
+  text(str, x, y, o){
+    /* o: {key, size, color:{r,g,b,a}, opacity, spacing, anchor, halo:{color,width}} ; x,y in the page's own y-down space */
+    const s = String(str); if(!s.trim() || !o.color) return;
+    const w = pdfTextWidth(s, o.key, o.size, o.spacing);
+    let x0 = x; if(o.anchor === 'middle') x0 -= w / 2; else if(o.anchor === 'end') x0 -= w;
+    const runs = pdfRuns(s), pass = (mode) => {
+      let cx = x0;
+      runs.forEach(r => {
+        const f = r.zd ? 'ZD' : r.cjk ? 'FC' : o.key; this.fonts.add(f);
+        this.ops.push('BT /' + f + ' ' + pdfNum(o.size) + ' Tf ' + (o.spacing ? pdfNum(o.spacing) + ' Tc ' : '0 Tc ') + mode + ' Tr 1 0 0 -1 ' + pdfNum(cx) + ' ' + pdfNum(y) + ' Tm ' + (r.cjk ? pdfCjkString(r.s) : pdfLatinString(r.s)) + ' Tj ET');
+        cx += pdfRunWidth(r, o.key, o.size) + (o.spacing || 0) * [...r.s].length;
+      });
+    };
+    this.ops.push('q');
+    if(o.halo && o.halo.color && o.halo.width > 0){ const hc = o.halo.color; this.alpha(1, (o.opacity ?? 1) * hc.a); this.ops.push(pdfNum(hc.r) + ' ' + pdfNum(hc.g) + ' ' + pdfNum(hc.b) + ' RG ' + pdfNum(o.halo.width) + ' w 1 j 1 J'); pass(1); this.ops.push('Q q'); }
+    this.alpha((o.opacity ?? 1) * o.color.a, 1);
+    this.ops.push(pdfNum(o.color.r) + ' ' + pdfNum(o.color.g) + ' ' + pdfNum(o.color.b) + ' rg'); pass(0);
+    this.ops.push('Q');
+  }
+}
+/* draw an SVG (as the export builds it) onto a page, keeping shapes and text as vectors */
+const PDF_INHERIT = ['fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'stroke-dasharray', 'stroke-linecap', 'stroke-linejoin', 'font-family', 'font-size', 'font-weight', 'font-style', 'letter-spacing', 'text-anchor', 'paint-order', 'visibility', 'text-transform'];
+function pdfStyleOf(el, parent){
+  const st = Object.assign({}, parent, {opacity: 1, display: ''});
+  const put = (k, v) => { st[k.trim().toLowerCase()] = v.trim(); };
+  const attrs = ['fill', 'stroke', 'stroke-width', 'opacity', 'fill-opacity', 'stroke-opacity', 'stroke-dasharray', 'font-size', 'font-family', 'font-weight', 'text-anchor', 'display', 'visibility'];
+  attrs.forEach(a => { const v = el.getAttribute && el.getAttribute(a); if(v != null) put(a, v); });
+  const css = el.getAttribute && el.getAttribute('style');
+  if(css) css.split(';').forEach(d => { const i = d.indexOf(':'); if(i < 0) return; const k = d.slice(0, i).trim().toLowerCase(), v = d.slice(i + 1).trim(); if(!v) return;
+    if(k === 'font'){ const m = v.match(/^(italic\s+)?(?:(normal|bold|\d{3})\s+)?([\d.]+)px\s+(.+)$/i); if(m){ if(m[1]) st['font-style'] = 'italic'; if(m[2]) st['font-weight'] = m[2]; st['font-size'] = m[3] + 'px'; st['font-family'] = m[4]; } return; }
+    put(k, v); });
+  st._op = (parent._op ?? 1) * (parseFloat(st.opacity) >= 0 ? parseFloat(st.opacity) : 1);
+  return st;
+}
+function pdfPathOps(d){
+  /* SVG path data to PDF path operators (M L H V C S Q T A Z, absolute and relative) */
+  const toks = String(d).match(/[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:e[-+]?\d+)?/g) || [];
+  let i = 0, cmd = '', x = 0, y = 0, sx = 0, sy = 0, cx = 0, cy = 0, qx = 0, qy = 0, out = [];
+  const num = () => parseFloat(toks[i++]);
+  const isNum = () => i < toks.length && !/^[a-zA-Z]$/.test(toks[i]);
+  const C = (x1, y1, x2, y2, x3, y3) => { out.push(pdfNum(x1) + ' ' + pdfNum(y1) + ' ' + pdfNum(x2) + ' ' + pdfNum(y2) + ' ' + pdfNum(x3) + ' ' + pdfNum(y3) + ' c'); };
+  while(i < toks.length){
+    if(/^[a-zA-Z]$/.test(toks[i])) cmd = toks[i++];
+    const rel = cmd === cmd.toLowerCase(), c = cmd.toUpperCase();
+    if(c === 'Z'){ out.push('h'); x = sx; y = sy; if(!isNum()) continue; }
+    if(c === 'M'){ const nx = num() + (rel ? x : 0), ny = num() + (rel ? y : 0); x = sx = nx; y = sy = ny; out.push(pdfNum(x) + ' ' + pdfNum(y) + ' m'); cmd = rel ? 'l' : 'L'; cx = x; cy = y; continue; }
+    if(c === 'L'){ x = num() + (rel ? x : 0); y = num() + (rel ? y : 0); out.push(pdfNum(x) + ' ' + pdfNum(y) + ' l'); cx = x; cy = y; continue; }
+    if(c === 'H'){ x = num() + (rel ? x : 0); out.push(pdfNum(x) + ' ' + pdfNum(y) + ' l'); cx = x; cy = y; continue; }
+    if(c === 'V'){ y = num() + (rel ? y : 0); out.push(pdfNum(x) + ' ' + pdfNum(y) + ' l'); cx = x; cy = y; continue; }
+    if(c === 'C'){ const x1 = num() + (rel ? x : 0), y1 = num() + (rel ? y : 0), x2 = num() + (rel ? x : 0), y2 = num() + (rel ? y : 0), x3 = num() + (rel ? x : 0), y3 = num() + (rel ? y : 0); C(x1, y1, x2, y2, x3, y3); cx = x2; cy = y2; x = x3; y = y3; continue; }
+    if(c === 'S'){ const x1 = 2 * x - cx, y1 = 2 * y - cy, x2 = num() + (rel ? x : 0), y2 = num() + (rel ? y : 0), x3 = num() + (rel ? x : 0), y3 = num() + (rel ? y : 0); C(x1, y1, x2, y2, x3, y3); cx = x2; cy = y2; x = x3; y = y3; continue; }
+    if(c === 'Q' || c === 'T'){ let x1, y1; if(c === 'Q'){ x1 = num() + (rel ? x : 0); y1 = num() + (rel ? y : 0); } else { x1 = 2 * x - qx; y1 = 2 * y - qy; } const x3 = num() + (rel ? x : 0), y3 = num() + (rel ? y : 0);
+      C(x + 2 / 3 * (x1 - x), y + 2 / 3 * (y1 - y), x3 + 2 / 3 * (x1 - x3), y3 + 2 / 3 * (y1 - y3), x3, y3); qx = x1; qy = y1; x = x3; y = y3; cx = x; cy = y; continue; }
+    if(c === 'A'){
+      let rx = Math.abs(num()), ry = Math.abs(num()); const phi = num() * Math.PI / 180, large = num(), sweep = num(), x2 = num() + (rel ? x : 0), y2 = num() + (rel ? y : 0);
+      if(!rx || !ry){ out.push(pdfNum(x2) + ' ' + pdfNum(y2) + ' l'); x = x2; y = y2; continue; }
+      const cs = Math.cos(phi), sn = Math.sin(phi), dx = (x - x2) / 2, dy = (y - y2) / 2, x1p = cs * dx + sn * dy, y1p = -sn * dx + cs * dy;
+      let lam = x1p * x1p / (rx * rx) + y1p * y1p / (ry * ry); if(lam > 1){ rx *= Math.sqrt(lam); ry *= Math.sqrt(lam); }
+      const sgn = (large === sweep ? -1 : 1), num2 = rx * rx * ry * ry - rx * rx * y1p * y1p - ry * ry * x1p * x1p, co = sgn * Math.sqrt(Math.max(0, num2 / (rx * rx * y1p * y1p + ry * ry * x1p * x1p)));
+      const cxp = co * rx * y1p / ry, cyp = -co * ry * x1p / rx, ccx = cs * cxp - sn * cyp + (x + x2) / 2, ccy = sn * cxp + cs * cyp + (y + y2) / 2;
+      const ang = (ux, uy, vx, vy) => Math.atan2(ux * vy - uy * vx, ux * vx + uy * vy);
+      let t1 = ang(1, 0, (x1p - cxp) / rx, (y1p - cyp) / ry), dt = ang((x1p - cxp) / rx, (y1p - cyp) / ry, (-x1p - cxp) / rx, (-y1p - cyp) / ry);
+      if(!sweep && dt > 0) dt -= 2 * Math.PI; else if(sweep && dt < 0) dt += 2 * Math.PI;
+      const segs = Math.ceil(Math.abs(dt) / (Math.PI / 2)), dd = dt / segs, kk = 4 / 3 * Math.tan(dd / 4);
+      for(let s = 0; s < segs; s++){
+        const a1 = t1 + s * dd, a2 = a1 + dd, c1 = Math.cos(a1), s1 = Math.sin(a1), c2 = Math.cos(a2), s2 = Math.sin(a2);
+        const P = (px, py) => [ccx + cs * rx * px - sn * ry * py, ccy + sn * rx * px + cs * ry * py];
+        const p1 = P(c1 - kk * s1, s1 + kk * c1), p2 = P(c2 + kk * s2, s2 - kk * c2), p3 = P(c2, s2);
+        C(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
+      }
+      x = x2; y = y2; cx = x; cy = y; continue;
+    }
+    i++;
+  }
+  return out.join('\n');
+}
+function pdfCircleOps(cx, cy, r){ const k = 0.5523 * r; return [pdfNum(cx + r) + ' ' + pdfNum(cy) + ' m', pdfNum(cx + r) + ' ' + pdfNum(cy + k) + ' ' + pdfNum(cx + k) + ' ' + pdfNum(cy + r) + ' ' + pdfNum(cx) + ' ' + pdfNum(cy + r) + ' c', pdfNum(cx - k) + ' ' + pdfNum(cy + r) + ' ' + pdfNum(cx - r) + ' ' + pdfNum(cy + k) + ' ' + pdfNum(cx - r) + ' ' + pdfNum(cy) + ' c', pdfNum(cx - r) + ' ' + pdfNum(cy - k) + ' ' + pdfNum(cx - k) + ' ' + pdfNum(cy - r) + ' ' + pdfNum(cx) + ' ' + pdfNum(cy - r) + ' c', pdfNum(cx + k) + ' ' + pdfNum(cy - r) + ' ' + pdfNum(cx + r) + ' ' + pdfNum(cy - k) + ' ' + pdfNum(cx + r) + ' ' + pdfNum(cy) + ' c', 'h'].join('\n'); }
+function pdfPaint(page, st, pathOps){
+  if(st.display === 'none' || st.visibility === 'hidden' || st._op <= 0.001) return;
+  const fill = pdfColor(st.fill === undefined ? '#000' : st.fill), stroke = pdfColor(st.stroke || 'none');
+  const sw = parseFloat(st['stroke-width']); const fo = parseFloat(st['fill-opacity'] ?? 1), so = parseFloat(st['stroke-opacity'] ?? 1);
+  if(fill && fill.a * (isNaN(fo) ? 1 : fo) * st._op > 0.003){
+    page.ops.push('q'); page.alpha(fill.a * (isNaN(fo) ? 1 : fo) * st._op, 1);
+    page.ops.push(pdfNum(fill.r) + ' ' + pdfNum(fill.g) + ' ' + pdfNum(fill.b) + ' rg', pathOps, 'f', 'Q');
+  }
+  if(stroke && (isNaN(sw) ? 1 : sw) > 0 && stroke.a * (isNaN(so) ? 1 : so) * st._op > 0.003){
+    const dash = String(st['stroke-dasharray'] || 'none'), arr = dash === 'none' ? [] : dash.split(/[\s,]+/).map(v => parseFloat(v)).filter(v => v >= 0);
+    const cap = {round: 1, square: 2}[st['stroke-linecap']] || 0, join = {round: 1, bevel: 2}[st['stroke-linejoin']] || 0;
+    page.ops.push('q'); page.alpha(1, stroke.a * (isNaN(so) ? 1 : so) * st._op);
+    page.ops.push(pdfNum(stroke.r) + ' ' + pdfNum(stroke.g) + ' ' + pdfNum(stroke.b) + ' RG ' + pdfNum(isNaN(sw) ? 1 : sw) + ' w ' + cap + ' J ' + join + ' j [' + (arr.length && arr.some(v => v > 0) ? arr.map(pdfNum).join(' ') : '') + '] 0 d', pathOps, 'S', 'Q');
+  }
+}
+function pdfDrawSvg(page, root){
+  const doc = root.ownerDocument, byId = id => doc.getElementById(id) || root.querySelector('[id="' + id + '"]');
+  const walk = (el, pst) => {
+    const tag = (el.localName || el.nodeName || '').toLowerCase();
+    if(['defs', 'clippath', 'title', 'desc', 'style', 'metadata', 'lineargradient', 'radialgradient', 'filter', 'mask', 'symbol', 'marker'].includes(tag)) return;
+    const st = pdfStyleOf(el, pst);
+    if(st.display === 'none') return;
+    let pushed = false;
+    const enter = () => { if(!pushed){ page.ops.push('q'); pushed = true; } };
+    const tr = el.getAttribute && el.getAttribute('transform');
+    if(tr){ const re = /(translate|scale|matrix)\(([^)]*)\)/g; let m; while((m = re.exec(tr))){ const v = m[2].split(/[\s,]+/).filter(Boolean).map(Number); enter();
+      if(m[1] === 'translate') page.ops.push('1 0 0 1 ' + pdfNum(v[0] || 0) + ' ' + pdfNum(v[1] || 0) + ' cm');
+      else if(m[1] === 'scale') page.ops.push(pdfNum(v[0]) + ' 0 0 ' + pdfNum(v[1] ?? v[0]) + ' 0 0 cm');
+      else if(v.length === 6) page.ops.push(v.map(pdfNum).join(' ') + ' cm'); } }
+    if(tag === 'svg' && el !== root){
+      const x = parseFloat(el.getAttribute('x')) || 0, y = parseFloat(el.getAttribute('y')) || 0, w = parseFloat(el.getAttribute('width')), h = parseFloat(el.getAttribute('height'));
+      enter(); page.ops.push('1 0 0 1 ' + pdfNum(x) + ' ' + pdfNum(y) + ' cm');
+      const vb = (el.getAttribute('viewBox') || '').split(/[\s,]+/).map(Number);
+      if(vb.length === 4 && w > 0 && h > 0 && vb[2] > 0 && vb[3] > 0){ page.ops.push(pdfNum(w / vb[2]) + ' 0 0 ' + pdfNum(h / vb[3]) + ' ' + pdfNum(-vb[0] * w / vb[2]) + ' ' + pdfNum(-vb[1] * h / vb[3]) + ' cm'); }
+      if(w > 0 && h > 0 && vb.length === 4) page.ops.push(pdfNum(vb[0]) + ' ' + pdfNum(vb[1]) + ' ' + pdfNum(vb[2]) + ' ' + pdfNum(vb[3]) + ' re W n');
+    }
+    const cp = el.getAttribute && el.getAttribute('clip-path');
+    if(cp){ const id = (cp.match(/url\(["']?#([^"')]+)["']?\)/) || [])[1], c = id && byId(id), r = c && c.querySelector('rect');
+      if(r){ enter(); page.ops.push(pdfNum(+r.getAttribute('x') || 0) + ' ' + pdfNum(+r.getAttribute('y') || 0) + ' ' + pdfNum(+r.getAttribute('width') || 0) + ' ' + pdfNum(+r.getAttribute('height') || 0) + ' re W n'); } }
+    const A = n => parseFloat(el.getAttribute(n)) || 0;
+    if(tag === 'rect'){ const w = A('width'), h = A('height'); if(w > 0 && h > 0) pdfPaint(page, st, pdfNum(A('x')) + ' ' + pdfNum(A('y')) + ' ' + pdfNum(w) + ' ' + pdfNum(h) + ' re'); }
+    else if(tag === 'line'){ pdfPaint(page, Object.assign({}, st, {fill: 'none'}), pdfNum(A('x1')) + ' ' + pdfNum(A('y1')) + ' m ' + pdfNum(A('x2')) + ' ' + pdfNum(A('y2')) + ' l'); }
+    else if(tag === 'circle'){ const r = A('r'); if(r > 0) pdfPaint(page, st, pdfCircleOps(A('cx'), A('cy'), r)); }
+    else if(tag === 'ellipse'){ const rx = A('rx'), ry = A('ry'); if(rx > 0 && ry > 0){ page.ops.push('q 1 0 0 ' + pdfNum(ry / rx) + ' 0 ' + pdfNum(A('cy') * (1 - ry / rx)) + ' cm'); pdfPaint(page, st, pdfCircleOps(A('cx'), A('cy'), rx)); page.ops.push('Q'); } }
+    else if(tag === 'path'){ const d = el.getAttribute('d'); if(d) pdfPaint(page, st, pdfPathOps(d)); }
+    else if(tag === 'polyline' || tag === 'polygon'){ const p = (el.getAttribute('points') || '').trim().split(/[\s,]+/).map(Number); if(p.length >= 4){ let o = pdfNum(p[0]) + ' ' + pdfNum(p[1]) + ' m'; for(let k = 2; k + 1 < p.length; k += 2) o += ' ' + pdfNum(p[k]) + ' ' + pdfNum(p[k + 1]) + ' l'; if(tag === 'polygon') o += ' h'; pdfPaint(page, tag === 'polyline' ? Object.assign({}, st, {fill: 'none'}) : st, o); } }
+    else if(tag === 'text'){
+      if(st.visibility !== 'hidden' && st._op > 0.001){
+        let txt = (el.textContent || '').replace(/\s+/g, ' ');
+        if(/uppercase/i.test(st['text-transform'] || '')) txt = txt.toUpperCase();
+        const size = parseFloat(st['font-size']) || 12, key = pdfFontKey(st['font-family'], st['font-weight'], /italic|oblique/i.test(st['font-style'] || ''));
+        const sp = parseFloat(st['letter-spacing']); const fill = pdfColor(st.fill === undefined ? '#000' : st.fill), fo = parseFloat(st['fill-opacity'] ?? 1);
+        const halo = /^stroke/i.test(st['paint-order'] || '') ? {color: pdfColor(st.stroke || 'none'), width: parseFloat(st['stroke-width']) || 0} : null;
+        if(fill) page.text(txt, A('x'), A('y'), {key, size, color: fill, opacity: st._op * (isNaN(fo) ? 1 : fo), spacing: isNaN(sp) ? 0 : sp, anchor: st['text-anchor'], halo: halo && halo.color ? halo : null});
+      }
+    }
+    else { [...el.children].forEach(ch => walk(ch, st)); }
+    if(pushed) page.ops.push('Q');
+  };
+  walk(root, {_op: 1, fill: '#000'});
+}
+/* a canvas look-alike that records what the list pages draw, as vector text */
+class PdfCanvas{
+  constructor(page){ this.page = page; this.fillStyle = '#000'; this.textAlign = 'left'; this.textBaseline = 'alphabetic'; this._font = {key: 'H', size: 10}; }
+  set font(v){ const m = String(v).match(/^(italic\s+)?(?:(normal|bold|\d{3})\s+)?([\d.]+)px\s+(.+)$/i); if(m) this._font = {key: pdfFontKey(m[4], m[2] || '400', !!m[1]), size: +m[3]}; }
+  get font(){ return pdfCssFont(this._font.key, this._font.size); }
+  measureText(s){ return {width: pdfTextWidth(s, this._font.key, this._font.size, 0)}; }
+  fillText(s, x, y){ if(!this.page) return; const c = pdfColor(this.fillStyle); this.page.text(s, x, y, {key: this._font.key, size: this._font.size, color: c, anchor: this.textAlign === 'right' || this.textAlign === 'end' ? 'end' : this.textAlign === 'center' ? 'middle' : 'start'}); }
+  fillRect(x, y, w, h){ if(!this.page) return; const c = pdfColor(this.fillStyle); if(!c) return; this.page.ops.push('q'); this.page.alpha(c.a, 1); this.page.ops.push(pdfNum(c.r) + ' ' + pdfNum(c.g) + ' ' + pdfNum(c.b) + ' rg ' + pdfNum(x) + ' ' + pdfNum(y) + ' ' + pdfNum(w) + ' ' + pdfNum(h) + ' re f Q'); }
+  drawImage(){}
+}
+/* write the pages out: shared fonts and transparency, one content stream per page */
+function vectorPdf(pages, title){
+  const enc = new TextEncoder(), parts = [], offs = []; let len = 0, nObj = 0;
+  const push = x => { const b = typeof x === 'string' ? enc.encode(x) : x; parts.push(b); len += b.length; };
+  const alloc = () => ++nObj, bodies = {};
+  const catalog = alloc(), pagesId = alloc(), info = alloc();
+  const fontsUsed = new Set(); pages.forEach(p => p.fonts.forEach(f => fontsUsed.add(f)));
+  const fontIds = {};
+  [...fontsUsed].forEach(f => { fontIds[f] = alloc(); });
+  let cjkDesc = 0, cjkCid = 0;
+  if(fontsUsed.has('FC')){ cjkCid = alloc(); cjkDesc = alloc(); }
+  const gsAll = new Map(); pages.forEach(p => p.gs.forEach((name, k) => gsAll.set(name, k)));
+  const gsIds = {}; gsAll.forEach((k, name) => { gsIds[name] = alloc(); });
+  const res = alloc();
+  const pageIds = pages.map(() => [alloc(), alloc()]);
+  const str = s => '(' + String(s).replace(/[\\()]/g, m => '\\' + m).replace(/[^\x20-\x7E]/g, '') + ')';
+  bodies[catalog] = '<< /Type /Catalog /Pages ' + pagesId + ' 0 R >>';
+  bodies[pagesId] = '<< /Type /Pages /Kids [' + pageIds.map(p => p[0] + ' 0 R').join(' ') + '] /Count ' + pages.length + ' >>';
+  bodies[info] = '<< /Producer (Paper Map) /Creator (Paper Map) /Title ' + str(title || 'Paper Map export') + ' >>';
+  Object.entries(fontIds).forEach(([f, id]) => {
+    bodies[id] = f === 'FC'
+      ? '<< /Type /Font /Subtype /Type0 /BaseFont /STSong-Light /Encoding /UniGB-UCS2-H /DescendantFonts [' + cjkCid + ' 0 R] >>'
+      : f === 'ZD' ? '<< /Type /Font /Subtype /Type1 /BaseFont /ZapfDingbats >>'
+      : '<< /Type /Font /Subtype /Type1 /BaseFont /' + PDF_LATIN[f] + ' /Encoding /WinAnsiEncoding >>';
+  });
+  if(cjkCid){
+    bodies[cjkCid] = '<< /Type /Font /Subtype /CIDFontType0 /BaseFont /STSong-Light /CIDSystemInfo << /Registry (Adobe) /Ordering (GB1) /Supplement 4 >> /FontDescriptor ' + cjkDesc + ' 0 R /DW 1000 /W [1 95 500] >>';
+    bodies[cjkDesc] = '<< /Type /FontDescriptor /FontName /STSong-Light /Flags 6 /FontBBox [-25 -254 1000 880] /ItalicAngle 0 /Ascent 880 /Descent -120 /CapHeight 880 /StemV 93 >>';
+  }
+  Object.entries(gsIds).forEach(([name, id]) => { const [ca, CA] = gsAll.get(name).split('/'); bodies[id] = '<< /Type /ExtGState /ca ' + ca + ' /CA ' + CA + ' >>'; });
+  bodies[res] = '<< /ProcSet [/PDF /Text] /Font << ' + Object.entries(fontIds).map(([f, id]) => '/' + f + ' ' + id + ' 0 R').join(' ') + ' >> /ExtGState << ' + Object.entries(gsIds).map(([n, id]) => '/' + n + ' ' + id + ' 0 R').join(' ') + ' >> >>';
+  pages.forEach((p, i) => {
+    const [pg, ct] = pageIds[i];
+    const content = '1 0 0 -1 0 ' + pdfNum(p.h) + ' cm\n' + (p.pre || '') + p.ops.join('\n');
+    bodies[pg] = '<< /Type /Page /Parent ' + pagesId + ' 0 R /MediaBox [0 0 ' + pdfNum(p.w) + ' ' + pdfNum(p.h) + '] /Resources ' + res + ' 0 R /Contents ' + ct + ' 0 R >>';
+    bodies[ct] = {stream: content};
+  });
+  push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+  for(let n = 1; n <= nObj; n++){
+    offs[n] = len; push(n + ' 0 obj\n');
+    const b = bodies[n];
+    if(b && typeof b === 'object'){ const bytes = enc.encode(b.stream); push('<< /Length ' + bytes.length + ' >>\nstream\n'); push(bytes); push('\nendstream'); }
+    else push(b || '<< >>');
+    push('\nendobj\n');
+  }
+  const xref = len;
+  let x = 'xref\n0 ' + (nObj + 1) + '\n0000000000 65535 f \n';
+  for(let n = 1; n <= nObj; n++) x += String(offs[n]).padStart(10, '0') + ' 00000 n \n';
+  push(x + 'trailer\n<< /Size ' + (nObj + 1) + ' /Root ' + catalog + ' 0 R /Info ' + info + ' 0 R >>\nstartxref\n' + xref + '\n%%EOF');
+  return new Blob(parts, {type: 'application/pdf'});
+}
+/* the map as one vector page, scaled to the width of a landscape A4 sheet */
+function mapPdfPage(x){
+  const W = 842, s = W / x.w, page = new PdfPage(W, x.h * s);
+  page.pre = pdfNum(s) + ' 0 0 ' + pdfNum(s) + ' 0 0 cm\n';
+  const doc = new DOMParser().parseFromString(x.svg, 'image/svg+xml');
+  pdfDrawSvg(page, doc.documentElement);
+  return page;
+}
+/* the list of papers on vector A4 pages */
+function listPdfPages(es, o){
+  const PW = 595, PH = 842, M = 56, W = PW - 2 * M;
+  const probe = new PdfCanvas(null);
+  const blocks = listBlocks(probe, es, W, o, 1);
+  const groups = []; let cur = [], used = 0;
+  blocks.forEach((b, i) => {
+    const keepWithNext = b.kind === 'head' && blocks[i + 1] ? blocks[i + 1].h : 0;
+    if(cur.length && used + b.h + keepWithNext > PH - 2 * M - 20){ groups.push(cur); cur = []; used = 0; }
+    cur.push(b); used += b.h;
+  });
+  if(cur.length) groups.push(cur);
+  return groups.map((bl, n) => {
+    const page = new PdfPage(PW, PH), g = new PdfCanvas(page);
+    let y = M; bl.forEach(b => { b.draw(g, M, y); y += b.h; });
+    g.font = '400 10px ' + LIST_SANS; g.fillStyle = '#8A919C'; g.textAlign = 'right';
+    g.fillText('Paper Map · ' + (n + 2) + ' / ' + (groups.length + 1), PW - M, PH - M * 0.5);
+    return page;
+  });
+}
+
 /* a one-page PDF around a JPEG of the map */
 async function jpegPdf(c, wPt, hPt){
   const jpg = new Uint8Array(await (await canvasBlob(c, 'image/jpeg', 0.92)).arrayBuffer());
@@ -3625,11 +3936,9 @@ async function doExport(st){
       if(!c){ if(btn){ btn.disabled = false; btn.textContent = 'Export'; } toast('That list is too long for one image. Choose PDF instead.'); return; }
       blob = await canvasBlob(c, 'image/png');
     }else if(st.list && es.length){
-      const mapC = await svgToCanvas(x, 2), pages = await listPages(es, st);
-      blob = await picturesPdf([{c: mapC, w: 842, h: 842 * x.h / x.w}].concat(pages.map(c => ({c, w: 595, h: 842}))));
+      blob = vectorPdf([mapPdfPage(x)].concat(listPdfPages(es, st)), st.title || 'Paper Map');
     }else{
-      const c = await svgToCanvas(x, 3);
-      blob = st.format === 'pdf' ? await jpegPdf(c, 842, 842 * x.h / x.w) : await canvasBlob(c, 'image/png');
+      blob = st.format === 'pdf' ? vectorPdf([mapPdfPage(x)], st.title || 'Paper Map') : await canvasBlob(await svgToCanvas(x, 3), 'image/png');
     }
     const r = await saveBlobAs(blob, name);
     if(r === 'cancelled'){ if(btn){ btn.disabled = false; btn.textContent = 'Export'; } return; }
@@ -4179,7 +4488,9 @@ function renderMapLabels(lanes, laneH){
     if(ln.concepts) return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + ' lane-concepts' + (ui.page === 'concepts' ? ' on' : '') + '" data-view="__concepts" style="--d:0" title="Open the Concepts page"><span class="lab-in"><span class="full"><span class="nm"><i class="sq" aria-hidden="true"></i>Concepts</span></span><span class="short">Ideas</span></span></button>';
     const anc = subAncestors(ln.sub);
     let last = -1; anc.forEach((a, k) => { if(onMap.has(a.id)) last = k; });
-    const dd = anc.filter(a => onMap.has(a.id)).length;
+    const headed = !ln.sub.hidden && lanes.some(l => l.topic.id === ln.topic.id && l.sub.hidden);
+    const dd = anc.filter(a => onMap.has(a.id)).length + (headed ? 1 : 0);
+    const own = ln.sub.hidden && lanes.some(l => l.topic.id === ln.topic.id && !l.sub.hidden);
     const pre = anc.slice(last + 1).map(a => a.name);
     const name = ln.sub.hidden ? ln.topic.name : ln.sub.name;
     const full = ln.sub.hidden ? ln.topic.name : [ln.topic.name].concat(anc.map(a => a.name), [ln.sub.name]).join(' › ');
@@ -4189,7 +4500,7 @@ function renderMapLabels(lanes, laneH){
     const groups = []; rels.forEach(r => { let g = groups.find(x => x.bid === r.bid); if(!g){ g = {bid: r.bid, color: r.color, name: r.name, os: []}; groups.push(g); } g.os.push(r.o); });
     const lit = litTl[tid];
     const badges = groups.length ? '<span class="tl-badges">' + groups.map(g => '<span class="tl-badge" data-tl-group="' + g.bid + '"' + (g.color ? ' style="--tlc:' + g.color + '"' : '') + ' title="' + esc((g.name ? g.name + ': ' : 'Related to ') + g.os.map(topicNodeName).join(', ')) + '">⇄</span>').join('') + '</span>' : '';
-    return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + (ln.sub.id === ui.sub && ui.page !== 'concepts' ? ' on' : '') + (lit ? ' tl-rel' + (lit.length > 1 ? ' tl-multi' : '') : '') + '" data-view="' + ln.sub.id + '" data-tl-id="' + tid + '" data-tl-rel="' + esc(rels.map(r => r.o + '~' + r.bid + '~' + r.color).join(' ')) + '" style="--d:' + dd + ';--nb:' + groups.length + (lit ? ';' + tlStyle(lit, '--tlc') : '') + '" title="Open “' + esc(full) + '”' + (rels.length ? ' · related to ' + esc(rels.map(r => topicNodeName(r.o)).join(', ')) : '') + '"><span class="lab-in"><span class="full">' + (ctx ? '<span class="lt">' + esc(ctx) + '</span>' : '') + '<span class="nm">' + '' + esc(name) + '</span></span>' + badges + '<span class="short">' + esc(name.slice(0, 4)) + '</span></span></button>';
+    return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + (own ? ' own' : '') + (dd ? ' nest' : '') + (ln.sub.id === ui.sub && ui.page !== 'concepts' ? ' on' : '') + (lit ? ' tl-rel' + (lit.length > 1 ? ' tl-multi' : '') : '') + '" data-view="' + ln.sub.id + '" data-tl-id="' + tid + '" data-tl-rel="' + esc(rels.map(r => r.o + '~' + r.bid + '~' + r.color).join(' ')) + '" style="--d:' + dd + ';--nb:' + groups.length + (lit ? ';' + tlStyle(lit, '--tlc') : '') + '" title="Open “' + esc(full) + '”' + (rels.length ? ' · related to ' + esc(rels.map(r => topicNodeName(r.o)).join(', ')) : '') + '"><span class="lab-in"><span class="full">' + (ctx ? '<span class="lt">' + esc(ctx) + '</span>' : '') + '<span class="nm">' + '' + esc(name) + '</span></span>' + badges + '<span class="short">' + esc(name.slice(0, 4)) + '</span></span></button>';
   }).join('');
   mapLabels.classList.toggle('has-tl', !!arcsSvg);
   if(arcsSvg) mapLabels.insertAdjacentHTML('beforeend', arcsSvg);
@@ -4212,7 +4523,9 @@ function renderMap(force){
   const narrow = window.innerWidth <= 760;
   const filled = {};
   Object.values(lib.entries).forEach(e => { if((e.kind === 'concept' || (e.kind === 'paper' && !e.parent)) && typeof e.y === 'number') filled[laneOf(e)] = true; });
-  const lanes = lanesShown().filter(ln => filled[ln.sub.id]);
+  const shownT = new Set(lanesShown().filter(ln => filled[ln.sub.id] && !ln.sub.hidden).map(ln => ln.topic.id));
+  /* a topic's own row heads its subtopics, so it stays on the map (even with nothing in it yet) while any of them is shown */
+  const lanes = lanesShown().filter(ln => filled[ln.sub.id] || (ln.sub.hidden && shownT.has(ln.topic.id)));
   if(settings.showConcepts !== false && filled.__concepts) lanes.unshift(CONCEPT_LANE);
   const laneH = narrow ? 38 : 46;
   const root = document.documentElement;
@@ -4464,14 +4777,54 @@ function paintFocus(F){
     n.classList.remove(...LV); const c = hot && F.lv ? lvClass(F.lv.get(i)) : ''; if(c) n.classList.add(c);
   });
 }
+
+/* when a paper is selected (or pointed at), its name and the names it lights are laid out so none overlap */
+function restoreLabels(){
+  mapSvg.querySelectorAll('[data-ox]').forEach(n => { n.setAttribute('x', n.dataset.ox); n.setAttribute('y', n.dataset.oy); delete n.dataset.ox; delete n.dataset.oy; });
+  mapSvg.querySelectorAll('.lbl-lead').forEach(l => l.remove());
+}
+function layoutHotLabels(){
+  restoreLabels();
+  if(!mapSvg.classList.contains('focus')) return;
+  let titles = [...mapSvg.querySelectorAll('text.lbl.hot:not(.ghost-lbl)')];
+  if(mapSvg.classList.contains('hovering')) titles = titles.filter(x => x.classList.contains('me'));
+  if(!titles.length || typeof titles[0].getComputedTextLength !== 'function') return;
+  const boxes = [], hit = b => boxes.some(o => b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0);
+  mapSvg.querySelectorAll('.node.hot circle.dot, .node.sel circle.dot').forEach(c => { const cx = +c.getAttribute('cx'), cy = +c.getAttribute('cy'), r = +c.getAttribute('r') + 3; boxes.push({x0: cx - r, x1: cx + r, y0: cy - r, y1: cy + r}); });
+  mapSvg.querySelectorAll('.edge-note.hot').forEach(n => { try{ const b = n.getBBox(); if(b.width) boxes.push({x0: b.x - 3, x1: b.x + b.width + 3, y0: b.y - 1, y1: b.y + b.height + 1}); }catch(err){} });
+  const narrow = window.innerWidth <= 760, L = (MAP.left || 0) + 2, R = (MAP.W || 0) - 6;
+  const ids = [...new Set(titles.map(x => x.dataset.id))].sort((a, b) => (a === ui.selected ? -1 : b === ui.selected ? 1 : builtOnBy(b) - builtOnBy(a)));
+  ids.forEach(id => {
+    const tl = mapSvg.querySelector('text.lbl[data-id="' + id + '"]:not(.ghost-lbl)'), au = mapSvg.querySelector('text.lbl-au[data-id="' + id + '"]'), p = MAP.P[id], e = lib.entries[id];
+    if(!tl || !p || !e) return;
+    const r = dotR(e, narrow), tw = tl.getComputedTextLength(), aw = au ? au.getComputedTextLength() : 0, w = Math.max(tw, aw) + 2, h = au ? 25 : 14;
+    const xs = [p.x - w / 2, p.x - w + 8, p.x - 8].map(v => Math.max(L, Math.min(v, R - w)));
+    const cands = [];
+    for(let k = 0; k < 3; k++){
+      const upTop = p.y - r - 4 - h - k * 26, dnTop = p.y + r + 4 + k * 26;
+      xs.forEach(x0 => { cands.push({x0, top: upTop, k}); cands.push({x0, top: dnTop, k}); });
+    }
+    let pick = cands.find(c => !hit({x0: c.x0, x1: c.x0 + w, y0: c.top, y1: c.top + h}));
+    if(!pick) pick = cands[0];
+    const yT = pick.top + 11;
+    [tl, au].forEach((n, j) => { if(!n) return; n.dataset.ox = n.getAttribute('x'); n.dataset.oy = n.getAttribute('y'); n.setAttribute('x', pick.x0.toFixed(1)); n.setAttribute('y', (yT + j * 11).toFixed(1)); });
+    boxes.push({x0: pick.x0 - 3, x1: pick.x0 + w + 3, y0: pick.top - 1, y1: pick.top + h + 1});
+    if(pick.k > 0 || pick.x0 > p.x + 12 || pick.x0 + w < p.x - 12){
+      const below = pick.top > p.y, ly = below ? pick.top : pick.top + h, lx = Math.max(pick.x0, Math.min(p.x, pick.x0 + w));
+      tl.insertAdjacentHTML('beforebegin', '<line class="lbl-lead" x1="' + p.x.toFixed(1) + '" y1="' + (p.y + (below ? r + 1 : -r - 1)).toFixed(1) + '" x2="' + lx.toFixed(1) + '" y2="' + ly.toFixed(1) + '"></line>');
+    }
+  });
+}
 function applyFocus(id){
   if(!id || !MAP.P[id]){
     if(ui.branch && (IDX.branchLines[ui.branch] || []).length){ const F = {nodes: new Set(), edges: new Set(), far: new Set(), soft: new Set(), softNodes: new Set(), self: null}; branchSets(ui.branch, F, false); F.far.clear(); paintFocus(F); return; }
     mapSvg.classList.remove('focus');
     mapSvg.querySelectorAll('.hot,.far,.soft').forEach(n => n.classList.remove('hot', 'far', 'soft'));
+    restoreLabels();
     return;
   }
   paintFocus(focusSets(id));
+  layoutHotLabels();
 }
 function updateRangeUI(){
   const r = settings.range;
@@ -5224,7 +5577,7 @@ function cardRowHTML(e, withPlace){
 }
 function smallCardHTML(e){
   const st = stOf(e), tp = IDX.topics[e.topic], s = IDX.subs[e.sub];
-  const place = (tp ? tp.name : '') + (s && !s.hidden ? ' › ' + subPath(s).join(' › ') : '');
+  const place = (tp ? tp.name : '') + (s && !s.hidden ? ' / ' + subPath(s).join(' / ') : '');
   return '<div class="pc-small ' + stClass(e) + '" data-open-card="' + e.id + '" tabindex="0" role="button" aria-label="Open the card of ' + esc(e.t) + '">' +
     '<span class="pc-bar" aria-hidden="true"></span><span class="pc-year">' + esc(e.y) + '</span>' +
     '<span class="pc-main"><span class="pc-title">' + esc(e.t) + '</span><span class="pc-meta">' + esc([e.au, place].filter(Boolean).join(' · ')) + '</span></span>' +
@@ -5269,11 +5622,12 @@ function bigCardHTML(id){
   return '<div class="bc-top"><button type="button" class="bc-x" data-bc-close="1" aria-label="Close">✕</button>' + moreBtn('p:' + id) + '</div>' +
     '<div class="bc-head ' + stClass(e) + '"><span class="pc-bar" aria-hidden="true"></span><div><h2 class="bc-title">' + esc(e.t) + '</h2><p class="bc-sub">' + esc([e.y, e.au].filter(Boolean).join(' · ')) + '</p>' + (e.v ? '<p class="bc-src">' + esc(e.v) + '</p>' : '') + (idLinksHTML(e) ? '<p class="bc-src">' + idLinksHTML(e) + '</p>' : '') + '</div></div>' +
     '<div class="bc-st"><button type="button" class="stbtn want" data-st="want" data-id="' + id + '" aria-pressed="' + (st === 'want') + '">Want to read</button><button type="button" class="stbtn read" data-st="read" data-id="' + id + '" aria-pressed="' + (st === 'read') + '">Read</button></div>' +
-    sec('Where', '<label class="bc-where"><i class="bc-dot"></i><select data-bc-move="' + id + '" aria-label="Where it sits: choose another topic to move it">' + rows + '</select><span class="bc-chev" aria-hidden="true">⌃⌄</span></label>') +
+    sec('Where', '<button type="button" class="bc-where2" data-bc-where="' + id + '" aria-label="Where it sits: choose another topic to move it"><i class="bc-dot"></i><span class="bc-path">' + [tp ? tp.name : ''].concat(s && !s.hidden ? subPath(s) : []).map(esc).join('<span class="bc-sep"> / </span>') + '</span><svg class="bc-updown" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 6 8 2.5 11.5 6M4.5 10 8 13.5 11.5 10"/></svg></button>') +
     sec('On the map', miniMapSVG(id)) +
     (lines ? sec('Lines', lines) : '') +
     ((e.mentions || []).length ? sec('Mentions', mentionsHTML(e).replace('<p class="rel"><span class="rel-k">Mentions</span>', '<p class="rel">')) : '') +
-    sec('Labels', (tags.length ? tags.map(tagChip).join('') : '<span class="hint">No tags</span>') + '<span class="bc-cat">' + esc(PRIO_LABEL[e.p || 1] || '') + '</span>') +
+    sec('Labels', '<div class="bc-tags">' + tags.map(x => '<button type="button" class="tagchip bc-tag" data-bc-untag="' + esc(x.id) + '" title="Remove this tag"><i style="background:' + tagColor(x) + '"></i>' + esc(x.name) + '<span class="bc-x-s" aria-hidden="true">×</span></button>').join('') + '<button type="button" class="bc-addtag" data-bc-addtag="' + id + '">+ Tag</button></div>' +
+      '<div class="bc-prio"><span class="bc-prio-k">Priority</span><span class="ex-seg" role="radiogroup" aria-label="Priority">' + [3, 2, 1].map(p => '<label' + ((e.p || 1) === p ? ' class="on"' : '') + ' data-bc-prio="' + p + '">' + esc(PRIO_LABEL[p].replace(/^\S+\s/, '')) + '</label>').join('') + '</span></div>') +
     sec('Notes', (np ? '<p class="bc-notes">' + esc(np) + '</p>' : '<p class="hint">No notes yet.</p>') + '<button type="button" class="linkbtn" data-reader="' + id + '">' + (np ? 'Open notes' : 'Write notes') + '</button>') +
     '<details class="bc-pdf"><summary>PDF</summary><div class="bc-box">' + (e.pdf ? '<p>' + esc(e.pdf.name || 'Attached') + '</p><button type="button" class="linkbtn" data-reader="' + id + '">Open the PDF</button>' : '<p class="hint">No PDF yet. Attach one in Notes &amp; PDF.</p>') + '</div></details>';
 }
@@ -5326,6 +5680,23 @@ function closeBigCard(instant){
 }
 function bigCardClick(ev){
   if(ev.target.closest('[data-bc-close]')){ closeBigCard(); return; }
+  const id0 = bigCard && bigCard.id, e0 = id0 && lib.entries[id0];
+  const wh = ev.target.closest('[data-bc-where]'); if(wh && e0){
+    const r = wh.getBoundingClientRect();
+    openFloatMenu(r.left, r.bottom + 4, allLaneRows().map(row => ({label: (row.sub.id === e0.sub ? '✓ ' : '\u2003') + '\u2003'.repeat(row.sub.hidden ? 0 : row.depth + 1) + (row.sub.hidden ? row.topic.name : row.sub.name), fn: () => { if(row.sub.id !== e0.sub){ moveEntryTo(id0, row.sub, row.sub.hidden ? row.topic.name : subPath(row.sub).join(' / ')); refreshBigCard(); } }})));
+    const m = document.getElementById('floatMenu'); if(m) m.classList.add('where-menu');
+    return; }
+  const ut = ev.target.closest('[data-bc-untag]'); if(ut && e0){ toggleTag(id0, ut.dataset.bcUntag); refreshBigCard(); return; }
+  const at = ev.target.closest('[data-bc-addtag]'); if(at && e0){
+    const r = at.getBoundingClientRect(), have = new Set(e0.tags || []);
+    const items = lib.tags.filter(x => !have.has(x.id)).map(x => ({label: '● ' + x.name, fn: () => { toggleTag(id0, x.id); refreshBigCard(); }}));
+    openFloatMenu(r.left, r.bottom + 4, (items.length ? items.concat([{sep: 1}]) : []).concat([{label: 'Manage tags…', fn: () => { closeBigCard(true); openTagManager(); }}]));
+    return; }
+  const pr = ev.target.closest('[data-bc-prio]'); if(pr && e0){
+    const p = +pr.dataset.bcPrio; if((e0.p || 1) === p) return;
+    const before = clone(lib); e0.p = p; reindex(); touchLib([e0.topic]); renderMain(); renderMap(true); refreshInfo(); refreshBigCard();
+    toast('Priority: ' + PRIO_LABEL[p].replace(/^\S+\s/, ''), () => { lib = before; reindex(); touchLib([]); renderAll(); toast('Undone'); });
+    return; }
   const st = ev.target.closest('[data-st]'); if(st){ toggleStatus(st.dataset.id, st.dataset.st); refreshBigCard(); return; }
   const rd = ev.target.closest('[data-reader]'); if(rd){ closeBigCard(true); openReader(rd.dataset.reader); return; }
   const sl = ev.target.closest('[data-select]'); if(sl){ const id = sl.dataset.select; closeBigCard(true); select(id, true); return; }
@@ -7286,6 +7657,7 @@ mapSvg.addEventListener('pointerover', ev => {
   mapSvg.classList.toggle('hovering', !!id && id !== ui.selected);
   mapSvg.querySelectorAll('.me').forEach(x => x.classList.remove('me'));
   if(id) mapSvg.querySelectorAll('[data-id="' + id + '"].lbl, [data-id="' + id + '"].lbl-au').forEach(x => x.classList.add('me'));
+  layoutHotLabels();
 });
 mapSvg.addEventListener('pointerleave', () => { mapSvg.classList.remove('hovering'); mapSvg.querySelectorAll('.me').forEach(x => x.classList.remove('me')); if(!drag) applyFocus(ui.selected); });
 mapSvg.addEventListener('pointerdown', ev => {
