@@ -143,7 +143,7 @@ Open a paper's **Notes & PDF** to write Markdown notes beside its PDF. PDFs need
 <details>
 <summary>Export the map, the list, or both</summary>
 
-**Export ▾** next to Colour lines. **The map** exports by topic, from one paper (as far as How far reaches), along colour lines, or just the papers you pick, as PNG, PDF or GIF; the options sit on the left and the right shows exactly what you'll get. **The papers** saves a list as CSV, BibTeX, RIS or a Markdown reading list. **Both together** puts the map and its list in one PDF, or one long picture for a chat. PDFs are made of real text and lines, not a picture: you can select, search and edit every word.
+**Export ▾** next to Colour lines. **The map** exports by topic, from one paper (as far as How far reaches), along colour lines, or just the papers you pick, as PNG, PDF or GIF; the options sit on the left and the right shows exactly what you'll get. **The papers** saves a list as CSV, BibTeX, RIS or a Markdown reading list. **Both together** puts the map and its list in one PDF, or one long picture for a chat. PDFs are vector files, not a picture: every line stays sharp at any size, and every word can be selected, searched and edited.
 
 ![An exported map: a title, the chosen topics with their lines, a legend, and a note that the lines are the author’s own reading](assets/export.png)
 
