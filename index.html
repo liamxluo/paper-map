@@ -1340,6 +1340,133 @@ tr:hover .row-more .more-btn,tr:focus-within .row-more .more-btn,.row-more .more
 .toc-sub:hover > .toc-link .n,.toc-sub:focus-within > .toc-link .n{opacity:0}
 .toc-subs .toc-link{padding-top:.36em;padding-bottom:.36em}
 .toc-subs > li{margin:1px 0}
+
+/* ===================== tactile buttons: raised at rest, lifted on hover, pressed in when pushed ===================== */
+:root{
+  --k-top:#FFFFFF; --k-bot:#F3F5F8; --k-edge:rgba(28,35,48,.13); --k-edge-hi:rgba(28,35,48,.26);
+  --k-hl:inset 0 1px 0 rgba(255,255,255,.95);
+  --k-rest:0 1px 1px rgba(28,35,48,.05),0 2px 4px rgba(28,35,48,.06);
+  --k-lift:0 2px 3px rgba(28,35,48,.07),0 6px 14px rgba(28,35,48,.10);
+  --k-press:inset 0 1.5px 3px rgba(28,35,48,.16),inset 0 0 0 1px rgba(28,35,48,.05);
+  --k-ink-top:#3A4352; --k-ink-bot:#1C2330; --k-track:rgba(28,35,48,.065);
+}
+:root[data-theme="dark"]{
+  --k-top:#2B313B; --k-bot:#232831; --k-edge:rgba(255,255,255,.09); --k-edge-hi:rgba(255,255,255,.2);
+  --k-hl:inset 0 1px 0 rgba(255,255,255,.07);
+  --k-rest:0 1px 1px rgba(0,0,0,.35),0 2px 5px rgba(0,0,0,.28);
+  --k-lift:0 2px 4px rgba(0,0,0,.4),0 8px 18px rgba(0,0,0,.35);
+  --k-press:inset 0 2px 4px rgba(0,0,0,.45);
+  --k-ink-top:#F4F6F9; --k-ink-bot:#D9DEE6; --k-track:rgba(255,255,255,.06);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --k-top:#2B313B; --k-bot:#232831; --k-edge:rgba(255,255,255,.09); --k-edge-hi:rgba(255,255,255,.2);
+  --k-hl:inset 0 1px 0 rgba(255,255,255,.07);
+  --k-rest:0 1px 1px rgba(0,0,0,.35),0 2px 5px rgba(0,0,0,.28);
+  --k-lift:0 2px 4px rgba(0,0,0,.4),0 8px 18px rgba(0,0,0,.35);
+  --k-press:inset 0 2px 4px rgba(0,0,0,.45);
+  --k-ink-top:#F4F6F9; --k-ink-bot:#D9DEE6; --k-track:rgba(255,255,255,.06);
+} }
+button,.btn,[role="button"],label.on,.ex-seg label{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.btn,.depth-ctl .dchip,.ex-chips .dchip,.lens-ctl .dchip,.dchip,.stbtn,.relchip,button.tagchip,.hf-bar .lens-btn,.bc-x{
+  transition:transform .14s cubic-bezier(.2,.8,.2,1),box-shadow .18s ease,background .18s ease,border-color .18s ease,color .18s ease;
+}
+/* plain buttons */
+.btn{border-radius:10px;border:1px solid var(--k-edge);background:linear-gradient(var(--k-top),var(--k-bot));box-shadow:var(--k-hl),var(--k-rest);padding:.42em .95em;font-weight:500;color:var(--ink)}
+@media (hover:hover){ .btn:hover{border-color:var(--k-edge-hi);box-shadow:var(--k-hl),var(--k-lift);transform:translateY(-1px)} }
+.btn:active{transform:translateY(.5px) scale(.97);box-shadow:var(--k-press);background:var(--k-bot);transition-duration:.06s}
+.btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.btn.primary{border-color:transparent;color:var(--surface);background:linear-gradient(var(--k-ink-top),var(--k-ink-bot));box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 1px 2px rgba(28,35,48,.2),0 4px 10px rgba(28,35,48,.18)}
+@media (hover:hover){ .btn.primary:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 2px 4px rgba(28,35,48,.22),0 8px 18px rgba(28,35,48,.22)} }
+.btn.primary:active{background:var(--k-ink-bot);box-shadow:inset 0 2px 5px rgba(0,0,0,.35)}
+.btn:disabled,.btn[disabled]{opacity:.55;transform:none;box-shadow:var(--k-hl)}
+/* + New paper ▾ : one raised capsule with a hairline between its halves */
+.add-split{border-radius:10px;box-shadow:var(--k-rest)}
+.add-split .add-paper,.add-split .add-more{box-shadow:var(--k-hl);border-color:var(--k-edge)}
+.add-split .add-paper{border-radius:10px 0 0 10px}
+.add-split .add-more{border-radius:0 10px 10px 0;border-left:1px solid var(--k-edge);background:linear-gradient(var(--k-top),var(--k-bot))}
+@media (hover:hover){ .add-split .add-paper:hover,.add-split .add-more:hover{transform:none;box-shadow:var(--k-hl);background:linear-gradient(var(--k-top),var(--k-top))} .add-split:hover{box-shadow:var(--k-lift)} }
+.add-split .add-paper:active,.add-split .add-more:active{transform:scale(.97);box-shadow:var(--k-press);background:var(--k-bot)}
+/* pills: How far, Lens, export choices */
+.depth-ctl .dchip,.ex-chips .dchip,.lens-ctl .dchip,.dchip{border:1px solid var(--k-edge);border-radius:999px;background:linear-gradient(var(--k-top),var(--k-bot));box-shadow:var(--k-hl),0 1px 2px rgba(28,35,48,.06);color:var(--ink)}
+@media (hover:hover){ .depth-ctl .dchip:hover,.ex-chips .dchip:hover,.lens-ctl .dchip:hover,.dchip:hover{border-color:var(--k-edge-hi);transform:translateY(-1px);box-shadow:var(--k-hl),0 3px 8px rgba(28,35,48,.10)} }
+.depth-ctl .dchip:active,.ex-chips .dchip:active,.lens-ctl .dchip:active,.dchip:active{transform:scale(.95);box-shadow:var(--k-press);transition-duration:.06s}
+.depth-ctl .dchip.on,.ex-chips .dchip.on,.lens-ctl .dchip.on,.dchip.on{border-color:transparent;color:var(--surface);background:linear-gradient(var(--k-ink-top),var(--k-ink-bot));box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 1px 2px rgba(28,35,48,.2),0 3px 8px rgba(28,35,48,.14)}
+.hf-bar .lens-btn{border:1px solid var(--k-edge);background:linear-gradient(var(--k-top),var(--k-bot));box-shadow:var(--k-hl),var(--k-rest);font-weight:600}
+@media (hover:hover){ .hf-bar .lens-btn:hover{transform:translateY(-1px);box-shadow:var(--k-hl),var(--k-lift)} }
+.hf-bar .lens-btn:active{transform:scale(.95);box-shadow:var(--k-press)}
+/* Want to read / Read */
+.stbtn{border:1px solid var(--k-edge);background:linear-gradient(var(--k-top),var(--k-bot));box-shadow:var(--k-hl),0 1px 2px rgba(28,35,48,.06);color:var(--ink);padding:.26em .85em}
+@media (hover:hover){ .stbtn:hover{transform:translateY(-1px);border-color:var(--k-edge-hi);box-shadow:var(--k-hl),0 3px 8px rgba(28,35,48,.10)} }
+.stbtn:active{transform:scale(.94);box-shadow:var(--k-press);transition-duration:.06s}
+.stbtn.read[aria-pressed="true"]{border-color:color-mix(in srgb,var(--green) 55%,transparent);background:linear-gradient(color-mix(in srgb,var(--green) 16%,var(--k-top)),color-mix(in srgb,var(--green) 26%,var(--k-bot)));color:var(--green-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 1px 2px rgba(20,90,60,.18)}
+.stbtn.want[aria-pressed="true"]{border-color:color-mix(in srgb,var(--red) 55%,transparent);background:linear-gradient(color-mix(in srgb,var(--red) 14%,var(--k-top)),color-mix(in srgb,var(--red) 24%,var(--k-bot)));color:var(--red-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 1px 2px rgba(150,40,30,.18)}
+/* chips for topics and tags */
+.relchip,button.tagchip{border:1px solid var(--k-edge);background:linear-gradient(var(--k-top),var(--k-bot));box-shadow:var(--k-hl),0 1px 1.5px rgba(28,35,48,.06)}
+@media (hover:hover){ .relchip:hover,button.tagchip:hover{transform:translateY(-1px);box-shadow:var(--k-hl),0 3px 7px rgba(28,35,48,.10)} }
+.relchip:active,button.tagchip:active{transform:scale(.95);box-shadow:var(--k-press)}
+/* segmented choices: a sunken track with a raised thumb */
+.ex-seg,.seg{border:0;border-radius:11px;padding:3px;gap:2px;background:var(--k-track);box-shadow:inset 0 1px 2px rgba(28,35,48,.10)}
+.ex-seg label,.seg button{border:0;border-radius:8px;color:var(--muted);transition:background .18s ease,box-shadow .18s ease,color .18s ease,transform .12s ease;background:transparent}
+.ex-seg label:active,.seg button:active{transform:scale(.96)}
+.ex-seg label.on,.seg button[aria-pressed="true"]{background:linear-gradient(var(--k-top),var(--k-bot));color:var(--ink);font-weight:600;box-shadow:var(--k-hl),0 1px 2px rgba(28,35,48,.12),0 2px 6px rgba(28,35,48,.08)}
+/* round and bare icon buttons */
+.bc-x{background:linear-gradient(var(--k-top),var(--k-bot));border:1px solid var(--k-edge);box-shadow:var(--k-hl),var(--k-rest)}
+.bc-x:active{transform:scale(.9);box-shadow:var(--k-press)}
+.more-btn{transition:background .15s ease,transform .12s ease,color .15s ease}
+@media (hover:hover){ .more-btn:hover{background:var(--k-track);color:var(--ink)} }
+.more-btn:active,.more-btn.open{background:color-mix(in srgb,var(--ink) 12%,transparent);transform:scale(.9);color:var(--ink)}
+#btnSettings{transition:color .15s ease,transform .25s cubic-bezier(.2,.8,.2,1)}
+#btnSettings:active{transform:rotate(-30deg) scale(.9)}
+.linkbtn:active{opacity:.6}
+.fm-item:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
+.toc-link:active{transform:scale(.985)}
+.toc-link{transition:transform .12s ease}
+@media (prefers-reduced-motion: reduce){
+  .btn,.dchip,.stbtn,.relchip,button.tagchip,.hf-bar .lens-btn,.bc-x,.more-btn,#btnSettings,.toc-link,.ex-seg label,.seg button{transition:none!important;transform:none!important}
+}
+
+/* ===================== the map, as a printed atlas: a white sheet, a fine year grid, ruled rows, serif names ===================== */
+.map-box{background:var(--surface);border-radius:16px;box-shadow:0 1px 2px rgba(28,35,48,.05),0 10px 30px rgba(28,35,48,.06);padding:6px 0 0}
+:root[data-theme="dark"] .map-box{box-shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35)}
+.map-axis{background:var(--surface);border-top:1px solid var(--rule)}
+.net .band{fill:transparent}
+.map-labels button.band{background:transparent}
+.net .row-rule{stroke:var(--rule);stroke-width:1;opacity:.7}
+.net .topic-rule{stroke:var(--ink);stroke-width:1.3;opacity:.7}
+.net .grid{stroke:var(--rule);stroke-width:1;stroke-dasharray:1.5 4.5;opacity:.85}
+.net .grid.major{stroke-dasharray:none;opacity:.75}
+/* lines: graphite by default, colour lines bold and round-ended */
+.net .edge{stroke:var(--ink);opacity:.3;stroke-width:1.2}
+.net .edge.r{stroke-width:1.6}
+.net .edge.br{stroke:var(--br);opacity:.95;stroke-width:2.8;stroke-linecap:round}
+.net.focus .edge{opacity:.05}
+.net.focus .edge.hot{opacity:.95}
+/* dots: crisp rims; landmarks ringed */
+.net .dot{stroke-width:1.6}
+.net .node.st-read .dot,.net .node.st-want .dot{stroke:var(--surface);stroke-width:1.4}
+.net .ring{fill:none;stroke:var(--ink);stroke-width:1.1;opacity:.32}
+.net .node.sel .ring{opacity:.7}
+.net.focus .node:not(.hot) .ring{opacity:.08}
+/* names: serif titles, small-caps authors */
+.net .lbl{font-family:var(--serif);font-size:12.5px;font-weight:600;fill:var(--ink);letter-spacing:-.005em}
+.net .lbl.p1{font-weight:500;fill:color-mix(in srgb,var(--ink) 78%,transparent)}
+.net .lbl.p3{font-size:13.5px;font-weight:700}
+.net .lbl-au{font-family:var(--sans);font-size:8.6px;letter-spacing:.07em;text-transform:uppercase;fill:var(--muted)}
+.net .ghost-lbl{font-family:var(--serif)}
+/* the year axis: serif years, decades heavier */
+.net-axis .tick,.map-axis .tick{font-family:var(--serif);font-size:12.5px;fill:var(--ink);opacity:.62;font-variant-numeric:oldstyle-nums}
+.net-axis .axis{stroke:var(--rule)}
+/* row labels: a topic starts with its name in small capitals; nested rows sit on a quiet guide */
+.map-labels button .lt{font:700 .64rem/1.25 var(--sans) !important;letter-spacing:.14em;text-transform:uppercase;color:var(--ink) !important;opacity:.5;margin-bottom:2px}
+.map-labels button .nm{font-size:calc(.98rem - min(var(--d, 0), 2) * .07rem)}
+.map-labels button{background-image:linear-gradient(var(--rule-strong),var(--rule-strong));background-repeat:no-repeat;background-size:1px 46%;background-position:calc(6px + (var(--d, 0) - 1) * 14px) 50%;padding-left:calc(10px + var(--d, 0) * 14px) !important}
+.map-labels button.tl-rel,.map-labels button.tl-hover,.map-labels button.drop-target{background-image:none}
+.map-labels button.on{text-decoration:none;box-shadow:inset 3px 0 0 var(--ink)}
+.map-labels button:hover{text-decoration:none;background-color:color-mix(in srgb,var(--ink) 4%,transparent)}
+
+/* the current row is marked once: a bar at its edge (no extra arrow) */
+.map-labels button.on::before{display:none}
+.map-labels button.on .nm{font-weight:700}
 </style>
 </head>
 <body>
@@ -2983,12 +3110,13 @@ function buildExportSVG(o){
   const ox = M, oy = M + titleH;
   rows.forEach((r, i) => {
     const y = oy + cap.top + i * cap.laneH;
-    if(i % 2 === 0) s += '<rect x="' + ox + '" y="' + y + '" width="' + labW + '" height="' + cap.laneH + '" style="fill:' + cap.band + '"/>';
+    /* as on the map: ruled rows, a topic opening with its name in small capitals, nested rows on a fine guide */
+    if(i > 0) s += '<line x1="' + ox + '" x2="' + (ox + labW) + '" y1="' + y + '" y2="' + y + '" style="stroke:' + (r.ctx ? cap.ink : cap.rule || '#E3E6EB') + ';stroke-width:' + (r.ctx ? 1.3 : 1) + ';opacity:' + (r.ctx ? .7 : .7) + '"/>';
     const tx = ox + 10 + r.depth * 14;
-    if(r.ctx) s += '<text x="' + tx + '" y="' + (y + cap.laneH / 2 - 7) + '" style="font:' + ctxFont.replace(/"/g, "'") + ';fill:' + cap.muted + '">' + xmlEsc(r.ctx) + '</text>';
+    if(r.ctx) s += '<text x="' + tx + '" y="' + (y + cap.laneH / 2 - 8) + '" style="font:700 8.5px ' + xmlEsc(sans) + ';letter-spacing:1.3px;fill:' + cap.ink + ';opacity:.5">' + xmlEsc(String(r.ctx).toUpperCase()) + '</text>';
     const ny = y + cap.laneH / 2 + (r.ctx ? 9 : 5);
-    if(r.depth) s += '<text x="' + (tx - 2) + '" y="' + ny + '" style="font:400 12px ' + xmlEsc(sans) + ';fill:' + cap.muted + '">└</text>';
-    s += '<text x="' + (tx + (r.depth ? 12 : 0)) + '" y="' + ny + '" style="font:' + (r.concepts ? '600 13px ' + xmlEsc(sans) : labFont.replace(/"/g, "'")) + ';fill:' + (r.concepts ? cap.muted : cap.ink) + '">' + xmlEsc(r.name) + '</text>';
+    if(r.depth >= 2) s += '<line x1="' + (tx - 8) + '" x2="' + (tx - 8) + '" y1="' + (y + cap.laneH * .27) + '" y2="' + (y + cap.laneH * .73) + '" style="stroke:' + (cap.ruleStrong || '#C9CED6') + ';stroke-width:1"/>';
+    s += '<text x="' + tx + '" y="' + ny + '" style="font:' + (r.concepts ? '600 13px ' + xmlEsc(sans) : labFont.replace(/"/g, "'")) + ';fill:' + (r.concepts ? cap.muted : cap.ink) + '">' + xmlEsc(r.name) + '</text>';
   });
   const plot = cap.plot; plot.setAttribute('x', ox + labW); plot.setAttribute('y', oy); plot.setAttribute('width', cap.W); plot.setAttribute('height', cap.H);
   plot.removeAttribute('style');
@@ -3905,7 +4033,7 @@ function labelKeepSet(items, laneIndex){
 function mapTitle(e){ const t = String(e.short || e.t || '').trim(); return t.length > 38 ? t.slice(0, 36).replace(/[\s,.:;–-]+$/, '') + '…' : t; }
 function mapAuthors(e){ return [shortAu(e.au), e.y].filter(Boolean).join(' · '); }
 function dotTier(e){ const n = builtOnBy(e.id); return n >= 3 ? 3 : n >= 1 ? 2 : 1; }
-function dotR(e, narrow){ return Math.min(8.6, 3.4 + 1.7 * Math.log2(1 + builtOnBy(e.id))) * (narrow ? 0.9 : 1); }
+function dotR(e, narrow){ const base = Math.min(8.6, 3.4 + 1.7 * Math.log2(1 + builtOnBy(e.id))); return Math.max(base, stOf(e) ? 4.4 : 0) * (narrow ? 0.9 : 1); }
 function niceStep(span, maxTicks){
   const raw = span / Math.max(1, maxTicks);
   const steps = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500];
@@ -4061,7 +4189,7 @@ function renderMapLabels(lanes, laneH){
     const groups = []; rels.forEach(r => { let g = groups.find(x => x.bid === r.bid); if(!g){ g = {bid: r.bid, color: r.color, name: r.name, os: []}; groups.push(g); } g.os.push(r.o); });
     const lit = litTl[tid];
     const badges = groups.length ? '<span class="tl-badges">' + groups.map(g => '<span class="tl-badge" data-tl-group="' + g.bid + '"' + (g.color ? ' style="--tlc:' + g.color + '"' : '') + ' title="' + esc((g.name ? g.name + ': ' : 'Related to ') + g.os.map(topicNodeName).join(', ')) + '">⇄</span>').join('') + '</span>' : '';
-    return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + (ln.sub.id === ui.sub && ui.page !== 'concepts' ? ' on' : '') + (lit ? ' tl-rel' + (lit.length > 1 ? ' tl-multi' : '') : '') + '" data-view="' + ln.sub.id + '" data-tl-id="' + tid + '" data-tl-rel="' + esc(rels.map(r => r.o + '~' + r.bid + '~' + r.color).join(' ')) + '" style="--d:' + dd + ';--nb:' + groups.length + (lit ? ';' + tlStyle(lit, '--tlc') : '') + '" title="Open “' + esc(full) + '”' + (rels.length ? ' · related to ' + esc(rels.map(r => topicNodeName(r.o)).join(', ')) : '') + '"><span class="lab-in"><span class="full">' + (ctx ? '<span class="lt">' + esc(ctx) + '</span>' : '') + '<span class="nm">' + (dd ? '<span class="lane-in" aria-hidden="true">└</span>' : '') + esc(name) + '</span></span>' + badges + '<span class="short">' + esc(name.slice(0, 4)) + '</span></span></button>';
+    return '<button type="button" class="' + (i % 2 === 0 ? 'band' : '') + (ln.sub.id === ui.sub && ui.page !== 'concepts' ? ' on' : '') + (lit ? ' tl-rel' + (lit.length > 1 ? ' tl-multi' : '') : '') + '" data-view="' + ln.sub.id + '" data-tl-id="' + tid + '" data-tl-rel="' + esc(rels.map(r => r.o + '~' + r.bid + '~' + r.color).join(' ')) + '" style="--d:' + dd + ';--nb:' + groups.length + (lit ? ';' + tlStyle(lit, '--tlc') : '') + '" title="Open “' + esc(full) + '”' + (rels.length ? ' · related to ' + esc(rels.map(r => topicNodeName(r.o)).join(', ')) : '') + '"><span class="lab-in"><span class="full">' + (ctx ? '<span class="lt">' + esc(ctx) + '</span>' : '') + '<span class="nm">' + '' + esc(name) + '</span></span>' + badges + '<span class="short">' + esc(name.slice(0, 4)) + '</span></span></button>';
   }).join('');
   mapLabels.classList.toggle('has-tl', !!arcsSvg);
   if(arcsSvg) mapLabels.insertAdjacentHTML('beforeend', arcsSvg);
@@ -4127,8 +4255,12 @@ function renderMap(force){
   s += '<rect class="bg" x="0" y="0" width="' + W + '" height="' + H + '" fill="transparent"></rect>';
   lanes.forEach((ln, i) => {
     if(i % 2 === 0) s += '<rect class="band" x="0" y="' + (top + i * laneH) + '" width="' + W + '" height="' + laneH + '"></rect>';
-    if(i > 0 && lanes[i - 1].topic.id !== ln.topic.id) s += '<line class="topic-rule" x1="0" x2="' + W + '" y1="' + (top + i * laneH) + '" y2="' + (top + i * laneH) + '"></line>';
+    const newTopic = i > 0 && lanes[i - 1].topic.id !== ln.topic.id;
+    if(i > 0) s += '<line class="' + (newTopic ? 'topic-rule' : 'row-rule') + '" x1="0" x2="' + W + '" y1="' + (top + i * laneH) + '" y2="' + (top + i * laneH) + '"></line>';
   });
+  { const gy0 = top, gy1 = top + lanes.length * laneH;
+    x.ticks.forEach(tk => { const gx = x(tk); if(gx < left - 1 || gx > W - right + 1) return;
+      s += '<line class="grid' + (tk % 10 === 0 ? ' major' : '') + '" x1="' + gx.toFixed(1) + '" x2="' + gx.toFixed(1) + '" y1="' + gy0 + '" y2="' + gy1 + '"></line>'; }); }
   /* the year axis is its own strip under the rows, so it stays in view while the rows scroll */
   let ax = '<line class="axis" x1="' + left + '" x2="' + (W - right) + '" y1="4" y2="4"></line>';
   x.ticks.forEach(t => {
@@ -4200,6 +4332,7 @@ function renderMap(force){
     if(st === 'want') extra = '<circle class="hole" cx="' + p.x.toFixed(1) + '" cy="' + p.y + '" r="' + Math.max(1.2, r * 0.36).toFixed(1) + '"></circle>';
     s += '<g class="' + cls + '" data-id="' + e.id + '" tabindex="0" role="button" aria-label="' + esc(label + (st === 'read' ? ' (read)' : st === 'want' ? ' (want to read)' : '')) + '">' +
       '<circle class="hit" cx="' + p.x.toFixed(1) + '" cy="' + p.y + '" r="12"></circle>' +
+      (dotTier(e) === 3 ? '<circle class="ring" cx="' + p.x.toFixed(1) + '" cy="' + p.y + '" r="' + (r + 3.4).toFixed(1) + '"></circle>' : '') +
       halves + '<circle class="dot" cx="' + p.x.toFixed(1) + '" cy="' + p.y + '" r="' + r.toFixed(1) + '"' + fill + '></circle>' + extra +
       '<title>' + esc(label) + '</title></g>';
   });
@@ -7298,6 +7431,7 @@ tocBody.addEventListener('drop', ev => {
   if(!s) return; ev.preventDefault(); ev.stopPropagation();
   moveEntryTo(id, s, s.hidden ? IDX.topics[IDX.topicOf[s.id]].name : [IDX.topics[IDX.topicOf[s.id]].name].concat(subPath(s)).join(' › '));
 }, true);
+document.addEventListener('touchstart', () => {}, {passive: true});
 let lastPtr = 'mouse', peekId = null;
 window.addEventListener('pointerdown', ev => { lastPtr = ev.pointerType || 'mouse'; }, true);
 mapSvg.addEventListener('click', ev => {
