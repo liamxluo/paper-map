@@ -23,17 +23,17 @@ Each paper is a dot in its topic's row, at its year. The more papers build on on
 
 ![How each kind of line looks: builds on is solid, responds to is dashed, related to is dotted, a mention leaves a faint shadow in another field, related topics are marked ⇄](assets/lines-legend.svg)
 
-### Link with +
-
-![Double-clicking a paper, choosing Builds on, clicking the paper it builds on, then clicking the new line and changing it to Responds to](assets/link.gif)
-
-Double-click a dot and it turns into a black **+**. Say how it connects first, **Builds on**, **Leads to** or **Related to**, then click the other paper: the arrow points the right way from the start. Linked it wrongly? Click the line to change it, turn it round, give it a note and a colour, or remove it. Dragging a dot only ever moves it to another row.
-
 ### Cards
 
 ![Pressing a paper's card in a topic's list; it turns over into the full card with where it sits, its lines on a small timeline, its labels and notes; closing it turns it back](assets/card.gif)
 
 Every topic lists its papers as cards, in time order: green for read, red for want to read. Press one and it turns over into the full card: where it sits (change it right there), its lines on a small timeline, its labels and notes, and its PDF. Its **⋯** edits or deletes it.
+
+### Link with +
+
+![Double-clicking a paper, choosing Builds on, clicking the paper it builds on, then clicking the new line and changing it to Responds to](assets/link.gif)
+
+Double-click a dot and it turns into a black **+**. Say how it connects first, **Builds on**, **Leads to** or **Related to**, then click the other paper: the arrow points the right way from the start. Linked it wrongly? Click the line to change it, turn it round, give it a note and a colour, or remove it. Dragging a dot only ever moves it to another row.
 
 ### Lens
 
