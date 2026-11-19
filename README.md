@@ -11,33 +11,47 @@
   <a href="#good-to-know">Good to know</a>
 </p>
 
-I built this simply because I wanted a better way to organise what I read and understand how ideas connect.
+A personal map of research, ideas and reading. I built it simply because I wanted a better way to organise what I read and understand how ideas connect.
 
-![Structure: topics inside topics, to any depth. Connect: lines between papers, concepts and topics. Explore: a field laid out over time.](assets/features.svg)
+![Structure: topics inside topics, to any depth. Connect: lines between papers and topics. Explore: a field laid out over time.](assets/features.svg)
 
 ---
 
 ## How it works
 
-### Lines
+Each paper is a dot in its topic's row, at its year. The more papers build on one, the bigger its dot. Each row names its three most connected papers; point at any dot to see its title and authors. Click a dot and its lines light up; **How far**, in the bar under the map, reaches further, up to **Whole line**.
 
-![How each kind of line looks: builds on is solid, responds to is dashed, related to is dotted, needs runs in long dashes from a concept, related topics are marked ⇄ and light up together](assets/lines-legend.svg)
+![How each kind of line looks: builds on is solid, responds to is dashed, related to is dotted, a mention leaves a faint shadow in another field, related topics are marked ⇄](assets/lines-legend.svg)
 
-![Linking a paper to one in another subtopic, giving the line a note and the Main line colour, seeing the whole colour line light up, then How far → Whole line](assets/lines.gif)
+### Link with +
 
-The more papers build on one, the bigger its dot, and only the main ones carry their names; point at any dot to see its name. Drag one dot onto another to link them. Click a paper to light up the lines around it; notes on lines appear only then, so the map stays clean. **How far**, in the bar under the map, goes further, up to **Whole line**; the further away a paper is, the fainter it looks, and a count says how much is lit. **Options** there limits it to what came earlier or later.
+![Pointing at a paper, clicking its +, choosing Builds on, clicking the paper it builds on, then clicking the new line and changing it to Responds to](assets/link.gif)
 
-Give a main line of thought its own colour from a line's ✎. **Colour lines** above the map keeps them in one place: name a path, see what is on it, or hide it for a while.
+Point at a dot and click its **+**. Say how it connects first, **Builds on**, **Leads to** or **Related to**, then click the other paper: the arrow points the right way from the start. Linked it wrongly? Click the line to change it, turn it round, give it a note and a colour, or remove it. Dragging a dot only ever moves it to another row.
 
-### Topics
+### Cards
 
-Top-level topics are big areas, such as a field or a project. Related topics carry ⇄ beside their names and light up together; colour a link to say which path it belongs to.
+![Pressing a paper's card in a topic's list; it turns over into the full card with where it sits, its lines on a small timeline, its labels and notes; closing it turns it back](assets/card.gif)
 
-### Concepts
+Every topic lists its papers as cards, in time order: green for read, red for want to read. Press one and it turns over into the full card: where it sits (change it right there), its lines on a small timeline, its labels and notes, and its PDF. Its **⋯** edits or deletes it.
 
-A concept is an idea papers need, with the year it appeared, such as Nash equilibrium (1950). Concepts have their own row at the top of the map and their own page in Contents. Add one from **+ New paper ▾ → Concept**, or from a paper's Prerequisite concepts.
+### Lens
 
----
+![Opening Lens on a paper, showing its whole line, ticking another paper to see the path between them, then drawing it as a metro map](assets/lens.gif)
+
+Press **L**, or **Lens** under the map, to see one paper's line of thought on its own: what it builds on to the left, what it leads to on the right. **Path…** shows the chain that joins any papers you tick, and **Metro** draws it like a metro map.
+
+### Mentions another field
+
+![Choosing Mentions another field from a paper's +, clicking the row of that field, and seeing the paper's faint shadow there, joined to it by a dashed line](assets/mentions.gif)
+
+A paper can reach into another field without linking to any paper in it: choose **↧ Mentions another field** from its **+** and click that field's row. A faint shadow of its dot appears there, at the same year.
+
+### Watch it grow
+
+![The map growing year by year, from 1979 to 2019](assets/grow.gif)
+
+**Export ▾ → The map → GIF** makes a moving picture of your map growing, year by year.
 
 ## Get started
 
@@ -81,55 +95,12 @@ Your list lives in the app until you connect sync; then it is safe, keeps earlie
 
 </details>
 
-### III. Notes and PDFs
+### III. Add papers
 
-![Opening a paper’s notes, attaching its PDF, writing Markdown notes beside it, exporting them](assets/notes.gif)
-
-PDFs need sync. **Settings → Data → Export notes** exports every note at once.
-
-### IV. More you might want to know
+Click **+ New paper**, paste a DOI or ISBN and click **Fill in**: the title, authors, year and source come back by themselves.
 
 <details>
-<summary>Zoom the timeline</summary>
-
-![Dragging along the years to zoom in, dragging sideways to move, double-clicking a point](assets/zoom.gif)
-
-</details>
-
-<details>
-<summary>Subtopics inside subtopics</summary>
-
-![Dragging a subtopic under another topic, then making it a topic of its own, then undoing](assets/drag.gif)
-
-</details>
-
-<details>
-<summary>Can't drag, on a phone say?</summary>
-
-Open the subtopic's **⋯ → Rename or describe…** and choose its new place under **Inside**.
-
-![Opening Exam season › Procrastination, adding a subtopic inside it, and seeing every level on the map](assets/subtopics.gif)
-
-</details>
-
-<details>
-<summary>Move a paper, or hide rows for a while</summary>
-
-Drag a paper's dot up or down to another row, or drag its year in the list onto a topic in Contents. To hide rows, untick them in **Topics on the map**; **Show all** brings them back.
-
-</details>
-
-<details>
-<summary>Import papers from Zotero, a CSV, BibTeX or RIS file</summary>
-
-Choose **+ New paper ▾ → Import papers** (on a phone, **⋯ → Import papers**). In Zotero, right-click a collection, choose **Export Collection…** and pick CSV or BibTeX; any spreadsheet saved as CSV works too, and you can say which column is which. Before anything is added you choose the topic and subtopic, see every paper with a tick box, and keep or drop their tags and notes. Papers already in your map are recognised by DOI or by title and year, and left unticked. Undo puts everything back.
-
-</details>
-
-<details>
-<summary>Fill in a paper from its DOI, ISBN or another ID</summary>
-
-Paste an identifier at the top of **New paper** and click **Fill in**: the title, authors, year and source come back by themselves. Anything you already typed stays as it is.
+<summary>Which IDs work</summary>
 
 | Paste | Looked up in |
 |---|---|
@@ -142,41 +113,58 @@ Paste an identifier at the top of **New paper** and click **Fill in**: the title
 </details>
 
 <details>
-<summary>Export your papers as a list</summary>
+<summary>Add a paper from any page, with one click</summary>
 
-**Export ▾ → The papers**, or **Export list** under any topic's title. Choose this topic, everything, or the topics you tick, and all papers or only the ones you've read or want to read. Save it as **CSV** (Excel, Google Sheets, Numbers; it keeps topics, read marks, tags and the lines between papers), **BibTeX** (LaTeX, Overleaf, Zotero), **RIS** (Zotero, EndNote, Mendeley) or a **Markdown reading list** grouped by topic.
-
-**Both together**, in the same menu, puts the map and its list of papers in one file: a PDF with the map first and the list on the pages after it, or one long picture with the list under the map, handy for sharing in a chat.
+In **Settings → Data**, drag **+ Paper Map** to your bookmarks bar. On a paper's page (a journal, arXiv, Google Scholar), click it: New paper opens with its DOI and title filled in, and you choose where it goes.
 
 </details>
 
 <details>
-<summary>Export a map as PNG or PDF</summary>
+<summary>Bring papers in from Zotero, a CSV, BibTeX or RIS file</summary>
 
-**Export ▾ → The map**, next to Colour lines, exports by topic, or just the lines you care about: **From a paper** (its lines, as far as How far reaches; a paper's panel has **Export its lines**), **Colour lines**, or **Pick papers**. Untick any single line or paper, and show everything else faintly for context or leave it out. By topic, you tick the topics to include. Every option sits on the left, folded; the right side previews exactly what you'll get, the list of papers included. It shows which topics outside your choice are linked, and how many lines go there: add them, or leave them out and those lines are dropped (a colour line keeps the part inside your choice). Show all lines, only colour lines, or just the papers; a note on the picture says the lines are your own reading, not a citation network. Save it wherever you like, a Dropbox or iCloud Drive folder included.
+Choose **+ New paper ▾ → Import papers**. In Zotero, right-click a collection and choose **Export Collection…** (CSV or BibTeX); any spreadsheet saved as CSV works too. You choose the topic, see every paper with a tick box, and papers already on your map are recognised and left unticked. Undo puts everything back.
+
+</details>
+
+When you mark a paper with a DOI as **Read**, the papers on your map that it cites glow for a moment, so you can link them if you like. Nothing is ever linked for you.
+
+### IV. Notes and PDFs
+
+Open a paper's **Notes & PDF** to write Markdown notes beside its PDF. PDFs need sync. **Settings → Data → Export notes** exports every note at once.
+
+## More
+
+<details>
+<summary>Export the map, the list, or both</summary>
+
+**Export ▾** next to Colour lines. **The map** exports by topic, from one paper (as far as How far reaches), along colour lines, or just the papers you pick, as PNG, PDF or GIF; the options sit on the left and the right shows exactly what you'll get. **The papers** saves a list as CSV, BibTeX, RIS or a Markdown reading list. **Both together** puts the map and its list in one PDF, or one long picture for a chat.
 
 ![An exported map: a title, the chosen topics with their lines, a legend, and a note that the lines are the author’s own reading](assets/export.png)
 
 </details>
 
 <details>
-<summary>Lists</summary>
-
-![Each topic as a table, with status, notes, tags and the concepts its papers use](assets/table.png)
-
-</details>
-
-<details>
-<summary>Related topics, in colour</summary>
-
-![Board games is related to Procrastination by a blue link and to Dinner by a yellow one; in Board games both light up in their colours, and hovering the yellow mark lights up only Dinner](assets/related-topics.png)
-
-</details>
-
-<details>
 <summary>Colour lines, all in one place</summary>
 
+Give a main line of thought its own colour from a line's menu. **Colour lines** above the map names them, shows what is on each, and hides one for a while.
+
 ![The Colour lines manager: each path with its colour and what uses it, Hide or Show, Rename or recolour, the connections on Main line, and two paths named in advance](assets/colour-lines.png)
+
+</details>
+
+<details>
+<summary>Topics, subtopics and related topics</summary>
+
+Top-level topics are big areas, such as a field or a project, with subtopics inside to any depth. Drag them around in **Contents**, or use a topic's **⋯** to add, rename, move or delete. Related topics carry ⇄ beside their names and light up together.
+
+![Board games is related to Procrastination by a blue link and to Dinner by a yellow one; in Board games both light up in their colours](assets/related-topics.png)
+
+</details>
+
+<details>
+<summary>Zoom the timeline</summary>
+
+Drag along the years to zoom in, drag sideways to move, double-click to zoom out. Zoom in far enough and every paper is named.
 
 </details>
 
@@ -199,13 +187,13 @@ Pick Mist, Warm white or Pure white in **Settings → Paper**, and Light, Dark o
 
 **Undo.** After a change, Undo stays in the top bar for 10 minutes or until your next change (Ctrl or Cmd + Z works too). Every delete says in red how many papers go with it.
 
-**Not a reference manager.** It maps and annotates what you read; it doesn't look up DOIs or format citations the way Zotero does.
+**Not a reference manager.** It maps and annotates what you read; it doesn't format citations or keep a library the way Zotero does.
 
 **Your token.** It stays in the browser where you connect. Give it one private repository and **Contents: Read and write** only, and don't connect on shared computers.
 
 **PDFs and copyright.** Attached PDFs are stored in your own repository. Keep it private, and only add papers you may keep a copy of.
 
-**Privacy.** Paper Map connects only to what you choose: your sync (GitHub or a folder), and Crossref or DataCite when you press **Fill from DOI**.
+**Privacy.** Paper Map connects only to what you choose: your sync (GitHub or a folder); the ID services (Crossref, DataCite, Open Library, Google Books, Europe PMC) when you press **Fill in**; Crossref when you mark a paper with a DOI as Read (switch it off in **Settings → Map**); and GitHub, to see if a new version is out.
 
 **Credits.** The interface and code were built with help from Claude, an AI model made by Anthropic.
 

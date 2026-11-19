@@ -79,7 +79,6 @@
     ],
     "f": "Why losses feel bigger than gains.",
     "n": "Read the first ten pages.",
-    "needs": [],
     "short": "A perspective on psychology and economics"
    },
    "chem2015": {
@@ -103,9 +102,6 @@
     ],
     "f": "Moles, bonding and energy.",
     "n": "Exam on Tuesday.\n\n## To revise\n- Moles: 6.02 × 10²³ of anything\n- Titrations\n- Rates of reaction\n\n> See *Salt, Fat, Acid, Heat* for the chemistry of cooking.",
-    "needs": [
-     "caffeine"
-    ],
     "short": "A Level Chemistry"
    },
    "cooking2017": {
@@ -128,21 +124,7 @@
     ],
     "f": "Four elements of good cooking.",
     "n": "Good for weeknight cooking.",
-    "needs": [],
     "short": "Salt, Fat, Acid, Heat"
-   },
-   "caffeine": {
-    "id": "caffeine",
-    "kind": "concept",
-    "topic": "pile",
-    "sub": "exams",
-    "group": "",
-    "y": 1819,
-    "t": "Caffeine",
-    "short": "Caffeine",
-    "what": "A stimulant, first isolated in 1819.",
-    "why": "Helps to stay alert in long study sessions.",
-    "refs": []
    },
    "astro1996": {
     "id": "astro1996",
@@ -164,7 +146,6 @@
     ],
     "f": "How stars form, live and die.",
     "n": "Long, but clearly written.",
-    "needs": [],
     "short": "Modern astrophysics"
    },
    "timetable2015": {
@@ -185,7 +166,6 @@
     ],
     "f": "A colour for each subject.",
     "n": "Seven colours, one per subject.",
-    "needs": [],
     "short": "Colour-coded timetable"
    },
    "tomorrow2009": {
@@ -204,7 +184,9 @@
     "d": [],
     "f": "Why people delay the tasks they plan to do.",
     "n": "Read chapters 1 and 2.",
-    "needs": []
+    "mentions": [
+     "games"
+    ]
    },
    "snack2011": {
     "id": "snack2011",
@@ -221,8 +203,7 @@
     "tags": [],
     "d": [],
     "f": "Heat, time and resting.",
-    "n": "",
-    "needs": []
+    "n": ""
    },
    "deadline2019": {
     "id": "deadline2019",
@@ -239,8 +220,7 @@
     "tags": [],
     "d": [],
     "f": "What changes as a deadline gets close.",
-    "n": "",
-    "needs": []
+    "n": ""
    },
    "monopoly2012": {
     "id": "monopoly2012",
@@ -257,8 +237,7 @@
     "tags": [],
     "d": [],
     "f": "The first ten moves.",
-    "n": "",
-    "needs": []
+    "n": ""
    },
    "catan2018": {
     "id": "catan2018",
@@ -275,17 +254,10 @@
     "tags": [],
     "d": [],
     "f": "Rules, luck and skill.",
-    "n": "",
-    "needs": []
+    "n": ""
    }
   },
   "links": [
-   [
-    "caffeine",
-    "psyecon1979",
-    "b",
-    "uses it"
-   ],
    [
     "psyecon1979",
     "astro1996",
@@ -309,11 +281,6 @@
     "timetable2015",
     "c",
     "plans around it"
-   ],
-   [
-    "caffeine",
-    "cooking2017",
-    "r"
    ],
    [
     "psyecon1979",
