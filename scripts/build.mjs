@@ -21,5 +21,6 @@ const DIST = path.join(ROOT, 'dist');
 fs.rmSync(DIST, {recursive: true, force: true}); fs.mkdirSync(DIST, {recursive: true});
 const copy = (from, to) => fs.cpSync(path.join(ROOT, from), path.join(DIST, to || from), {recursive: true});
 fs.writeFileSync(path.join(DIST, 'index.html'), html);
-['manifest.webmanifest', 'icons', 'assets/desk'].forEach(p => copy(p));
+/* everything the app loads while it runs: the desk, the PDF reader (pdf.js), the e-book reader (foliate-js) and the example library */
+['manifest.webmanifest', 'icons', 'assets/desk', 'assets/vendor', 'example'].forEach(p => { if(fs.existsSync(path.join(ROOT, p))) copy(p); });
 console.log('index.html ' + Math.round(html.length / 1024) + ' KB; dist/ ready');

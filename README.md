@@ -4,7 +4,7 @@
 
 <h1 align="center">Paper Map</h1>
 
-<p align="center">Your reading world.</p>
+<p align="center"><b>Your research desk.</b><br>Every paper. Every book. Every note. On one desk.</p>
 
 <p align="center">
   <img src="assets/icon-mac.svg" width="18" height="18" alt=""> <a href="https://github.com/liamxluo/paper-map/releases/latest/download/Paper-Map.dmg"><b>Download for macOS</b></a>
@@ -14,19 +14,61 @@
 
 <p align="center"><sub>macOS 11 or later, Apple silicon and Intel &nbsp;·&nbsp; Chrome, Edge or Safari &nbsp;·&nbsp; free and open source (Apache-2.0)</sub></p>
 
-![On the map: choosing a paper, widening how far its lines go, and drawing a new line by double-clicking one paper and clicking the one it builds on](assets/tour-maps.webp)
+## Opening it on a Mac for the first time
 
-Paper Map lays the papers of a field out on a timeline and lets you draw how they connect: which builds on which, which answers which, and which line of thought runs through them. Around the map sits a desk: your maps folded on the left, every paper you keep, a book of everything you have read, and a notebook for a research log. All of it is one file that belongs to you.
+Paper Map is free and open source, and it is not yet signed with a paid Apple Developer ID. So the first time you open it, macOS says it cannot check the app for malicious software. That message is about the missing signature, not about anything found in the app.
+
+1. Open **Paper-Map.dmg** and drag **Paper Map** into **Applications**.
+2. Open Paper Map. When the warning appears, click **Done**.
+3. Open **System Settings → Privacy & Security**, scroll down to the line about Paper Map, click **Open Anyway**, and confirm with your password or Touch ID.
+
+You do this once. Updates install themselves after that.
+
+If macOS says the app “is damaged”, open Terminal, run `xattr -cr "/Applications/Paper Map.app"`, and open it again.
+
+**Why you can trust it.** Every line of its code is in this repository. The app is not built on anyone's own computer: GitHub builds it from this code, in public, for every release ([see the builds](https://github.com/liamxluo/paper-map/actions)). And an update only installs if it is signed with the project's key.
+
+## Your data stays yours
+
+- **There is no Paper Map server.** Your library is kept on your Mac (in the web app, in your browser), and, if you choose, in your own private GitHub repository, your Dropbox or a folder of yours.
+- **No account, no tracking, no analytics, no ads, no AI.**
+- **Your GitHub and Dropbox sign-ins are kept in the macOS Keychain**, not in a file.
+- **It goes online only for what you ask:** syncing with your GitHub, Dropbox or Zotero; filling in a paper's or a book's details from its DOI, ISBN or link (Crossref, DataCite, Open Library, Google Books, Europe PMC, arXiv, Wikipedia's citation service); and asking GitHub whether there is a new version.
+- Keep the repository that holds your library **private**.
+
+![The desk: a click on Maps fans the folded maps out into a row of covers, one for each field, and ‹ Desk gathers them back](assets/tour-desk.webp)
+
+Paper Map is a desk for your research, and everything you read lives on it.
+
+**Your papers and your books, in one library.** Papers in folders, books on shelves with their covers, how far you have read, and every highlight, Kindle and Goodreads included.
+
+**Read where you write.** Open a paper or a book and it lies open on your desk: the PDF or the EPUB on the left, an A4 sheet of your own notes on the right. Select a line and it is quoted into your notes with its page. Highlight, stick a note on a page, turn the pages side to side.
+
+**Works with Zotero.** Save a paper from any website with the Zotero Connector and it is on your desk. Read on your phone in Zotero, and your highlights and notes are waiting when you sit down.
+
+**Think in maps, when it is time to think.** For a review, a chapter or a question: lay the papers out as a mind map, from the middle outwards, or as a timeline of who built on whom.
+
+**Yours.** Free and open source. Your library stays in your own GitHub or folder. No account, no AI, nothing that decides for you.
 
 ## A tour
 
 ### The map
 
-![Lens on The Grammar of Glow: its line of thought laid out, then drawn as a metro map and as the whole line; then another map marked as related](assets/tour-map.webp)
+![On the map: choosing a paper, widening how far its lines go, and drawing a new line by double-clicking one paper and clicking the one it builds on](assets/tour-map.webp)
 
 Your maps lie folded on the desk, the one you opened last on top. Click them and every map stands in a row of covers you scroll left and right; choose one and it unfolds into the map. **‹** folds it back to its cover.
 
 The map lies on your desk as one sheet with two small bars: your maps on the left; search, new paper, filters, years, export, the notebook, sync and the gear on the right. Papers sit on their years, in rows by topic. Click a paper and its card opens: the **target** links it to another paper (the line follows your mouse to the next paper you click), the page opens its notes and PDF, the little **metro map** opens Lens, and **⋯** grows into the whole card. Double-clicking a dot links it too, choosing **Builds on**, **Leads to** or **Related to** first. Drag along the years to zoom into a period.
+
+![Lens on The Grammar of Glow: its line of thought laid out, then drawn as a metro map and as the whole line; then another map marked as related](assets/tour-lens.webp)
+
+### Reading
+
+Open a paper or a book and it lies open over your desk: the paper or the book on the left (PDF, EPUB, MOBI, AZW3, FB2), your notes on an A4 sheet on the right. Select words to quote them into your notes with their page, or to highlight them; everything is kept with your library.
+
+### Mind maps
+
+A map can also be a mind map: it starts in the middle and spreads outward, with papers from your library, books from Readings and your own words placed anywhere and joined by lines you can write on. A mind map can belong to one paper or one book, which is then pinned to its corner, and it opens from that paper's page too.
 
 ### Readings and the research log
 
@@ -107,7 +149,7 @@ When you mark a paper **Read**, Paper Map looks up what it cites: papers on your
 
 ## Using Paper Map
 
-- **Topics.** A map is a field or a project, with topics inside it to any depth. In **Contents**, under the map's name ▾, the **⋯** beside a topic adds a subtopic inside it, renames or deletes it; drag topics to reorder them. **Papers** on the desk shows the same tree, and choosing a topic shows the papers in it and in everything inside it.
+- **Topics.** A map is a field or a project, with topics inside it to any depth. In **Contents**, under the map's name ▾, drag a topic to move it or to put it inside another, and right-click it to add a paper or a subtopic, rename it or delete it. **+ New topic** at the bottom adds one. **Papers** on the desk shows the same tree, and choosing a topic shows the papers in it and in everything inside it.
 - **Lines.** **Double-click a dot** to link it: choose Builds on, Leads to or Related to, then click the other paper. The target on a paper's card links it too. Builds on is solid, Responds to is dashed, Related to is dotted. A paper that **mentions another field** leaves a grey shadow in that field's row. Give a main line of thought its own colour from a line's menu; click its name in the legend to rename or hide it.
 - **Lens.** The metro icon on a paper's card, or **L**: its whole line on its own, the path between two papers, or a metro map.
 - **Related maps.** **Related to**, in the bottom-right corner of a map, notes which other maps belong with it, without merging them. Click one to open it; × unrelates them.

@@ -35,6 +35,7 @@ let schemaWarned = false;
 function normalizeLib(L){
   if(L && (L.schema || 0) > SCHEMA_VERSION && !schemaWarned){ schemaWarned = true; setTimeout(() => toast('This library was saved by a newer Paper Map: update this one before you change it'), 0); }
   if(!Array.isArray(L.tlinks)) L.tlinks = [];
+  if(!Array.isArray(L.minds)) L.minds = []; L.minds = L.minds.filter(m => m && m.id && Array.isArray(m.nodes)).map(m => Object.assign(m, {edges: Array.isArray(m.edges) ? m.edges : []}));
   if(!L.tlinkColor || typeof L.tlinkColor !== 'object' || Array.isArray(L.tlinkColor)) L.tlinkColor = {};
   if(!Array.isArray(L.branches)) L.branches = [];
   L.branches = L.branches.filter(b => b && ID_RE.test(String(b.id))).map(b => ({id: String(b.id), name: String(b.name || 'Colour line').slice(0, 40), color: HEX_RE.test(b.color) ? b.color : BRANCH_PALETTE[0]}));

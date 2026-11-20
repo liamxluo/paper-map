@@ -13,7 +13,7 @@ const DEFAULT_COLORS = {green:'#231E1A', red:'#B4432E'};
 const PREVIEW_DATA = 'example/displaydata.json';
 let PREVIEW = false;
 /* Set this to the tag of the GitHub release you are about to publish (v1.3.0, v1.3.1, …). */
-const APP_VERSION = 'v3.1.0';
+const APP_VERSION = 'v3.1.1';
 /* the shape of a library file: raised whenever it changes, so an older file is always read and brought up to date */
 const SCHEMA_VERSION = 3;
 const APP_REPO = 'liamxluo/paper-map';
@@ -104,7 +104,10 @@ async function openInstallHelp(){
   }
   openModal({title: 'Install Paper Map', body, actions: [{label: 'OK', primary: true}]});
 }
-if(SERVED && 'serviceWorker' in navigator) window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').then(r => r.update()).catch(() => {}); });
+if(SERVED && 'serviceWorker' in navigator) window.addEventListener('load', () => {
+  const had = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if(had) setTimeout(() => { const t = document.getElementById('toast'); if(!t) return; t.innerHTML = '<span>A new Paper Map is ready</span><button type="button" id="pmReload">Reload</button>'; t.hidden = false; document.getElementById('pmReload').onclick = () => location.reload(); setTimeout(() => { if(document.getElementById('pmReload')) t.hidden = true; }, 20000); }, 400); });
+  navigator.serviceWorker.register('sw.js').then(r => r.update()).catch(() => {}); });
 const BRANCH_PALETTE = ['#E34234', '#7058A3', '#009473', '#38A1DB', '#E7609E', '#8B5E3C', '#E2A72E'];
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;

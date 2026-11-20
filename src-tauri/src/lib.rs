@@ -5,6 +5,8 @@ use serde::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
+use tauri::Emitter;
+use tauri_plugin_updater::UpdaterExt;
 
 #[derive(Serialize)]
 struct Stat {
@@ -197,9 +199,51 @@ fn secret_delete(key: String) -> Result<(), String> {
     }
 }
 
+/// What a new version says about itself, for the app's own prompt.
+#[derive(Serialize)]
+struct UpdateInfo {
+    version: String,
+    notes: Option<String>,
+    date: Option<String>,
+}
+
+/// Is there a newer Paper Map? It asks GitHub Releases for latest.json; the update's signature is checked against the
+/// public key built into this app before anything is installed.
+#[tauri::command]
+async fn update_check(app: tauri::AppHandle) -> Result<Option<UpdateInfo>, String> {
+    let updater = app.updater().map_err(|e| e.to_string())?;
+    match updater.check().await {
+        Ok(Some(u)) => Ok(Some(UpdateInfo { version: u.version.clone(), notes: u.body.clone(), date: u.date.map(|d| d.to_string()) })),
+        Ok(None) => Ok(None),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+/// Download the new version, verify it, put it in place of this app (only the app: your library lives elsewhere) and restart.
+/// If the download is cut short nothing is replaced, and this version keeps running.
+#[tauri::command]
+async fn update_install(app: tauri::AppHandle) -> Result<(), String> {
+    let updater = app.updater().map_err(|e| e.to_string())?;
+    let Some(update) = updater.check().await.map_err(|e| e.to_string())? else { return Ok(()) };
+    let progress = app.clone();
+    let mut got: u64 = 0;
+    update
+        .download_and_install(
+            move |chunk, total| {
+                got += chunk as u64;
+                let _ = progress.emit("update-progress", (got, total));
+            },
+            || {},
+        )
+        .await
+        .map_err(|e| e.to_string())?;
+    app.restart();
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             fs_stat,
             fs_read,
@@ -212,7 +256,9 @@ pub fn run() {
             open_url,
             secret_set,
             secret_get,
-            secret_delete
+            secret_delete,
+            update_check,
+            update_install
         ])
         .run(tauri::generate_context!())
         .expect("error while running Paper Map");

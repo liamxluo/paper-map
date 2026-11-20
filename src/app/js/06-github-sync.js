@@ -143,7 +143,7 @@ function byKey(arr, key){ const m = {}; (arr || []).forEach(x => { m[key(x)] = x
 /* when both devices changed the same thing, look inside it: fields changed on one side only are taken from that side;
    notes that both sides only added to keep both additions; a notebook's pages are merged page by page.
    Only when the very same field was changed differently on both does Paper Map ask. */
-const FIELD_KINDS = new Set(['entry', 'topic', 'tag', 'branch', 'reading', 'notebook']);
+const FIELD_KINDS = new Set(['entry', 'topic', 'tag', 'branch', 'reading', 'notebook', 'mind']);
 const isPlain = v => v && typeof v === 'object' && !Array.isArray(v);
 function mergeText(b, l, r){
   b = b || ''; if(l === r) return l; if(l === b) return r; if(r === b) return l;
@@ -168,6 +168,14 @@ function mergeFields(b, l, r, depth){
         if(pl === undefined){ pages.push(pr); continue; } if(pr === undefined){ pages.push(pl); continue; }
         const m = stableJSON(pl) === stableJSON(pr) ? pl : mergeFields(pb, pl, pr, (depth || 0) + 1); if(m === null) return null; pages.push(m); }
       v = pages;
+    }
+    else if(Array.isArray(l[k]) && Array.isArray(r[k]) && l[k].concat(r[k]).every(x => isPlain(x) && x.id) && (depth || 0) < 2){
+      /* lists of things with ids (a mind map's nodes and lines): combined one by one */
+      const ix = a => { const o = {}; (a || []).forEach(x => { if(isPlain(x) && x.id) o[x.id] = x; }); return o; }, Bm = ix(Array.isArray(bb[k]) ? bb[k] : []), Lm = ix(l[k]), Rm = ix(r[k]), outA = [];
+      for(const id of new Set([...Object.keys(Lm), ...Object.keys(Rm), ...Object.keys(Bm)])){ const sb2 = stableJSON(Bm[id]), sl2 = stableJSON(Lm[id]), sr2 = stableJSON(Rm[id]); let w;
+        if(sl2 === sr2) w = Lm[id]; else if(sl2 === sb2) w = Rm[id]; else if(sr2 === sb2) w = Lm[id]; else { w = mergeFields(Bm[id], Lm[id], Rm[id], (depth || 0) + 1); if(w === null) return null; }
+        if(w) outA.push(w); }
+      v = outA;
     }
     else if(isPlain(l[k]) && isPlain(r[k]) && (depth || 0) < 2){ v = mergeFields(bb[k], l[k], r[k], (depth || 0) + 1); if(v === null) return null; }
     else return null;
@@ -212,6 +220,7 @@ function mergeLibs(base, here, there){
     tlinks: mergeMaps(byKey(B.tlinks, tk), byKey(Lh.tlinks, tk), byKey(Rt.tlinks, tk), 'tlink', () => 'Related topics', out),
     tlinkColor: mergeMaps(B.tlinkColor || {}, Lh.tlinkColor || {}, Rt.tlinkColor || {}, 'tlinkColor', () => 'A related-topic colour', out),
     readings: mergeMaps(byKey(B.readings, idk), byKey(Lh.readings, idk), byKey(Rt.readings, idk), 'reading', x => 'Book: ' + (x ? x.title : ''), out),
+    minds: mergeMaps(byKey(B.minds || [], idk), byKey(Lh.minds || [], idk), byKey(Rt.minds || [], idk), 'mind', x => 'Mind map: ' + (x ? x.name : ''), out),
     readingCats: mergeMaps(byKey((B.readingCats || []).map(c => ({id: c})), idk), byKey((Lh.readingCats || []).map(c => ({id: c})), idk), byKey((Rt.readingCats || []).map(c => ({id: c})), idk), 'readingCat', x => 'Reading category: ' + (x ? x.id : ''), out),
     notebooks: mergeMaps(byKey(B.notebooks, idk), byKey(Lh.notebooks, idk), byKey(Rt.notebooks, idk), 'notebook', x => 'Research log' + (x && x.pages ? ' (' + x.pages.filter(p => p && p.text).length + ' pages)' : ''), out),
     status: mergeMaps(base.status || {}, here.status || {}, there.status || {}, 'status', (v, k) => 'Read mark', {conflicts: [], fromHere: 0, fromThere: 0})
@@ -224,11 +233,11 @@ function mergeLibs(base, here, there){
     L.tags = orderLike(maps.tags, Lh.tags, Rt.tags, idk);
     L.branches = orderLike(maps.branches, Lh.branches, Rt.branches, idk);
     L.lineBranch = maps.lineBranch; L.tlinks = orderLike(maps.tlinks, Lh.tlinks, Rt.tlinks, tk); L.tlinkColor = maps.tlinkColor;
-    L.readings = orderLike(maps.readings, Lh.readings, Rt.readings, idk); L.readingCats = orderLike(maps.readingCats, (Lh.readingCats || []).map(c => ({id: c})), (Rt.readingCats || []).map(c => ({id: c})), idk).map(x => x.id); L.notebooks = orderLike(maps.notebooks, Lh.notebooks, Rt.notebooks, idk);
+    L.readings = orderLike(maps.readings, Lh.readings, Rt.readings, idk); L.readingCats = orderLike(maps.readingCats, (Lh.readingCats || []).map(c => ({id: c})), (Rt.readingCats || []).map(c => ({id: c})), idk).map(x => x.id); L.notebooks = orderLike(maps.notebooks, Lh.notebooks, Rt.notebooks, idk); L.minds = orderLike(maps.minds, Lh.minds || [], Rt.minds || [], idk);
     if(stableJSON(Lh.title) === stableJSON(B.title)) L.title = Rt.title;
     return L;
   };
-  const mapOf = {entry: 'entries', link: 'links', topic: 'topics', tag: 'tags', branch: 'branches', lineBranch: 'lineBranch', tlink: 'tlinks', tlinkColor: 'tlinkColor', reading: 'readings', readingCat: 'readingCats', notebook: 'notebooks'};
+  const mapOf = {mind: 'minds', entry: 'entries', link: 'links', topic: 'topics', tag: 'tags', branch: 'branches', lineBranch: 'lineBranch', tlink: 'tlinks', tlinkColor: 'tlinkColor', reading: 'readings', readingCat: 'readingCats', notebook: 'notebooks'};
   const choose = (cf, side) => { const m = maps[mapOf[cf.kind]], v = side === 'there' ? cf.there : cf.here; if(v === undefined) delete m[cf.id]; else m[cf.id] = v; };
   { const ents = maps.entries || {}; out.dropped = Object.values(maps.links || {}).filter(l => Array.isArray(l) && (!ents[l[0]] || !ents[l[1]])).length; }
   return {conflicts: out.conflicts, fromHere: out.fromHere, fromThere: out.fromThere, merged: out.merged || 0, dropped: out.dropped || 0, build, choose, status: maps.status};

@@ -6,7 +6,8 @@
   "03-lens.css",
   "04-tactile-buttons-raised-at-rest.css",
   "05-the-map-as-a-printed.css",
-  "06-the-map-page.css"
+  "06-the-map-page.css",
+  "07-mind-maps.css"
  ],
  "js": [
   "00-base.js",
@@ -40,6 +41,8 @@
   "27-notes-pdfs.js",
   "28-events.js",
   "29-init.js",
+  "31-mind-maps.js",
+  "32-zotero.js",
   "30-the-desk.js"
  ]
 }

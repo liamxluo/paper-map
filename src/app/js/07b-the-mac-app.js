@@ -68,3 +68,45 @@ if(TAURI){ (async () => {
   try{ const v = await tinvoke('secret_get', {key: 'github-token'}); if(v){ KC_TOKEN = v; } }catch(e){}
   try{ const c = lsGet(GH_KEY); if(c && c.token && c.token !== '__keychain__') ghStore(c); else if(c && c.token === '__keychain__' && KC_TOKEN) setTimeout(() => { try{ ghLoad(); }catch(e){} }, 0); }catch(e){}
 })(); }
+
+/* ===================== updates, in the Mac app =====================
+   A few seconds after it opens (and every six hours while it stays open) the app asks GitHub Releases whether a newer
+   Paper Map is out. If so a small note says so, with what is new; Install downloads it, checks its signature, puts it in
+   place of the app and restarts. Only the app is replaced: your library, notes and PDFs live in their own folder. */
+const UPD = {box: null, busy: false};
+function updNotes(md){ return String(md || '').split('\n').map(l => l.trim()).filter(l => /^[-*] /.test(l)).map(l => l.replace(/^[-*] /, '').replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/[*_`]/g, '')).map(l => l.length > 110 ? l.slice(0, l.lastIndexOf(' ', 104)) + '…' : l).slice(0, 3); }
+function updBox(info){
+  if(UPD.box) UPD.box.remove();
+  const b = document.createElement('div'); b.id = 'updNote'; b.setAttribute('role', 'dialog'); b.setAttribute('aria-label', 'Paper Map update');
+  const notes = updNotes(info.notes);
+  b.innerHTML = '<p class="un-k">Paper Map update</p><b class="un-t">Paper Map ' + esc(info.version) + ' is ready</b>' +
+    (notes.length ? '<ul class="un-l">' + notes.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>' : '') +
+    '<p class="un-s">Your maps, papers, notes and PDFs stay as they are.</p>' +
+    '<div class="un-bar" hidden><i></i></div><div class="un-btns"><button type="button" class="un-later">Later</button><button type="button" class="un-go">Install and restart</button></div>';
+  document.body.appendChild(b); UPD.box = b; requestAnimationFrame(() => b.classList.add('on'));
+  b.querySelector('.un-later').addEventListener('click', () => { try{ localStorage.setItem('pm:updLater', JSON.stringify({v: info.version, t: Date.now()})); }catch(e){} b.classList.remove('on'); setTimeout(() => b.remove(), 250); UPD.box = null; });
+  b.querySelector('.un-go').addEventListener('click', () => updInstall(info));
+}
+async function updInstall(info){
+  if(UPD.busy || !UPD.box) return; UPD.busy = true;
+  const b = UPD.box, go = b.querySelector('.un-go'), bar = b.querySelector('.un-bar'), fill = bar.querySelector('i'), s = b.querySelector('.un-s');
+  go.disabled = true; b.querySelector('.un-later').disabled = true; go.textContent = 'Saving your library…';
+  /* everything saved first: the library to its folder or GitHub, notebooks with it */
+  try{ if(typeof ghSaveNow === 'function' && ghCfg()) await Promise.race([ghSaveNow(), new Promise(r => setTimeout(r, 6000))]); }catch(e){}
+  let un = null;
+  try{ un = await window.__TAURI__.event.listen('update-progress', ev => { const [got, total] = ev.payload || []; if(total){ fill.style.width = Math.min(100, got / total * 100).toFixed(1) + '%'; go.textContent = 'Downloading… ' + Math.round(got / total * 100) + '%'; } }); }catch(e){}
+  bar.hidden = false; go.textContent = 'Downloading…';
+  try{ await tinvoke('update_install'); go.textContent = 'Restarting…'; }
+  catch(e){ UPD.busy = false; go.disabled = false; b.querySelector('.un-later').disabled = false; go.textContent = 'Try again'; bar.hidden = true;
+    s.textContent = 'The update could not be installed (' + String((e && e.message) || e).slice(0, 80) + '). Paper Map is unchanged; you can try again.'; }
+  if(un) try{ un(); }catch(e){}
+}
+async function updCheck(manual){
+  if(!TAURI) return;
+  let info = null;
+  try{ info = await tinvoke('update_check'); }catch(e){ if(manual) toast('Could not check for updates just now'); return; }
+  if(!info){ if(manual) toast('You have the latest Paper Map (' + APP_VERSION + ')'); return; }
+  if(!manual){ try{ const l = JSON.parse(localStorage.getItem('pm:updLater') || 'null'); if(l && l.v === info.version && Date.now() - l.t < 864e5) return; }catch(e){} }
+  updBox(info);
+}
+if(TAURI){ setTimeout(() => updCheck(false), 6000); setInterval(() => updCheck(false), 6 * 3600e3); }

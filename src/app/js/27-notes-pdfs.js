@@ -169,6 +169,7 @@ function fileToBase64(file){ return new Promise((res, rej) => { const r = new Fi
 async function pdfUrl(e){
   const key = e.pdf.path + '@' + (e.pdf.sha || '');
   if(pdfUrls[key]) return pdfUrls[key];
+  if(e.pdf.zotero){ const zc = ztCfg(); if(!zc) throw {status: 'nozotero'}; const blob = await ztFileBlob(zc, e.pdf.zotero); return (pdfUrls[key] = URL.createObjectURL(blob)); }
   const c = ghCfg(); if(!c) throw {status:'nogh'};
   let bytes;
   if(c.kind === 'dropbox' || c.kind === 'folder'){ bytes = await remoteBytes(c, e.pdf.path); if(!bytes) throw {status: 404}; }
@@ -240,8 +241,8 @@ async function renderReaderPdf(){
   const c = ghCfg();
   if(!e.pdf){
     if(!c){
-      pane.innerHTML = '<div class="pdf-empty"><p>' + (PREVIEW ? 'PDFs are kept with your own synced list, so they aren’t available in this preview.' : 'Connect sync (Settings → Sync) to keep the paper’s PDF with your list.') + '</p>' +
-        (PREVIEW ? '' : '<button type="button" class="btn" data-reader-settings="1">Open Settings</button>') + '</div>';
+      pane.innerHTML = '<div class="pdf-empty"><p>' + (PREVIEW ? 'PDFs are kept with your own synced list, so they aren’t available in this preview.' : 'Keep this paper’s PDF with your library: connect GitHub or a folder, and drop the PDF here.') + '</p>' +
+        (PREVIEW ? '' : '<button type="button" class="btn" data-reader-settings="1">Set it up</button>') + '</div>';
       return;
     }
     pane.innerHTML = '<div class="pdf-empty" id="pdfDrop"><p>Attach the paper’s PDF to read it here. It is stored with your synced list.</p><button type="button" class="btn primary" data-pdf-pick="1">Attach PDF</button><p style="margin:10px 0 0;font-size:.82rem">or drop a PDF here</p></div>';
@@ -424,8 +425,7 @@ const parseNode = v => ({k: v.slice(0, 1), id: v.slice(2)});
 let dnd = null, dndOver = null;
 function clearDrop(){ dndOver = null; tocBody.querySelectorAll('.drop-before,.drop-after,.drop-inside,.drop-end').forEach(x => x.classList.remove('drop-before', 'drop-after', 'drop-inside', 'drop-end')); }
 tocBody.addEventListener('dragstart', ev => {
-  const h = ev.target.closest && ev.target.closest('.toc-drag');
-  const row = h && h.closest('[data-node]');
+  const row = ev.target.closest && ev.target.closest('[data-node]');
   if(!row){ ev.preventDefault(); return; }
   dnd = parseNode(row.dataset.node);
   row.classList.add('dragging');

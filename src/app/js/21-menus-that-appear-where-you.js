@@ -1,6 +1,6 @@
 /* ===================== menus that appear where you point (no Modify mode) ===================== */
 function moreBtn(key){ return '<button type="button" class="more-btn" data-more-of="' + esc(key) + '" aria-label="Add a subtopic inside, rename or delete" title="Add a subtopic inside, rename or delete">⋯</button>'; }
-function tocMore(kind, id){ return '<button type="button" class="toc-more more-btn" data-more-of="' + kind + ':' + id + '" aria-label="More" title="More">⋯</button>'; }
+function tocMore(kind, id){ return ''; }
 function moreItems(key){
   const [k, id] = [key.slice(0, 1), key.slice(2)];
   if(k === 'p'){ const e = lib.entries[id]; if(!e) return [];
@@ -63,3 +63,17 @@ mapSvg.addEventListener('contextmenu', ev => {
   openFloatMenu(ev.clientX + 2, ev.clientY + 2, items);
 });
 
+
+/* Contents: right-click a topic for its menu (add a paper, a subtopic, rename, related, delete); on a touch screen, press and hold */
+tocBody.addEventListener('contextmenu', ev => {
+  const row = ev.target.closest('[data-node]'); if(!row) return;
+  const key = row.dataset.node; if(!/^[ts]:/.test(key)) return;
+  ev.preventDefault(); openFloatMenu(ev.clientX + 2, ev.clientY + 2, moreItems(key));
+});
+{ let hold = null;
+  tocBody.addEventListener('pointerdown', ev => { if(ev.pointerType !== 'touch') return; const row = ev.target.closest('[data-node]'); if(!row || !/^[ts]:/.test(row.dataset.node)) return;
+    const x = ev.clientX, y = ev.clientY, key = row.dataset.node; clearTimeout(hold);
+    hold = setTimeout(() => { hold = null; openFloatMenu(x + 2, y + 2, moreItems(key)); }, 560);
+    const cancel = e2 => { if(e2.type === 'pointermove' && Math.hypot(e2.clientX - x, e2.clientY - y) < 8) return; clearTimeout(hold); hold = null; tocBody.removeEventListener('pointermove', cancel); tocBody.removeEventListener('pointerup', cancel); tocBody.removeEventListener('pointercancel', cancel); };
+    tocBody.addEventListener('pointermove', cancel); tocBody.addEventListener('pointerup', cancel); tocBody.addEventListener('pointercancel', cancel); });
+}

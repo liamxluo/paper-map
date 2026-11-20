@@ -52,7 +52,7 @@ function tocLink(view, label, n, on, cls){
   on = on && ui.page !== 'concepts';
   return '<button type="button" class="toc-link' + (cls ? ' ' + cls : '') + (on ? ' on' : '') + (n ? '' : ' dim') + '" data-view="' + view + '"' + (on ? ' aria-current="page"' : '') + '><span>' + esc(label) + '</span><span class="n">' + n + '</span></button>';
 }
-const DRAG = '<span class="toc-drag" draggable="true" title="Drag to move" aria-hidden="true">⠿</span>';
+const DRAG = '';
 const tocPlus = (tid, parent, name) => '<button type="button" class="toc-plus" data-act="new-sub" data-topic="' + tid + '"' + (parent ? ' data-parent="' + parent + '"' : '') + ' title="Add a subtopic inside" aria-label="Add a subtopic inside “' + esc(name) + '”">+</button>';
 function renderTabs(){
   const ae = document.activeElement;
@@ -67,7 +67,7 @@ function renderTabs(){
     const n = topicCount(tp);
     const exp = vis.length > 0 && tocExpanded(tp);
     const topicOn = tp.id === ui.topic && !vis.length;
-    h += '<li class="toc-topic"><div class="toc-row"' + (' data-node="t:' + tp.id + '"') + '>' +
+    h += '<li class="toc-topic"><div class="toc-row" draggable="true" title="Drag to move · right-click for more"' + (' data-node="t:' + tp.id + '"') + '>' +
       (vis.length ? '<button type="button" class="toc-caret" data-toc-toggle="' + tp.id + '" aria-expanded="' + exp + '" aria-label="' + (exp ? 'Collapse “' : 'Expand “') + esc(tp.name) + '”">' + CARET + '</button>' : '<span class="toc-caret-sp" aria-hidden="true"></span>') +
       tocLink(tp.id, tp.name, n, topicOn, 'topic') + tocMore('t', tp.id) + DRAG + '</div>';
     const showSubs = exp || (ui.edit && tp.id === ui.topic);
@@ -77,7 +77,7 @@ function renderTabs(){
       vis.forEach(s => {
         if(s.parent && (folded.has(s.parent) || tocClosedSet.has(s.parent))){ folded.add(s.id); return; }
         const kn = (IDX.kids[s.id] || []).length, open = kn && !tocClosedSet.has(s.id);
-        h += '<li class="toc-sub" style="--d:' + (IDX.depth[s.id] || 0) + '"' + (' data-node="s:' + s.id + '"') + '>' +
+        h += '<li class="toc-sub" draggable="true" title="Drag to move · right-click for more" style="--d:' + (IDX.depth[s.id] || 0) + '"' + (' data-node="s:' + s.id + '"') + '>' +
           (kn ? '<button type="button" class="toc-caret sub" data-toc-toggle="' + s.id + '" aria-expanded="' + !!open + '" aria-label="' + (open ? 'Collapse “' : 'Expand “') + esc(s.name) + '”">' + CARET + '</button>' : '') +
           tocLink(s.id, s.name, subCountDeep(s), s.id === ui.sub) + tocMore('s', s.id) + DRAG + '</li>';
       });

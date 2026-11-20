@@ -1,8 +1,8 @@
 {
   "name": "paper-map",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "private": true,
-  "description": "A personal map of research, ideas and reading",
+  "description": "Your research desk: every paper and book in one place, read with your notes beside them, synced with Zotero, mapped when you need to think.",
   "license": "Apache-2.0",
   "scripts": {
     "build": "node scripts/build.mjs",

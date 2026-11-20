@@ -99,14 +99,15 @@ function openEntryForm(id, preset){
     '<label class="full">Source<input type="text" name="v" value="' + esc(base.v) + '" placeholder="Journal vol(issue): pages, or publisher"></label>' +
     '<label>Topic<select name="topic">' + optionList(lib.topics.map(tp => [tp.id, tp.name]), base.topic) + '</select></label>' +
     '<label>Subtopic<select name="sub">' + subOptions(base.topic, base.sub) + '</select></label>' +
-    '<label>Group<select name="group">' + groupOptions(base.sub, base.group) + '</select></label>' +
-    '<label>Concept<select name="parent">' + parentOptions(base.sub, base.parent || '') + '</select></label>' +
     '<div class="field full prio-field"><span>Priority</span><span class="ex-seg" role="radiogroup" aria-label="Priority">' + [3, 2, 1].map(p => '<label' + ((base.p || 1) === p ? ' class="on"' : '') + '><input type="radio" name="p" value="' + p + '"' + ((base.p || 1) === p ? ' checked' : '') + '>' + esc(PRIO_LABEL[p].replace(/^\S+\s/, '')) + '</label>').join('') + '</span></div>' +
     '<div class="field full"><span>Tags</span><div class="domchips" id="tagChips">' + lib.tags.map(x => tagToggle(x, state.tags.includes(x.id), 'data-ftag')).join('') + '</div>' +
       '<div style="display:flex;gap:8px;margin-top:6px"><input type="text" id="newTag" placeholder="New tag name"><button type="button" class="btn" id="addTag">New tag</button></div></div>' +
+    '<details class="full more-fields"' + (base.f ? ' open' : '') + '><summary>More details</summary>' +
+    '<label>Group<select name="group">' + groupOptions(base.sub, base.group) + '</select></label>' +
+    '<label>Concept<select name="parent">' + parentOptions(base.sub, base.parent || '') + '</select></label>' +
     '<div class="field full"><span>Interests</span><div class="domchips" id="domChips">' + doms.map(x => '<button type="button" class="dom' + (state.d.includes(x) ? ' on' : '') + '" data-fdom="' + esc(x) + '" aria-pressed="' + state.d.includes(x) + '">' + esc(x) + '</button>').join('') + '</div>' +
       '<div style="display:flex;gap:8px;margin-top:6px"><input type="text" id="newDom" placeholder="New interest"><button type="button" class="btn" id="addDom">Add</button></div></div>' +
-    '<details class="full more-fields"' + (base.f ? ' open' : '') + '><summary>More details</summary><label>Focus <span class="hint">optional · the question it answers, if the title doesn’t say it</span><textarea name="f" rows="2" placeholder="The question this paper answers">' + esc(base.f) + '</textarea></label></details>' +
+    '<label>Focus <span class="hint">optional · the question it answers, if the title doesn’t say it</span><textarea name="f" rows="2" placeholder="The question this paper answers">' + esc(base.f) + '</textarea></label></details>' +
     '<div class="field full"><span>Mentions <span class="hint">topics it talks about, without linking it to a paper there</span></span><div class="domchips" id="mentChips"></div><select id="mentAdd"><option value="">+ Add a topic…</option>' + allLaneRows().map(r => { const key = r.sub.hidden ? r.topic.id : r.sub.id; return '<option value="' + esc(key) + '">' + esc(r.sub.hidden ? r.topic.name : r.topic.name + ' › ' + subPath(r.sub).join(' › ')) + '</option>'; }).join('') + '</select></div>' +
     '<label class="full">Notes<textarea name="n" rows="3" placeholder="Why read it, and how">' + esc(base.n) + '</textarea></label>' +
     pickerHTML('b', 'Builds on', state.b, 'earlier papers it builds on') +
@@ -900,11 +901,11 @@ function ghSectionHTML(){
   const g0 = lsGet(GH_KEY) || {}, g = (g0.kind || 'github') === 'github' ? g0 : {};
   const has = !!(g.owner && g.repo && g.token);
   return '<div class="set-section"><h3>GitHub sync</h3>' +
-    '<p class="hint">The copy in this browser is lost if its data is cleared. This keeps your list in a private GitHub repository you own: each change is saved there within seconds, earlier versions stay in its history, and you can open the list on any device. The token stays in this browser only.</p>' +
+    '<p class="hint">Your library in a private GitHub repository of your own: every change saved within seconds, every version kept, on any device.</p>' +
     (has ? '' : '<ol class="gh-steps">' +
-      '<li><a href="' + REPO_LINK + '" target="_blank" rel="noopener">Create a private repository</a>. The name is filled in; tick <em>Add a README file</em>.</li>' +
-      '<li><a href="' + TOKEN_LINK + '" target="_blank" rel="noopener">Create a token</a>: under Repository access, choose <em>Only select repositories</em> and pick that repository. The only permission it needs, <em>Contents: Read and write</em>, is already filled in; remove anything else.</li>' +
-      '<li>Paste the token below and click Connect.</li></ol>') +
+      '<li><a href="' + REPO_LINK + '" target="_blank" rel="noopener">Create a private repository</a>. Its name is filled in.</li>' +
+      '<li><a href="' + TOKEN_LINK + '" target="_blank" rel="noopener">Create a token</a> for that repository only. Its one permission is filled in.</li>' +
+      '<li>Paste it below, then Connect.</li></ol>') +
     '<div class="form-grid">' +
     '<label>Repository<input type="text" id="ghRepo" autocomplete="off" spellcheck="false" value="' + esc(g.repo || 'paper-map-data') + '"></label>' +
     '<label>Token<input type="password" id="ghToken" autocomplete="off" spellcheck="false" placeholder="github_pat_…" value="' + esc(g.token || '') + '"></label>' +

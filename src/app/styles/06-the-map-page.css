@@ -214,3 +214,228 @@ html.atlas .atl-pdfres .atl-pdfname{display:block;padding:2px 0;font:400 12px va
 #tour .tr-skip{color:#9A8F80} #tour .tr-skip:hover{color:#231E1A}
 #tour .tr-next{padding:7px 16px;border-radius:10px;background:#231E1A;color:#FBF7EE;font-weight:700}
 #tour .tr-next[hidden]{display:none}
+
+/* Contents rows are dragged whole; no handle, no ⋯ */
+.toc-row[draggable="true"],.toc-sub[draggable="true"]{-webkit-user-drag:element}
+.toc-row.dragging,.toc-sub.dragging{opacity:.45}
+.toc-drag,.toc-more{display:none !important}
+
+/* on the map page, read is ink and want-to-read red, whatever colours an older version stored */
+/* (the read and want-to-read colours are yours to choose; colours an older version stored as its defaults are cleared once) */
+/* the map keeps to the middle of the sheet, however many rows it has */
+html.atlas .map-box{display:flex;flex-direction:column}
+html.atlas .map-box > :first-child{margin-top:auto}
+html.atlas .map-box > :last-child{margin-bottom:auto}
+/* the card on the map: smaller, quieter */
+html.atlas .info{width:min(372px,calc(100vw - 100px));padding:16px 20px 13px 26px;border-radius:18px;right:64px;bottom:80px}
+html.atlas .acard::before{left:-15px;width:3px}
+html.atlas .ac-k{font-size:10px;letter-spacing:1.9px}
+html.atlas .ac-t{margin-top:5px;font-size:20.5px;line-height:1.18}
+html.atlas .ac-a{margin-top:4px;font-size:14px}
+html.atlas .ac-row{margin-top:13px}
+html.atlas .ac-st .stbtn{padding:6px 12px;font-size:13px}
+html.atlas .ac-b{width:30px;height:30px}
+html.atlas .ac-b svg{width:16px;height:16px}
+html.atlas .ac-hf{margin-top:10px;font-size:13px}
+html.atlas .ac-d{min-width:22px;height:22px;line-height:22px;font-size:12.5px}
+/* the full card, in the map's paper, ink and type */
+html.atlas .bc-root .bc-back{padding:22px 24px 20px;box-sizing:border-box;overflow:auto;border-radius:20px;background:#FBF8F2;color:var(--atl-ink)}
+html.atlas .bc-root .bc-front{box-sizing:border-box}
+html.atlas .bc-root .bc-title{font:700 21px/1.2 var(--atl-serif);color:var(--atl-ink);letter-spacing:0}
+html.atlas .bc-root .bc-sub{font:italic 400 14.5px var(--atl-serif);color:#4F453B}
+html.atlas .bc-root .bc-src{font:400 12.5px var(--atl-sans);color:#7A6E60}
+html.atlas .bc-root .bc-h{font:700 10px var(--atl-sans);letter-spacing:1.8px;text-transform:uppercase;color:#9A8F80}
+html.atlas .bc-root .bc-box{background:rgba(255,255,255,.55);border:1px solid rgba(35,30,26,.08);border-radius:12px}
+html.atlas .bc-root .stbtn{font:500 13px var(--atl-sans)}
+html.atlas .bc-root .pc-bar{width:3px;background:var(--atl-ink)}
+
+/* the growing box carries the paper and the shadow; its two faces are only words */
+html.atlas .bc-root .bc-front,html.atlas .bc-root .bc-back{background:transparent !important;box-shadow:none !important}
+html.atlas .bc-root .bc-flyer{background:#FBF8F2;border-radius:20px}
+html.atlas .bc-root .stbtn{border:1px solid rgba(35,30,26,.14);background:#fff;color:#4F453B}
+html.atlas .bc-root .stbtn.read[aria-pressed="true"]{background:var(--atl-ink);border-color:var(--atl-ink);color:#FBF7EE}
+html.atlas .bc-root .stbtn.want[aria-pressed="true"]{background:#B4432E;border-color:#B4432E;color:#FBF7EE}
+
+/* the small card's copy inside the growing box sits in it, not where the small card is pinned */
+html.atlas .bc-root .bc-front .info{position:static !important;display:block !important;width:auto !important;max-height:none !important;overflow:visible !important;margin:0 !important;box-shadow:none !important;background:transparent !important;border-radius:0 !important;inset:auto !important}
+
+html.atlas .bc-root .bc-front{padding:0 !important}
+
+/* the update note, in the Mac app */
+#updNote{position:fixed;left:24px;bottom:24px;z-index:2147482000;width:320px;padding:16px 18px 13px;border-radius:16px;background:#FFFDF8;box-shadow:0 2px 4px rgba(0,0,0,.16),0 18px 50px rgba(0,0,0,.32);opacity:0;transform:translateY(10px);transition:opacity .25s ease,transform .25s ease;font-family:'PMap Sans',sans-serif}
+#updNote.on{opacity:1;transform:none}
+#updNote .un-k{margin:0;font:700 10.5px 'PMap Sans',sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#9A8F80}
+#updNote .un-t{display:block;margin-top:4px;font:700 17px 'PMap Serif',Georgia,serif;color:#231E1A}
+#updNote .un-l{margin:8px 0 0;padding-left:18px;font:400 13px/1.45 'PMap Sans',sans-serif;color:#4F453B}
+#updNote .un-s{margin:8px 0 0;font:400 12px/1.4 'PMap Sans',sans-serif;color:#8A7F72}
+#updNote .un-bar{height:3px;margin-top:10px;border-radius:2px;background:#EFE9DD;overflow:hidden}
+#updNote .un-bar i{display:block;height:100%;width:0;background:#231E1A;transition:width .2s linear}
+#updNote .un-btns{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+#updNote .un-btns button{all:unset;cursor:pointer;font:500 13px 'PMap Sans',sans-serif}
+#updNote .un-later{color:#9A8F80} #updNote .un-later:hover{color:#231E1A}
+#updNote .un-go{padding:7px 14px;border-radius:10px;background:#231E1A;color:#FBF7EE;font-weight:700}
+#updNote button:disabled{opacity:.6;cursor:default}
+
+/* ============ one look everywhere ============ */
+:root,:root[data-paper="warm"],:root[data-paper="white"],:root:not([data-theme="light"]){
+  color-scheme:light;--bg:#F4EFE6;--surface:#FBF8F2;--ink:#231E1A;--muted:#5E544A;--faint:#9A8F80;
+  --rule:rgba(35,30,26,.12);--rule-strong:rgba(35,30,26,.26);--hl:#EFE7D8;--focus:#231E1A;--band:#F1EBE0;--edge:#8A7F72;--overlay:rgba(24,12,6,.30);
+  --serif:'PMap Serif','Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Songti SC',serif;
+  --sans:'PMap Sans','Helvetica Neue',Helvetica,'PingFang SC','Hiragino Sans GB',Arial,sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){color-scheme:light;--bg:#F4EFE6;--surface:#FBF8F2;--ink:#231E1A;--muted:#5E544A;--faint:#9A8F80;--rule:rgba(35,30,26,.12);--rule-strong:rgba(35,30,26,.26);--hl:#EFE7D8;--focus:#231E1A;--band:#F1EBE0;--edge:#8A7F72;--overlay:rgba(24,12,6,.30)}}
+.modal-backdrop{background:rgba(24,12,6,.30);-webkit-backdrop-filter:blur(10px) saturate(.9);backdrop-filter:blur(10px) saturate(.9)}
+.modal{width:min(640px,100%);border:0;border-radius:20px;background:#FBF8F2;color:#231E1A;padding:26px 28px 18px;box-shadow:0 2px 4px rgba(40,30,20,.12),0 30px 80px rgba(24,12,6,.34);font-family:var(--sans)}
+.modal h2,.modal .modal-title,#modalTitle{font:700 22px/1.2 var(--serif);letter-spacing:0;color:#231E1A;margin:0 0 14px}
+.modal h3{font:700 10.5px var(--sans);letter-spacing:1.8px;text-transform:uppercase;color:#9A8F80;margin:20px 0 8px}
+.modal-body{font-size:14px;line-height:1.5;color:#4F453B}
+.modal-body p{color:#5E544A}
+.modal-actions{background:#FBF8F2;border-top:1px solid rgba(35,30,26,.08);margin-top:18px;padding:12px 0 2px;bottom:-18px}
+.modal input[type="text"],.modal input[type="search"],.modal input[type="number"],.modal input[type="url"],.modal input[type="email"],.modal input[type="password"],.modal input:not([type]),.modal select,.modal textarea{
+  box-sizing:border-box;border:1px solid rgba(35,30,26,.16);border-radius:10px;background:#fff;color:#231E1A;font:400 14px var(--sans);padding:9px 11px;outline:none;transition:border-color .15s ease,box-shadow .15s ease}
+.modal input:focus,.modal select:focus,.modal textarea:focus{border-color:#231E1A;box-shadow:0 0 0 3px rgba(35,30,26,.10)}
+.modal label,.modal .field > span{font:600 12.5px var(--sans);color:#5E544A}
+.btn{font:600 13px var(--sans);padding:8px 15px;border:1px solid rgba(35,30,26,.16);border-radius:10px;background:#fff;color:#231E1A;box-shadow:0 1px 1px rgba(40,30,20,.06);transition:transform .12s ease,background-color .12s ease,box-shadow .12s ease,border-color .12s ease}
+.btn:hover{border-color:rgba(35,30,26,.36);background:#fff}
+.btn:active{transform:scale(.96) translateY(1px);box-shadow:inset 0 1px 2px rgba(40,30,20,.18)}
+.btn.primary{background:#231E1A;color:#FBF7EE;border-color:#231E1A}
+.btn.primary:hover{background:#3A322B}
+.btn.danger{color:#B4432E;border-color:rgba(180,67,46,.35)}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.float-menu{border:0;border-radius:14px;background:#FFFDF8;box-shadow:0 2px 4px rgba(0,0,0,.14),0 16px 40px rgba(24,12,6,.26);padding:6px;font-family:var(--sans)}
+.float-menu .fm-item{border-radius:9px;font:500 13.5px var(--sans);color:#231E1A;padding:8px 12px}
+.float-menu .fm-item:hover,.float-menu .fm-item:focus{background:#F1EBE0}
+.float-menu .fm-item.danger{color:#B4432E}
+#toast{border-radius:12px;background:#231E1A;color:#FBF7EE;font:500 13px var(--sans);box-shadow:0 10px 30px rgba(24,12,6,.32)}
+#toast button{color:#FBF7EE;border-color:rgba(251,247,238,.35);border-radius:8px}
+.reader{background:#FBF8F2;color:#231E1A;font-family:var(--sans)}
+/* over the desk: dialogs and Notes & PDF sit above it, and the desk stays behind them, blurred */
+html.desk-on .modal-root{z-index:2147483200}
+html.desk-on .float-menu{z-index:2147483350}
+html.desk-on #toast{z-index:2147483400}
+html.over-desk #reader{z-index:2147483150}
+#updNote{z-index:2147483450}
+
+/* Settings, quieter: what no longer applies (the old colour pickers and light/dark paper) is gone, the notes are small */
+.modal .set-section:has(#cGreen),.modal .set-section:has(input[name="theme"]){display:none}
+.modal .set-section{border-top:1px solid rgba(35,30,26,.08);padding-top:16px;margin-top:16px}
+.modal .hint{font:400 12.5px/1.45 var(--sans);color:#9A8F80;margin-top:6px}
+.modal input[type="checkbox"],.modal input[type="radio"]{accent-color:#231E1A;width:16px;height:16px}
+.modal label{font-weight:500;color:#3B332C}
+
+/* ============ the polish pass: every remaining surface in the same paper, ink and type ============ */
+/* selects: no system arrows, one quiet caret */
+.modal select,html.atlas .atl-pop select,html.atlas #atlSearch select,#searchBox select,.reader select{-webkit-appearance:none;appearance:none;padding-right:32px !important;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23231E1A' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important;background-repeat:no-repeat !important;background-position:calc(100% - 12px) 50% !important;background-color:#fff}
+/* the paper form */
+.modal .form-grid{gap:12px 14px}
+.modal input[name="t"],.modal textarea[name="t"]{font:700 17px/1.3 var(--serif)}
+.modal .ex-seg{display:inline-flex;padding:3px;border-radius:11px;background:#EFE9DD;gap:2px}
+.modal .ex-seg label{padding:6px 12px;border-radius:9px;font:500 13px var(--sans);color:#5E544A;cursor:pointer}
+.modal .ex-seg label.on{background:#fff;color:#231E1A;font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.modal .ex-seg input{position:absolute;opacity:0;pointer-events:none}
+.modal .domchips button,.modal .domchips .dom{border:0;border-radius:999px;padding:5px 11px;background:#fff;box-shadow:inset 0 0 0 1px rgba(35,30,26,.14);font:500 12.5px var(--sans);color:#4F453B}
+.modal .domchips button[aria-pressed="true"],.modal .domchips .on{background:#231E1A;color:#FBF7EE;box-shadow:none}
+.modal details.more-fields{border-top:1px solid rgba(35,30,26,.08);padding-top:12px}
+.modal details.more-fields > summary{cursor:pointer;list-style:none;font:600 13px var(--sans);color:#5E544A}
+.modal details.more-fields > summary::before{content:'›';display:inline-block;width:14px;transition:transform .15s ease}
+.modal details.more-fields[open] > summary::before{transform:rotate(90deg)}
+.modal details.more-fields > summary::-webkit-details-marker{display:none}
+.modal details.more-fields[open] > *:not(summary){margin-top:12px}
+/* the sync steps as a short numbered path */
+.modal .gh-steps,html.atlas .gh-steps{list-style:none;counter-reset:gh;margin:10px 0 12px;padding:0}
+.modal .gh-steps li,html.atlas .gh-steps li{counter-increment:gh;position:relative;padding:3px 0 7px 30px;font:400 13.5px/1.45 var(--sans);color:#4F453B}
+.modal .gh-steps li::before,html.atlas .gh-steps li::before{content:counter(gh);position:absolute;left:0;top:2px;width:20px;height:20px;border-radius:50%;background:#231E1A;color:#FBF7EE;font:700 11px/20px var(--sans);text-align:center}
+.modal .gh-steps a,html.atlas .gh-steps a{color:#231E1A;font-weight:700;text-decoration:underline;text-decoration-color:rgba(35,30,26,.35);text-underline-offset:3px}
+/* Notes & PDF */
+.reader{background:#F4EFE6}
+.reader-bar{background:#FBF8F2;border-bottom:1px solid rgba(35,30,26,.08);padding:12px 20px}
+.reader-bar .btn,#readerClose{border-radius:10px}
+#readerTitle{font:700 20px/1.2 var(--serif);color:#231E1A}
+.reader-meta,#readerMeta{font:400 12.5px var(--sans);color:#7A6E60}
+.reader-pdf .pdf-empty{border:1.5px dashed rgba(35,30,26,.22);border-radius:16px;background:rgba(255,255,255,.5);padding:28px;text-align:center;font:400 14px/1.5 var(--sans);color:#5E544A}
+.reader-notes{background:#FBF8F2}
+.reader-notes textarea{font:400 15px/1.65 var(--serif) !important;color:#231E1A;background:transparent;border:0}
+.reader-notes h1,.reader-notes h2,.reader-notes h3{font-family:var(--serif);color:#231E1A}
+.reader-notes p,.reader-notes li{font:400 15px/1.65 var(--serif);color:#2E2722}
+/* the gear: actions as quiet rows */
+html.atlas .lk-btns{display:grid;gap:2px;margin-top:6px}
+html.atlas .lk-btns button{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;width:100%;padding:9px 10px;border-radius:10px;font:500 13.5px var(--atl-sans);color:#231E1A;cursor:pointer}
+html.atlas .lk-btns button::after{content:'›';font-size:16px;color:#B5AA9B}
+html.atlas .lk-btns button:hover{background:#F1EBE0}
+html.atlas .lk-ck input{accent-color:#231E1A}
+/* search on the map page */
+#q{border:0;border-radius:11px;background:#fff;box-shadow:inset 0 0 0 1px rgba(35,30,26,.16);padding:9px 12px 9px 34px;font:400 14px var(--sans);color:#231E1A;outline:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%239A8F80' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:11px 50%}
+#q:focus{box-shadow:inset 0 0 0 1.5px #231E1A}
+/* scrollbars that belong to paper */
+.modal,.reader,.reader-notes,.reader-pdf,html.atlas .atl-pop{scrollbar-width:thin;scrollbar-color:rgba(35,30,26,.25) transparent}
+
+/* the cloud: Connect is the one strong button, the rest are quiet rows */
+html.atlas .atl-syncform .btn{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;width:100%;padding:9px 10px;border-radius:10px;font:500 13.5px var(--atl-sans);color:#231E1A;cursor:pointer}
+html.atlas .atl-syncform .btn::after{content:'›';font-size:16px;color:#B5AA9B}
+html.atlas .atl-syncform .btn:hover{background:#F1EBE0}
+html.atlas .atl-syncform .btn.primary,html.atlas .atl-syncform #ghConnect{justify-content:center;margin:8px 0 6px;padding:10px 12px;background:#231E1A;color:#FBF7EE;font-weight:700}
+html.atlas .atl-syncform .btn.primary::after,html.atlas .atl-syncform #ghConnect::after{content:none}
+html.atlas .atl-syncform .btn.danger{color:#B4432E}
+html.atlas .atl-syncform input{border:0;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px rgba(35,30,26,.16);padding:8px 10px;font:400 13.5px var(--atl-sans)}
+html.atlas .atl-syncform input:focus{box-shadow:inset 0 0 0 1.5px #231E1A;outline:none}
+html.atlas .atl-syncform .hint{font:400 12.5px/1.45 var(--atl-sans);color:#7A6E60}
+html.atlas .lk-woods button{position:relative}
+
+/* the blur is the signature: whatever opens over the map, the map behind it goes soft, live, never a still picture */
+.bc-scrim{-webkit-backdrop-filter:blur(9px) saturate(.92);backdrop-filter:blur(9px) saturate(.92);opacity:0;transition:opacity .38s ease,background .25s ease}
+.bc-root.on .bc-scrim{opacity:1}
+html.atlas body::after{content:'';position:fixed;inset:0;z-index:84;pointer-events:none;background:rgba(24,12,6,.14);-webkit-backdrop-filter:blur(7px) saturate(.92);backdrop-filter:blur(7px) saturate(.92);opacity:0;transition:opacity .38s ease}
+html.atlas body:has(.atl-note:not([hidden]))::after{opacity:1}
+
+/* ============ Settings as buttons, with almost no words ============ */
+#modalRoot.pm-settings .hint{display:none}
+#modalRoot.pm-settings .set-version{display:block;text-align:center;margin-top:18px;font:400 12px var(--sans);color:#9A8F80}
+#modalRoot.pm-settings .set-section h3{margin:0 0 10px}
+/* every choice is a row of buttons: the chosen one is pressed */
+#modalRoot.pm-settings fieldset{border:0;margin:0;padding:0;display:inline-flex;flex-wrap:wrap;gap:2px;padding:3px;border-radius:12px;background:#EFE9DD}
+#modalRoot.pm-settings fieldset legend{display:none}
+#modalRoot.pm-settings fieldset label,.pm-seg button{position:relative;display:inline-flex;align-items:center;padding:7px 14px;border-radius:9px;font:500 13px var(--sans);color:#5E544A;cursor:pointer;transition:background-color .15s ease,color .15s ease,box-shadow .15s ease}
+#modalRoot.pm-settings fieldset label:has(input:checked),.pm-seg button.on{background:#fff;color:#231E1A;font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+#modalRoot.pm-settings fieldset input{position:absolute;opacity:0;pointer-events:none}
+.pm-seg{display:inline-flex;flex-wrap:wrap;gap:2px;padding:3px;border-radius:12px;background:#EFE9DD}
+.pm-seg button{all:unset;box-sizing:border-box}
+.pm-seg + select{display:none !important}
+#modalRoot.pm-settings .set-arrows,#modalRoot.pm-settings .pm-row{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-top:12px;font:600 12.5px var(--sans);color:#5E544A}
+/* switches become pills you press */
+#modalRoot.pm-settings label:has(> input[type="checkbox"]){display:inline-flex !important;align-items:center;gap:8px;margin:0 6px 8px 0 !important;padding:8px 14px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1px rgba(35,30,26,.16);font:500 13px var(--sans);color:#5E544A;cursor:pointer;transition:background-color .15s ease,color .15s ease,box-shadow .15s ease}
+#modalRoot.pm-settings label:has(> input[type="checkbox"]:checked){background:#231E1A;color:#FBF7EE;box-shadow:none}
+#modalRoot.pm-settings label > input[type="checkbox"]{position:absolute;opacity:0;pointer-events:none}
+#modalRoot.pm-settings label:has(> input[type="checkbox"]:checked)::before{content:'✓';font-weight:700}
+/* the two colours: each a button filled with its colour, the word kept in ink */
+#modalRoot.pm-settings .color-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+#modalRoot.pm-settings .color-row label{position:relative;display:inline-flex;align-items:center;padding:8px 18px;border-radius:999px;background:var(--sw,#fff);font:700 13px var(--sans);color:#231E1A;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(35,30,26,.18)}
+#modalRoot.pm-settings .color-row label.light-ink{color:#FBF7EE}
+#modalRoot.pm-settings .color-row input[type="color"]{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+#modalRoot.pm-settings #cReset{all:unset;cursor:pointer;padding:6px 8px;font:500 12.5px var(--sans);color:#7A6E60;text-decoration:underline;text-underline-offset:3px}
+.pm-pal{position:fixed;z-index:2147483500;display:grid;grid-template-columns:repeat(5,28px);gap:8px;padding:12px;border-radius:14px;background:#FFFDF8;box-shadow:0 2px 4px rgba(0,0,0,.14),0 16px 40px rgba(24,12,6,.26)}
+.pm-pal button{all:unset;width:28px;height:28px;border-radius:50%;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.pm-pal button.on{box-shadow:0 0 0 2px #FFFDF8,0 0 0 4px #231E1A}
+.pm-pal label{grid-column:1/-1;display:flex;align-items:center;gap:8px;font:500 12px var(--sans);color:#5E544A;cursor:pointer}
+/* actions: quiet rows; Start over in red at the end */
+#modalRoot.pm-settings .set-actions{display:grid;gap:2px;margin-top:6px}
+#modalRoot.pm-settings .set-actions .btn{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;width:100%;padding:9px 10px;border-radius:10px;font:500 13.5px var(--sans);color:#231E1A;cursor:pointer}
+#modalRoot.pm-settings .set-actions .btn::after{content:'›';font-size:16px;color:#B5AA9B}
+#modalRoot.pm-settings .set-actions .btn:hover{background:#F1EBE0}
+#modalRoot.pm-settings #setReset{color:#B4432E}
+#modalRoot.pm-settings .pm-bm{display:flex;align-items:center;gap:10px;margin-top:10px;font:500 12.5px var(--sans);color:#7A6E60}
+#modalRoot.pm-settings .pm-bm .bookmarklet{padding:6px 12px;border-radius:999px;background:#231E1A;color:#FBF7EE;text-decoration:none;font-weight:700}
+
+#modalRoot.pm-settings .set-section:has(#cGreen){display:block !important}
+.pm-seg button{padding:7px 14px;border-radius:9px;font:500 13px var(--sans);color:#5E544A;cursor:pointer;white-space:nowrap}
+.pm-seg button:hover{color:#231E1A}
+.pm-seg button.on{background:#fff;color:#231E1A;font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+
+/* ============ the glass on the map page: frosted pills on the paper, no borders ============ */
+html.atlas .atl-pill{background:rgba(255,253,248,.55) !important;-webkit-backdrop-filter:blur(10px) saturate(1.1);backdrop-filter:blur(10px) saturate(1.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 4px 14px rgba(30,15,8,.16) !important;border:0 !important}
+
+.zt-p{font:400 13.5px/1.5 var(--sans);color:#5E544A;margin:0 0 10px}
+.zt-l{display:flex;flex-direction:column;gap:6px;font:600 12.5px var(--sans);color:#5E544A}
+.zt-err{color:#B4432E;font:500 12.5px var(--sans);min-height:1em}
+.zt-list{display:flex;flex-wrap:wrap;gap:6px 6px;margin:6px 0 10px}
+.zt-list em{margin-left:6px;font:400 11.5px var(--sans);font-style:normal;opacity:.65}

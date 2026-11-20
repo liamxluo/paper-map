@@ -70,8 +70,30 @@ function bigCardHTML(id){
 }
 let bigCard = null;
 function easeIO(t){ return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
-function cardTarget(){ const W = Math.min(520, innerWidth - 24), H = Math.min(innerHeight - 40, 780); return {x: (innerWidth - W) / 2, y: Math.max(20, (innerHeight - H) / 2), w: W, h: H}; }
+function cardTarget(){ const at = document.documentElement.classList.contains('atlas');
+  const W = Math.min(at ? 440 : 520, innerWidth - 24), H = Math.min(innerHeight - (at ? 90 : 40), at ? 620 : 780); return {x: (innerWidth - W) / 2, y: Math.max(20, (innerHeight - H) / 2), w: W, h: H}; }
+/* on the map page the full card grows out of the small one: the box opens from where the card was, the small card's words
+   fade at once, the full card's words come up as the box reaches them; nothing is ever shown twice */
+function animateGrow(fl, a, b, forward, done){
+  const back = fl.querySelector('.bc-back'), front = fl.querySelector('.bc-front');
+  Object.assign(back.style, {position: 'absolute', width: b.w + 'px', height: b.h + 'px', transform: 'none'});
+  Object.assign(front.style, {position: 'absolute', width: a.w + 'px', height: a.h + 'px', transform: 'none'});
+  fl.style.transform = 'none'; fl.style.overflow = 'hidden'; fl.style.borderRadius = '20px'; fl.style.background = '#FBF8F2';
+  const ease = forward ? (u => 1 - Math.pow(1 - u, 3.2)) : (u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2);
+  const dur = reduceMotion() ? 1 : (window.__growDur || (forward ? 430 : 360)), t0 = performance.now();
+  const step = now => {
+    const u = Math.min(1, (now - t0) / dur), k = ease(u), m = forward ? k : 1 - k;
+    const x = a.x + (b.x - a.x) * m, y = a.y + (b.y - a.y) * m, w = a.w + (b.w - a.w) * m, h = a.h + (b.h - a.h) * m;
+    Object.assign(fl.style, {left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px'});
+    back.style.left = '0px'; back.style.top = '0px'; front.style.left = '0px'; front.style.top = '0px';   /* both kept to the box's top-left corner: title fades into title */
+    front.style.opacity = Math.max(0, 1 - m / .28).toFixed(3); back.style.opacity = Math.min(1, Math.max(0, (m - .22) / .5)).toFixed(3);
+    fl.style.boxShadow = '0 2px 4px rgba(40,30,20,.12),0 ' + (18 + 14 * m).toFixed(1) + 'px ' + (50 + 30 * m).toFixed(1) + 'px rgba(24,12,6,' + (.22 + .12 * m).toFixed(3) + ')';
+    if(u < 1) requestAnimationFrame(step); else done();
+  };
+  requestAnimationFrame(step);
+}
 function animateCard(fl, a, b, forward, done){
+  if(document.documentElement.classList.contains('atlas')) return animateGrow(fl, a, b, forward, done);
   const back = fl.querySelector('.bc-back'), front = fl.querySelector('.bc-front');
   const grow = document.documentElement.classList.contains('atlas');
   if(reduceMotion()){ Object.assign(fl.style, {left: b.x + 'px', top: b.y + 'px', width: b.w + 'px', height: b.h + 'px', transform: forward && !grow ? 'rotateY(180deg)' : 'none'}); if(grow){ front.style.opacity = forward ? 0 : 1; back.style.opacity = forward ? 1 : 0; } done(); return; }
