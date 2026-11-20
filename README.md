@@ -12,7 +12,7 @@
   <img src="assets/icon-web.svg" width="18" height="18" alt=""> <a href="https://liamxluo.github.io/paper-map/"><b>Open in your browser</b></a>
 </p>
 
-<p align="center"><sub>macOS 11 or later, Apple silicon and Intel &nbsp;·&nbsp; Chrome, Edge or Safari &nbsp;·&nbsp; free and open source (MIT)</sub></p>
+<p align="center"><sub>macOS 11 or later, Apple silicon and Intel &nbsp;·&nbsp; Chrome, Edge or Safari &nbsp;·&nbsp; free and open source (Apache-2.0)</sub></p>
 
 <!-- THE VIDEO: in GitHub's editor, drag paper-map-tour.mp4 onto the line below; GitHub replaces it with a link that plays here. -->
 
@@ -82,7 +82,7 @@ Your whole library (maps, papers, notes, Readings and notebooks) is one file, `d
 
 ### 3. Add papers
 
-Click **+ New paper**, paste a DOI or ISBN and click **Fill in**: the title, authors, year and source fill themselves in.
+Click **+**, choose **Paper**, paste a DOI, an ISBN or the paper's web address and click **Fill in**: the title, authors, year and source fill themselves in.
 
 <details>
 <summary>Which IDs work</summary>
@@ -94,6 +94,9 @@ Click **+ New paper**, paste a DOI or ISBN and click **Fill in**: the title, aut
 | An Elsevier PII (S0…) | Crossref, which also finds its DOI |
 | An arXiv ID (2101.00001) | arXiv's DOI on DataCite |
 | A PubMed or PubMed Central ID | Europe PMC |
+| A paper's web address (a publisher, JSTOR, SSRN, NBER, a library…) | Zotero's translators, through Wikipedia's free citation service |
+
+When the registries have no record of an ID, Paper Map asks Zotero's translators as well. No account is needed, and none of it costs anything.
 
 </details>
 
@@ -114,8 +117,12 @@ When you mark a paper **Read**, Paper Map looks up what it cites: papers on your
 - **Colour lines.** Give a main line of thought a colour from a line's menu; **Colour lines** above the map names them and hides one for a while.
 - **Lens.** Select a paper and press **L**: its whole line on its own, the path between two papers, or a metro map.
 - **Notes and PDFs.** Every paper has Markdown notes beside its PDF. PDFs need sync.
-- **Papers.** The pages on the desk: every paper as a page stamped READ or TO READ, by map or by mark. Click one and it opens into the paper's own page: its notes, its status, where it sits and every line to and from it.
+- **Related maps.** In the bottom-right corner of a map, **Related to** notes which other maps belong with it, Behavioural Economics with Game Theory, say, without merging them. Click one to open it; × unrelates them.
+- **Merge maps.** In the map's name ▾, **Merge into another map…** makes it a topic inside another map, with its rows, papers and lines. Undo is right there afterwards.
+- **Papers.** The pages on the desk: every paper as a page stamped READ or TO READ, by map or by mark. A paper whose PDF you added shows that PDF's first page, with a small red PDF tab. Click one and it opens into the paper's own page: its notes, its status, where it sits and every line to and from it.
 - **Export.** The map as PNG, vector PDF or a GIF of it growing over the years; the list as BibTeX, RIS, CSV or Markdown.
+- **The research log** is a click away on the map page: the notebook icon in its toolbar opens it on the desk. It is saved in your library with everything else.
+- **Where it is kept.** The cloud in the toolbar says where your library lives and how saving is going, with **Sync now**.
 - **Look.** The desk's wood, creased or smooth map paper, Mist, Warm white or Pure white, Light or Dark, and whether Paper Map opens on the desk or on the last map.
 
 ## Good to know
@@ -129,6 +136,8 @@ When you mark a paper **Read**, Paper Map looks up what it cites: papers on your
 **Not a reference manager.** Paper Map maps and annotates what you read. For citations in your writing, keep Zotero beside it: Paper Map imports from it and exports BibTeX and RIS.
 
 **Your token and your PDFs.** The GitHub token stays in the app where you connect it; give it one private repository and nothing else. PDFs live in your own repository or folder: keep it private, and only add papers you may keep a copy of.
+
+**Licence.** Paper Map is under the Apache License 2.0. You may use it, change it and build on it, commercially too, as long as you keep the copyright and the attribution in [NOTICE](NOTICE), say which files you changed, and do not use the Paper Map name for your own product. Versions up to 3.0.1 were released under MIT. If you use Paper Map in something commercial, I'd be glad to hear about it: open an issue on GitHub.
 
 <details>
 <summary>Building Paper Map</summary>
@@ -150,4 +159,4 @@ The app is plain HTML, CSS and JavaScript, split by subject:
 
 ---
 
-<p align="center"><sub>The interface and code were built with help from Claude, an AI model made by Anthropic. MIT licence.</sub></p>
+<p align="center"><sub>The interface and code were built with help from Claude, an AI model made by Anthropic. Apache License 2.0, see <a href="LICENSE">LICENSE</a> and <a href="NOTICE">NOTICE</a>.</sub></p>

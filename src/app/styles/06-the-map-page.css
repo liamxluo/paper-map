@@ -48,7 +48,7 @@ html.atlas .filters-row{position:fixed;top:94px;right:46px;z-index:70;width:min(
 html.atlas .undo-pill{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:65;background:rgba(251,247,238,.95);border-radius:12px;box-shadow:0 6px 18px rgba(60,40,20,.16)}
 html.atlas .preview-banner{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;z-index:58;border-radius:12px}
 /* the card, as confirmed */
-html.atlas .info{position:fixed;right:70px;bottom:72px;z-index:50;width:min(440px,calc(100vw - 100px));max-height:calc(100vh - 240px);overflow:auto;margin:0;padding:20px 24px 16px 30px;border:0;border-radius:20px;background:#FBF8F2;box-shadow:0 2px 4px rgba(40,30,20,.12),0 22px 60px rgba(40,30,20,.28)}
+html.atlas .info{position:fixed;right:70px;bottom:86px;z-index:50;width:min(440px,calc(100vw - 100px));max-height:calc(100vh - 240px);overflow:auto;margin:0;padding:20px 24px 16px 30px;border:0;border-radius:20px;background:#FBF8F2;box-shadow:0 2px 4px rgba(40,30,20,.12),0 22px 60px rgba(40,30,20,.28)}
 html.atlas .info:not(.has-sel){display:none}
 html.atlas .acard{position:relative}
 html.atlas .acard::before{content:'';position:absolute;left:-18px;top:2px;bottom:2px;width:4px;border-radius:2px;background:var(--atl-ink)}
@@ -76,7 +76,18 @@ html.atlas .atl-foot .lg-l.main{border-top:2px solid #B4432E}
 html.atlas .atl-foot .lg-br{cursor:pointer} html.atlas .atl-foot .lg-br .lg-l{border-top-width:2px}
 html.atlas .atl-foot .lg-d{display:inline-block;box-sizing:border-box;width:9px;height:9px;margin-right:8px;border-radius:50%}
 html.atlas .atl-foot .lg-d.read{background:#231E1A} html.atlas .atl-foot .lg-d.want{border:2px solid #B4432E}
-html.atlas .atl-hint{position:fixed;right:70px;bottom:36px;z-index:3;font:400 12px var(--atl-sans);color:#9A8F80;pointer-events:none}
+html.atlas .atl-rel{position:fixed;right:70px;bottom:38px;z-index:4;display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:6px;max-width:46vw;font:400 13px var(--atl-sans);color:#5E544A}
+html.atlas .atl-rk{margin-right:4px}
+html.atlas .atl-rc{display:inline-flex;align-items:center;border-radius:999px;background:rgba(251,247,238,.92);box-shadow:0 1px 2px rgba(60,40,20,.14),0 3px 10px rgba(60,40,20,.10)}
+html.atlas .atl-rc button,html.atlas .atl-radd{all:unset;cursor:pointer}
+html.atlas .atl-rc [data-rel-open]{padding:5px 4px 5px 12px;font:600 13.5px var(--atl-serif);color:var(--atl-ink)}
+html.atlas .atl-rc .atl-rx{width:22px;height:22px;margin-right:4px;border-radius:50%;text-align:center;line-height:21px;color:#9A8F80}
+html.atlas .atl-rc .atl-rx:hover{background:rgba(35,30,26,.08);color:var(--atl-ink)}
+html.atlas .atl-radd{padding:5px 11px;border-radius:999px;border:1px dashed rgba(35,30,26,.35);font:500 13px var(--atl-sans);color:#5E544A}
+html.atlas .atl-radd:hover{background:rgba(35,30,26,.06);color:var(--atl-ink)}
+html.atlas .atl-rnone{color:#9A8F80;font-style:italic}
+html.atlas .atl-relmenu{top:auto;bottom:78px;left:auto;right:70px;width:300px}
+html.atlas .atl-relmenu .atl-rnote{margin:6px 10px 4px;font:italic 400 12px var(--atl-serif);color:var(--atl-muted)}
 /* phones and small windows: the same page, closer to the edges */
 @media (max-width: 760px){
   html.atlas .atl-sheet{inset:6px}
@@ -85,7 +96,8 @@ html.atlas .atl-hint{position:fixed;right:70px;bottom:36px;z-index:3;font:400 12
   html.atlas .atl-name{font-size:14px;max-width:62vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   html.atlas .atl-title{top:116px;left:22px} html.atlas .atl-title h2{font-size:19px;letter-spacing:4px} html.atlas .atl-title p{font-size:12.5px;margin-top:7px} html.atlas .atl-title i{display:none}
   html.atlas .map-box{top:172px;left:8px;right:8px;bottom:14px}
-  html.atlas .atl-foot,html.atlas .atl-hint{display:none}
+  html.atlas .atl-foot{display:none}
+  html.atlas .atl-rel{right:14px;bottom:14px;max-width:calc(100vw - 28px)} html.atlas .atl-relmenu{right:12px;bottom:56px;width:calc(100vw - 24px)}
   html.atlas .info{left:10px;right:10px;bottom:10px;width:auto;max-height:55vh;padding:16px 18px 12px 24px}
   html.atlas .atl-menu{left:12px;top:60px;width:calc(100vw - 24px)}
   html.atlas .atl-pop,html.atlas .filters-row{top:108px;right:12px}
@@ -100,3 +112,32 @@ html.atlas .lens-title{font-family:var(--atl-serif)}
 html.atlas .lens-body{margin:0 46px 34px;background:transparent}
 html.atlas .lens-svg .ln-card{fill:#FBF8F2}
 @media (max-width: 760px){ html.atlas .lens-root::before{inset:6px} html.atlas .lens-bar,html.atlas .lens-ctl{margin-left:12px;margin-right:12px} html.atlas .lens-bar{margin-top:14px} html.atlas .lens-body{margin:0 8px 10px} }
+/* every panel and dialog in the same paper, ink and type as the map (light and dark alike) */
+:root.atlas,:root.atlas[data-theme]{color-scheme:light;--bg:#F4EEE2;--surface:#FBF8F2;--ink:#231E1A;--muted:#6E6357;--faint:#9A8F80;--rule:#E4DBCB;--rule-strong:#CDBFA8;--hl:#EFE6D3;--focus:#8A5A3A;--band:#F0E8D9;--edge:#8E8273;--overlay:rgba(24,12,6,.46);--toc-bg:#F4EEE2;
+  --serif:'PMap Serif',"Source Serif 4","Noto Serif SC","Songti SC","STSong",serif;--sans:'PMap Sans',"Source Sans 3","Noto Sans SC","PingFang SC","Hiragino Sans GB",system-ui,sans-serif;
+  --k-top:#FFFDF8;--k-bot:#F3ECDF;--k-edge:rgba(70,48,26,.16);--k-edge-hi:rgba(70,48,26,.3);--k-ink-top:#3A322B;--k-ink-bot:#231E1A;--k-track:rgba(70,48,26,.07);--raise:0 1px 2px rgba(60,40,20,.10),0 6px 16px rgba(60,40,20,.12)}
+html.atlas .modal{border-radius:20px;border:0;box-shadow:0 2px 4px rgba(40,30,20,.14),0 28px 70px rgba(24,12,6,.36)}
+html.atlas .modal h2,html.atlas #modalTitle{font-family:var(--serif);font-weight:700;letter-spacing:.2px}
+html.atlas input[type="text"],html.atlas input[type="search"],html.atlas input[type="number"],html.atlas input[type="url"],html.atlas input:not([type]),html.atlas textarea,html.atlas select{border-radius:10px;border-color:var(--rule-strong);background:#FFFDF8;color:var(--ink)}
+html.atlas input:focus,html.atlas textarea:focus,html.atlas select:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px rgba(35,30,26,.10)}
+html.atlas .toc{background:#F4EEE2 url(assets/desk/page-paper.webp) center/600px;box-shadow:12px 0 40px rgba(24,12,6,.28);border-right:0}
+html.atlas .reader{background:#F4EEE2}
+html.atlas .filters-row{padding:12px 48px 12px 14px}
+html.atlas .atl-fx{all:unset;position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:400 22px/1 var(--atl-serif);color:var(--atl-muted);cursor:pointer;background:rgba(35,30,26,.05)}
+html.atlas .atl-fx:hover{background:rgba(35,30,26,.1);color:var(--atl-ink)}
+html.atlas .atl-i.on{position:relative}
+html.atlas .atl-i.on::after{content:'';position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:#B4432E;box-shadow:0 0 0 2px rgba(251,247,238,.95)}
+
+/* dialogs, Notes & PDF and the whole card come in front of the map page's bars */
+html.atlas .modal-root{z-index:96}
+html.atlas .reader{z-index:95}
+
+/* the sync panel under the cloud, and the merge dialog */
+html.atlas .atl-sync{left:auto;right:46px;width:330px}
+html.atlas .atl-sy{padding:4px 10px 8px}
+html.atlas .atl-sy b{display:block;font:700 15px var(--atl-serif);color:var(--atl-ink)}
+html.atlas .atl-sy span{display:block;margin-top:4px;font:400 12.5px var(--atl-sans);color:var(--atl-muted)}
+html.atlas .atl-merge{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+html.atlas .atl-merge label{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:#F4EEE2;cursor:pointer}
+html.atlas .atl-merge label b{font:700 15px var(--atl-serif);color:var(--atl-ink)} html.atlas .atl-merge label span{margin-left:auto;font:400 12.5px var(--atl-sans);color:var(--atl-muted)}
+@media (max-width: 760px){ html.atlas .atl-sync{right:12px;left:12px;width:auto;top:108px} }

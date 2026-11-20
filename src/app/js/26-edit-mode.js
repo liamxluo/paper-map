@@ -91,7 +91,7 @@ function openEntryForm(id, preset){
   const doms = IDX.domains.slice();
   state.d.forEach(x => { if(!doms.includes(x)) doms.push(x); });
   const body = '<div class="form-grid">' +
-    '<div class="full doi-field"><label for="fDoi">DOI, ISBN or other ID <span class="hint">optional · fills in the rest for you</span></label><div class="doi-row"><input type="text" id="fDoi" name="doi" value="' + esc(base.doi || base.isbn || (base.pmid ? 'PMID ' + base.pmid : '') || base.pii || '') + '" placeholder="DOI, ISBN, Elsevier PII, arXiv or PubMed ID" autocomplete="off" spellcheck="false"><button type="button" class="btn" id="doiFill">Fill in</button></div><p class="doi-msg hint" id="doiMsg" aria-live="polite"></p></div>' +
+    '<div class="full doi-field"><label for="fDoi">DOI, ISBN, other ID or the paper’s web address <span class="hint">optional · fills in the rest for you</span></label><div class="doi-row"><input type="text" id="fDoi" name="doi" value="' + esc(base.doi || base.isbn || (base.pmid ? 'PMID ' + base.pmid : '') || base.pii || '') + '" placeholder="DOI, ISBN, Elsevier PII, arXiv or PubMed ID" autocomplete="off" spellcheck="false"><button type="button" class="btn" id="doiFill">Fill in</button></div><p class="doi-msg hint" id="doiMsg" aria-live="polite"></p></div>' +
     '<label class="full">Title<input type="text" name="t" value="' + esc(base.t) + '" required></label>' +
     '<label class="full">Authors<input type="text" name="au" value="' + esc(base.au) + '" placeholder="Kahneman, D. &amp; Tversky, A."></label>' +
     '<label>Year<input type="number" name="y" value="' + esc(base.y) + '" inputmode="numeric"></label>' +
@@ -230,7 +230,24 @@ function idKind(raw){
   if(/^[SB]\d{15}[\dX]$/.test(pii)) return {kind: 'pii', id: pii};
   return null;
 }
-const ID_NAME = {doi: 'DOI', isbn: 'ISBN', pii: 'PII', arxiv: 'arXiv ID', pmid: 'PubMed ID', pmcid: 'PubMed Central ID'};
+const ID_NAME = {doi: 'DOI', isbn: 'ISBN', pii: 'PII', arxiv: 'arXiv ID', pmid: 'PubMed ID', pmcid: 'PubMed Central ID', url: 'web page'};
+/* Zotero's own translators, through Wikipedia's citation service (Citoid): free and without an account. It reads DOIs, ISBNs,
+   PubMed IDs and, like Zotero's browser button, the page of an article at a publisher, JSTOR, SSRN, NBER or a library. */
+async function lookupZotero(q){
+  try{
+    const r = await fetch('https://en.wikipedia.org/api/rest_v1/data/citation/zotero/' + encodeURIComponent(q), {headers: {'Accept': 'application/json'}});
+    if(!r.ok) return null;
+    const arr = await r.json(), z = Array.isArray(arr) ? arr[0] : null;
+    if(!z || !z.title || (z.itemType === 'webpage' && !z.creators && !z.date)) return null;
+    const au = joinAuthors((z.creators || []).filter(c => !c.creatorType || c.creatorType === 'author' || c.creatorType === 'editor').map(c => ({family: c.lastName, given: c.firstName, name: c.name})));
+    const y = (String(z.date || '').match(/\b(1[5-9]|20)\d{2}\b/) || [''])[0];
+    const box = z.publicationTitle || z.bookTitle || z.proceedingsTitle || z.institution || z.university || z.publisher || z.websiteTitle || '';
+    const vol = z.volume ? ' ' + z.volume + (z.issue ? '(' + z.issue + ')' : '') : '';
+    const v = box ? box + vol + (z.pages ? ': ' + String(z.pages).replace('-', '–') : '') : '';
+    const l = {journalArticle: 'Paper', conferencePaper: 'Paper', preprint: 'Paper', report: 'Paper', thesis: 'Paper', manuscript: 'Paper', book: 'Book', bookSection: 'Chapter'}[z.itemType] || '';
+    return {from: 'Zotero', t: String(z.title).replace(/\s+/g, ' ').trim(), au, y: y ? +y : '', v, l, doi: z.DOI || '', isbn: String(z.ISBN || '').split(/[\s,]+/)[0] || '', pmid: z.PMID || ''};
+  }catch(e){ return null; }
+}
 async function lookupIsbn(isbn){
   try{
     const r = await fetch('https://openlibrary.org/api/books?bibkeys=ISBN:' + isbn + '&format=json&jscmd=data');
@@ -262,11 +279,16 @@ async function lookupPubmed(kind, id){
   }catch(e){ return null; }
 }
 async function lookupAny(k){
-  if(k.kind === 'doi') return lookupDoi(k.id);
-  if(k.kind === 'isbn') return lookupIsbn(k.id);
-  if(k.kind === 'pii') return lookupPii(k.id);
-  if(k.kind === 'arxiv'){ const doi = '10.48550/arXiv.' + k.id; const m = await lookupDoi(doi); return m ? Object.assign(m, {doi}) : null; }
-  return lookupPubmed(k.kind, k.id);
+  if(k.kind === 'url') return lookupZotero(k.id);
+  let m = null;
+  if(k.kind === 'doi') m = await lookupDoi(k.id);
+  else if(k.kind === 'isbn') m = await lookupIsbn(k.id);
+  else if(k.kind === 'pii') m = await lookupPii(k.id);
+  else if(k.kind === 'arxiv'){ const doi = '10.48550/arXiv.' + k.id; m = await lookupDoi(doi); if(m) m = Object.assign(m, {doi}); }
+  else m = await lookupPubmed(k.kind, k.id);
+  /* when the registries have nothing, Zotero's translators often do */
+  if(!m) m = await lookupZotero(k.kind === 'arxiv' ? 'https://arxiv.org/abs/' + k.id : k.kind === 'pii' ? 'https://www.sciencedirect.com/science/article/pii/' + k.id : k.id);
+  return m;
 }
 /* where each identifier links to */
 function idLinksHTML(e){
@@ -282,7 +304,8 @@ function wireDoiFill(b, isNew){
   const btn = b.querySelector('#doiFill'), inp = b.querySelector('#fDoi'), msg = b.querySelector('#doiMsg');
   if(!btn) return;
   const run = async () => {
-    const k = idKind(inp.value);
+    let k = idKind(inp.value);
+    if(!k && /^https?:\/\/\S+\.\S+/i.test(inp.value.trim())) k = {kind: 'url', id: inp.value.trim()};
     if(!k){
       const d = inp.value.replace(/^isbn(?:-1[03])?[:\s]*/i, '').replace(/[\s-]/g, '');
       msg.textContent = /^\d{9}[\dXx]$|^\d{13}$/.test(d) ? 'That looks like an ISBN, but its last digit doesn’t check out. Look for a typo.' : 'That doesn’t look like a DOI (10.1257/…), an ISBN (978…), an Elsevier PII (S0…), an arXiv ID (2101.00001) or a PubMed ID.';

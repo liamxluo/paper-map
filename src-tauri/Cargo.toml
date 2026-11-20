@@ -1,9 +1,9 @@
 [package]
 name = "paper-map"
-version = "3.0.1"
+version = "3.0.2"
 description = "A personal map of research, ideas and reading"
 authors = ["liamxluo"]
-license = "MIT"
+license = "Apache-2.0"
 repository = "https://github.com/liamxluo/paper-map"
 edition = "2021"
 

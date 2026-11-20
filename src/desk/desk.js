@@ -33,7 +33,7 @@ fit();
 /* ============ animation helpers ============ */
 function anim(el, frames, o){ if(reduce) o = Object.assign({}, o, {duration: 1, delay: 0}); const a = el.animate(frames, Object.assign({fill: 'forwards'}, o)); return a.finished.then(() => { const last = frames[frames.length - 1]; Object.keys(last).forEach(k => { if(k !== 'offset') el.style[k] = last[k]; }); a.cancel(); }).catch(() => {}); }
 const EASE = 'cubic-bezier(.45,.05,.2,1)';
-function poseT(p, sc){ return 'translate(' + (p[0] - W / 2) + 'px,' + (p[1] - H / 2) + 'px) rotate(' + p[2] + 'deg) scale(' + sc + ')'; }
+function poseT(p, sc){ return 'translate(' + (p[0] - W / 2) + 'px,' + (p[1] - H / 2) + 'px) rotate(' + p[2] + 'deg) scale(' + (Array.isArray(sc) ? sc[0] + ',' + sc[1] : sc) + ')'; }
 function setPose(el, p, sc){ el.style.transform = poseT(p, sc); el._pose = [p, sc]; }
 function move(el, p, sc, dur, delay = 0, easing = EASE){ const from = el.style.transform; el._pose = [p, sc]; return anim(el, [{transform: from}, {transform: poseT(p, sc)}], {duration: dur, delay, easing}); }
 function setState(s, h){ state = s; const cl = document.body.classList; [...cl].forEach(c => { if(c.indexOf('st-') === 0) cl.remove(c); }); cl.add('st-' + s); cl.toggle('smooth', prefs.paper === 'smooth'); if(h != null) hint.textContent = h; }
@@ -45,33 +45,11 @@ function svgURL(s){ return 'url("data:image/svg+xml;charset=utf-8,' + encodeURIC
 const SERIF = "'PMap Serif',Palatino,Georgia,serif", SANS = "'PMap Sans',Helvetica,Arial,sans-serif";
 function faceSVG(t){
   let s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 350" width="1120" height="700">';
-  if(!t){ s += '<text x="280" y="180" text-anchor="middle" font-family="' + SERIF + '" font-style="italic" font-size="11" fill="#9A8F80">A map for another field</text></svg>'; return s; }
-  const papers = D.papers.filter(p => p.topic === t.id && typeof p.y === 'number');
-  const ys = papers.map(p => p.y), y0 = ys.length ? Math.min(...ys) : 2000, y1 = ys.length ? Math.max(...ys) : 2020;
-  s += '<text x="34" y="40" font-family="' + SERIF + '" font-weight="700" font-size="12" letter-spacing="3" fill="#231E1A">' + esc(String(t.name).toUpperCase().slice(0, 34)) + '</text>';
-  s += '<text x="34" y="53" font-family="' + SERIF + '" font-style="italic" font-size="6.6" fill="#7C7062">' + papers.length + (papers.length === 1 ? ' paper' : ' papers') + (ys.length ? ' · ' + y0 + '–' + y1 : '') + ' · one of ' + D.topics.length + (D.topics.length === 1 ? ' map' : ' maps') + '</text>';
-  s += '<line x1="34" x2="170" y1="59" y2="59" stroke="#231E1A" stroke-width=".6" opacity=".7"/>';
-  if(!papers.length){ s += '<text x="300" y="190" text-anchor="middle" font-family="' + SERIF + '" font-style="italic" font-size="10" fill="#9A8F80">No papers on this map yet</text></svg>'; return s; }
-  const rows = (t.rows || []).filter((r, i) => i === 0 || papers.some(p => p.sub === r.id)).slice(0, 7);
-  const rowY = {}, top = 100, bot = 262, n = Math.max(1, rows.length - 1);
-  rows.forEach((r, i) => { rowY[r.id] = rows.length === 1 ? (top + bot) / 2 : top + (bot - top) * i / n; });
-  const span = Math.max(4, y1 - y0), a0 = y0 - span * 0.06, a1 = y1 + span * 0.06, X = y => 132 + (y - a0) / (a1 - a0) * 396;
-  const step = span > 60 ? 20 : span > 24 ? 10 : 5, first = Math.ceil(a0 / step) * step;
-  for(let yr = first; yr <= a1; yr += step){ const x = X(yr); s += '<line x1="' + x.toFixed(1) + '" x2="' + x.toFixed(1) + '" y1="86" y2="276" stroke="#CDBFA6" stroke-width=".35"/><text x="' + x.toFixed(1) + '" y="286" text-anchor="middle" font-family="' + SANS + '" font-size="5.6" fill="#9A8F80">' + yr + '</text>'; }
-  rows.forEach((r, i) => { s += '<text x="' + (i === 0 ? 34 : 40) + '" y="' + (rowY[r.id] + 2.4).toFixed(1) + '" font-family="' + SERIF + '" font-size="' + (i === 0 ? 7.2 : 6.6) + '"' + (i === 0 ? ' font-weight="700"' : '') + ' fill="#3A322B">' + esc(String(r.name).slice(0, 22)) + '</text>' + (i ? '<line x1="35" x2="35" y1="' + (rowY[r.id] - 4).toFixed(1) + '" y2="' + (rowY[r.id] + 3).toFixed(1) + '" stroke="#B8AA92" stroke-width=".6"/>' : ''); });
-  const pos = {}, jitter = {};
-  papers.forEach(p => { const ry = rowY[p.sub] != null ? rowY[p.sub] : rowY[rows[0].id]; const k = p.y + '|' + ry; jitter[k] = (jitter[k] || 0) + 1; pos[p.id] = [X(p.y), ry + (jitter[k] - 1) * 3.4]; });
-  const deg = {}, brColor = {};
-  (D.branches || []).forEach(b => { brColor[b.id] = b.color; });
-  D.links.forEach(l => { if(!pos[l[0]] || !pos[l[1]]) return; deg[l[0]] = (deg[l[0]] || 0) + 1; deg[l[1]] = (deg[l[1]] || 0) + 1;
-    const [ax, ay] = pos[l[0]], [bx, by] = pos[l[1]], c = (D.lineBranch || {})[l[0] + '|' + l[1] + '|' + l[2]], col = c && brColor[c] ? brColor[c] : null, dx = Math.max(14, Math.abs(bx - ax) * 0.45);
-    s += '<path d="M' + ax.toFixed(1) + ' ' + ay.toFixed(1) + 'C' + (ax + dx).toFixed(1) + ' ' + ay.toFixed(1) + ' ' + (bx - dx).toFixed(1) + ' ' + by.toFixed(1) + ' ' + bx.toFixed(1) + ' ' + by.toFixed(1) + '" fill="none" stroke="' + (col || '#8E857A') + '" stroke-width="' + (col ? 1.1 : .6) + '" opacity="' + (col ? .95 : .75) + '"/>'; });
-  papers.forEach(p => { const [x, y] = pos[p.id];
-    s += p.st === 'read' ? '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="2.2" fill="#2B2622"/>' : '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="2.1" fill="#F4EEE2" stroke="' + (p.st === 'want' ? '#B4432E' : '#3A322B') + '" stroke-width=".8"/>'; });
-  papers.slice().sort((a, b) => (deg[b.id] || 0) - (deg[a.id] || 0)).slice(0, 4).forEach(p => { const [x, y] = pos[p.id]; const tt = String(p.t || '').split(':')[0].slice(0, 28);
-    s += '<text x="' + x.toFixed(1) + '" y="' + (y - 5).toFixed(1) + '" text-anchor="middle" font-family="' + SERIF + '" font-weight="700" font-size="5.8" fill="#231E1A">' + esc(tt) + '</text>'; });
-  s += '<g font-family="' + SANS + '" font-size="5.2" fill="#7C7062"><line x1="34" x2="46" y1="318" y2="318" stroke="#B4432E" stroke-width="1"/><text x="50" y="320">main line</text><circle cx="92" cy="318" r="2" fill="#2B2622"/><text x="97" y="320">read</text><circle cx="122" cy="318" r="2" fill="none" stroke="#B4432E" stroke-width=".8"/><text x="127" y="320">want to read</text></g></svg>';
-  return s;
+  if(!t) return s + '<text x="280" y="180" text-anchor="middle" font-family="' + SERIF + '" font-style="italic" font-size="11" fill="#9A8F80">A map for another field</text></svg>';
+  const papers = D.papers.filter(p => p.topic === t.id && typeof p.y === 'number'), ys = papers.map(p => p.y), n = D.topics.length;
+  s += '<text x="21.9" y="41.6" font-family="' + SERIF + '" font-weight="700" font-size="10.9" letter-spacing="4.4" fill="#231E1A">' + esc(String(t.name).toUpperCase().slice(0, 30)) + '</text>';
+  s += '<text x="21.9" y="50.9" font-family="' + SERIF + '" font-style="italic" font-size="5" fill="#7C7062">' + papers.length + (papers.length === 1 ? ' paper' : ' papers') + (ys.length ? ' · ' + Math.min(...ys) + ' – ' + Math.max(...ys) : '') + ' · one of ' + n + (n === 1 ? ' map' : ' maps') + '</text>';
+  return s + '<line x1="21.9" x2="107" y1="58.2" y2="58.2" stroke="#231E1A" stroke-width=".45" opacity=".7"/></svg>';
 }
 function wrapTitle(name, max){ const words = String(name).toUpperCase().split(/\s+/); const lines = []; let cur = '';
   words.forEach(w => { if((cur + ' ' + w).trim().length > max && cur){ lines.push(cur); cur = w; } else cur = (cur + ' ' + w).trim(); }); if(cur) lines.push(cur); return lines.slice(0, 4); }
@@ -90,8 +68,8 @@ function coverSVG(t){
 function paintSheet(el, t){
   el._topic = t ? t.id : null;
   const v = prefs.paper === 'smooth' ? 'smooth' : 'creased';
-  const face = svgURL(faceSVG(t));
-  el.querySelectorAll('.fc').forEach(f => { f.style.backgroundImage = 'url(' + AS + 'light-' + v + '-hl.webp),url(' + AS + 'light-' + v + '-mul.webp),' + face + ',url(' + AS + 'map-paper.webp)'; f.style.backgroundBlendMode = 'screen,multiply,multiply,normal'; });
+  const face = svgURL(faceSVG(t)), under = t ? 'url(' + AS + 'face-lantern.webp)' : 'url(' + AS + 'map-paper.webp)';
+  el.querySelectorAll('.fc').forEach(f => { f.style.backgroundImage = 'url(' + AS + 'light-' + v + '-hl.webp),url(' + AS + 'light-' + v + '-mul.webp),' + face + ',' + under; f.style.backgroundBlendMode = 'screen,multiply,multiply,normal'; });
   el.querySelectorAll('.pn.l .bk, .pn.m .bk').forEach(b => { b.style.backgroundImage = 'url(' + AS + 'back.webp)'; });
   el.querySelector('.pn.r .bk').style.backgroundImage = svgURL(coverSVG(t)) + ',url(' + AS + 'cover-paper.webp)';
   el.setAttribute('aria-label', t ? 'Map: ' + t.name : 'An empty map');
@@ -154,24 +132,24 @@ $('rowNext').addEventListener('click', () => strip.scrollBy({left: ROW_DX * 3, b
 /* ============ folding ============ */
 function settle(el, folded){
   el.querySelectorAll('.pn,.shd,.shd2,.fc,.bk').forEach(x => x.getAnimations().forEach(a => a.cancel()));
-  el.querySelector('.pn.l').style.transform = folded ? 'rotateY(180deg) translateZ(-1px)' : 'rotateY(0deg)';
-  el.querySelector('.pn.r').style.transform = folded ? 'rotateY(-180deg) translateZ(-2px)' : 'rotateY(0deg)';
+  el.querySelector('.pn.l').style.transform = folded ? 'rotateY(180deg) translateZ(-2px)' : 'rotateY(0deg)';
+  el.querySelector('.pn.r').style.transform = folded ? 'rotateY(-180deg) translateZ(-4px)' : 'rotateY(0deg)';
   el.querySelectorAll('.shd,.shd2').forEach(sd => sd.style.transform = folded ? 'translateX(0) scaleX(.3334)' : 'translateX(0) scaleX(1)');
   el.classList.toggle('folded', folded); void el.offsetWidth; }
 function fold(el, d0, dur){ settle(el, false);
   const L = el.querySelector('.pn.l'), R = el.querySelector('.pn.r'), shds = el.querySelectorAll('.shd,.shd2');
-  const shade = (pn, d) => { if(!reduce) pn.querySelectorAll('.fc,.bk').forEach(f => f.animate([{'--sh': 0}, {'--sh': 1, offset: .5}, {'--sh': 0}], {duration: dur, delay: d, fill: 'none'})); };
+  const shade = (pn, d) => { if(!reduce && !el.classList.contains('flying')) pn.querySelectorAll('.fc,.bk').forEach(f => f.animate([{'--sh': 0}, {'--sh': 1, offset: .5}, {'--sh': 0}], {duration: dur, delay: d, fill: 'none'})); };
   shade(L, d0); shade(R, d0 + dur * .55); el.classList.add('folded');
   return Promise.all([
-    anim(L, [{transform: 'rotateY(0deg)'}, {transform: 'rotateY(95deg) translateZ(-1px)', offset: .5}, {transform: 'rotateY(180deg) translateZ(-1px)'}], {duration: dur, delay: d0, easing: EASE}),
-    anim(R, [{transform: 'rotateY(0deg)'}, {transform: 'rotateY(-95deg) translateZ(-2px)', offset: .5}, {transform: 'rotateY(-180deg) translateZ(-2px)'}], {duration: dur, delay: d0 + dur * .55, easing: EASE}),
+    anim(L, [{transform: 'rotateY(0deg)'}, {transform: 'rotateY(95deg) translateZ(-2px)', offset: .5}, {transform: 'rotateY(180deg) translateZ(-2px)'}], {duration: dur, delay: d0, easing: EASE}),
+    anim(R, [{transform: 'rotateY(0deg)'}, {transform: 'rotateY(-95deg) translateZ(-4px)', offset: .5}, {transform: 'rotateY(-180deg) translateZ(-4px)'}], {duration: dur, delay: d0 + dur * .55, easing: EASE}),
     ...[...shds].map(sd => anim(sd, [{transform: 'translateX(0) scaleX(1)'}, {transform: 'translateX(' + (W / 6) + 'px) scaleX(.6667)', offset: .45}, {transform: 'translateX(0) scaleX(.3334)'}], {duration: dur * 1.55, delay: d0, easing: 'linear'}))]); }
 function unfold(el, d0, dur){ settle(el, true);
   const L = el.querySelector('.pn.l'), R = el.querySelector('.pn.r'), shds = el.querySelectorAll('.shd,.shd2');
   el.classList.remove('folded');
   return Promise.all([
-    anim(R, [{transform: 'rotateY(-180deg) translateZ(-2px)'}, {transform: 'rotateY(-85deg) translateZ(-2px)', offset: .5}, {transform: 'rotateY(0deg)'}], {duration: dur, delay: d0, easing: EASE}),
-    anim(L, [{transform: 'rotateY(180deg) translateZ(-1px)'}, {transform: 'rotateY(85deg) translateZ(-1px)', offset: .5}, {transform: 'rotateY(0deg)'}], {duration: dur, delay: d0 + dur * .5, easing: EASE}),
+    anim(R, [{transform: 'rotateY(-180deg) translateZ(-4px)'}, {transform: 'rotateY(-85deg) translateZ(-4px)', offset: .5}, {transform: 'rotateY(0deg)'}], {duration: dur, delay: d0, easing: EASE}),
+    anim(L, [{transform: 'rotateY(180deg) translateZ(-2px)'}, {transform: 'rotateY(85deg) translateZ(-2px)', offset: .5}, {transform: 'rotateY(0deg)'}], {duration: dur, delay: d0 + dur * .5, easing: EASE}),
     ...[...shds].map(sd => anim(sd, [{transform: 'translateX(0) scaleX(.3334)'}, {transform: 'translateX(' + (W / 6) + 'px) scaleX(.6667)', offset: .5}, {transform: 'translateX(0) scaleX(1)'}], {duration: dur * 1.5, delay: d0, easing: 'linear'}))]); }
 
 /* ============ desk → Your maps → a map, and back ============ */
@@ -179,7 +157,7 @@ async function toMaps(){
   if(busy || state !== 'desk') return; busy = true; closeMenus();
   strip.scrollLeft = 0; layoutRow();
   setState('maps', order.length ? 'Choose a map to open it · scroll for more' : 'Make your first map');
-  stripIn.classList.add('landing');
+  stripIn.classList.add('landing'); sheets.forEach(el => el.classList.add('flying'));
   const moves = [];
   [2, 1, 0].forEach((si, k) => { const el = sheets[si]; el.classList.remove('lift');
     if(!el._topic){ moves.push(anim(el, [{opacity: 1}, {opacity: 0}], {duration: 360, delay: k * 60})); return; }
@@ -195,15 +173,15 @@ async function toDesk(){
   if(strip.scrollLeft > 0){ strip.scrollTo({left: 0, behavior: 'smooth'}); await sleep(reduce ? 20 : 420); strip.scrollLeft = 0; }
   /* the first three covers become the sheets again, and fly back to the stack */
   stripIn.classList.add('landing');
-  [2, 1, 0].forEach((si, k) => { const el = sheets[si]; el.getAnimations().forEach(a => a.cancel()); if(!el._topic){ el.style.opacity = '0'; return; } settle(el, true); setPose(el, slotOf(k), 1); el.style.opacity = '1'; el.style.pointerEvents = ''; });
+  [2, 1, 0].forEach((si, k) => { const el = sheets[si]; el.getAnimations().forEach(a => a.cancel()); el.classList.add('flying'); if(!el._topic){ el.style.opacity = '0'; return; } settle(el, true); setPose(el, slotOf(k), 1); el.style.opacity = '1'; el.style.pointerEvents = ''; });
   setState('desk', HINT_DESK);
   sheets.forEach((el, k) => { el.style.zIndex = 10 + k; });
   await Promise.all(sheets.map((el, k) => el._topic ? move(el, STACK[k].a1, 1, 760, k * 70, 'cubic-bezier(.3,.1,.2,1)') : (setPose(el, STACK[k].a1, 1), settle(el, false), el.style.pointerEvents = '', anim(el, [{opacity: 0}, {opacity: 1}], {duration: 500, delay: 400}))));
   for(const el of sheets){ if(el._topic && el.classList.contains('folded')) await unfold(el, 0, 430); }
-  stripIn.classList.remove('landing'); busy = false;
+  sheets.forEach(el => el.classList.remove('flying')); stripIn.classList.remove('landing'); busy = false;
 }
-function coverPose(){ const s = FIT.s, cx = (innerWidth / 2 - FIT.tx) / s, cy = (innerHeight / 2 - FIT.ty) / s;
-  return [[cx, cy, 0], Math.max(innerWidth / s / W, innerHeight / s / H) * 1.005]; }
+function coverPose(){ const s = FIT.s, cx = (innerWidth / 2 - FIT.tx) / s, cy = (innerHeight / 2 - FIT.ty) / s, m = innerWidth > 760 ? 22 : 6;
+  return [[cx, cy, 0], [(innerWidth - 2 * m) / s / W, (innerHeight - 2 * m) / s / H]]; }
 let current = null;   /* {el, tid, temp, from} */
 function posOf(node){ const r = node.getBoundingClientRect(); return [(r.left + r.width / 2 - FIT.tx) / FIT.s, (r.top + r.height / 2 - FIT.ty) / FIT.s]; }
 async function openTopic(tid){
@@ -211,29 +189,39 @@ async function openTopic(tid){
   const t = D.topics.find(x => x.id === tid), card = coverOf(tid); if(!t || !card) return;
   busy = true;
   const xc = card.querySelector('.xc'), [x, y] = posOf(xc), i = indexOf(tid);
-  const el = makeSheet(); paintSheet(el, t); settle(el, true); setPose(el, [x, y, TILT[i % TILT.length]], 1); el.style.zIndex = 60;
-  xc.style.visibility = 'hidden'; current = {el, tid};
+  const el = makeSheet(); el.classList.add('flying'); paintSheet(el, t); settle(el, true); setPose(el, [x, y, TILT[i % TILT.length]], 1); el.style.zIndex = 60;
+  await facesReady(el); xc.style.visibility = 'hidden'; current = {el, tid};
   setState('opening', '');
   await move(el, [720, 452, 0], 1.55, 620, 0, 'cubic-bezier(.3,.1,.2,1)');
   await unfold(el, 0, 640);
   const [cp, cs] = coverPose();
   await move(el, cp, cs, 720, 0, 'cubic-bezier(.4,.1,.2,1)');
+  el.classList.add('flat');
   if(P) P.openMap(tid);
   setState('map', ''); xc.style.visibility = '';
   busy = false;
 }
 /* the app calls this when you come back from a map: the map folds up and goes back to its cover */
+/* wait until a sheet's pictures are decoded, so it never shows blank for a moment */
+function facesReady(el){
+  const urls = []; el.querySelectorAll('.fc, .bk').forEach(f => { (getComputedStyle(f).backgroundImage.match(/url\("?([^")]+)"?\)/g) || []).forEach(u => urls.push(u.replace(/^url\("?|"?\)$/g, ''))); });
+  return Promise.race([Promise.all([...new Set(urls)].map(u => { const im = new Image(); im.src = u; return (im.decode ? im.decode() : Promise.resolve()).catch(() => {}); })), sleep(700)]);
+}
 async function returnFromMap(tid){
   dismissWelcome(true);
   D = load(); prefs = Object.assign(prefs, D.prefs || {});
-  if(current && current.el && current.el.parentNode) current.el.remove(); current = null;
+  /* the sheet that unfolded into this map is still lying open: fold that one, so nothing flickers */
+  const keep = current && current.el && current.el.isConnected && current.tid === tid ? current.el : null;
+  if(current && current.el && current.el.parentNode && !keep) current.el.remove(); current = null;
   assignSheets(); sheets.forEach(el => { el.getAnimations().forEach(a => a.cancel()); settle(el, true); el.style.opacity = '0'; el.style.pointerEvents = 'none'; });
   const t = D.topics.find(x => x.id === tid); if(!t){ show(); return; }
   strip.scrollLeft = 0;
   const card = coverOf(tid), i = indexOf(tid); if(!card){ show(); return; }
   if(i > 3) strip.scrollLeft = Math.max(0, ROW_X0 + i * ROW_DX - 720);
   const xc = card.querySelector('.xc'); xc.style.visibility = 'hidden';
-  const el = makeSheet(); paintSheet(el, t); settle(el, false); const [cp, cs] = coverPose(); setPose(el, cp, cs); el.style.zIndex = 60;
+  const [cp, cs] = coverPose(); let el = keep;
+  if(el){ el.classList.remove('flat'); el.classList.add('flying'); paintSheet(el, t); setPose(el, cp, cs); }
+  else{ el = makeSheet(); el.classList.add('flying'); paintSheet(el, t); settle(el, false); setPose(el, cp, cs); el.style.zIndex = 60; await facesReady(el); }
   busy = true; setState('closing', '');
   await sleep(40);
   await move(el, [720, 452, 0], 1.55, 620, 0, 'cubic-bezier(.4,.1,.2,1)');
@@ -312,6 +300,9 @@ function renderPapers(){
   $('pbGrid').innerHTML = list.length ? shown.map((p, i) => '<figure class="pg" data-id="' + esc(p.id) + '" tabindex="0" role="button" style="--i:' + Math.min(i, 40) + '"><div class="sheet"><p class="pj">' + esc((p.v || tName[p.topic] || '').slice(0, 40)) + (p.y ? ' · ' + p.y : '') + '</p><h4>' + esc(String(p.t || 'Untitled').slice(0, 90)) + '</h4><p class="pa">' + esc(String(p.au || '').slice(0, 60)) + '</p><i class="ln"></i>' + (p.st ? '<span class="stamp ' + p.st + '">' + (p.st === 'read' ? 'READ' : 'TO READ') + '</span>' : '') + (p.book ? '<span class="bk-mark">BOOK</span>' : '') + '</div><figcaption><b>' + esc(String(p.t || 'Untitled').slice(0, 70)) + '</b><span>' + esc(tName[p.topic] || '') + '</span></figcaption></figure>').join('')
     : '<p class="pb-empty">' + (ps.length ? 'Nothing matches.' : 'No papers yet. Open a map and add the first one with +.') + '</p>';
   if(list.length > shown.length) $('pbGrid').insertAdjacentHTML('beforeend', '<button class="rc-btn pb-more" id="pbMore">Show all ' + list.length + ' papers</button>');
+  const figs = {}; $('pbGrid').querySelectorAll('.pg').forEach(g => { figs[g.dataset.id] = g; });
+  shown.forEach(p => { if(!p.pdf || !figs[p.id]) return; const g = figs[p.id]; g.classList.add('haspdf'); g.title = 'Has its PDF';
+    if(P && P.pdfThumb) P.pdfThumb(p.id).then(u => { if(!u || !g.isConnected) return; const sh = g.querySelector('.sheet'); sh.classList.add('pdf1'); sh.style.backgroundImage = 'url(' + u + ')'; }).catch(() => {}); });
 }
 $('pboard').addEventListener('click', e => {
   if(e.target.closest('#pbMore')){ pAll = true; renderPapers(); return; }
@@ -582,6 +573,6 @@ if(welcome){
   waitReady(); setTimeout(dismissWelcome, 8000);
 }
 refreshAll(); setWood(prefs.wood || 'mahogany', true); setState('desk', HINT_DESK);
-window.pmDeskPage = {returnFromMap, show, refresh(){ D = load(); prefs = Object.assign(prefs, D.prefs || {}); if(state === 'desk' && !busy) refreshAll(); }, state: () => state, busy: () => busy};
+window.pmDeskPage = {returnFromMap, show, openNote: () => { if(state === 'desk') openNote(); }, refresh(){ D = load(); prefs = Object.assign(prefs, D.prefs || {}); if(state === 'desk' && !busy) refreshAll(); }, state: () => state, busy: () => busy};
 if(P && P.ready) P.ready();
 })();

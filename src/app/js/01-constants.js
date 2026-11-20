@@ -13,7 +13,7 @@ const DEFAULT_COLORS = {green:'#009473', red:'#E34234'};
 const PREVIEW_DATA = 'example/displaydata.json';
 let PREVIEW = false;
 /* Set this to the tag of the GitHub release you are about to publish (v1.3.0, v1.3.1, …). */
-const APP_VERSION = 'v3.0.1';
+const APP_VERSION = 'v3.0.2';
 const APP_REPO = 'liamxluo/paper-map';
 const RELEASES_URL = 'https://github.com/' + APP_REPO + '/releases';
 /* Installed as an app (or installable): only when the page comes from a website, never from a downloaded file */

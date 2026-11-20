@@ -25,7 +25,8 @@ body.st-opening #dim,body.st-closing #dim{opacity:.55}
 .pn{position:absolute;top:0;width:186.67px;height:350px;transform-style:preserve-3d}
 .pn.l{left:0;transform-origin:100% 50%}.pn.m{left:186.67px}.pn.r{left:373.33px;transform-origin:0 50%}
 .fc,.bk{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background-repeat:no-repeat;overflow:hidden}
-.bk{transform:rotateY(180deg)}
+.fc{transform:translateZ(.6px)}
+.bk{transform:rotateY(180deg) translateZ(.6px)}
 .fc::after,.bk::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.10),rgba(0,0,0,0) 40%,rgba(255,250,240,.06));opacity:var(--sh,0);pointer-events:none}
 .pn.l .fc{background-position:0 0}.pn.m .fc{background-position:-186.67px 0}.pn.r .fc{background-position:-373.33px 0}
 .fc{background-size:560px 350px}

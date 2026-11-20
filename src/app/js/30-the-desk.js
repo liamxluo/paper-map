@@ -10,15 +10,18 @@ function deskAuthors(list){ const fam = (list || []).map(a => { a = String(a).tr
 window.pmDesk = {
   data(){
     const topics = (lib.topics || []).map(tp => ({id: tp.id, name: tp.name, rows: (tp.subs || []).map(s => ({id: s.id, name: s.hidden ? tp.name : s.name}))}));
-    const papers = Object.values(lib.entries).filter(e => e.kind === 'paper').map(e => ({id: e.id, t: e.t || '', au: e.au || '', y: e.y, v: e.v || '', topic: e.topic, sub: e.sub, st: stOf(e), book: !!e.book}));
+    const papers = Object.values(lib.entries).filter(e => e.kind === 'paper').map(e => ({id: e.id, t: e.t || '', au: e.au || '', y: e.y, v: e.v || '', topic: e.topic, sub: e.sub, st: stOf(e), book: !!e.book, pdf: !!e.pdf}));
     const rec = deskRecent(), times = {}; rec.forEach(x => { times[x.id] = x.t; });
     return {title: (lib.title && String(lib.title).trim()) || 'Paper Map', topics, papers, links: (lib.links || []).filter(l => l[2] !== 'o').map(l => [l[0], l[1], l[2]]), branches: clone(lib.branches || []), lineBranch: clone(lib.lineBranch || {}),
       readings: clone(lib.readings || []), readingCats: clone(lib.readingCats || []), notebooks: clone(lib.notebooks || []), prefs: deskPrefs(), recent: rec.map(x => x.id), recentTimes: times, preview: !!PREVIEW};
   },
   ready(){ DK.ready = true; },
-  openMap(tid){ if(!lib.topics.some(t => t.id === tid)) return; deskTouchRecent(tid); DK.fromTopic = tid; try{ setToc(false); }catch(e){} openView(tid + '-all'); setTimeout(deskHide, 40); },
+  openMap(tid){ if(!lib.topics.some(t => t.id === tid)) return; deskTouchRecent(tid); DK.fromTopic = tid; try{ setToc(false); }catch(e){} openView(tid + '-all'); try{ atlasLanes(); renderMap(true); }catch(e){}
+    /* the map page is drawn under the desk first; two frames later the desk lets go, quickly, so the two are never seen half and half for long */
+    requestAnimationFrame(() => requestAnimationFrame(() => { if(DK.frame) DK.frame.classList.add('quick'); deskHide(); setTimeout(() => { if(DK.frame) DK.frame.classList.remove('quick'); }, 400); })); },
   openPaper(id, from){ const e = lib.entries[id]; if(!e) return; deskTouchRecent(e.topic); DK.fromTopic = e.topic; DK.from = from === 'paper' ? 'paper:' + id : 'papers'; deskHide(); setTimeout(() => { goTo(id); try{ select(id, true); }catch(err){} }, 90); },
   newMap(){ deskHide(); setTimeout(() => openTopicForm(), 140); },
+  pdfThumb(id){ return pdfFirstPage(id); },
   paper(id){ const e = lib.entries[id]; if(!e || e.kind !== 'paper') return null;
     const brief = x => { const o = lib.entries[x]; return o ? {id: o.id, t: o.t || 'Untitled', au: o.au || '', y: o.y} : null; };
     const up = k => (lib.links || []).filter(l => l[1] === id && l[2] === k).map(l => brief(l[0])).filter(Boolean);
@@ -73,8 +76,11 @@ async function deskOpen(){
   deskEnsure();
   for(let i = 0; i < 60 && !(DK.ready && deskPage()); i++) await sleep(50);
   const page = deskPage(); if(!page){ deskShowFrame(); return; }
+  /* if a map is still unfolding, let it finish before folding it back */
+  for(let i = 0; i < 80 && page.busy && page.busy(); i++) await sleep(50);
   const from = DK.from; DK.from = null;
   if(from === 'papers'){ page.show('papers'); deskShowFrame(); DK.fromTopic = null; return; }
+  if(from === 'note'){ page.show(); deskShowFrame(); DK.fromTopic = null; setTimeout(() => { try{ page.openNote(); }catch(e){} }, 380); return; }
   if(from && from.indexOf('paper:') === 0){ try{ closeReader(); }catch(e){} page.show('paper', from.slice(6)); deskShowFrame(); DK.fromTopic = null; return; }
   const tid = ui.topic && lib.topics.some(t => t.id === ui.topic) ? ui.topic : null;
   if(tid){ deskTouchRecent(tid); deskShowFrame(true); page.returnFromMap(tid); }
@@ -85,7 +91,7 @@ document.getElementById('btnDesk').addEventListener('click', deskOpen);
 
 /* ===================== the map page, as confirmed: the map on its sheet, two small bars and the card =====================
    It works through the app's own buttons and panels, which stay out of sight; the old page is gone. */
-const ATL_IC = {"back": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M15 18l-6-6 6-6\"/></svg>", "layers": "<svg class=\"ic \" width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3 3 7.5l9 4.5 9-4.5L12 3z\"/><path d=\"M3 16.5l9 4.5 9-4.5M3 12l9 4.5 9-4.5\"/></svg>", "chev": "<svg class=\"ic \" width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9l6 6 6-6\"/></svg>", "search": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"M20 20l-3.6-3.6\"/></svg>", "add": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg>", "filter": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 6h16M7 12h10M10 18h4\"/></svg>", "years": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"3.5\" y=\"5\" width=\"17\" height=\"15.5\" rx=\"2.5\"/><path d=\"M8 3v4M16 3v4M3.5 10h17\"/></svg>", "export": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3v12M8 7l4-4 4 4\"/><path d=\"M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13\"/></svg>", "sync": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M17.5 19H8a6 6 0 1 1 5.6-8.2A4.5 4.5 0 1 1 17.5 19z\"/><path d=\"M9.5 14l2 2 3.5-3.5\"/></svg>", "look": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg>", "target": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"6.5\"/><circle cx=\"12\" cy=\"12\" r=\"1.6\" fill=\"currentColor\"/><path d=\"M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3\"/></svg>", "doc": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10.5A.5.5 0 0 1 6.5 20V4a.5.5 0 0 1 .5-.5z\"/><path d=\"M13.5 3.5V8h4.5M9.5 12h5M9.5 15.5h5\"/></svg>", "link": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1.2 1.2\"/><path d=\"M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1.2-1.2\"/></svg>", "more": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"6\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/><circle cx=\"12\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/><circle cx=\"18\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/></svg>"};
+const ATL_IC = {"notebook": "<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6.5 3.5h11a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z\"/><path d=\"M8.5 3.5v17\"/><path d=\"M11 8h5M11 11h5M11 14h3\"/></svg>", "back": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M15 18l-6-6 6-6\"/></svg>", "layers": "<svg class=\"ic \" width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3 3 7.5l9 4.5 9-4.5L12 3z\"/><path d=\"M3 16.5l9 4.5 9-4.5M3 12l9 4.5 9-4.5\"/></svg>", "chev": "<svg class=\"ic \" width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9l6 6 6-6\"/></svg>", "search": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"M20 20l-3.6-3.6\"/></svg>", "add": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg>", "filter": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 6h16M7 12h10M10 18h4\"/></svg>", "years": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"3.5\" y=\"5\" width=\"17\" height=\"15.5\" rx=\"2.5\"/><path d=\"M8 3v4M16 3v4M3.5 10h17\"/></svg>", "export": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3v12M8 7l4-4 4 4\"/><path d=\"M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13\"/></svg>", "sync": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M17.5 19H8a6 6 0 1 1 5.6-8.2A4.5 4.5 0 1 1 17.5 19z\"/><path d=\"M9.5 14l2 2 3.5-3.5\"/></svg>", "look": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg>", "target": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"6.5\"/><circle cx=\"12\" cy=\"12\" r=\"1.6\" fill=\"currentColor\"/><path d=\"M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3\"/></svg>", "doc": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10.5A.5.5 0 0 1 6.5 20V4a.5.5 0 0 1 .5-.5z\"/><path d=\"M13.5 3.5V8h4.5M9.5 12h5M9.5 15.5h5\"/></svg>", "link": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1.2 1.2\"/><path d=\"M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1.2-1.2\"/></svg>", "more": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"6\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/><circle cx=\"12\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/><circle cx=\"18\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/></svg>"};
 function atlasWood(){ const w = ((settings && settings.desk) || {}).wood || 'mahogany', p = ((settings && settings.desk) || {}).paper === 'smooth' ? 'smooth' : 'creased';
   document.documentElement.style.setProperty('--atl-wood', 'url(assets/desk/bg-' + w + '.webp)');
   document.documentElement.style.setProperty('--atl-hl', 'url(assets/desk/light-' + p + '-hl.webp)');
@@ -97,31 +103,40 @@ function atlasUI(){
   const sheet = mk('div', 'atlSheet', 'atl-sheet', '');
   const left = mk('div', 'atlLeft', 'atl-pill', '<button type="button" class="atl-i" data-atl="back" aria-label="Back to your maps" title="Back to your maps">' + ATL_IC.back + '</button><span class="atl-sep"></span><span class="atl-lay" aria-hidden="true">' + ATL_IC.layers + '</span><button type="button" class="atl-name" data-atl="maps" aria-haspopup="true" aria-expanded="false"><span id="atlNameT"></span>' + ATL_IC.chev + '</button>');
   const maps = mk('div', 'atlMaps', 'atl-menu', ''); maps.hidden = true;
-  const right = mk('div', 'atlRight', 'atl-pill', B('search', 'Search', ATL_IC.search) + B('add', 'New paper', ATL_IC.add) + B('filter', 'Filters', ATL_IC.filter) + B('years', 'Years', ATL_IC.years) + B('export', 'Export', ATL_IC.export) + '<span class="atl-sep"></span>' + B('sync', 'Sync', ATL_IC.sync) + B('settings', 'Settings', ATL_IC.look));
+  const right = mk('div', 'atlRight', 'atl-pill', B('search', 'Search', ATL_IC.search) + B('add', 'New paper', ATL_IC.add) + B('filter', 'Filters', ATL_IC.filter) + B('years', 'Years', ATL_IC.years) + B('export', 'Export', ATL_IC.export) + B('notebook', 'Research log', ATL_IC.notebook) + '<span class="atl-sep"></span>' + B('sync', 'Sync', ATL_IC.sync) + B('settings', 'Settings', ATL_IC.look));
   const title = mk('div', 'atlTitle', 'atl-title', '');
   const foot = mk('div', 'atlFoot', 'atl-foot', '');
-  const hint = mk('div', 'atlHint', 'atl-hint', 'Double-click a dot to link it · L for Lens');
+  const hint = mk('div', 'atlRel', 'atl-rel', '');
+  const relMenu = mk('div', 'atlRelMenu', 'atl-menu atl-relmenu', ''); relMenu.hidden = true;
   const pop = mk('div', 'atlPop', 'atl-pop', '');
-  document.body.prepend(sheet); document.body.append(left, maps, right, title, foot, hint, pop);
+  document.body.prepend(sheet); document.body.append(left, maps, right, title, foot, hint, relMenu, pop);
+  hint.addEventListener('click', atlasRelClick); relMenu.addEventListener('click', atlasRelClick);
+  document.addEventListener('click', ev => { if(!relMenu.hidden && !ev.target.closest('#atlRelMenu,#atlRel')) relMenu.hidden = true; });
   ['addMenu', 'exportMenu', 'zoomTools'].forEach(id => { const el = document.getElementById(id); if(el) pop.appendChild(el); });
   const up = document.getElementById('undoPill'); if(up) document.body.appendChild(up);
   const fl = document.getElementById('filters'); if(fl) document.body.appendChild(fl);   /* the filters lived inside the old bar */
   const click = id => { const el = document.getElementById(id); if(el) el.click(); };
   document.addEventListener('click', ev => {
+    const more = ev.target.closest('[data-atl-more]');
+    if(more){ ev.stopPropagation(); ev.preventDefault(); try{ openBigCard(more.dataset.atlMore, more.closest('.acard') || more); }catch(e){} return; }
     const b = ev.target.closest('[data-atl]');
     if(!b){ if(!ev.target.closest('#atlMaps')) { maps.hidden = true; } return; }
     ev.stopPropagation(); ev.preventDefault();
     const a = b.dataset.atl; if(a !== 'maps') maps.hidden = true;
     if(a === 'back') deskOpen();
     else if(a === 'maps'){ atlasMaps(); maps.hidden = !maps.hidden; b.setAttribute('aria-expanded', String(!maps.hidden)); }
-    else if(a === 'search'){ const fr = document.getElementById('filters'); if(fr && !fr.classList.contains('open')) click('filterToggle'); const q = document.getElementById('q'); [60, 220].forEach(ms => setTimeout(() => { if(q){ q.focus(); q.select(); } }, ms)); }
+    else if(a === 'search'){ const fr = document.getElementById('filters'); if(fr && fr.classList.contains('open')){ atlasCloseFilters(true); return; } click('filterToggle'); const q = document.getElementById('q'); [60, 220].forEach(ms => setTimeout(() => { if(q){ q.focus(); q.select(); } }, ms)); }
     else if(a === 'add') click('btnAddMore');
-    else if(a === 'filter') click('filterToggle');
+    else if(a === 'filter'){ const fr = document.getElementById('filters'); if(fr && fr.classList.contains('open')) atlasCloseFilters(false); else click('filterToggle'); }
     else if(a === 'years') click('btnZoom');
     else if(a === 'export') click('btnExport');
-    else if(a === 'sync' || a === 'settings') click('btnSettings');
+    else if(a === 'notebook'){ DK.from = 'note'; deskOpen(); }
+    else if(a === 'sync') atlasSync(b);
+    else if(a === 'settings') click('btnSettings');
   }, true);
   maps.addEventListener('click', ev => { const t = ev.target.closest('[data-atl-map]'), c = ev.target.closest('[data-atl-contents]'), n = ev.target.closest('[data-atl-new]');
+    const mg = ev.target.closest('[data-atl-merge]');
+    if(mg){ maps.hidden = true; openMergeMaps(); return; }
     if(!t && !c && !n) return; maps.hidden = true;
     if(t){ deskTouchRecent(t.dataset.atlMap); try{ if(ui.selected) select(null); }catch(e){} openView(t.dataset.atlMap + '-all'); }
     else if(c) setToc(true); else if(n) openTopicForm(); });
@@ -131,18 +146,73 @@ function atlasUI(){
     btn.title = t || 'Sync: Settings'; btn.classList.toggle('warn', /saving|wait|unsaved|not saved|changes/i.test(t)); btn.classList.toggle('bad', /fail|couldn|error|offline|expired/i.test(t)); btn.classList.toggle('local', /browser only|this app only/i.test(t)); };
   if(ss && 'MutationObserver' in window) new MutationObserver(syncNote).observe(ss, {childList: true, characterData: true, subtree: true});
   syncNote(); atlasWood(); atlasTitle();
+  /* search and filters: a close button, Esc, and a dot on the filter icon while something is filtered */
+  const fr = document.getElementById('filters');
+  if(fr && !fr.querySelector('.atl-fx')){ const x = document.createElement('button'); x.type = 'button'; x.className = 'atl-fx'; x.setAttribute('aria-label', 'Close search and filters'); x.title = 'Close (Esc)'; x.innerHTML = '&times;'; x.addEventListener('click', ev => { ev.stopPropagation(); atlasCloseFilters(true); }); fr.appendChild(x); }
+  document.addEventListener('keydown', ev => { if(ev.key !== 'Escape' || !fr || !fr.classList.contains('open') || !modal.root.hidden) return; ev.preventDefault(); atlasCloseFilters(true); });
+  const mark = () => { const on = !!(fr && ([...fr.querySelectorAll('select')].some(sel => sel.selectedIndex > 0) || ((document.getElementById('q') || {}).value || '').trim())); right.querySelector('[data-atl="filter"]').classList.toggle('on', on); right.querySelector('[data-atl="search"]').classList.toggle('on', !!(((document.getElementById('q') || {}).value || '').trim())); };
+  if(fr){ fr.addEventListener('input', mark); fr.addEventListener('change', mark); } setInterval(mark, 1500); mark();
+}
+function atlasCloseFilters(clearSearch){
+  const fr = document.getElementById('filters'), q = document.getElementById('q');
+  if(clearSearch && q && q.value){ q.value = ''; q.dispatchEvent(new Event('input', {bubbles: true})); }
+  if(fr && fr.classList.contains('open')){ const t = document.getElementById('filterToggle'); if(t) t.click(); }
+  setTimeout(() => { const r = document.getElementById('atlRight'); if(r){ r.querySelector('[data-atl="search"]').classList.remove('on'); } }, 0);
+}
+function atlasSync(btn){
+  let box = document.getElementById('atlSync');
+  if(box && !box.hidden){ box.hidden = true; return; }
+  if(!box){ box = document.createElement('div'); box.id = 'atlSync'; box.className = 'atl-menu atl-sync'; document.body.appendChild(box);
+    document.addEventListener('click', ev => { if(!box.hidden && !ev.target.closest('#atlSync,[data-atl="sync"]')) box.hidden = true; });
+    box.addEventListener('click', ev => { const a = ev.target.closest('[data-sync-a]'); if(!a) return; box.hidden = true;
+      if(a.dataset.syncA === 'now'){ const c = ghCfg(); if(c){ (c.dirty ? ghSaveNow() : ghLoad()); toast('Syncing with ' + syncName() + '…'); } }
+      else document.getElementById('btnSettings').click(); }); }
+  const c = ghCfg(), st = (document.querySelector('.bar [data-save-state]') || {}).textContent || '';
+  const where = !c ? 'Only in this ' + (window.__TAURI__ ? 'Mac' : 'browser') : c.kind === 'folder' ? (window.__TAURI__ ? 'In your folder on this Mac' : 'In the folder you chose') : c.kind === 'dropbox' ? 'In Dropbox' : 'On GitHub' + (c.repo ? ' · ' + c.repo : '');
+  box.innerHTML = '<p class="atl-mk">WHERE YOUR LIBRARY IS KEPT</p><div class="atl-sy"><b>' + esc(where) + '</b><span>' + esc(st.trim() || (c ? 'Up to date' : 'Not copied anywhere else yet')) + '</span><span>Maps, papers, notes, Readings and your research log all live in this one library.</span></div><div class="atl-ms"></div>' +
+    (c ? '<button type="button" data-sync-a="now"><b>Sync now</b><span>save and fetch the latest</span></button>' : '') +
+    '<button type="button" data-sync-a="set"><b>' + (c ? 'Change where it is kept…' : 'Keep it in iCloud Drive, a folder or GitHub…') + '</b><span>Settings → Sync</span></button>';
+  box.hidden = false;
+}
+/* maps related to this one, without merging them: a pair in the related topics, kept and synced like every other line */
+function atlasRelOf(tid){ const top = new Set(lib.topics.map(t => t.id)); return (lib.tlinks || []).filter(l => (l[0] === tid || l[1] === tid) && top.has(l[0]) && top.has(l[1])).map(l => l[0] === tid ? l[1] : l[0]); }
+function atlasRel(){
+  const box = document.getElementById('atlRel'); if(!box) return;
+  const tp = lib.topics.find(t => t.id === ui.topic); if(!tp){ box.innerHTML = ''; return; }
+  const rel = atlasRelOf(tp.id).map(id => lib.topics.find(t => t.id === id)).filter(Boolean);
+  box.innerHTML = '<span class="atl-rk">Related to</span>' + rel.map(t => '<span class="atl-rc"><button type="button" data-rel-open="' + esc(t.id) + '" title="Open ' + esc(t.name) + '">' + esc(t.name) + '</button><button type="button" class="atl-rx" data-rel-off="' + esc(t.id) + '" aria-label="Not related to ' + esc(t.name) + '" title="Not related">×</button></span>').join('') +
+    (lib.topics.length > 1 ? '<button type="button" class="atl-radd" data-rel-add="1" aria-label="Relate this map to another" title="Relate this map to another">' + (rel.length ? '+' : '+ a map') + '</button>' : '<span class="atl-rnone">no other maps yet</span>');
+}
+function atlasRelSet(a, b, on){
+  if(!a || !b || a === b) return;
+  const has = l => (l[0] === a && l[1] === b) || (l[0] === b && l[1] === a);
+  if(!Array.isArray(lib.tlinks)) lib.tlinks = [];
+  if(on && !lib.tlinks.some(has)) lib.tlinks.push([a, b]);
+  if(!on) lib.tlinks = lib.tlinks.filter(l => !has(l));
+  touchLib(); atlasRel();
+}
+function atlasRelClick(ev){
+  const o = ev.target.closest('[data-rel-open]'), off = ev.target.closest('[data-rel-off]'), add = ev.target.closest('[data-rel-add]'), pick = ev.target.closest('[data-rel-pick]');
+  const menu = document.getElementById('atlRelMenu');
+  if(o){ ev.stopPropagation(); menu.hidden = true; try{ if(ui.selected) select(null); }catch(e){} deskTouchRecent(o.dataset.relOpen); openView(o.dataset.relOpen + '-all'); return; }
+  if(off){ ev.stopPropagation(); atlasRelSet(ui.topic, off.dataset.relOff, false); return; }
+  if(add){ ev.stopPropagation(); const rel = new Set(atlasRelOf(ui.topic));
+    menu.innerHTML = '<p class="atl-mk">RELATED TO OTHER MAPS</p>' + lib.topics.filter(t => t.id !== ui.topic).map(t => '<button type="button" data-rel-pick="' + esc(t.id) + '"' + (rel.has(t.id) ? ' class="on"' : '') + '><b>' + (rel.has(t.id) ? '✓ ' : '') + esc(t.name) + '</b><span>' + (rel.has(t.id) ? 'related · click to undo' : 'mark as related') + '</span></button>').join('') + '<p class="atl-rnote">The maps stay apart; this only notes that they belong together.</p>';
+    menu.hidden = !menu.hidden; return; }
+  if(pick){ ev.stopPropagation(); const id = pick.dataset.relPick, on = !atlasRelOf(ui.topic).includes(id); atlasRelSet(ui.topic, id, on); menu.hidden = true; toast(on ? 'Related to “' + ((lib.topics.find(t => t.id === id) || {}).name || '') + '”' : 'No longer related'); }
 }
 function atlasMaps(){
   const box = document.getElementById('atlMaps');
   const n = tid => Object.values(lib.entries).filter(e => e.kind === 'paper' && e.topic === tid).length;
   box.innerHTML = '<p class="atl-mk">YOUR MAPS</p>' + lib.topics.map(t => '<button type="button" data-atl-map="' + esc(t.id) + '"' + (t.id === ui.topic ? ' class="on"' : '') + '><b>' + esc(t.name) + '</b><span>' + n(t.id) + (n(t.id) === 1 ? ' paper' : ' papers') + '</span></button>').join('') +
-    '<div class="atl-ms"></div><button type="button" data-atl-contents="1"><b>Contents</b><span>topics inside this map, and their order</span></button><button type="button" data-atl-new="1"><b>+ New map</b><span>for another field</span></button>';
+    '<div class="atl-ms"></div><button type="button" data-atl-contents="1"><b>Contents</b><span>topics inside this map, and their order</span></button><button type="button" data-atl-merge="1"><b>Merge into another map…</b><span>this map becomes a topic inside another</span></button><button type="button" data-atl-new="1"><b>+ New map</b><span>for another field</span></button>';
 }
 function atlasTitle(){
   const T = document.getElementById('atlTitle'); if(!T) return;
   const tp = lib.topics.find(t => t.id === ui.topic);
   const ps = Object.values(lib.entries).filter(e => e.kind === 'paper' && (!tp || e.topic === tp.id) && typeof e.y === 'number');
   const ys = ps.map(e => e.y), n = lib.topics.length;
+  atlasRel();
   T.innerHTML = '<h2>' + esc((tp ? tp.name : (lib.title || 'Paper Map')).toUpperCase()) + '</h2><p>' + ps.length + (ps.length === 1 ? ' paper' : ' papers') + (ys.length ? ' · ' + Math.min(...ys) + ' – ' + Math.max(...ys) : '') + ' · one of ' + n + (n === 1 ? ' map' : ' maps') + '</p><i></i>';
   const nm = document.getElementById('atlNameT'); if(nm) nm.textContent = tp ? tp.name : 'All maps';
   const F = document.getElementById('atlFoot');
@@ -163,12 +233,64 @@ function atlasCardHTML(e){
     '<div class="ac-row"><span class="ac-st"><button type="button" class="stbtn want" data-st="want" data-id="' + e.id + '" aria-pressed="' + (st === 'want') + '">Want to read</button><button type="button" class="stbtn read" data-st="read" data-id="' + e.id + '" aria-pressed="' + (st === 'read') + '">Read</button></span>' +
     '<span class="ac-ic"><button type="button" class="ac-b" data-open-lens="' + e.id + '" title="Lens: its line of thought (L)" aria-label="Lens">' + ATL_IC.target + '</button><button type="button" class="ac-b" data-reader="' + e.id + '" title="Notes and PDF" aria-label="Notes and PDF">' + ATL_IC.doc + '</button>' +
     (url ? '<a class="ac-b" href="' + esc(url) + '" target="_blank" rel="noopener" title="Open the paper" aria-label="Open the paper">' + ATL_IC.link + '</a>' : '') +
-    '<button type="button" class="ac-b" data-open-card="' + e.id + '" title="The whole card" aria-label="More">' + ATL_IC.more + '</button></span></div>' +
+    '<button type="button" class="ac-b" data-atl-more="' + e.id + '" title="The whole card" aria-label="More">' + ATL_IC.more + '</button></span></div>' +
     '<div class="ac-hf"><span class="ac-hk">How far</span>' + D.map(o => '<button type="button" class="ac-d' + (String(ui.depth) === String(o[0]) ? ' on' : '') + '" data-depth="' + o[0] + '">' + o[1] + '</button>').join('') +
     '<span class="ac-n">' + up + ' before · ' + down + ' after</span></div></div>' + citesHintHTML(e);
 }
 
 window.__pmAtlasCard = atlasCardHTML;
+const PDF_JS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+let pdfJsLoading = null, thumbQueue = Promise.resolve();
+function loadPdfJs(){
+  if(window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  return pdfJsLoading || (pdfJsLoading = new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = PDF_JS + 'pdf.min.js';
+    sc.onload = () => { try{ window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDF_JS + 'pdf.worker.min.js'; res(window.pdfjsLib); }catch(e){ rej(e); } }; sc.onerror = () => { pdfJsLoading = null; rej(new Error('pdf.js')); }; document.head.appendChild(sc); }));
+}
+function thumbStore(){ try{ return JSON.parse(localStorage.getItem('pm:thumbs') || '{}'); }catch(e){ return {}; } }
+function pdfFirstPage(id){
+  const e = lib.entries[id]; if(!e || !e.pdf) return Promise.resolve(null);
+  const key = e.pdf.path + '@' + (e.pdf.sha || ''), have = thumbStore()[key]; if(have) return Promise.resolve(have.u);
+  /* one at a time, so a long list of papers does not fetch every PDF at once */
+  const job = thumbQueue.then(async () => {
+    const lib2 = await loadPdfJs(), url = await pdfUrl(e);
+    const doc = await lib2.getDocument(url).promise, page = await doc.getPage(1), v0 = page.getViewport({scale: 1}), sc = 300 / v0.width, vp = page.getViewport({scale: sc});
+    const cv = document.createElement('canvas'); cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+    await page.render({canvasContext: cv.getContext('2d'), viewport: vp}).promise; try{ doc.destroy(); }catch(err){}
+    const u = cv.toDataURL('image/jpeg', 0.78), st = thumbStore(); st[key] = {u, t: Date.now()};
+    const keys = Object.keys(st).sort((a, b) => st[b].t - st[a].t); keys.slice(80).forEach(k => delete st[k]);
+    try{ localStorage.setItem('pm:thumbs', JSON.stringify(st)); }catch(err){}
+    return u;
+  });
+  thumbQueue = job.catch(() => null);
+  return job.catch(() => null);
+}
+/* merging maps: one map goes into another as a topic of its own; its papers and lines come with it */
+function mergeMapInto(srcId, dstId){
+  const A = lib.topics.find(t => t.id === srcId), B = lib.topics.find(t => t.id === dstId); if(!A || !B || A === B) return;
+  const before = clone(lib);
+  const own = A.subs.find(x => x.hidden);
+  A.subs.forEach(x => { if(x.hidden){ x.hidden = false; x.name = A.name; } });
+  if(own) A.subs.forEach(x => { if(x !== own && !x.parent) x.parent = own.id; });   /* its rows sit under its name */
+  B.subs = B.subs.concat(A.subs);
+  Object.values(lib.entries).forEach(e => { if(e.topic === srcId) e.topic = dstId; if(Array.isArray(e.mentions)) e.mentions = e.mentions.map(m => m === srcId ? (own ? own.id : dstId) : m); });
+  if(Array.isArray(lib.tlinks)) lib.tlinks = lib.tlinks.map(l => l.map(x => x === srcId ? dstId : x)).filter(l => l[0] !== l[1]);
+  lib.topics = lib.topics.filter(t => t !== A);
+  if(Array.isArray(settings.lanes)) settings.lanes = [...new Set(settings.lanes.concat(B.subs.map(x => x.id)))];
+  touchLib(); persistSettings();
+  setUndo('merging ' + A.name, () => { Object.keys(lib).forEach(k => delete lib[k]); Object.assign(lib, before); touchLib(); renderAll(); });
+  try{ deskTouchRecent(dstId); }catch(e){}
+  openView(dstId + '-all'); renderAll();
+  toast('“' + A.name + '” is now a topic inside “' + B.name + '”. Undo is at the top.');
+}
+function openMergeMaps(){
+  const cur = lib.topics.find(t => t.id === ui.topic); if(!cur){ toast('Open the map you want to merge first'); return; }
+  const others = lib.topics.filter(t => t !== cur);
+  if(!others.length){ toast('There is no other map to merge it into'); return; }
+  const n = Object.values(lib.entries).filter(e => e.kind === 'paper' && e.topic === cur.id).length;
+  openModal({title: 'Merge “' + cur.name + '” into another map', body: '<p class="hint">“' + esc(cur.name) + '” and its ' + n + (n === 1 ? ' paper' : ' papers') + ' become a topic inside the map you choose, with its rows, lines and notes. You can undo it straight after.</p>' +
+    '<div class="atl-merge">' + others.map((t, i) => '<label><input type="radio" name="mergeTo" value="' + esc(t.id) + '"' + (i ? '' : ' checked') + '><b>' + esc(t.name) + '</b><span>' + Object.values(lib.entries).filter(e => e.kind === 'paper' && e.topic === t.id).length + ' papers</span></label>').join('') + '</div>',
+    actions: [{label: 'Cancel'}, {label: 'Merge', primary: true, onClick: body => { const r = body.querySelector('input[name="mergeTo"]:checked'); if(r) setTimeout(() => mergeMapInto(cur.id, r.value), 0); }}]});
+}
 /* the map page: full window wherever there is room for it (not on a phone held upright) */
 function atlasFollow(){ const on = true, was = document.documentElement.classList.contains('atlas'); document.documentElement.classList.toggle('atlas', on); if(on && !was) setToc(false); if(on !== was){ try{ renderMap(true); }catch(e){} } }
 /* on the map page a map is a field: opening one shows that field's rows (Topics on the map can add others) */
