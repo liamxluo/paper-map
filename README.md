@@ -14,6 +14,9 @@
 
 <p align="center"><sub>macOS 11 or later, Apple silicon and Intel &nbsp;·&nbsp; Chrome, Edge or Safari &nbsp;·&nbsp; free and open source (Apache-2.0)</sub></p>
 
+![The desk: a click on Maps fans the folded maps out into a row of covers, one for each field, and ‹ Desk gathers them back](assets/tour-desk.webp)
+
+
 ## Opening it on a Mac for the first time
 
 Paper Map is free and open source, and it is not yet signed with a paid Apple Developer ID. So the first time you open it, macOS says it cannot check the app for malicious software. That message is about the missing signature, not about anything found in the app.
@@ -36,8 +39,6 @@ If macOS says the app “is damaged”, open Terminal, run `xattr -cr "/Applicat
 - **It goes online only for what you ask:** syncing with your GitHub, Dropbox or Zotero; filling in a paper's or a book's details from its DOI, ISBN or link (Crossref, DataCite, Open Library, Google Books, Europe PMC, arXiv, Wikipedia's citation service); and asking GitHub whether there is a new version.
 - Keep the repository that holds your library **private**.
 
-![The desk: a click on Maps fans the folded maps out into a row of covers, one for each field, and ‹ Desk gathers them back](assets/tour-desk.webp)
-
 Paper Map is a desk for your research, and everything you read lives on it.
 
 **Your papers and your books, in one library.** Papers in folders, books on shelves with their covers, how far you have read, and every highlight, Kindle and Goodreads included.
@@ -59,8 +60,6 @@ Paper Map is a desk for your research, and everything you read lives on it.
 Your maps lie folded on the desk, the one you opened last on top. Click them and every map stands in a row of covers you scroll left and right; choose one and it unfolds into the map. **‹** folds it back to its cover.
 
 The map lies on your desk as one sheet with two small bars: your maps on the left; search, new paper, filters, years, export, the notebook, sync and the gear on the right. Papers sit on their years, in rows by topic. Click a paper and its card opens: the **target** links it to another paper (the line follows your mouse to the next paper you click), the page opens its notes and PDF, the little **metro map** opens Lens, and **⋯** grows into the whole card. Double-clicking a dot links it too, choosing **Builds on**, **Leads to** or **Related to** first. Drag along the years to zoom into a period.
-
-![Lens on The Grammar of Glow: its line of thought laid out, then drawn as a metro map and as the whole line; then another map marked as related](assets/tour-lens.webp)
 
 ### Reading
 
