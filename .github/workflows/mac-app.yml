@@ -9,9 +9,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "The release to attach the app to (its tag, for example v3.0.0)"
+        description: "The release to attach the app to (its tag, for example v3.1.0)"
         required: true
-        default: "v3.0.0"
+        default: "v3.1.0"
 
 permissions:
   contents: write
@@ -28,6 +28,8 @@ jobs:
         with:
           targets: aarch64-apple-darwin,x86_64-apple-darwin
       - run: npm install
+      - name: Make the download window sharp on Retina screens
+        run: tiffutil -cathidpicheck src-tauri/dmg/background.png src-tauri/dmg/background@2x.png -out src-tauri/dmg/background.tiff || true
       - name: Make the app and its .dmg
         run: |
           # first with the drag-to-Applications window laid out; if the runner cannot do that, a plain .dmg
