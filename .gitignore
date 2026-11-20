@@ -1,0 +1,22 @@
+# Operating-system clutter
+.DS_Store
+Thumbs.db
+
+# Personal data: backups and data files never belong in this public repository
+*.json
+data/
+
+# ...except the made-up example used by the live preview
+!example/displaydata.json
+# ...and the files that build the app
+!package.json
+!src/app/order.json
+!src-tauri/tauri.conf.json
+!src-tauri/capabilities/*.json
+
+# building the Mac app
+node_modules/
+dist/
+src-tauri/target/
+src-tauri/gen/
+package-lock.json
