@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>/* the desk opens first: keep the app out of sight until it is up */
+(function(){ try{ var q = location.search, h = location.hash; if(h.length > 1 || /[?&](add|title)=/.test(q)) return; var s = JSON.parse(localStorage.getItem('rl:settings') || 'null'); var example = /^https?:$/.test(location.protocol) && !/[?&](app|add|title)\b/.test(q); if(example || !(s && s.desk && s.desk.start === 'map')){ document.documentElement.classList.add('desk-boot'); setTimeout(function(){ document.documentElement.classList.remove('desk-boot'); }, 5000); } }catch(e){} })();</script>
+<style>html.desk-boot,html.desk-boot body{background:#120604}html.desk-boot body > *:not(#pmDesk){visibility:hidden}</style>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Paper Map</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=d">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Paper Map">
+<meta name="application-name" content="Paper Map">
+<meta name="theme-color" content="#F5F6F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12161C" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;900&display=swap">
+<style>

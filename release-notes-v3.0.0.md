@@ -2,12 +2,12 @@
 
 Paper Map now opens on a desk, and comes as a Mac app too: your maps folded on the left, your papers and a book of your Readings on the right, a notebook for a research log, and a cup.
 
-![The desk](https://raw.githubusercontent.com/liamxluo/paper-map/main/assets/desk.png)
+![The desk](https://raw.githubusercontent.com/liamxluo/paper-map/main/assets/desk.jpg)
 
 Each time it opens, a soft veil welcomes you (*Welcome to Paper Map, your reading world*) before the desk comes into focus.
 
 ## Paper Map for Mac
-- A Mac app as well as the web version: download **Paper-Map_3.0.0_universal.dmg** below, open it and drag Paper Map into Applications (Apple silicon and Intel, macOS 11 or later).
+- A Mac app as well as the web version: download the **.dmg** below, open it and drag Paper Map into Applications (Apple silicon and Intel, macOS 11 or later).
 - It is not signed by Apple, so the first time you open it, go to **System Settings → Privacy & Security** and click **Open Anyway**. Only once.
 - On its first start it asks where to keep your library: **iCloud Drive**, **This Mac only** or **GitHub**. iCloud Drive keeps a “Paper Map” folder in sync on all your Macs, with a daily backup, and combines the copies if two Macs change it at once.
 - Exports go to Downloads, and web links open in your browser.

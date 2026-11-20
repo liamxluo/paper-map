@@ -1,133 +1,85 @@
-![Paper Map: papers on a timeline, joined by hand-drawn lines](assets/preview.png)
-
 <p align="center">
-  <a href="https://liamxluo.github.io/paper-map/"><img src="icons/icon-512.png" width="64" alt="Paper Map app icon"></a>
+  <img src="assets/desk.jpg" alt="The Paper Map desk: your maps folded on the left, your papers and your Readings on the right, a notebook with a fountain pen, and a cup of coffee" width="100%">
 </p>
 
+<h1 align="center">
+  <img src="icons/icon-512.png" width="44" alt=""><br>
+  Paper Map
+</h1>
+
+<p align="center"><b>Your reading world.</b><br>A personal map of research, ideas and reading.</p>
+
 <p align="center">
-  <a href="https://liamxluo.github.io/paper-map/">Get the app</a> &nbsp;·&nbsp;
-  <a href="#how-it-works">How it works</a> &nbsp;·&nbsp;
-  <a href="#get-started">Get started</a> &nbsp;·&nbsp;
-  <a href="#good-to-know">Good to know</a>
+  <a href="https://github.com/liamxluo/paper-map/releases/latest"><b>Download for Mac</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://liamxluo.github.io/paper-map/"><b>Open in your browser</b></a>
+  &nbsp;·&nbsp;
+  <a href="#get-started">Get started</a>
 </p>
 
-A personal map of research, ideas and reading. I built it simply because I wanted a better way to organise what I read and understand how ideas connect.
+Paper Map lays the papers of a field out on a timeline and lets you draw how they connect: which builds on which, which answers which, and which line of thought runs through them. Around the map sits a desk: your maps folded on the left, every paper you keep, a book of everything you have read, and a notebook for a research log. All of it is one file that belongs to you.
 
-![Structure: topics inside topics, to any depth. Connect: lines between papers and topics. Explore: a field laid out over time.](assets/features.svg)
+## A tour
 
----
+### From the desk to the map
 
-## The desk
+![Clicking the folded maps on the desk: they fold into a row, and the map chosen unfolds panel by panel into the map itself](assets/tour-maps.webp)
 
-![The desk: your maps folded on the left, your papers and your Readings on the right, a notebook, a pen and a cup](assets/desk.png)
+Your maps lie folded on the desk, the one you opened last on top, drawn with your own lines. Click them to lay them out, choose one, and it unfolds into the map. **Desk** in the top bar folds it back.
 
-Paper Map opens on a desk, and everything on it does what it looks like:
+### The map
 
-- **Welcome.** Each time Paper Map opens, a soft veil over the desk says *Welcome to Paper Map, your reading world*; a moment later the desk comes into focus. A click skips it.
-- **Your maps.** The three folded sheets on the left are your maps, the one you opened last on top, drawn with your own lines. Click them to lay all your maps out in a row; click one and it unfolds into the map. **Desk**, first in the app's top bar, folds it back.
-- **Papers.** Every paper on your maps as a page, stamped READ or TO READ. Filter by map or by mark, search, and click a page to go to it on its map; **Desk** brings you back to the pages.
-- **Readings.** The green book opens to your reading list: books you have read, are reading or want to read, in categories of your own, each with its notes. **Put on a map…** gives a map its own entry for the book, drawn as a small book, which you can link like any paper; its title, authors and year follow your Readings.
-- **The notebook.** The left page is a research log of up to sixty pages, dated as you write, in one of five hands: Handwriting, Times New Roman, Georgia, Helvetica or Courier. The right page stays as it is. When a notebook is full, start a new one from its last page; full notebooks wait under **Past books**.
-- **The cup.** Click it for an espresso, a latte or tea.
-- **Look**, the small gear: the desk (mahogany, oak, walnut, linen), the paper (creased or smooth), and whether Paper Map opens on the desk or on the last map you used.
+![A map of papers on a timeline, in rows by topic; a paper is chosen and Lens lays out its whole line of thought](assets/tour-map.webp)
 
-Your Readings, its categories and your notebooks are kept with your maps, so they sync the same way, through GitHub or a folder. On a phone the whole desk is shown at once.
+Papers sit on their years, in rows by topic. Double-click a dot to link it: **Builds on**, **Responds to** or **Related to**. Give a main line of thought its own colour, drag along the years to zoom into a period, and press **L** on a paper to see its whole line on its own.
 
-## Paper Map for Mac
+### Readings and the research log
 
-Paper Map is also a Mac app. Download **Paper-Map_3.0.0_universal.dmg** from the [Releases](https://github.com/liamxluo/paper-map/releases) page, open it and drag Paper Map into Applications. It runs on Apple silicon and Intel Macs with macOS 11 or later.
-
-- **The first time you open it,** macOS says it cannot check the developer: Paper Map is not signed by Apple. Open **System Settings → Privacy & Security**, scroll down and click **Open Anyway** next to Paper Map. You only do this once.
-- **Where your library lives.** On its first start the app asks: **iCloud Drive** (a “Paper Map” folder in iCloud Drive, on all your Macs through your own iCloud), **This Mac only** (a “Paper Map” folder in Documents), or **GitHub** (a private repository of your own). The folder holds one file, `data/paper-map.json`, with a daily backup beside it; if two Macs change it at once, Paper Map combines the copies. You can change this later in **Settings → Sync**.
-- **Exports** (PNG, PDF, GIF, lists, backups) are saved to Downloads and shown in Finder. Web links open in your browser.
-
-## How it works
-
-Each paper is a dot in its topic's row, at its year. The more papers build on one, the bigger its dot. Each row names up to two of its most connected papers; point at any dot to see its title and authors. Click a dot and its lines light up; **How far**, in the bar under the map, reaches further, up to **Whole line**.
-
-![How each kind of line looks: builds on is solid, responds to is dashed, related to is dotted, a mention leaves a grey shadow in another field, related topics are marked ⇄](assets/lines-legend.svg)
-
-### Link with +
-
-![Double-clicking a paper, choosing Builds on, clicking the paper it builds on, then clicking the new line and changing it to Responds to](assets/link.gif)
-
-Double-click a dot and it turns into a black **+**. Say how it connects first, **Builds on**, **Leads to** or **Related to**, then click the other paper: the arrow points the right way from the start. Linked it wrongly? Click the line to change it, turn it round, give it a note and a colour, or remove it. Dragging a dot only ever moves it to another row.
-
-### Cards
-
-![Pressing a paper's card in a topic's list; it turns over into the full card with where it sits, its lines on a small timeline, its labels and notes; closing it turns it back](assets/card.gif)
-
-Every topic lists its papers as cards, in time order: green for read, red for want to read. Press one and it turns over into the full card: where it sits, its lines on a small timeline, its labels, priority and notes, and its PDF. Change where it sits, its tags or its priority right there. Its **⋯** edits or deletes it.
-
-### Lens
-
-![Opening Lens on a paper, showing its whole line, ticking another paper to see the path between them, then drawing it as a metro map](assets/lens.gif)
-
-Press **L**, or **Lens** under the map, to see one paper's line of thought on its own: what it builds on to the left, what it leads to on the right. **Path…** shows the chain that joins any papers you tick, and **Metro** draws it like a metro map.
-
-### Zoom through time
-
-![Dragging along the years from 1960 to 1980 to zoom in, where every paper gets its name; dragging the map sideways to move through time; double-clicking a year to zoom in further; then Years → All years](assets/zoom.gif)
-
-Drag along the years to zoom in on a stretch of time, and drag the map sideways to move through it. Double-click a year to zoom in further; **Years ▾ → All years** shows everything again. Zoom in far enough and every paper is named.
-
-### Mentions another field
-
-![Double-clicking a paper, choosing Mentions another field, clicking the row of that field, and seeing the paper's faint shadow there, joined to it by a dashed line](assets/mentions.gif)
-
-A paper can reach into another field without linking to any paper in it: double-click it, choose **↧ Mentions another field** and click that field's row. A grey shadow of its dot appears there, at the same year: a solid grey dot in a dotted ring, unlike any paper.
-
-### Watch it grow
-
-![The map growing year by year, from 1951 to 2022](assets/grow.gif)
-
-**Export ▾ → The map → GIF** makes a moving picture of your map growing: each paper appears in its year and each line draws itself to the paper that builds on it.
+| | |
+|---|---|
+| ![The green book opens on the desk and its title page opens out into Readings, a shelf of books in your own categories](assets/tour-readings.webp) | ![Leaning into the notebook, writing in handwriting, changing the hand and turning the page](assets/tour-notebook.webp) |
+| **Readings.** Every book you have read, are reading or want to read, in categories of your own, each with its notes. Put a book on a map and link it like a paper. | **The research log.** The notebook's left page is yours: up to sixty pages, dated as you write, in one of five hands. The right page stays as it is. |
 
 ## Get started
 
-### I. Get the app
+### 1. Get Paper Map
 
-1. Open **[liamxluo.github.io/paper-map](https://liamxluo.github.io/paper-map/)** in Chrome or Edge. It shows a made-up example.
-2. Click **Install** at the top right. On iPhone or iPad, tap **Share → Add to Home Screen**.
+- **On a Mac:** download the `.dmg` from [Releases](https://github.com/liamxluo/paper-map/releases/latest), open it and drag Paper Map into Applications. Paper Map isn't signed by Apple, so the first time, open **System Settings → Privacy & Security** and click **Open Anyway**. Only once.
+- **In a browser:** open **[liamxluo.github.io/paper-map](https://liamxluo.github.io/paper-map/)**. It shows a made-up example. In Chrome or Edge click **Install** at the top right; on an iPhone or iPad tap **Share → Add to Home Screen**. It works offline and updates itself.
 
-It opens in its own window, works offline, and updates itself with every release.
+### 2. Choose where your library lives
+
+Your whole library (maps, papers, notes, Readings and notebooks) is one file, `data/paper-map.json`.
+
+| Where | How |
+|---|---|
+| **iCloud Drive** | The Mac app asks on its first start. A “Paper Map” folder in iCloud Drive keeps your Macs in step. |
+| **A folder** | In Chrome or Edge: **Settings → Sync → Choose a folder**, inside iCloud Drive, Dropbox or OneDrive. |
+| **GitHub** | Any browser, phones too, with every save kept. Steps below. |
+| **Just this app** | Nothing to set up, but nothing is copied anywhere else. |
 
 <details>
-<summary>No Chrome or Edge? Use it as a file</summary>
+<summary>Connect GitHub</summary>
 
-1. Download [`index.html`](index.html): open it and click **Download raw file**.
-2. Double-click it to open it in any browser.
-
-The app and the file keep separate lists. Connect sync in both to share one list, or move it with **Settings → Data → Export backup** and **Import backup**.
-
-</details>
-
-### II. Sync (recommended)
-
-Your list lives in the app until you connect sync; then it is safe, keeps earlier versions, and follows you to every device. Open **Settings → Sync** and choose one.
-
-**GitHub, the most reliable.** Every save is kept for good, and it works on phones too.
 1. [Create a private repository](https://github.com/new?name=paper-map-data&visibility=private) and tick **Add a README file**.
 2. [Create a token](https://github.com/settings/personal-access-tokens/new?name=Paper+Map&expires_in=366&contents=write): under Repository access choose **Only select repositories** and pick that repository. The link already sets the one permission it needs, **Contents: Read and write**.
-3. Paste the token under **Settings → Sync → GitHub** and click **Connect**. Paper Map asks when the token expires, then reminds you two weeks before, with the steps to renew it.
-
-**An iCloud Drive, Dropbox or OneDrive folder.** Under **Settings → Sync → iCloud / Dropbox folder**, click **Choose a folder** and pick one inside iCloud Drive, Dropbox or OneDrive: that app copies it to your other computers and keeps its own history, and Paper Map keeps earlier copies in `data/backups`. No account or token needed. Works in Chrome and Edge on a computer; on a phone, use GitHub.
-
-<details>
-<summary>Still confused? First time, or on another device</summary>
-
-- Your whole list is one file, `data/paper-map.json`. Notes are copied into `notes/` for reading, and PDFs go into `pdfs/`.
-- On another device, install the app and connect the same way: your list loads from there.
-- Changed things on two devices? Paper Map combines them. It only asks about something changed on both, such as the same paper.
-- If iCloud Drive, Dropbox or OneDrive ever makes a second copy of the file (two computers at once), Paper Map notices it and offers to combine it into your list.
-- A new or empty page never saves over your list: it loads it instead. **Earlier versions** brings back any past save.
-- GitHub says the repository can't be found? The token doesn't include it yet: open the token on GitHub and add the repository under **Repository access**.
+3. Paste the token under **Settings → Sync → GitHub** and click **Connect**. Paper Map reminds you two weeks before the token expires.
 
 </details>
 
-### III. Add papers
+<details>
+<summary>On another device, or two at once</summary>
 
-Click **+ New paper**, paste a DOI or ISBN and click **Fill in**: the title, authors, year and source come back by themselves.
+- Connect the same way on the other device: your library loads from there.
+- Changed things on two devices? Paper Map combines them, and only asks about something changed on both.
+- If iCloud Drive, Dropbox or OneDrive makes a second copy of the file, Paper Map offers to combine it.
+- A new or empty app never saves over your library: it loads it instead. **Earlier versions** brings back any past save.
+
+</details>
+
+### 3. Add papers
+
+Click **+ New paper**, paste a DOI or ISBN and click **Fill in**: the title, authors, year and source fill themselves in.
 
 <details>
 <summary>Which IDs work</summary>
@@ -143,110 +95,56 @@ Click **+ New paper**, paste a DOI or ISBN and click **Fill in**: the title, aut
 </details>
 
 <details>
-<summary>Add a paper from any page, with one click</summary>
+<summary>From any page, or from Zotero</summary>
 
-In **Settings → Data**, drag **+ Paper Map** to your bookmarks bar. On a paper's page (a journal, arXiv, Google Scholar), click it: New paper opens with its DOI and title filled in, in your own list, and you choose where it goes. If a tab opens rather than the app, the paper still goes into the same list; to have Chrome open the app instead, turn on **Open supported links** in the app's settings.
-
-</details>
-
-<details>
-<summary>Bring papers in from Zotero, a CSV, BibTeX or RIS file</summary>
-
-Choose **+ New paper ▾ → Import papers**. In Zotero, right-click a collection and choose **Export Collection…** (CSV or BibTeX); any spreadsheet saved as CSV works too. You choose the topic, see every paper with a tick box, and papers already on your map are recognised and left unticked. Undo puts everything back.
+- **+ Paper Map** in **Settings → Data** goes on your bookmarks bar. On a paper's page, click it and New paper opens with its DOI and title filled in.
+- **+ New paper ▾ → Import papers** brings in a Zotero export (CSV or BibTeX), a RIS or CSL JSON file, or any spreadsheet saved as CSV. Papers already on your map are recognised and left out.
 
 </details>
 
-When you mark a paper **Read**, Paper Map looks it up in Crossref (by its DOI, or by its title) and the papers on your map that it cites, and that aren't linked to it yet, pulse for a minute and are listed under its card, so you can link them if you like. Nothing is ever linked for you, and it always tells you what it found.
+When you mark a paper **Read**, Paper Map looks up what it cites: papers on your map that it cites, and that aren't linked to it yet, pulse for a minute so you can link them if you like. Nothing is ever linked for you.
 
-### IV. Notes and PDFs
+## Using Paper Map
 
-Open a paper's **Notes & PDF** to write Markdown notes beside its PDF. PDFs need sync. **Settings → Data → Export notes** exports every note at once.
+- **Topics.** A top-level topic is a big area, a field or a project, with subtopics inside to any depth. Drag them around in **Contents**, or use a topic's **⋯**.
+- **Lines.** Builds on is solid, Responds to is dashed, Related to is dotted. A paper that **mentions another field** leaves a grey shadow in that field's row.
+- **Colour lines.** Give a main line of thought a colour from a line's menu; **Colour lines** above the map names them and hides one for a while.
+- **Lens.** Select a paper and press **L**: its whole line on its own, the path between two papers, or a metro map.
+- **Notes and PDFs.** Every paper has Markdown notes beside its PDF. PDFs need sync.
+- **Papers.** The pages on the desk: every paper as a page stamped READ or TO READ, by map or by mark.
+- **Export.** The map as PNG, vector PDF or a GIF of it growing over the years; the list as BibTeX, RIS, CSV or Markdown.
+- **Look.** The desk's wood, creased or smooth map paper, Mist, Warm white or Pure white, Light or Dark, and whether Paper Map opens on the desk or on the last map.
 
-## More
+## Good to know
 
-<details>
-<summary>Export the map, the list, or both</summary>
+**Your data.** It stays where you put it: in the app, your folder or your repository. Paper Map has no server and no account. It connects only to your sync, to the ID services when you press **Fill in**, to Crossref when you mark a paper Read, and to GitHub to see whether a new version is out.
 
-**Export ▾** next to Colour lines. **The map** exports by topic, from one paper (as far as How far reaches), along colour lines, or just the papers you pick, as PNG, PDF or GIF; the options sit on the left and the right shows exactly what you'll get. Every paper gets its title and authors; a name with no clear place becomes a small number, explained in Notes under the map. **The papers** saves a list as CSV, BibTeX, RIS or a Markdown reading list. **Both together** puts the map and its list in one PDF, or one long picture for a chat. PDFs are vector files, not a picture: every line stays sharp at any size, and every word can be selected, searched and edited.
+**Updates.** The web version updates itself; the Mac app tells you when a new version is out. **Settings** shows which version you have.
 
-![An exported map: a title, the chosen topics with their lines, a legend, and a note that the lines are the author’s own reading](assets/export.png)
+**Undo.** After a change, Undo stays in the top bar for 10 minutes (Cmd or Ctrl + Z works too). Every delete says in red how many papers go with it.
 
-</details>
+**Not a reference manager.** Paper Map maps and annotates what you read. For citations in your writing, keep Zotero beside it: Paper Map imports from it and exports BibTeX and RIS.
 
-<details>
-<summary>Colour lines, all in one place</summary>
-
-Give a main line of thought its own colour from a line's menu. **Colour lines** above the map names them, shows what is on each, and hides one for a while.
-
-![The Colour lines manager: each path with its colour and what uses it, Hide or Show, Rename or recolour, the connections on Main line, and two paths named in advance](assets/colour-lines.png)
-
-</details>
-
-<details>
-<summary>Topics, subtopics and related topics</summary>
-
-Top-level topics are big areas, such as a field or a project, with subtopics inside to any depth. A topic has a row of its own too, heading its subtopics on the map, for papers about the topic as a whole: choose **“… itself”** under Subtopic. Drag them around in **Contents**, or use a topic's **⋯** to add, rename, move or delete. Related topics carry ⇄ beside their names and light up together.
-
-![Board games is related to Procrastination by a blue link and to Dinner by a yellow one; in Board games both light up in their colours](assets/related-topics.png)
-
-</details>
+**Your token and your PDFs.** The GitHub token stays in the app where you connect it; give it one private repository and nothing else. PDFs live in your own repository or folder: keep it private, and only add papers you may keep a copy of.
 
 <details>
-<summary>Fancy another style?</summary>
+<summary>Building Paper Map</summary>
 
-![Contents in Mist, while hovering a row, in Warm white and in Dark](assets/styles.png)
+The app is plain HTML, CSS and JavaScript, split by subject:
 
-Pick Mist, Warm white or Pure white in **Settings → Paper**, and Light, Dark or Match my system in the same place.
+| Folder | What is in it |
+|---|---|
+| `src/app/` | The app: `head.html`, `body.html`, `styles/` and `js/`, joined in the order listed in `order.json` |
+| `src/desk/` | The desk: its styles, markup and script |
+| `scripts/build.mjs` | Joins them into `index.html` (the web version) and `dist/` (the Mac app's files) |
+| `src-tauri/` | The Mac app: its window, icons, DMG window and a few native commands |
+
+- **Change something:** edit a file in `src/`, run `node scripts/build.mjs` (Node 18 or later) and reload `index.html`.
+- **Make the Mac app on your Mac:** double-click `build-mac.command`. The first time it installs Apple's command line tools and Rust (Node.js you install yourself), then it makes the `.dmg` and shows it in Finder.
+- **Release:** push a version tag (`git tag v3.0.0 && git push --tags`). GitHub Actions makes the Mac app on GitHub's Macs and attaches the `.dmg` to a draft release with that tag.
 
 </details>
 
 ---
 
-## Building Paper Map
-
-The app is written in plain HTML, CSS and JavaScript, split by subject so each part is easy to change:
-
-| Folder | What is in it |
-| --- | --- |
-| `src/app/` | The app: `head.html`, `body.html`, `styles/` and `js/`, joined in the order listed in `order.json` |
-| `src/desk/` | The desk: its styles, markup and script |
-| `scripts/build.mjs` | Joins them into `index.html` (the web version, served by GitHub Pages) and `dist/` (what goes inside the Mac app) |
-| `src-tauri/` | The Mac app: its window, icons, the DMG window, and a few native commands for files |
-
-- **Change something:** edit a file in `src/`, then run `node scripts/build.mjs` (Node 18 or later, nothing to install) and reload `index.html`.
-- **Run the Mac app on a Mac:** install [Rust](https://www.rust-lang.org/tools/install) and Xcode's command line tools (`xcode-select --install`), then `npm install` and `npm run tauri dev`. `npm run mac` makes the `.dmg` in `src-tauri/target/release/bundle/dmg/`.
-- **Release:** push a version tag (`git tag v3.0.0 && git push --tags`). GitHub Actions builds the Mac app on GitHub's Macs and attaches the `.dmg` to a draft release with that tag; add the notes and publish it.
-
-## Good to know
-
-**Updates.** The app updates itself: each new release reaches it the next time you open it, with a note saying what's new. **Settings** shows which version you have.
-
-**Your data.** Without sync your list lives only in this browser, and clearing its data deletes it. With sync, a new or empty page loads your list rather than saving over it, and **Settings → Sync → Earlier versions** brings back any past save.
-
-**Undo.** After a change, Undo stays in the top bar for 10 minutes or until your next change (Ctrl or Cmd + Z works too). Every delete says in red how many papers go with it.
-
-**Not a reference manager.** It maps and annotates what you read; it doesn't format citations or keep a library the way Zotero does.
-
-**Your token.** It stays in the browser where you connect. Give it one private repository and **Contents: Read and write** only, and don't connect on shared computers.
-
-**PDFs and copyright.** Attached PDFs are stored in your own repository. Keep it private, and only add papers you may keep a copy of.
-
-**Privacy.** Paper Map connects only to what you choose: your sync (GitHub or a folder); the ID services (Crossref, DataCite, Open Library, Google Books, Europe PMC) when you press **Fill in**; Crossref when you mark a paper Read (switch it off in **Settings → Map**); and GitHub, to see if a new version is out.
-
-**Credits.** The interface and code were built with help from Claude, an AI model made by Anthropic.
-
-<details>
-<summary>Repository structure</summary>
-
-```
-/
-├── index.html              the whole app
-├── manifest.webmanifest    lets browsers install it as an app
-├── sw.js                   keeps the app working offline (never stores your data)
-├── icons/                  the app icon, in each size
-├── example/
-│   └── displaydata.json    the example on the website
-└── assets/                 the pictures in this README
-```
-
-</details>
+<p align="center"><sub>The interface and code were built with help from Claude, an AI model made by Anthropic. MIT licence.</sub></p>
