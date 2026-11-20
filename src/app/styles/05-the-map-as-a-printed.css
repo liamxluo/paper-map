@@ -1,0 +1,131 @@
+/* ===================== the map, as a printed atlas: a white sheet, a fine year grid, ruled rows, serif names ===================== */
+.map-box{background:var(--surface);border-radius:16px;box-shadow:0 1px 2px rgba(28,35,48,.05),0 10px 30px rgba(28,35,48,.06);padding:6px 0 0}
+:root[data-theme="dark"] .map-box{box-shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35)}
+.map-axis{background:var(--surface);border-top:1px solid var(--rule)}
+.net .band{fill:transparent}
+.map-labels button.band{background:transparent}
+.net .row-rule{stroke:var(--rule);stroke-width:1;opacity:.7}
+.net .topic-rule{stroke:var(--ink);stroke-width:1.3;opacity:.7}
+.net .grid{stroke:var(--rule);stroke-width:1;stroke-dasharray:1.5 4.5;opacity:.85}
+.net .grid.major{stroke-dasharray:none;opacity:.75}
+/* lines: graphite by default, colour lines bold and round-ended */
+.net .edge{stroke:var(--ink);opacity:.3;stroke-width:1.2}
+.net .edge.r{stroke-width:1.6}
+.net .edge.br{stroke:var(--br);opacity:.95;stroke-width:2.8;stroke-linecap:round}
+.net.focus .edge{opacity:.05}
+.net.focus .edge.hot{opacity:.95}
+/* dots: crisp rims; landmarks ringed */
+.net .dot{stroke-width:1.6}
+.net .node.st-read .dot,.net .node.st-want .dot{stroke:var(--surface);stroke-width:1.4}
+.net .ring{fill:none;stroke:var(--ink);stroke-width:1.1;opacity:.32}
+.net .node.sel .ring{opacity:.7}
+.net.focus .node:not(.hot) .ring{opacity:.08}
+/* names: serif titles, small-caps authors */
+.net .lbl{font-family:var(--serif);font-size:12.5px;font-weight:600;fill:var(--ink);letter-spacing:-.005em}
+.net .lbl.p1{font-weight:500;fill:color-mix(in srgb,var(--ink) 78%,transparent)}
+.net .lbl.p3{font-size:13.5px;font-weight:700}
+.net .lbl-au{font-family:var(--sans);font-size:8.6px;letter-spacing:.07em;text-transform:uppercase;fill:var(--muted)}
+.net .ghost-lbl{font-family:var(--serif)}
+/* the year axis: serif years, decades heavier */
+.net-axis .tick,.map-axis .tick{font-family:var(--serif);font-size:12.5px;fill:var(--ink);opacity:.62;font-variant-numeric:oldstyle-nums}
+.net-axis .axis{stroke:var(--rule)}
+/* row labels: a topic starts with its name in small capitals; nested rows sit on a quiet guide */
+.map-labels button .lt{font:700 .64rem/1.25 var(--sans) !important;letter-spacing:.14em;text-transform:uppercase;color:var(--ink) !important;opacity:.5;margin-bottom:2px}
+.map-labels button .nm{font-size:calc(.98rem - min(var(--d, 0), 2) * .07rem)}
+.map-labels button{background-image:linear-gradient(var(--rule-strong),var(--rule-strong));background-repeat:no-repeat;background-size:1px 46%;background-position:calc(6px + (var(--d, 0) - 1) * 14px) 50%;padding-left:calc(10px + var(--d, 0) * 14px) !important}
+.map-labels button.tl-rel,.map-labels button.tl-hover,.map-labels button.drop-target{background-image:none}
+.map-labels button.on{text-decoration:none;box-shadow:inset 3px 0 0 var(--ink)}
+.map-labels button:hover{text-decoration:none;background-color:color-mix(in srgb,var(--ink) 4%,transparent)}
+
+/* the current row is marked once: a bar at its edge (no extra arrow) */
+.map-labels button.on::before{display:none}
+.map-labels button.on .nm{font-weight:700}
+
+/* the map's topic rows: a topic heads its subtopics; nested rows sit on a quiet guide */
+.map-labels button.own .nm{font-size:1.02rem;font-weight:700;letter-spacing:-.005em}
+.map-labels button{background-image:none}
+.map-labels button.nest{background-image:linear-gradient(var(--rule-strong),var(--rule-strong));background-repeat:no-repeat;background-size:1px 44%;background-position:calc(var(--d, 1) * 14px - 2px) 50%}
+.map-labels button.nest.tl-rel,.map-labels button.nest.tl-hover,.map-labels button.nest.drop-target{background-image:none}
+/* names laid out when lit: no transform tricks, and a fine leader when a name had to step away */
+.net .lbl.up.hot{transform:none}
+.net.focus .lbl:not(.hot),.net.focus .lbl-au:not(.hot){opacity:0}
+.net .lbl-lead{stroke:var(--ink);stroke-width:.8;opacity:.4;pointer-events:none}
+/* the card: Where is a path you can read in full, with a chooser */
+.bc-where2{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;padding:2px 0;text-align:left;font:inherit;font-size:.95rem;color:var(--ink);cursor:pointer;border-radius:8px}
+.bc-where2 .bc-path{flex:1;min-width:0;line-height:1.4;overflow-wrap:anywhere}
+.bc-where2 .bc-sep{color:var(--faint)}
+.bc-where2 .bc-dot{flex:none;margin:0}
+.bc-updown{flex:none;width:16px;height:16px;fill:none;stroke:var(--muted);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.bc-where2:hover .bc-updown{stroke:var(--ink)}
+.bc-where2:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.float-menu.where-menu{max-height:60vh;overflow:auto}
+/* labels and priority, right in the card */
+.bc-tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;width:100%}
+.bc-tag .bc-x-s{margin-left:4px;color:var(--faint);font-size:.95em}
+.bc-tag:hover .bc-x-s{color:var(--red)}
+.bc-addtag{border:1px dashed var(--rule-strong);background:transparent;border-radius:999px;padding:.12em .75em;font:inherit;font-size:.8rem;color:var(--muted);cursor:pointer}
+.bc-addtag:hover{color:var(--ink);border-color:var(--ink)}
+.bc-addtag:active{transform:scale(.95)}
+.bc-prio{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin-top:10px;padding-top:10px;border-top:1px solid var(--rule)}
+.bc-prio-k{font-size:.85rem;color:var(--muted)}
+.bc-box:has(.bc-tags){display:block}
+
+/* the export window: find a paper by typing */
+.ex-find input[type="search"],.ex-filter{width:100%;box-sizing:border-box;margin:.2em 0 .3em;padding:.45em .7em;border:1px solid var(--rule-strong);border-radius:9px;font:inherit;font-size:.88rem;background:var(--surface);color:var(--ink)}
+.ex-find input[type="search"]:focus-visible,.ex-filter:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.ex-results{display:flex;flex-direction:column;gap:2px;max-height:34vh;overflow:auto;border:1px solid var(--rule);border-radius:9px;padding:4px}
+.ex-res{display:grid;grid-template-columns:44px minmax(0,1fr);column-gap:8px;text-align:left;border:0;background:transparent;border-radius:7px;padding:6px 8px;cursor:pointer;font:inherit;color:var(--ink)}
+.ex-res:hover,.ex-res:focus-visible{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.ex-res:active{transform:scale(.99)}
+.ex-res-y{grid-row:1 / 3;color:var(--muted);font-variant-numeric:tabular-nums;font-size:.85rem;padding-top:1px}
+.ex-res-t{font-size:.88rem;font-weight:600;line-height:1.3}
+.ex-res-a{font-size:.78rem;color:var(--muted)}
+.ex-chosen{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;padding:.5em .7em;border:1px solid var(--rule);border-radius:9px;background:color-mix(in srgb,var(--ink) 3%,transparent);font-size:.88rem}
+.ex-picklist label[hidden],.ex-linelist label[hidden]{display:none}
+
+.prio-field{display:flex;align-items:center;gap:12px}
+.prio-field > span:first-child{min-width:5em}
+
+.field.full.prio-field{display:flex !important;flex-direction:row !important;align-items:center !important;justify-content:flex-start !important;gap:14px}
+.field.full.prio-field > span:first-child{margin:0}
+
+/* one name per place: overlapped names step out of sight; exported names carry their authors; numbered names */
+.net .lbl.culled,.net .lbl-au.culled{opacity:0 !important}
+.net .lbl-au.xau{opacity:1}
+.net .fn-num{font:700 9.5px var(--sans);fill:var(--ink);paint-order:stroke fill;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round}
+
+/* exporting reads the picture at once: no fades in between */
+.net.no-anim,.net.no-anim *{transition:none !important;animation:none !important}
+
+/* the reminder: cited papers pulse with a ring you can't miss */
+.net .node.hint-glow .dot{animation:none;filter:drop-shadow(0 0 5px color-mix(in srgb,var(--focus) 80%,transparent))}
+.net .hint-ring{fill:none;stroke:var(--focus);stroke-width:2;transform-box:fill-box;transform-origin:center;animation:hintRing 1.5s ease-out infinite;pointer-events:none}
+@keyframes hintRing{0%{opacity:.9;transform:scale(.7)}100%{opacity:0;transform:scale(1.9)}}
+@media (prefers-reduced-motion: reduce){ .net .hint-ring{animation:none;opacity:.8} }
+.cites-hint{margin:.55em 0 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding-left:4px}
+
+/* a mention's shadow in another field: solid slate grey with a fine dotted halo, unlike any paper */
+:root{--ghost:#A3ABB8;--ghost-hot:#6F7888}
+:root[data-theme="dark"]{--ghost:#5E6776;--ghost-hot:#9AA3B2}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--ghost:#5E6776;--ghost-hot:#9AA3B2} }
+.net .ghost-dot{fill:var(--ghost);stroke:none;opacity:1}
+.net .ghost-ring{fill:none;stroke:var(--ghost);stroke-width:1;stroke-dasharray:1.2 2.2;stroke-linecap:round;opacity:.95}
+.net .ghost-line{stroke:var(--ghost-hot);stroke-width:1.1;stroke-dasharray:2 3}
+.net .ghost.hot .ghost-dot{fill:var(--ghost-hot);stroke:none}
+.net .ghost.hot .ghost-ring{stroke:var(--ghost-hot);opacity:1}
+.net.focus .ghost:not(.hot){opacity:.35}
+.net .ghost-lbl{fill:var(--ghost-hot)}
+/* the desk: a page of its own, laid over the app */
+#pmDesk{position:fixed;inset:0;width:100%;height:100%;border:0;z-index:2147483000;background:#120604;opacity:0;pointer-events:none;visibility:hidden;transition:opacity .5s ease,visibility 0s linear .5s}
+#pmDesk.on{opacity:1;pointer-events:auto;visibility:visible;transition:opacity .5s ease,visibility 0s}
+#pmDesk.instant{transition:none !important}
+html.desk-on,html.desk-on body{overflow:hidden}
+.desk-btn{display:inline-flex;align-items:center;gap:6px}
+@media (max-width: 640px){ .desk-btn .desk-label{display:none} }
+/* the Mac app: where your library lives */
+.mac-places{display:grid;gap:10px;margin-top:14px}
+.mac-place{all:unset;display:block;box-sizing:border-box;width:100%;padding:13px 15px;border-radius:12px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--rule);cursor:pointer}
+.mac-place:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.mac-place b{display:block;font-weight:700}
+.mac-place span{display:block;margin-top:3px;font-size:13px;color:var(--muted)}
+.mac-place[disabled]{opacity:.5;cursor:default}

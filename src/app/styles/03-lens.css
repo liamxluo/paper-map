@@ -1,0 +1,78 @@
+/* ===================== Lens ===================== */
+.lens-root{position:fixed;inset:0;z-index:105;background:var(--bg);display:flex;flex-direction:column;opacity:0;transform:scale(.99);transition:opacity .16s ease, transform .16s ease}
+.lens-root.on{opacity:1;transform:none}
+.lens-bar{display:flex;align-items:center;gap:14px;padding:14px 22px 6px}
+.lens-head{flex:1;min-width:0;display:flex;align-items:baseline;gap:10px}
+.lens-title{font:700 1.15rem/1.3 var(--serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lens-ctl{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:4px 22px 10px;border-bottom:1px solid var(--rule)}
+.lens-ctl .dchip{border:1.5px solid var(--rule-strong);border-radius:999px;background:transparent;padding:.2em .75em;font-size:.82rem;cursor:pointer;color:var(--ink)}
+.lens-ctl .dchip.on{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.lens-ctl .dsep{width:1px;height:18px;background:var(--rule);margin:0 6px}
+.lens-picks{display:inline-flex;gap:6px;flex-wrap:wrap}
+.lens-hint{margin-left:auto}
+.lens-body{flex:1;overflow:auto;padding:16px 10px 40px;display:flex;justify-content:center;align-items:flex-start}
+.lens-svg{max-width:100%;height:auto}
+.lens-svg .lens-line{fill:none;stroke:var(--ink);stroke-width:1.5;opacity:.55}
+.lens-svg .lens-line.c{stroke-dasharray:4 3}.lens-svg .lens-line.r{stroke-dasharray:1.5 4;stroke-linecap:round}
+.lens-svg .lens-arr{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:.7}
+.lens-svg .lens-node{cursor:pointer}
+.lens-svg .ln-card{fill:var(--surface);stroke:var(--rule);stroke-width:1}
+.lens-svg .lens-node:hover .ln-card{stroke:var(--ink)}
+.lens-svg .lens-node.me .ln-card{stroke:var(--ink);stroke-width:2}
+.lens-svg .lens-node.picked .ln-card{stroke:var(--focus);stroke-width:2}
+.lens-svg .ln-bar{fill:#C9CED6}.lens-svg .ln-bar.st-read{fill:var(--green)}.lens-svg .ln-bar.st-want{fill:var(--red)}
+.lens-svg .ln-t{font:600 12.5px var(--serif);fill:var(--ink)}
+.lens-svg .ln-a{font:400 10.5px var(--sans);fill:var(--muted)}
+.lens-svg .ln-k{font:600 11px var(--sans);fill:var(--faint)}
+.lens-svg.metro .lens-line{stroke-width:5;opacity:.85;stroke-linejoin:round;stroke-linecap:round;stroke:#5B6472}
+.lens-svg.metro .lens-line.r{stroke-width:2.5;stroke-dasharray:2 6}
+.lens-svg .ln-station{fill:var(--surface);stroke:var(--ink);stroke-width:3}
+.lens-svg .ln-station.st-read{stroke:var(--green)}.lens-svg .ln-station.st-want{stroke:var(--red)}
+.lens-svg.metro .lens-node.me .ln-station{stroke-width:4.5}
+.hf-bar .lens-btn{margin-left:8px;border:1.5px solid var(--ink);border-radius:999px;background:transparent;padding:.2em .8em;font-size:.82rem;cursor:pointer;color:var(--ink)}
+.hf-bar{display:flex;align-items:center}
+.hf-bar .depth-ctl{flex:1}
+/* busy, zoomed-out maps: dots nobody builds on step back */
+.net .node.quiet .dot{opacity:.45}
+
+/* the gear is just a gear: no box behind it */
+#btnSettings{background:transparent !important;border-color:transparent !important;box-shadow:none !important;color:var(--muted);padding-inline:.3em;min-width:32px}
+#btnSettings:hover{color:var(--ink);background:transparent !important}
+#btnSettings:active{transform:none;opacity:.7}
+#btnSettings:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:8px}
+#btnSettings svg{width:20px;height:20px}
+
+/* the card's ✕ and ⋯ stay at hand while you scroll it */
+.bc-top{position:sticky;top:-16px;z-index:3;margin:-16px -18px 0;padding:16px 18px 10px;background:linear-gradient(#F2F2F6 72%, rgba(242,242,246,0))}
+:root[data-theme="dark"] .bc-top{background:linear-gradient(#1C1F26 72%, rgba(28,31,38,0))}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .bc-top{background:linear-gradient(#1C1F26 72%, rgba(28,31,38,0))} }
+
+/* names on the map sit on a halo of their row's colour, so lines never run through them */
+.net .lbl,.net .lbl-au{paint-order:stroke fill;stroke:var(--bg);stroke-width:3.4px;stroke-linejoin:round}
+.net .lbl.on-band,.net .lbl-au.on-band{stroke:var(--band)}
+/* the card's Where row: the chooser stays inside its box */
+.bc-where{min-width:0}
+.bc-where select{min-width:0;width:100%;text-overflow:ellipsis;border-radius:8px}
+.bc-where select:focus{outline:none}
+.bc-where select:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.bc-box{overflow:hidden}
+.bc-box:has(.bc-where){overflow:visible;padding:12px 14px}
+/* the card's little timeline, with names */
+.bc-mini .bm-band{fill:var(--band);opacity:.55}
+.bc-mini .bm-t{font:600 11px var(--sans);fill:var(--ink)}
+.bc-mini .bm-t.me{font-weight:800}
+.bc-mini .bm-a{font:400 9.5px var(--sans);fill:var(--muted)}
+.bc-mini .bm-node{cursor:pointer}
+.bc-mini .bm-node:hover .bm-t{text-decoration:underline}
+#info .info-actions .hint{margin-right:12px}
+
+.bc-mini .bm-t,.bc-mini .bm-a{paint-order:stroke fill;stroke:var(--surface);stroke-width:3.5px;stroke-linejoin:round}
+
+/* Contents, compact: a subtopic is one line; its caret sits in the indent, ⋯ and the handle float at the right */
+.toc-subs > li.toc-sub{display:block;position:relative}
+.toc-sub > .toc-caret.sub{position:absolute;left:calc(8px + var(--d,0) * 16px);top:0;bottom:0;width:26px;z-index:1}
+.toc-sub > .toc-more{position:absolute;right:24px;top:50%;transform:translateY(-50%);margin:0;z-index:2}
+.toc-row > .toc-more{align-self:center}
+.toc-sub:hover > .toc-link .n,.toc-sub:focus-within > .toc-link .n{opacity:0}
+.toc-subs .toc-link{padding-top:.36em;padding-bottom:.36em}
+.toc-subs > li{margin:1px 0}

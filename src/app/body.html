@@ -1,0 +1,168 @@
+</style>
+</head>
+<body>
+
+<nav class="toc" id="toc" aria-label="Contents">
+  <div class="toc-head"><span class="toc-title">Contents</span><button type="button" class="toc-close" id="tocClose" aria-label="Close contents">×</button></div>
+  <div class="toc-body" id="tocBody"></div>
+  <div class="toc-foot" data-save-state></div>
+</nav>
+<div class="toc-backdrop" id="tocBackdrop" hidden></div>
+
+<div class="page" id="page">
+<div class="bar" id="bar">
+  <div class="wrap appbar-inner">
+    <button type="button" class="btn icon-btn desk-btn" id="btnDesk" title="Back to the desk" aria-label="Desk"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9.5h17M5 9.5v9M19 9.5v9M8 9.5V6.8c0-.7.6-1.3 1.3-1.3h5.4c.7 0 1.3.6 1.3 1.3v2.7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="desk-label">Desk</span></button>
+    <button type="button" class="toc-toggle" id="tocToggle" aria-controls="toc" aria-expanded="false"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h11M2.5 8h11M2.5 12h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Contents</button>
+    <span class="crumb" id="crumb"></span>
+    <button type="button" class="undo-pill" id="undoPill" hidden><span aria-hidden="true">↶</span> Undo<span class="undo-what"></span></button>
+    <span class="save-state" data-save-state></span>
+    <div class="appbar-actions">
+      <span class="add-split"><button type="button" class="btn add-paper" id="btnAddPaper" title="Add a paper"><span aria-hidden="true">+</span><span class="add-label"> New paper</span></button><button type="button" class="btn add-more" id="btnAddMore" aria-haspopup="true" aria-expanded="false" aria-controls="addMenu" title="Add something else"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <span class="add-menu" id="addMenu" hidden><button type="button" data-add="paper"><b>Paper</b><span>a reading, placed on the map by its year</span></button><button type="button" data-add="import"><b>Import papers</b><span>from Zotero, or a CSV, BibTeX or RIS file</span></button></span></span>
+      <button type="button" class="filter-toggle" id="filterToggle" aria-expanded="false" aria-controls="filters">Filters</button>
+      <button type="button" class="btn icon-btn" id="btnSettings" title="Settings" aria-label="Settings"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"/><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3.9a7.5 7.5 0 0 0-2.6-1.5L14.1 2.5h-4.2l-.4 2.5a7.5 7.5 0 0 0-2.6 1.5l-2.3-.9-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.4 2.3-.9a7.5 7.5 0 0 0 2.6 1.5l.4 2.5h4.2l.4-2.5a7.5 7.5 0 0 0 2.6-1.5l2.3.9 2-3.4-2-1.5Z"/></svg></button>
+      <span class="more-wrap"><button type="button" class="btn" id="btnMore" aria-haspopup="true" aria-expanded="false" aria-controls="moreMenu" aria-label="More">⋯</button>
+        <span class="more-menu" id="moreMenu" hidden>
+          <button type="button" data-more="import">Import papers</button>
+          <button type="button" data-more="filters">Filters</button>
+          <button type="button" data-more="export">Export map</button>
+          <button type="button" data-more="exportList">Export papers</button>
+          <button type="button" data-more="exportBoth">Export map and papers</button>
+          <button type="button" data-more="settings">Settings</button>
+        </span></span>
+    </div>
+  </div>
+  <div class="install-card" id="installCard" hidden>
+    <img src="icons/icon-192.png?v=d" alt="" width="36" height="36">
+    <div class="ic-text"><b>Get the Paper Map app</b><span>Its own icon and window. Works offline.</span></div>
+    <button type="button" class="btn primary" id="icInstall">Install</button>
+    <button type="button" class="ic-fold" id="icFold" title="Fold this away" aria-label="Fold this away">‹</button>
+    <button type="button" class="ic-pill" id="icPill" title="Install the Paper Map app"><img src="icons/icon-192.png?v=d" alt="" width="20" height="20">Install app</button>
+  </div>
+  <div class="preview-banner" id="previewBanner" hidden>
+    <div class="wrap preview-inner"><span class="pb-long">This is a preview with example data. Nothing you change here is saved. To start your own, install the app (top right, in Chrome or Edge), <a href="./?app">open it here</a>, or <a href="index.html" download="index.html">download the page</a>.</span><span class="pb-short">Example data: changes aren’t saved. <a href="./?app">Start your own</a></span></div>
+  </div>
+  <div class="edit-banner" id="editBanner" hidden>
+    <div class="wrap edit-inner">
+      <strong>Modify mode</strong>
+      <button type="button" data-act="new-entry">New paper</button>
+      <button type="button" data-act="new-concept">New concept</button>
+      <button type="button" data-act="new-sub">New subtopic</button>
+      <button type="button" data-act="new-topic">New topic</button>
+      <button type="button" data-act="tags">Tags &amp; colours</button>
+      <span class="sep"></span>
+      <button type="button" data-act="export">Export backup</button>
+      <button type="button" data-act="exit-edit">Done</button>
+    </div>
+  </div>
+  <div class="filters-row" id="filters">
+    <div class="wrap controls-inner">
+      <label class="search"><span class="sr">Search</span><input id="q" type="search" placeholder="Search authors, titles, notes" autocomplete="off"></label>
+      <label class="sel"><span class="sr">Status</span>
+        <select id="stSel">
+          <option value="all">Any status</option>
+          <option value="want">Want to read</option>
+          <option value="read">Read</option>
+          <option value="none">Unmarked</option>
+        </select>
+      </label>
+      <label class="sel"><span class="sr">Tags</span>
+        <select id="src"><option value="">All tags</option></select>
+      </label>
+      <label class="sel"><span class="sr">Interests</span><select id="dom"></select></label>
+      <span class="status"><span id="progress" aria-live="polite"></span></span>
+    </div>
+  </div>
+</div>
+
+<header class="hero wrap">
+  <h1 id="appTitle">Paper Map</h1>
+
+  <div class="map-tools">
+    <button type="button" class="btn" id="btnLanes" aria-expanded="false" aria-controls="lanePicker">Topics on the map</button>
+    <button type="button" class="btn years-toggle" id="btnZoom" aria-expanded="false" aria-controls="zoomTools">Years: all</button>
+    <button type="button" class="btn" id="btnBranches" title="Name, colour, show or hide your colour lines">Colour lines</button>
+    <span class="export-wrap"><button type="button" class="btn" id="btnExport" aria-haspopup="true" aria-expanded="false" title="Export the map as a picture, or the papers as a list">Export ▾</button>
+      <span class="add-menu export-menu" id="exportMenu" hidden><button type="button" data-export-kind="map"><b>The map</b><span>a picture of the topics you choose, as PNG or PDF</span></button><button type="button" data-export-kind="list"><b>The papers</b><span>a list as CSV, BibTeX, RIS or a Markdown reading list</span></button><button type="button" data-export-kind="both"><b>Both together</b><span>the map with its list of papers, as a PDF or one long picture</span></button></span></span>
+    <div class="br-row" id="branchRow" hidden></div>
+    <div class="zoom" id="zoomTools" role="group" aria-label="Zoom the timeline" hidden>
+      <button type="button" class="btn" data-zoom="out" aria-label="Zoom out">−</button>
+      <button type="button" class="btn" data-zoom="in" aria-label="Zoom in">+</button>
+      <button type="button" class="btn" data-zoom="left" aria-label="Earlier">‹</button>
+      <button type="button" class="btn" data-zoom="right" aria-label="Later">›</button>
+      <button type="button" class="btn" data-zoom="reset">All years</button>
+      <label class="sr" for="y0">From year</label><input class="yr-in" id="y0" type="number" inputmode="numeric" placeholder="From">
+      <label class="sr" for="y1">To year</label><input class="yr-in" id="y1" type="number" inputmode="numeric" placeholder="To">
+      <button type="button" class="btn" id="btnRange">Show range</button>
+    </div>
+  </div>
+  <div class="lane-picker" id="lanePicker" hidden></div>
+
+  <div class="map-box" id="mapBox">
+  <div class="map" id="map">
+    <div class="map-labels" id="mapLabels" aria-label="Topics on the map"></div>
+    <div class="map-scroll" id="mapScroll">
+      <svg class="net" id="net" aria-label="Papers by topic and year, with the lines between them"></svg>
+    </div>
+  </div>
+  <div class="map-axis" id="mapAxis"><div></div><svg class="net net-axis" id="netAxis" aria-hidden="true"></svg></div>
+  </div>
+  <div class="hf-bar" id="hfBar" hidden></div>
+
+  <div class="info" id="info" aria-live="polite"></div>
+
+  <details class="map-key" id="mapKey">
+    <summary>Legend and map tips</summary>
+    <p class="legend">
+      <span><i class="sw read"></i>Read</span>
+      <span><i class="sw want"></i>Want to read</span>
+      <span><i class="sw none"></i>Unmarked</span>
+      <span class="sz-scale"><i class="sz p1"></i><i class="sz p2"></i><i class="sz p3"></i>Bigger: more papers build on it</span>
+    </p>
+    <p class="legend">
+      <span><svg class="lsw" width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="29" y2="5"></line><path class="lsw-arr" d="M13 1.5 L17.5 5 L13 8.5"></path></svg>Builds on</span>
+      <span><svg class="lsw c" width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="29" y2="5"></line><path class="lsw-arr" d="M13 1.5 L17.5 5 L13 8.5"></path></svg>Responds to</span>
+      <span><svg class="lsw r" width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="29" y2="5"></line></svg>Related to</span>
+    </p>
+    <p class="map-hint">On Builds on and Responds to lines, the arrow points to the later paper, the way ideas flow; Settings → Map can point it at the paper each one builds on instead, or hide it. Related-to lines have no direction, so no arrow.</p>
+    <p class="legend" id="srcLegend" hidden></p>
+    <p class="map-hint">Drag along the year axis to zoom into a period, double-click the map to zoom in on a point, and drag sideways to pan once zoomed in. Pinch or Ctrl + scroll also zooms. Over long spans the axis gives busy decades more room and sparse years less; once you zoom in, it is even.</p>
+  </details>
+</header>
+
+<main id="main" class="wrap"></main>
+
+</div>
+
+<div class="reader" id="reader" hidden role="dialog" aria-modal="true" aria-labelledby="readerTitle">
+  <div class="reader-bar">
+    <button type="button" class="btn" id="readerClose">← Back</button>
+    <div class="reader-head"><span class="reader-meta" id="readerMeta"></span><h2 id="readerTitle"></h2></div>
+    <span class="save-state" data-save-state></span>
+    <button type="button" class="btn" id="readerExport">Export</button>
+  </div>
+  <div class="reader-body" id="readerBody">
+    <section class="reader-pdf" id="readerPdf" aria-label="PDF"></section>
+    <section class="reader-notes" aria-label="Notes">
+      <div class="notes-tabs">
+        <div class="seg" role="group" aria-label="Notes view"><button type="button" data-notes-mode="write" aria-pressed="true">Write</button><button type="button" data-notes-mode="preview" aria-pressed="false">Preview</button></div>
+        <span class="notes-hint">Markdown: # heading, - list, &gt; quote, **bold**</span>
+      </div>
+      <textarea class="notes-text" id="notesText" aria-label="Notes" placeholder="Write your notes here. They save as you type."></textarea>
+      <div class="notes-preview md" id="notesPreview" hidden></div>
+    </section>
+  </div>
+  <input type="file" id="pdfInput" accept="application/pdf,.pdf" hidden>
+</div>
+<div class="modal-root" id="modalRoot" hidden>
+  <div class="modal-backdrop" data-close="1"></div>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h2 id="modalTitle"></h2>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>

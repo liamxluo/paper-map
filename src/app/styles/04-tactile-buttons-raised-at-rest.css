@@ -1,0 +1,83 @@
+/* ===================== tactile buttons: raised at rest, lifted on hover, pressed in when pushed ===================== */
+:root{
+  --k-top:#FFFFFF; --k-bot:#F3F5F8; --k-edge:rgba(28,35,48,.13); --k-edge-hi:rgba(28,35,48,.26);
+  --k-hl:inset 0 1px 0 rgba(255,255,255,.95);
+  --k-rest:0 1px 1px rgba(28,35,48,.05),0 2px 4px rgba(28,35,48,.06);
+  --k-lift:0 2px 3px rgba(28,35,48,.07),0 6px 14px rgba(28,35,48,.10);
+  --k-press:inset 0 1.5px 3px rgba(28,35,48,.16),inset 0 0 0 1px rgba(28,35,48,.05);
+  --k-ink-top:#3A4352; --k-ink-bot:#1C2330; --k-track:rgba(28,35,48,.065);
+}
+:root[data-theme="dark"]{
+  --k-top:#2B313B; --k-bot:#232831; --k-edge:rgba(255,255,255,.09); --k-edge-hi:rgba(255,255,255,.2);
+  --k-hl:inset 0 1px 0 rgba(255,255,255,.07);
+  --k-rest:0 1px 1px rgba(0,0,0,.35),0 2px 5px rgba(0,0,0,.28);
+  --k-lift:0 2px 4px rgba(0,0,0,.4),0 8px 18px rgba(0,0,0,.35);
+  --k-press:inset 0 2px 4px rgba(0,0,0,.45);
+  --k-ink-top:#F4F6F9; --k-ink-bot:#D9DEE6; --k-track:rgba(255,255,255,.06);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --k-top:#2B313B; --k-bot:#232831; --k-edge:rgba(255,255,255,.09); --k-edge-hi:rgba(255,255,255,.2);
+  --k-hl:inset 0 1px 0 rgba(255,255,255,.07);
+  --k-rest:0 1px 1px rgba(0,0,0,.35),0 2px 5px rgba(0,0,0,.28);
+  --k-lift:0 2px 4px rgba(0,0,0,.4),0 8px 18px rgba(0,0,0,.35);
+  --k-press:inset 0 2px 4px rgba(0,0,0,.45);
+  --k-ink-top:#F4F6F9; --k-ink-bot:#D9DEE6; --k-track:rgba(255,255,255,.06);
+} }
+button,.btn,[role="button"],label.on,.ex-seg label{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.btn,.depth-ctl .dchip,.ex-chips .dchip,.lens-ctl .dchip,.dchip,.stbtn,.relchip,button.tagchip,.hf-bar .lens-btn,.bc-x{
+  transition:transform .14s cubic-bezier(.2,.8,.2,1),box-shadow .18s ease,background .18s ease,border-color .18s ease,color .18s ease;
+}
+/* plain buttons */
+.btn{border-radius:10px;border:1px solid var(--k-edge);background:linear-gradient(var(--k-top),var(--k-bot));box-shadow:var(--k-hl),var(--k-rest);padding:.42em .95em;font-weight:500;color:var(--ink)}
+@media (hover:hover){ .btn:hover{border-color:var(--k-edge-hi);box-shadow:var(--k-hl),var(--k-lift);transform:translateY(-1px)} }
+.btn:active{transform:translateY(.5px) scale(.97);box-shadow:var(--k-press);background:var(--k-bot);transition-duration:.06s}
+.btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.btn.primary{border-color:transparent;color:var(--surface);background:linear-gradient(var(--k-ink-top),var(--k-ink-bot));box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 1px 2px rgba(28,35,48,.2),0 4px 10px rgba(28,35,48,.18)}
+@media (hover:hover){ .btn.primary:hover{box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 2px 4px rgba(28,35,48,.22),0 8px 18px rgba(28,35,48,.22)} }
+.btn.primary:active{background:var(--k-ink-bot);box-shadow:inset 0 2px 5px rgba(0,0,0,.35)}
+.btn:disabled,.btn[disabled]{opacity:.55;transform:none;box-shadow:var(--k-hl)}
+/* + New paper ▾ : one raised capsule with a hairline between its halves */
+.add-split{border-radius:10px;box-shadow:var(--k-rest)}
+.add-split .add-paper,.add-split .add-more{box-shadow:var(--k-hl);border-color:var(--k-edge)}
+.add-split .add-paper{border-radius:10px 0 0 10px}
+.add-split .add-more{border-radius:0 10px 10px 0;border-left:1px solid var(--k-edge);background:linear-gradient(var(--k-top),var(--k-bot))}
+@media (hover:hover){ .add-split .add-paper:hover,.add-split .add-more:hover{transform:none;box-shadow:var(--k-hl);background:linear-gradient(var(--k-top),var(--k-top))} .add-split:hover{box-shadow:var(--k-lift)} }
+.add-split .add-paper:active,.add-split .add-more:active{transform:scale(.97);box-shadow:var(--k-press);background:var(--k-bot)}
+/* pills: How far, Lens, export choices */
+.depth-ctl .dchip,.ex-chips .dchip,.lens-ctl .dchip,.dchip{border:1px solid var(--k-edge);border-radius:999px;background:linear-gradient(var(--k-top),var(--k-bot));box-shadow:var(--k-hl),0 1px 2px rgba(28,35,48,.06);color:var(--ink)}
+@media (hover:hover){ .depth-ctl .dchip:hover,.ex-chips .dchip:hover,.lens-ctl .dchip:hover,.dchip:hover{border-color:var(--k-edge-hi);transform:translateY(-1px);box-shadow:var(--k-hl),0 3px 8px rgba(28,35,48,.10)} }
+.depth-ctl .dchip:active,.ex-chips .dchip:active,.lens-ctl .dchip:active,.dchip:active{transform:scale(.95);box-shadow:var(--k-press);transition-duration:.06s}
+.depth-ctl .dchip.on,.ex-chips .dchip.on,.lens-ctl .dchip.on,.dchip.on{border-color:transparent;color:var(--surface);background:linear-gradient(var(--k-ink-top),var(--k-ink-bot));box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 1px 2px rgba(28,35,48,.2),0 3px 8px rgba(28,35,48,.14)}
+.hf-bar .lens-btn{border:1px solid var(--k-edge);background:linear-gradient(var(--k-top),var(--k-bot));box-shadow:var(--k-hl),var(--k-rest);font-weight:600}
+@media (hover:hover){ .hf-bar .lens-btn:hover{transform:translateY(-1px);box-shadow:var(--k-hl),var(--k-lift)} }
+.hf-bar .lens-btn:active{transform:scale(.95);box-shadow:var(--k-press)}
+/* Want to read / Read */
+.stbtn{border:1px solid var(--k-edge);background:linear-gradient(var(--k-top),var(--k-bot));box-shadow:var(--k-hl),0 1px 2px rgba(28,35,48,.06);color:var(--ink);padding:.26em .85em}
+@media (hover:hover){ .stbtn:hover{transform:translateY(-1px);border-color:var(--k-edge-hi);box-shadow:var(--k-hl),0 3px 8px rgba(28,35,48,.10)} }
+.stbtn:active{transform:scale(.94);box-shadow:var(--k-press);transition-duration:.06s}
+.stbtn.read[aria-pressed="true"]{border-color:color-mix(in srgb,var(--green) 55%,transparent);background:linear-gradient(color-mix(in srgb,var(--green) 16%,var(--k-top)),color-mix(in srgb,var(--green) 26%,var(--k-bot)));color:var(--green-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 1px 2px rgba(20,90,60,.18)}
+.stbtn.want[aria-pressed="true"]{border-color:color-mix(in srgb,var(--red) 55%,transparent);background:linear-gradient(color-mix(in srgb,var(--red) 14%,var(--k-top)),color-mix(in srgb,var(--red) 24%,var(--k-bot)));color:var(--red-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 1px 2px rgba(150,40,30,.18)}
+/* chips for topics and tags */
+.relchip,button.tagchip{border:1px solid var(--k-edge);background:linear-gradient(var(--k-top),var(--k-bot));box-shadow:var(--k-hl),0 1px 1.5px rgba(28,35,48,.06)}
+@media (hover:hover){ .relchip:hover,button.tagchip:hover{transform:translateY(-1px);box-shadow:var(--k-hl),0 3px 7px rgba(28,35,48,.10)} }
+.relchip:active,button.tagchip:active{transform:scale(.95);box-shadow:var(--k-press)}
+/* segmented choices: a sunken track with a raised thumb */
+.ex-seg,.seg{border:0;border-radius:11px;padding:3px;gap:2px;background:var(--k-track);box-shadow:inset 0 1px 2px rgba(28,35,48,.10)}
+.ex-seg label,.seg button{border:0;border-radius:8px;color:var(--muted);transition:background .18s ease,box-shadow .18s ease,color .18s ease,transform .12s ease;background:transparent}
+.ex-seg label:active,.seg button:active{transform:scale(.96)}
+.ex-seg label.on,.seg button[aria-pressed="true"]{background:linear-gradient(var(--k-top),var(--k-bot));color:var(--ink);font-weight:600;box-shadow:var(--k-hl),0 1px 2px rgba(28,35,48,.12),0 2px 6px rgba(28,35,48,.08)}
+/* round and bare icon buttons */
+.bc-x{background:linear-gradient(var(--k-top),var(--k-bot));border:1px solid var(--k-edge);box-shadow:var(--k-hl),var(--k-rest)}
+.bc-x:active{transform:scale(.9);box-shadow:var(--k-press)}
+.more-btn{transition:background .15s ease,transform .12s ease,color .15s ease}
+@media (hover:hover){ .more-btn:hover{background:var(--k-track);color:var(--ink)} }
+.more-btn:active,.more-btn.open{background:color-mix(in srgb,var(--ink) 12%,transparent);transform:scale(.9);color:var(--ink)}
+#btnSettings{transition:color .15s ease,transform .25s cubic-bezier(.2,.8,.2,1)}
+#btnSettings:active{transform:rotate(-30deg) scale(.9)}
+.linkbtn:active{opacity:.6}
+.fm-item:active{background:color-mix(in srgb,var(--ink) 10%,transparent)}
+.toc-link:active{transform:scale(.985)}
+.toc-link{transition:transform .12s ease}
+@media (prefers-reduced-motion: reduce){
+  .btn,.dchip,.stbtn,.relchip,button.tagchip,.hf-bar .lens-btn,.bc-x,.more-btn,#btnSettings,.toc-link,.ex-seg label,.seg button{transition:none!important;transform:none!important}
+}

@@ -1,0 +1,82 @@
+/* ===================== v2: no Modify mode — actions where you point ===================== */
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;padding-inline:.55em;min-width:38px}
+.icon-btn svg{display:block}
+.more-btn{border:0;background:transparent;color:var(--muted);font:600 1rem/1 var(--sans);letter-spacing:1px;width:28px;height:28px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0 0 3px}
+.more-btn:hover,.more-btn.open{background:var(--bg);color:var(--ink)}
+h2.has-more{display:flex;align-items:center;gap:6px}
+h2.has-more .more-btn{opacity:.35;transition:opacity .15s}
+.branch-head:hover h2.has-more .more-btn,h2.has-more .more-btn.open{opacity:1}
+.row-more{display:inline-block;margin-left:6px}
+.row-more .more-btn{opacity:0;transition:opacity .12s}
+tr:hover .row-more .more-btn,tr:focus-within .row-more .more-btn,.row-more .more-btn.open{opacity:1}
+.toc-more{opacity:0;width:24px;height:24px;margin-left:2px;flex:none}
+.toc-row:hover .toc-more,.toc-sub:hover .toc-more,.toc-more.open{opacity:1}
+.toc-drag{opacity:0;transition:opacity .12s}
+.toc-row:hover .toc-drag,.toc-sub:hover .toc-drag{opacity:.6}
+.tl-row .tl-x,.tl-row .tl-add{opacity:0;transition:opacity .12s}
+.tl-row:hover .tl-x,.tl-row:hover .tl-add{opacity:1}
+.info-st .more-btn{margin-left:2px}
+.rel-list li{grid-template-columns:7.2em minmax(0,1fr) auto auto}
+.rl-act{display:inline-flex;gap:2px;opacity:0;transition:opacity .12s}
+.rel-list li:hover .rl-act{opacity:1}
+.rl-act button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:.85rem;padding:0 4px;border-radius:5px}
+.rl-act button:hover{background:var(--bg);color:var(--ink)}
+@media (hover: none){ .row-more .more-btn,.toc-more,.tl-row .tl-x,.tl-row .tl-add,.rl-act,h2.has-more .more-btn{opacity:1} }
+.float-menu{position:fixed;z-index:120;min-width:200px;max-width:340px;background:var(--surface);border-radius:12px;padding:5px;box-shadow:0 12px 32px rgba(20,30,50,.18),0 0 0 1px rgba(0,0,0,.05);animation:fmIn .12s ease-out}
+@keyframes fmIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+.fm-item{display:block;width:100%;text-align:left;border:0;background:transparent;padding:.5em .7em;border-radius:8px;font:inherit;font-size:.9rem;color:var(--ink);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fm-item:hover,.fm-item:focus-visible{background:var(--bg);outline:none}
+.fm-item.danger{color:var(--red-ink, #C2272D)}
+.fm-sep{height:1px;background:var(--rule);margin:4px 6px}
+/* dragging a line */
+.net.linking{cursor:crosshair}
+.net .link-drag{fill:none;stroke:var(--focus);stroke-width:1.8;stroke-dasharray:5 4;pointer-events:none}
+.net .drag-ghost,.net .lane-drop{pointer-events:none}
+.net .node.link-target .dot{stroke:var(--focus);stroke-width:3}
+/* names: the main ones always; the rest when you point at or select a paper */
+.net .lbl.hov:not(.hot){opacity:0 !important;pointer-events:none}
+.net .lbl.hov{transition:opacity .12s}
+/* How far, under the map */
+.hf-bar{margin:8px 0 0;padding:4px 12px;border-radius:12px;background:var(--surface);box-shadow:0 1px 0 var(--rule)}
+.hf-bar[hidden]{display:none}
+.hf-bar .depth-ctl{margin:.25em 0}
+.hf-bar .hf-count{display:inline}
+
+/* ---------- a paper's shadow in a topic it mentions ---------- */
+.net .ghost{cursor:pointer}
+.net .ghost-hit{fill:transparent}
+.net .ghost-dot{fill:none;stroke:var(--muted);stroke-width:1.3;opacity:.55}
+.net .ghost-line{stroke:var(--muted);stroke-width:1.1;stroke-dasharray:2 3;opacity:0;transition:opacity .12s;pointer-events:none}
+.net .ghost.hot .ghost-line{opacity:.7}
+.net .ghost.hot .ghost-dot{opacity:1;stroke:var(--ink)}
+.net.focus .ghost:not(.hot){opacity:.35}
+.net .ghost-lbl{font-style:italic;fill:var(--muted)}
+.ment-list{display:flex;flex-direction:column;gap:4px;max-height:50vh;overflow:auto}
+.ment-list label{display:flex;gap:8px;align-items:center;padding-left:calc(var(--d, 0) * 16px)}
+#mentAdd{margin-top:6px;max-width:100%}
+
+/* ---------- names: titles, with the authors underneath when lit ---------- */
+.net .lbl{transition:opacity .12s, transform .14s}
+.net .lbl-au{font-size:9.5px;fill:var(--muted);opacity:0;pointer-events:none;transition:opacity .12s}
+.net .lbl-au.hot{opacity:1}
+.net .lbl.up.hot{transform:translateY(-11px)}
+/* pointing at a dot: only that paper's name and authors, not those of everything it lights */
+.net.hovering .lbl.hov.hot:not(.me),.net.hovering .lbl-au.hot:not(.me){opacity:0 !important}
+.net.hovering .lbl.up.hot:not(.me){transform:none}
+
+/* ---------- + on the dot, link by kind first, click a line to change it ---------- */
+.net .plus-badge{pointer-events:none}
+.net .plus-badge circle{fill:var(--ink);stroke:var(--surface);stroke-width:1.6}
+.net .plus-badge path{stroke:var(--surface);stroke-width:1.8;stroke-linecap:round;fill:none}
+.plus-menu{min-width:210px}
+.net .link-drag{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-dasharray:5 4;pointer-events:none;opacity:.75}
+.net .link-drag.rel{stroke-dasharray:1.5 4;stroke-linecap:round}
+.net .link-drag.field{stroke:var(--muted);stroke-dasharray:2 3}
+.net .link-drag-arr{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.net.linking-field .link-drag-arr{stroke:var(--muted)}
+.net.linking .node{cursor:crosshair}
+.net .edge-hit{fill:none;stroke:transparent;stroke-width:10;pointer-events:stroke;cursor:pointer}
+.net.linking .edge-hit{pointer-events:none}
+.fm-item.fm-title{color:var(--muted);font-size:.82rem;cursor:default;white-space:normal}
+.fm-item.fm-title:hover{background:transparent}
+.link-hint{background:var(--ink);color:var(--surface)}
