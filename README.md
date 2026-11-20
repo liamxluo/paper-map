@@ -14,25 +14,19 @@
 
 <p align="center"><sub>macOS 11 or later, Apple silicon and Intel &nbsp;·&nbsp; Chrome, Edge or Safari &nbsp;·&nbsp; free and open source (Apache-2.0)</sub></p>
 
-<!-- THE VIDEO: in GitHub's editor, drag paper-map-tour.mp4 onto the line below; GitHub replaces it with a link that plays here. -->
+![Clicking the folded maps on the desk: they fold into a strip of covers you scroll through, and the map chosen unfolds panel by panel into the map itself](assets/tour-maps.webp)
 
 <p align="center">
-  <img src="assets/desk.jpg" alt="The Paper Map desk: your maps folded on the left, your papers and your Readings on the right, a notebook with a fountain pen, and a cup of coffee" width="100%">
+
 </p>
 
 Paper Map lays the papers of a field out on a timeline and lets you draw how they connect: which builds on which, which answers which, and which line of thought runs through them. Around the map sits a desk: your maps folded on the left, every paper you keep, a book of everything you have read, and a notebook for a research log. All of it is one file that belongs to you.
 
 ## A tour
 
-### From the desk to the map
-
-![Clicking the folded maps on the desk: they fold into a strip of covers you scroll through, and the map chosen unfolds panel by panel into the map itself](assets/tour-maps.webp)
-
-Your maps lie folded on the desk, the one you opened last on top, drawn with your own lines. Click them and every map stands in a row of covers you scroll left and right; choose one and it unfolds into the map, which fills the window. **Desk** folds it back to its cover.
-
 ### The map
 
-![A map of papers on a timeline, in rows by topic; a paper is chosen and Lens lays out its whole line of thought](assets/tour-map.webp)
+Your maps lie folded on the desk, the one you opened last on top, drawn with your own lines. Click them and every map stands in a row of covers you scroll left and right; choose one and it unfolds into the map, which fills the window. **Desk** folds it back to its cover.
 
 The map lies on your desk as one sheet, with two small bars: your maps on the left; search, new paper, filters, years, export, sync and settings on the right. Papers sit on their years, in rows by topic. Double-click a dot to link it: **Builds on**, **Responds to** or **Related to**. Give a main line of thought its own colour, drag along the years to zoom into a period, and press **L** on a paper to see its whole line on its own.
 
