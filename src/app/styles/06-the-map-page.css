@@ -1,22 +1,102 @@
-/* ===================== the map page: the map fills the window, its controls float over it ===================== */
-html.atlas body{background:#EAE3D4}
+/* ===================== the map page, as confirmed: the map on its sheet, on the desk ===================== */
+@font-face{font-family:'PMap Serif';src:url(assets/desk/fonts/pmap-serif-400.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'PMap Serif';src:url(assets/desk/fonts/pmap-serif-700.woff2) format('woff2');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'PMap Serif';src:url(assets/desk/fonts/pmap-serif-400i.woff2) format('woff2');font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:'PMap Sans';src:url(assets/desk/fonts/pmap-sans-400.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'PMap Sans';src:url(assets/desk/fonts/pmap-sans-700.woff2) format('woff2');font-weight:700;font-style:normal;font-display:swap}
+html.atlas{--atl-serif:'PMap Serif','Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;--atl-sans:'PMap Sans','Helvetica Neue',Helvetica,Arial,sans-serif;--atl-ink:#231E1A;--atl-muted:#6E6357;--atl-paper:#EEE6D6}
+html.atlas body{background:#24100a var(--atl-wood, url(assets/desk/bg-mahogany.webp)) center/cover fixed}
+html.atlas body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(10,4,2,.45));pointer-events:none;z-index:0}
+html.atlas .atl-sheet{position:fixed;inset:22px;z-index:1;border-radius:3px;background:var(--atl-hl),var(--atl-mul),url(assets/desk/map-paper.webp),var(--atl-paper);background-size:100% 100%,100% 100%,cover,auto;background-blend-mode:screen,multiply,normal,normal;box-shadow:0 1px 2px rgba(0,0,0,.4),0 18px 50px rgba(0,0,0,.5)}
+/* the old page's furniture is gone */
+html.atlas #bar,html.atlas .map-tools,html.atlas #appTitle,html.atlas #main,html.atlas #mapKey,html.atlas #hfBar,html.atlas #installCard,html.atlas .lane-picker,html.atlas #branchRow{display:none !important}
 html.atlas .page,html.atlas body.toc-open .page{margin-left:0 !important}
-html.atlas .bar{position:fixed;top:14px;left:14px;right:14px;z-index:60;background:transparent;border:0;pointer-events:none}
-html.atlas .appbar-inner{max-width:none;padding:0 !important;gap:8px;pointer-events:none}
-html.atlas .appbar-inner > *{pointer-events:auto}
-html.atlas .bar .btn,html.atlas .bar .toc-toggle,html.atlas .bar .filter-toggle,html.atlas #crumb,html.atlas .bar .save-state:not(:empty),html.atlas .bar .undo-pill,html.atlas .map-tools > .btn,html.atlas .map-tools .export-wrap > .btn,html.atlas .map-tools .br-row,html.atlas .map-tools .zoom{background:rgba(252,250,246,.95);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:0 !important;border-radius:12px !important;box-shadow:0 1px 2px rgba(40,30,20,.12),0 6px 18px rgba(40,30,20,.12)}
-html.atlas #crumb{display:inline-flex;align-items:center;padding:.44em .95em;font-weight:600;min-height:20px}
-html.atlas .bar .save-state:not(:empty){padding:.44em .9em;font-size:.82rem}
-html.atlas .hero{padding:0;max-width:none;margin:0}
-html.atlas #appTitle,html.atlas #main,html.atlas #installCard{display:none !important}
-html.atlas .map-tools{position:fixed;top:64px;right:14px;z-index:55;margin:0;justify-content:flex-end;max-width:calc(100vw - 28px)}
-html.atlas .map-tools .br-row,html.atlas .map-tools .zoom{padding:4px 6px}
-html.atlas .lane-picker{position:fixed;top:112px;right:14px;width:min(560px,calc(100vw - 28px));max-height:calc(100vh - 140px);overflow:auto;z-index:56;margin:0;border:0;border-radius:14px;box-shadow:0 2px 4px rgba(40,30,20,.12),0 18px 50px rgba(40,30,20,.22)}
-html.atlas .filters-row{position:fixed;top:64px;right:14px;width:min(720px,calc(100vw - 28px));z-index:57;background:var(--surface);border:0;border-radius:14px;box-shadow:0 2px 4px rgba(40,30,20,.12),0 18px 50px rgba(40,30,20,.22)}
-html.atlas .map-box{position:fixed;top:112px;left:14px;right:14px;bottom:14px;max-height:none;z-index:10}
-html.atlas .info{position:fixed;right:30px;bottom:30px;width:min(560px,calc(100vw - 60px));max-height:calc(100vh - 190px);overflow:auto;z-index:50;margin:0;border:0;border-radius:18px;box-shadow:0 2px 4px rgba(40,30,20,.12),0 18px 50px rgba(40,30,20,.22)}
+html.atlas .hero{padding:0;margin:0;max-width:none}
+html.atlas .toc{z-index:90}
+/* the map, drawn straight on the paper */
+html.atlas .map-box{position:fixed;top:196px;left:46px;right:46px;bottom:112px;max-height:none;z-index:2;background:transparent !important;box-shadow:none !important;border-radius:0;padding:0;--surface:var(--atl-paper)}
+html.atlas #mapBox .map,html.atlas #mapBox .map-labels,html.atlas #mapBox .map-scroll,html.atlas #mapBox .map-axis{background:transparent !important}
+/* the title on the sheet */
+html.atlas .atl-title{position:fixed;top:104px;left:86px;z-index:3;color:var(--atl-ink);pointer-events:none}
+html.atlas .atl-title h2{margin:0;font:700 30px/1 var(--atl-serif);letter-spacing:9px}
+html.atlas .atl-title p{margin:12px 0 0;font:italic 400 15px var(--atl-serif);color:var(--atl-muted)}
+html.atlas .atl-title i{display:block;width:220px;margin-top:14px;border-top:1.2px solid rgba(35,30,26,.7)}
+/* the two bars */
+html.atlas .atl-pill{position:fixed;top:44px;z-index:60;display:flex;align-items:center;gap:2px;padding:5px;background:rgba(251,247,238,.95);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-radius:14px;box-shadow:0 1px 1px rgba(60,40,20,.12),0 6px 18px rgba(60,40,20,.16),inset 0 1px 0 rgba(255,255,255,.8)}
+html.atlas #atlLeft{left:46px} html.atlas #atlRight{right:46px}
+html.atlas .atl-i{all:unset;box-sizing:border-box;width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;color:#2B2520;cursor:pointer}
+html.atlas .atl-i:hover,html.atlas .atl-name:hover{background:rgba(35,30,26,.07)}
+html.atlas .atl-i:focus-visible,html.atlas .atl-name:focus-visible{outline:2px solid #2B2520;outline-offset:1px}
+html.atlas .atl-sep{width:1px;height:22px;margin:0 4px;background:rgba(35,30,26,.14)}
+html.atlas .atl-lay{display:inline-flex;margin:0 2px 0 6px;color:#2B2520}
+html.atlas .atl-name{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 10px 0 6px;border-radius:10px;font:600 16.5px var(--atl-serif);color:var(--atl-ink);cursor:pointer}
+html.atlas [data-atl="sync"]{color:#2F7F5A}
+html.atlas [data-atl="sync"].warn{color:#B8892E} html.atlas [data-atl="sync"].bad{color:#B4432E} html.atlas [data-atl="sync"].local{color:#8E857A}
+/* the menus and panels under the bars */
+html.atlas .atl-menu{position:fixed;top:94px;left:46px;z-index:70;width:310px;max-height:70vh;overflow:auto;padding:8px;border-radius:14px;background:#FBF7EE;box-shadow:0 2px 2px rgba(60,40,20,.12),0 18px 44px rgba(20,8,2,.32)}
+html.atlas .atl-menu .atl-mk{margin:4px 10px 8px;font:700 10.5px var(--atl-sans);letter-spacing:1.8px;color:var(--atl-muted)}
+html.atlas .atl-menu button{all:unset;display:block;box-sizing:border-box;width:100%;padding:9px 10px;border-radius:10px;cursor:pointer}
+html.atlas .atl-menu button:hover,html.atlas .atl-menu button.on{background:rgba(35,30,26,.07)}
+html.atlas .atl-menu b{display:block;font:700 15px var(--atl-serif);color:var(--atl-ink)}
+html.atlas .atl-menu span{display:block;margin-top:2px;font:400 12px var(--atl-sans);color:var(--atl-muted)}
+html.atlas .atl-menu .atl-ms{height:1px;margin:6px 8px;background:rgba(35,30,26,.1)}
+html.atlas .atl-pop{position:fixed;top:94px;right:46px;z-index:70;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+html.atlas .atl-pop > [hidden]{display:none !important}
+html.atlas .atl-pop .add-menu,html.atlas .atl-pop .export-menu{position:static !important;display:flex;flex-direction:column;min-width:260px;padding:6px;border:0;border-radius:14px;background:#FBF7EE;box-shadow:0 2px 2px rgba(60,40,20,.12),0 18px 44px rgba(20,8,2,.32)}
+html.atlas .atl-pop .zoom{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px;border-radius:14px;background:#FBF7EE;box-shadow:0 2px 2px rgba(60,40,20,.12),0 18px 44px rgba(20,8,2,.32)}
+html.atlas .filters-row{position:fixed;top:94px;right:46px;z-index:70;width:min(720px,calc(100vw - 92px));background:#FBF7EE;border:0;border-radius:14px;box-shadow:0 2px 2px rgba(60,40,20,.12),0 18px 44px rgba(20,8,2,.32)}
+html.atlas .undo-pill{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:65;background:rgba(251,247,238,.95);border-radius:12px;box-shadow:0 6px 18px rgba(60,40,20,.16)}
+html.atlas .preview-banner{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;z-index:58;border-radius:12px}
+/* the card, as confirmed */
+html.atlas .info{position:fixed;right:70px;bottom:72px;z-index:50;width:min(440px,calc(100vw - 100px));max-height:calc(100vh - 240px);overflow:auto;margin:0;padding:20px 24px 16px 30px;border:0;border-radius:20px;background:#FBF8F2;box-shadow:0 2px 4px rgba(40,30,20,.12),0 22px 60px rgba(40,30,20,.28)}
 html.atlas .info:not(.has-sel){display:none}
-html.atlas .map-key{position:fixed;left:30px;bottom:26px;z-index:50;max-width:min(560px,calc(100vw - 480px));background:rgba(252,250,246,.95);border-radius:12px;padding:6px 14px;box-shadow:0 1px 2px rgba(40,30,20,.12),0 6px 18px rgba(40,30,20,.12)}
-html.atlas .map-key:not([open]) > :not(summary){display:none}
-html.atlas .hf-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:26px;z-index:52}
-html.atlas .preview-banner{position:fixed;left:50%;transform:translateX(-50%);top:64px;z-index:58;border-radius:12px}
+html.atlas .acard{position:relative}
+html.atlas .acard::before{content:'';position:absolute;left:-18px;top:2px;bottom:2px;width:4px;border-radius:2px;background:var(--atl-ink)}
+html.atlas .ac-k{margin:0;font:700 11px var(--atl-sans);letter-spacing:2.2px;text-transform:uppercase;color:#5E544A}
+html.atlas .ac-t{margin:6px 0 0;font:700 25px/1.15 var(--atl-serif);color:var(--atl-ink);cursor:pointer}
+html.atlas .ac-a{margin:5px 0 0;font:italic 400 16px var(--atl-serif);color:#4F453B}
+html.atlas .ac-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px}
+html.atlas .ac-st{display:inline-flex;padding:3px;border-radius:11px;background:#EFE9DD}
+html.atlas .ac-st .stbtn{all:unset;padding:7px 14px;border-radius:9px;font:500 14px var(--atl-sans);color:#5E544A;cursor:pointer}
+html.atlas .ac-st .stbtn[aria-pressed="true"]{background:#fff;color:var(--atl-ink);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+html.atlas .ac-ic{display:inline-flex;gap:4px}
+html.atlas .ac-b{all:unset;box-sizing:border-box;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:9px;color:#2B2520;cursor:pointer}
+html.atlas .ac-b:hover{background:rgba(35,30,26,.07)}
+html.atlas .ac-hf{display:flex;align-items:center;gap:6px;margin-top:12px;font:400 14px var(--atl-sans);color:#5E544A}
+html.atlas .ac-hk{margin-right:4px}
+html.atlas .ac-d{all:unset;box-sizing:border-box;min-width:24px;height:24px;padding:0 7px;border-radius:7px;text-align:center;line-height:24px;font:500 13.5px var(--atl-sans);color:#5E544A;cursor:pointer}
+html.atlas .ac-d.on{background:var(--atl-ink);color:#FBF7EE}
+html.atlas .ac-n{margin-left:auto}
+/* the legend and the hint along the bottom of the sheet */
+html.atlas .atl-foot{position:fixed;left:86px;bottom:46px;z-index:3;display:flex;flex-wrap:wrap;gap:8px 26px;font:400 13px var(--atl-sans);color:#5E544A}
+html.atlas .atl-foot span{display:inline-flex;align-items:center;white-space:nowrap}
+html.atlas .atl-foot .lg-l{display:inline-block;width:22px;margin-right:8px;border-top:1.5px solid #3A322B}
+html.atlas .atl-foot .lg-l.dash{border-top-style:dashed} html.atlas .atl-foot .lg-l.dot{border-top-style:dotted}
+html.atlas .atl-foot .lg-l.main{border-top:2px solid #B4432E}
+html.atlas .atl-foot .lg-br{cursor:pointer} html.atlas .atl-foot .lg-br .lg-l{border-top-width:2px}
+html.atlas .atl-foot .lg-d{display:inline-block;box-sizing:border-box;width:9px;height:9px;margin-right:8px;border-radius:50%}
+html.atlas .atl-foot .lg-d.read{background:#231E1A} html.atlas .atl-foot .lg-d.want{border:2px solid #B4432E}
+html.atlas .atl-hint{position:fixed;right:70px;bottom:36px;z-index:3;font:400 12px var(--atl-sans);color:#9A8F80;pointer-events:none}
+/* phones and small windows: the same page, closer to the edges */
+@media (max-width: 760px){
+  html.atlas .atl-sheet{inset:6px}
+  html.atlas .atl-pill{top:14px} html.atlas #atlLeft{left:12px;max-width:calc(100vw - 24px)} html.atlas #atlRight{right:12px;top:62px}
+  html.atlas .atl-i{width:31px;height:31px}
+  html.atlas .atl-name{font-size:14px;max-width:62vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.atlas .atl-title{top:116px;left:22px} html.atlas .atl-title h2{font-size:19px;letter-spacing:4px} html.atlas .atl-title p{font-size:12.5px;margin-top:7px} html.atlas .atl-title i{display:none}
+  html.atlas .map-box{top:172px;left:8px;right:8px;bottom:14px}
+  html.atlas .atl-foot,html.atlas .atl-hint{display:none}
+  html.atlas .info{left:10px;right:10px;bottom:10px;width:auto;max-height:55vh;padding:16px 18px 12px 24px}
+  html.atlas .atl-menu{left:12px;top:60px;width:calc(100vw - 24px)}
+  html.atlas .atl-pop,html.atlas .filters-row{top:108px;right:12px}
+  html.atlas .filters-row{width:calc(100vw - 24px)}
+}
+/* Lens on the same sheet, with its controls as small bars */
+html.atlas .lens-root{background:#24100a var(--atl-wood, url(assets/desk/bg-mahogany.webp)) center/cover;isolation:isolate}
+html.atlas .lens-root::before{content:'';position:fixed;inset:22px;z-index:-1;border-radius:3px;background:var(--atl-hl),var(--atl-mul),url(assets/desk/map-paper.webp),var(--atl-paper);background-size:100% 100%,100% 100%,cover,auto;background-blend-mode:screen,multiply,normal,normal;box-shadow:0 1px 2px rgba(0,0,0,.4),0 18px 50px rgba(0,0,0,.5)}
+html.atlas .lens-bar,html.atlas .lens-ctl{align-self:flex-start;margin:0 46px;padding:6px 12px;border:0;border-radius:14px;background:rgba(251,247,238,.95);box-shadow:0 1px 1px rgba(60,40,20,.12),0 6px 18px rgba(60,40,20,.16),inset 0 1px 0 rgba(255,255,255,.8)}
+html.atlas .lens-bar{margin-top:44px} html.atlas .lens-ctl{margin-top:10px}
+html.atlas .lens-title{font-family:var(--atl-serif)}
+html.atlas .lens-body{margin:0 46px 34px;background:transparent}
+html.atlas .lens-svg .ln-card{fill:#FBF8F2}
+@media (max-width: 760px){ html.atlas .lens-root::before{inset:6px} html.atlas .lens-bar,html.atlas .lens-ctl{margin-left:12px;margin-right:12px} html.atlas .lens-bar{margin-top:14px} html.atlas .lens-body{margin:0 8px 10px} }

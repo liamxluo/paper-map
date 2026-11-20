@@ -1,6 +1,6 @@
 [package]
 name = "paper-map"
-version = "3.0.0"
+version = "3.0.1"
 description = "A personal map of research, ideas and reading"
 authors = ["liamxluo"]
 license = "MIT"

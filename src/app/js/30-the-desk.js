@@ -82,16 +82,105 @@ async function deskOpen(){
   DK.fromTopic = null;
 }
 document.getElementById('btnDesk').addEventListener('click', deskOpen);
+
+/* ===================== the map page, as confirmed: the map on its sheet, two small bars and the card =====================
+   It works through the app's own buttons and panels, which stay out of sight; the old page is gone. */
+const ATL_IC = {"back": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M15 18l-6-6 6-6\"/></svg>", "layers": "<svg class=\"ic \" width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3 3 7.5l9 4.5 9-4.5L12 3z\"/><path d=\"M3 16.5l9 4.5 9-4.5M3 12l9 4.5 9-4.5\"/></svg>", "chev": "<svg class=\"ic \" width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9l6 6 6-6\"/></svg>", "search": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"M20 20l-3.6-3.6\"/></svg>", "add": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg>", "filter": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 6h16M7 12h10M10 18h4\"/></svg>", "years": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"3.5\" y=\"5\" width=\"17\" height=\"15.5\" rx=\"2.5\"/><path d=\"M8 3v4M16 3v4M3.5 10h17\"/></svg>", "export": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3v12M8 7l4-4 4 4\"/><path d=\"M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13\"/></svg>", "sync": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M17.5 19H8a6 6 0 1 1 5.6-8.2A4.5 4.5 0 1 1 17.5 19z\"/><path d=\"M9.5 14l2 2 3.5-3.5\"/></svg>", "look": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg>", "target": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"6.5\"/><circle cx=\"12\" cy=\"12\" r=\"1.6\" fill=\"currentColor\"/><path d=\"M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3\"/></svg>", "doc": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10.5A.5.5 0 0 1 6.5 20V4a.5.5 0 0 1 .5-.5z\"/><path d=\"M13.5 3.5V8h4.5M9.5 12h5M9.5 15.5h5\"/></svg>", "link": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1.2 1.2\"/><path d=\"M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1.2-1.2\"/></svg>", "more": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"6\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/><circle cx=\"12\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/><circle cx=\"18\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/></svg>"};
+function atlasWood(){ const w = ((settings && settings.desk) || {}).wood || 'mahogany', p = ((settings && settings.desk) || {}).paper === 'smooth' ? 'smooth' : 'creased';
+  document.documentElement.style.setProperty('--atl-wood', 'url(assets/desk/bg-' + w + '.webp)');
+  document.documentElement.style.setProperty('--atl-hl', 'url(assets/desk/light-' + p + '-hl.webp)');
+  document.documentElement.style.setProperty('--atl-mul', 'url(assets/desk/light-' + p + '-mul.webp)'); }
+function atlasUI(){
+  if(document.getElementById('atlLeft')) return;
+  const mk = (tag, id, cls, html) => { const el = document.createElement(tag); if(id) el.id = id; if(cls) el.className = cls; if(html != null) el.innerHTML = html; return el; };
+  const B = (a, label, ic) => '<button type="button" class="atl-i" data-atl="' + a + '" aria-label="' + label + '" title="' + label + '">' + ic + '</button>';
+  const sheet = mk('div', 'atlSheet', 'atl-sheet', '');
+  const left = mk('div', 'atlLeft', 'atl-pill', '<button type="button" class="atl-i" data-atl="back" aria-label="Back to your maps" title="Back to your maps">' + ATL_IC.back + '</button><span class="atl-sep"></span><span class="atl-lay" aria-hidden="true">' + ATL_IC.layers + '</span><button type="button" class="atl-name" data-atl="maps" aria-haspopup="true" aria-expanded="false"><span id="atlNameT"></span>' + ATL_IC.chev + '</button>');
+  const maps = mk('div', 'atlMaps', 'atl-menu', ''); maps.hidden = true;
+  const right = mk('div', 'atlRight', 'atl-pill', B('search', 'Search', ATL_IC.search) + B('add', 'New paper', ATL_IC.add) + B('filter', 'Filters', ATL_IC.filter) + B('years', 'Years', ATL_IC.years) + B('export', 'Export', ATL_IC.export) + '<span class="atl-sep"></span>' + B('sync', 'Sync', ATL_IC.sync) + B('settings', 'Settings', ATL_IC.look));
+  const title = mk('div', 'atlTitle', 'atl-title', '');
+  const foot = mk('div', 'atlFoot', 'atl-foot', '');
+  const hint = mk('div', 'atlHint', 'atl-hint', 'Double-click a dot to link it · L for Lens');
+  const pop = mk('div', 'atlPop', 'atl-pop', '');
+  document.body.prepend(sheet); document.body.append(left, maps, right, title, foot, hint, pop);
+  ['addMenu', 'exportMenu', 'zoomTools'].forEach(id => { const el = document.getElementById(id); if(el) pop.appendChild(el); });
+  const up = document.getElementById('undoPill'); if(up) document.body.appendChild(up);
+  const fl = document.getElementById('filters'); if(fl) document.body.appendChild(fl);   /* the filters lived inside the old bar */
+  const click = id => { const el = document.getElementById(id); if(el) el.click(); };
+  document.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-atl]');
+    if(!b){ if(!ev.target.closest('#atlMaps')) { maps.hidden = true; } return; }
+    ev.stopPropagation(); ev.preventDefault();
+    const a = b.dataset.atl; if(a !== 'maps') maps.hidden = true;
+    if(a === 'back') deskOpen();
+    else if(a === 'maps'){ atlasMaps(); maps.hidden = !maps.hidden; b.setAttribute('aria-expanded', String(!maps.hidden)); }
+    else if(a === 'search'){ const fr = document.getElementById('filters'); if(fr && !fr.classList.contains('open')) click('filterToggle'); const q = document.getElementById('q'); [60, 220].forEach(ms => setTimeout(() => { if(q){ q.focus(); q.select(); } }, ms)); }
+    else if(a === 'add') click('btnAddMore');
+    else if(a === 'filter') click('filterToggle');
+    else if(a === 'years') click('btnZoom');
+    else if(a === 'export') click('btnExport');
+    else if(a === 'sync' || a === 'settings') click('btnSettings');
+  }, true);
+  maps.addEventListener('click', ev => { const t = ev.target.closest('[data-atl-map]'), c = ev.target.closest('[data-atl-contents]'), n = ev.target.closest('[data-atl-new]');
+    if(!t && !c && !n) return; maps.hidden = true;
+    if(t){ deskTouchRecent(t.dataset.atlMap); try{ if(ui.selected) select(null); }catch(e){} openView(t.dataset.atlMap + '-all'); }
+    else if(c) setToc(true); else if(n) openTopicForm(); });
+  /* the cloud says how saving is going */
+  const ss = document.querySelector('.bar [data-save-state]');
+  const syncNote = () => { const t = ss ? ss.textContent.trim() : '', btn = right.querySelector('[data-atl="sync"]');
+    btn.title = t || 'Sync: Settings'; btn.classList.toggle('warn', /saving|wait|unsaved|not saved|changes/i.test(t)); btn.classList.toggle('bad', /fail|couldn|error|offline|expired/i.test(t)); btn.classList.toggle('local', /browser only|this app only/i.test(t)); };
+  if(ss && 'MutationObserver' in window) new MutationObserver(syncNote).observe(ss, {childList: true, characterData: true, subtree: true});
+  syncNote(); atlasWood(); atlasTitle();
+}
+function atlasMaps(){
+  const box = document.getElementById('atlMaps');
+  const n = tid => Object.values(lib.entries).filter(e => e.kind === 'paper' && e.topic === tid).length;
+  box.innerHTML = '<p class="atl-mk">YOUR MAPS</p>' + lib.topics.map(t => '<button type="button" data-atl-map="' + esc(t.id) + '"' + (t.id === ui.topic ? ' class="on"' : '') + '><b>' + esc(t.name) + '</b><span>' + n(t.id) + (n(t.id) === 1 ? ' paper' : ' papers') + '</span></button>').join('') +
+    '<div class="atl-ms"></div><button type="button" data-atl-contents="1"><b>Contents</b><span>topics inside this map, and their order</span></button><button type="button" data-atl-new="1"><b>+ New map</b><span>for another field</span></button>';
+}
+function atlasTitle(){
+  const T = document.getElementById('atlTitle'); if(!T) return;
+  const tp = lib.topics.find(t => t.id === ui.topic);
+  const ps = Object.values(lib.entries).filter(e => e.kind === 'paper' && (!tp || e.topic === tp.id) && typeof e.y === 'number');
+  const ys = ps.map(e => e.y), n = lib.topics.length;
+  T.innerHTML = '<h2>' + esc((tp ? tp.name : (lib.title || 'Paper Map')).toUpperCase()) + '</h2><p>' + ps.length + (ps.length === 1 ? ' paper' : ' papers') + (ys.length ? ' · ' + Math.min(...ys) + ' – ' + Math.max(...ys) : '') + ' · one of ' + n + (n === 1 ? ' map' : ' maps') + '</p><i></i>';
+  const nm = document.getElementById('atlNameT'); if(nm) nm.textContent = tp ? tp.name : 'All maps';
+  const F = document.getElementById('atlFoot');
+  if(F){ const br = (lib.branches || []).filter(b => !b.hidden);
+    F.innerHTML = '<span><i class="lg-l"></i>builds on</span><span><i class="lg-l dash"></i>responds to</span><span><i class="lg-l dot"></i>related to</span>' +
+      (br.length ? br.map(b => '<span class="lg-br" data-branch-manage="1" title="Colour lines"><i class="lg-l" style="border-color:' + esc(b.color || '#B4432E') + '"></i>' + esc(b.name || 'main line') + '</span>').join('') : '<span><i class="lg-l main"></i>main line</span>') +
+      '<span><i class="lg-d read"></i>read</span><span><i class="lg-d want"></i>want to read</span>'; }
+}
+/* the card, as confirmed: where and when, the title, who; read or not; Lens, notes, the paper, more; how far */
+function atlasCardHTML(e){
+  const st = stOf(e), up = (IDX.up[e.id] || []).length, down = (IDX.down[e.id] || []).length;
+  const doi = e.d ? String(e.d).replace(/^https?:\/\/(dx\.)?doi\.org\//i, '') : '', url = /^https?:\/\//.test(e.l || '') ? e.l : (doi ? 'https://doi.org/' + doi : '');
+  const D = [[1, '1'], [2, '2'], [3, '3'], ['all', 'All']];
+  return '<div class="acard ' + stClass(e) + '">' +
+    '<p class="ac-k">' + esc([e.y, e.v].filter(Boolean).join(' · ')) + '</p>' +
+    '<h3 class="ac-t" data-open-card="' + e.id + '" tabindex="0" role="button">' + esc(e.t) + '</h3>' +
+    (e.au ? '<p class="ac-a">' + esc(e.au) + '</p>' : '') +
+    '<div class="ac-row"><span class="ac-st"><button type="button" class="stbtn want" data-st="want" data-id="' + e.id + '" aria-pressed="' + (st === 'want') + '">Want to read</button><button type="button" class="stbtn read" data-st="read" data-id="' + e.id + '" aria-pressed="' + (st === 'read') + '">Read</button></span>' +
+    '<span class="ac-ic"><button type="button" class="ac-b" data-open-lens="' + e.id + '" title="Lens: its line of thought (L)" aria-label="Lens">' + ATL_IC.target + '</button><button type="button" class="ac-b" data-reader="' + e.id + '" title="Notes and PDF" aria-label="Notes and PDF">' + ATL_IC.doc + '</button>' +
+    (url ? '<a class="ac-b" href="' + esc(url) + '" target="_blank" rel="noopener" title="Open the paper" aria-label="Open the paper">' + ATL_IC.link + '</a>' : '') +
+    '<button type="button" class="ac-b" data-open-card="' + e.id + '" title="The whole card" aria-label="More">' + ATL_IC.more + '</button></span></div>' +
+    '<div class="ac-hf"><span class="ac-hk">How far</span>' + D.map(o => '<button type="button" class="ac-d' + (String(ui.depth) === String(o[0]) ? ' on' : '') + '" data-depth="' + o[0] + '">' + o[1] + '</button>').join('') +
+    '<span class="ac-n">' + up + ' before · ' + down + ' after</span></div></div>' + citesHintHTML(e);
+}
+
+window.__pmAtlasCard = atlasCardHTML;
 /* the map page: full window wherever there is room for it (not on a phone held upright) */
-function atlasFollow(){ const on = window.innerWidth > 760, was = document.documentElement.classList.contains('atlas'); document.documentElement.classList.toggle('atlas', on); if(on && !was) setToc(false); if(on !== was){ try{ renderMap(true); }catch(e){} } }
+function atlasFollow(){ const on = true, was = document.documentElement.classList.contains('atlas'); document.documentElement.classList.toggle('atlas', on); if(on && !was) setToc(false); if(on !== was){ try{ renderMap(true); }catch(e){} } }
 /* on the map page a map is a field: opening one shows that field's rows (Topics on the map can add others) */
 function atlasLanes(){ if(!document.documentElement.classList.contains('atlas') || !ui.topic) return; const tp = lib.topics.find(t => t.id === ui.topic); if(!tp) return;
   const want = tp.subs.map(s => s.id), cur = Array.isArray(settings.lanes) ? settings.lanes : null;
   if(cur && cur.length === want.length && want.every(x => cur.includes(x))) return;
-  settings.lanes = want; persistSettings(); try{ renderMap(true); }catch(e){} }
-{ const _ov = openView; openView = function(){ const r = _ov.apply(this, arguments); try{ atlasLanes(); }catch(e){} return r; }; }
+  settings.lanes = want; persistSettings(); try{ const se = ui.selected && lib.entries[ui.selected]; if(se && se.topic !== tp.id) select(null); renderMap(true); }catch(e){} }
+{ const _ov = openView; openView = function(){ const r = _ov.apply(this, arguments); try{ atlasLanes(); atlasTitle(); }catch(e){} return r; }; }
 window.addEventListener('hashchange', () => setTimeout(() => { try{ atlasLanes(); }catch(e){} }, 0));
-window.addEventListener('resize', atlasFollow); atlasFollow(); if(document.documentElement.classList.contains('atlas')){ setToc(false); setTimeout(atlasLanes, 0); }
+window.addEventListener('resize', atlasFollow); atlasFollow(); setToc(false); atlasUI(); setTimeout(atlasLanes, 0);
+{ const _ra2 = renderAll; renderAll = function(){ _ra2(); try{ atlasTitle(); atlasWood(); }catch(e){} }; }
+window.addEventListener('hashchange', () => setTimeout(() => { try{ atlasTitle(); }catch(e){} }, 0));
 { const _om = openModal, _cm = closeModal;
   openModal = function(){ if(DK.shown){ DK.modalHid = true; deskHide(); } return _om.apply(this, arguments); };
   closeModal = function(){ const r = _cm.apply(this, arguments); if(DK.modalHid){ DK.modalHid = false; const page = deskPage(); if(page){ page.show(); deskShowFrame(); } } return r; }; }

@@ -39,7 +39,7 @@ function renderHfBar(){
   const has = !!(e && (lib.links.some(l => l[0] === id || l[1] === id) || (e.needs || []).length));
   el.hidden = !has; el.innerHTML = has ? hfBarHTML(id) + '<button type="button" class="dchip lens-btn" data-open-lens="' + id + '" title="See its line of thought laid out (L)">Lens</button>' : '';
 }
-function refreshInfo(){ infoEl.innerHTML = infoHTML(ui.selected); infoEl.classList.toggle('has-sel', !!ui.selected); renderHfBar(); if(bigCard) refreshBigCard(); }
+function refreshInfo(){ const se = ui.selected && lib.entries[ui.selected]; infoEl.innerHTML = se && se.kind === 'paper' && window.__pmAtlasCard ? window.__pmAtlasCard(se) : infoHTML(ui.selected); infoEl.classList.toggle('has-sel', !!ui.selected); renderHfBar(); if(bigCard) refreshBigCard(); }
 function focusNoteHTML(id){
   const R = branchesNear(id);
   let h = '';
