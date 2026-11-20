@@ -5,7 +5,8 @@
   "02-cards.css",
   "03-lens.css",
   "04-tactile-buttons-raised-at-rest.css",
-  "05-the-map-as-a-printed.css"
+  "05-the-map-as-a-printed.css",
+  "06-the-map-page.css"
  ],
  "js": [
   "00-base.js",

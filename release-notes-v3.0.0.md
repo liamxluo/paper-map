@@ -14,12 +14,13 @@ Each time it opens, a soft veil welcomes you (*Welcome to Paper Map, your readin
 
 ## Your maps
 - Three folded sheets on the desk, always three, whatever the number of maps you have. The top two show the maps you opened last, with your own lines.
-- Click them and the maps fold into a row: **Your maps**. A fourth map shows as its cover; with more, **More maps** lists them all. **New map** starts another field.
-- Click a map and it unfolds, panel by panel, into the map itself. **Desk**, first in the top bar, folds it back into the row.
+- Click them and the maps fold into **Your maps**: every map as a cover on one strip you scroll left and right, like brochures on a stand. **New map** waits at the end.
+- Click a cover and it unfolds, panel by panel, into the map, which now fills the window with its controls floating over it. **Desk** folds it back to its cover.
 
 ## Papers
 - Every paper on your maps as an A4 page, stamped **READ** or **TO READ**.
-- Filter by map or by mark, or search by title, author or year. Click a page to go to the paper on its map; **Desk** brings you back to the pages.
+- Filter by map or by mark, or search by title, author or year.
+- Click a page and it opens into the paper's own page: its notes, its status (change it there), labels, where it sits, and every line to and from it, each of which opens that paper's page. **Show it on its map** goes to it on the map, and **Desk** brings you back to the page.
 
 ## Readings
 - A reading list of its own: every book you have read, are reading or want to read, grouped by the year you finished it.

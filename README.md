@@ -1,20 +1,23 @@
 <p align="center">
-  <img src="assets/desk.jpg" alt="The Paper Map desk: your maps folded on the left, your papers and your Readings on the right, a notebook with a fountain pen, and a cup of coffee" width="100%">
+  <img src="assets/app-icon.png" width="168" alt="Paper Map app icon">
 </p>
 
-<h1 align="center">
-  <img src="icons/icon-512.png" width="44" alt=""><br>
-  Paper Map
-</h1>
+<h1 align="center">Paper Map</h1>
 
-<p align="center"><b>Your reading world.</b><br>A personal map of research, ideas and reading.</p>
+<p align="center">Your reading world.</p>
 
 <p align="center">
-  <a href="https://github.com/liamxluo/paper-map/releases/latest"><b>Download for Mac</b></a>
+  <img src="assets/icon-mac.svg" width="18" height="18" alt=""> <a href="https://github.com/liamxluo/paper-map/releases/latest/download/Paper-Map.dmg"><b>Download for macOS</b></a>
   &nbsp;·&nbsp;
-  <a href="https://liamxluo.github.io/paper-map/"><b>Open in your browser</b></a>
-  &nbsp;·&nbsp;
-  <a href="#get-started">Get started</a>
+  <img src="assets/icon-web.svg" width="18" height="18" alt=""> <a href="https://liamxluo.github.io/paper-map/"><b>Open in your browser</b></a>
+</p>
+
+<p align="center"><sub>macOS 11 or later, Apple silicon and Intel &nbsp;·&nbsp; Chrome, Edge or Safari &nbsp;·&nbsp; free and open source (MIT)</sub></p>
+
+<!-- THE VIDEO: in GitHub's editor, drag paper-map-tour.mp4 onto the line below; GitHub replaces it with a link that plays here. -->
+
+<p align="center">
+  <img src="assets/desk.jpg" alt="The Paper Map desk: your maps folded on the left, your papers and your Readings on the right, a notebook with a fountain pen, and a cup of coffee" width="100%">
 </p>
 
 Paper Map lays the papers of a field out on a timeline and lets you draw how they connect: which builds on which, which answers which, and which line of thought runs through them. Around the map sits a desk: your maps folded on the left, every paper you keep, a book of everything you have read, and a notebook for a research log. All of it is one file that belongs to you.
@@ -23,9 +26,9 @@ Paper Map lays the papers of a field out on a timeline and lets you draw how the
 
 ### From the desk to the map
 
-![Clicking the folded maps on the desk: they fold into a row, and the map chosen unfolds panel by panel into the map itself](assets/tour-maps.webp)
+![Clicking the folded maps on the desk: they fold into a strip of covers you scroll through, and the map chosen unfolds panel by panel into the map itself](assets/tour-maps.webp)
 
-Your maps lie folded on the desk, the one you opened last on top, drawn with your own lines. Click them to lay them out, choose one, and it unfolds into the map. **Desk** in the top bar folds it back.
+Your maps lie folded on the desk, the one you opened last on top, drawn with your own lines. Click them and every map stands in a row of covers you scroll left and right; choose one and it unfolds into the map, which fills the window. **Desk** folds it back to its cover.
 
 ### The map
 
@@ -111,7 +114,7 @@ When you mark a paper **Read**, Paper Map looks up what it cites: papers on your
 - **Colour lines.** Give a main line of thought a colour from a line's menu; **Colour lines** above the map names them and hides one for a while.
 - **Lens.** Select a paper and press **L**: its whole line on its own, the path between two papers, or a metro map.
 - **Notes and PDFs.** Every paper has Markdown notes beside its PDF. PDFs need sync.
-- **Papers.** The pages on the desk: every paper as a page stamped READ or TO READ, by map or by mark.
+- **Papers.** The pages on the desk: every paper as a page stamped READ or TO READ, by map or by mark. Click one and it opens into the paper's own page: its notes, its status, where it sits and every line to and from it.
 - **Export.** The map as PNG, vector PDF or a GIF of it growing over the years; the list as BibTeX, RIS, CSV or Markdown.
 - **Look.** The desk's wood, creased or smooth map paper, Mist, Warm white or Pure white, Light or Dark, and whether Paper Map opens on the desk or on the last map.
 
@@ -141,7 +144,7 @@ The app is plain HTML, CSS and JavaScript, split by subject:
 
 - **Change something:** edit a file in `src/`, run `node scripts/build.mjs` (Node 18 or later) and reload `index.html`.
 - **Make the Mac app on your Mac:** double-click `build-mac.command`. The first time it installs Apple's command line tools and Rust (Node.js you install yourself), then it makes the `.dmg` and shows it in Finder.
-- **Release:** push a version tag (`git tag v3.0.0 && git push --tags`). GitHub Actions makes the Mac app on GitHub's Macs and attaches the `.dmg` to a draft release with that tag.
+- **Release:** publish a release on GitHub. GitHub Actions makes the Mac app on GitHub's Macs and attaches it to that release, also as `Paper-Map.dmg`, which **Download for macOS** always points at.
 
 </details>
 

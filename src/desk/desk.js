@@ -124,30 +124,33 @@ function sheetOf(tid){ return sheets.find(el => el._topic === tid) || null; }
 function metaOf(t){ const n = D.papers.filter(p => p.topic === t.id).length, when = (D.recentTimes || {})[t.id];
   let w = ''; if(when){ const days = Math.floor((Date.now() - when) / 864e5); w = days < 1 ? ' · opened today' : days < 2 ? ' · opened yesterday' : days < 8 ? ' · last week' : ' · in ' + new Date(when).toLocaleDateString('en-GB', {month: 'long'}); }
   return n + (n === 1 ? ' paper' : ' papers') + w; }
-/* the row of folded maps: three sheets, then a fourth map or "More maps", then New map */
+/* the row of maps: every map as a cover on a strip you scroll left and right, like brochures on a stand */
+const ROW_X0 = 220, ROW_DX = 250, ROW_Y = 446, TILT = [-2.5, 1.5, -1.0, 2.0, -1.6, 1.0, -0.6, 1.8];
+const strip = $('rowStrip'), stripIn = $('rowIn');
+function coverHTML(t, i){ return '<div class="mcard" data-topic="' + esc(t.id) + '" style="left:' + (ROW_X0 + i * ROW_DX - 93.33) + 'px;--r:' + TILT[i % TILT.length] + 'deg"><div class="xc" role="button" tabindex="0" title="' + esc(t.name) + '" style="background-image:' + esc(svgURL(coverSVG(t))) + ',url(' + AS + 'cover-paper.webp)"></div><div class="mlabel"><b>' + esc(t.name) + '</b><span>' + esc(metaOf(t)) + '</span></div></div>'; }
 function layoutRow(){
-  const row = $('rowItems'); row.innerHTML = '';
-  const lab = (x, y, b, s) => '<div class="mlabel" style="left:' + x + 'px;top:' + (y + 198) + 'px"><b>' + esc(b) + '</b><span>' + esc(s) + '</span></div>';
-  const slotX = [STACK[2].a2, STACK[1].a2, STACK[0].a2, SLOT4, SLOT5];
-  /* each sheet keeps its map; its label sits under its place in the row */
-  let html = '', next = 0;
-  [2, 1, 0].forEach(si => { const t = D.topics.find(x => x.id === sheets[si]._topic); if(t){ html += lab(STACK[si].a2[0], STACK[si].a2[1], t.name, metaOf(t)); next++; } });
-  const onSheets = sheets.map(el => el._topic).filter(Boolean), rest = order.filter(t => !onSheets.includes(t.id));
-  if(rest.length === 1){ const t = rest[0], sx = slotX[next]; html += '<div class="xcover" data-topic="' + esc(t.id) + '" style="left:' + (sx[0] - 93.33) + 'px;top:' + (sx[1] - 175) + 'px;--r:' + sx[2] + 'deg;background-image:' + esc(svgURL(coverSVG(t))) + ',url(' + AS + 'cover-paper.webp)" title="' + esc(t.name) + '"></div>' + lab(sx[0], sx[1], t.name, metaOf(t)); next++; }
-  else if(rest.length > 1){ const sx = slotX[next]; html += '<div class="xcover more" id="moreMaps" style="left:' + (sx[0] - 93.33) + 'px;top:' + (sx[1] - 175) + 'px;--r:' + sx[2] + 'deg"><b>' + rest.length + '</b><span>more maps</span></div>' + lab(sx[0], sx[1], 'More maps', 'all ' + order.length + ' of them'); next++; }
-  const ns = slotX[Math.min(next, 4)];
-  html += '<div id="newMap" style="left:' + (ns[0] - 93.33) + 'px;top:' + (ns[1] - 175) + 'px;background-image:url(' + AS + 'newmap.webp)" title="New map" role="button" tabindex="0"></div>' + lab(ns[0], ns[1], 'New map', 'for another field');
-  row.innerHTML = html;
-  row.querySelectorAll('.xcover[data-topic]').forEach(c => c.addEventListener('click', () => { if(state === 'maps') openTopic(c.dataset.topic, c); }));
-  const more = $('moreMaps'); if(more) more.addEventListener('click', e => { e.stopPropagation(); if(state === 'maps') openList(); });
-  $('newMap').addEventListener('click', () => { if(state === 'maps' && P){ P.newMap(); } });
-  $('newMap').addEventListener('keydown', e => { if((e.key === 'Enter' || e.key === ' ') && state === 'maps' && P){ e.preventDefault(); P.newMap(); } });
-  const n = order.length; $('mtagCount').textContent = n + (n === 1 ? ' map' : ' maps') + (n ? ' · open one' : ' · make the first');
+  const n = order.length;
+  stripIn.innerHTML = order.map(coverHTML).join('') + '<div class="mcard new" style="left:' + (ROW_X0 + n * ROW_DX - 93.33) + 'px;--r:-2deg"><div class="xc" id="newMapCard" role="button" tabindex="0" title="New map" style="background-image:url(' + AS + 'newmap.webp)"></div><div class="mlabel"><b>New map</b><span>for another field</span></div></div>';
+  stripIn.style.width = (ROW_X0 + n * ROW_DX + 93.33 + 140) + 'px';
+  stripIn.querySelectorAll('.mcard[data-topic] .xc').forEach(c => { const go = () => { if(state === 'maps' && !strip._dragged) openTopic(c.parentNode.dataset.topic); }; c.addEventListener('click', go); c.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } }); });
+  const nm = $('newMapCard'), goNew = () => { if(state === 'maps' && P && !strip._dragged) P.newMap(); };
+  nm.addEventListener('click', goNew); nm.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); goNew(); } });
+  $('mtagCount').textContent = n + (n === 1 ? ' map' : ' maps') + (n ? ' · open one' : ' · make the first');
+  rowArrows();
 }
-function openList(){ const box = $('mapList'); box.innerHTML = '<h3>All your maps</h3>' + order.map(t => '<button data-topic="' + esc(t.id) + '"><b>' + esc(t.name) + '</b><span>' + esc(metaOf(t)) + '</span></button>').join('');
-  box.classList.add('on'); box.querySelectorAll('button').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); box.classList.remove('on'); openTopic(b.dataset.topic, $('moreMaps')); })); }
-addEventListener('click', e => { if(!e.target.closest('#mapList,#moreMaps')) $('mapList').classList.remove('on'); });
-
+function coverOf(tid){ return [...stripIn.querySelectorAll('.mcard[data-topic]')].find(c => c.dataset.topic === tid) || null; }
+function indexOf(tid){ return order.findIndex(t => t.id === tid); }
+function slotOf(i){ return [ROW_X0 + i * ROW_DX - strip.scrollLeft, ROW_Y, TILT[i % TILT.length]]; }
+function rowArrows(){ const max = strip.scrollWidth - strip.clientWidth; $('rowPrev').classList.toggle('on', strip.scrollLeft > 4); $('rowNext').classList.toggle('on', strip.scrollLeft < max - 4); }
+strip.addEventListener('scroll', rowArrows, {passive: true});
+strip.addEventListener('wheel', e => { if(state !== 'maps') return; if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){ strip.scrollLeft += e.deltaY; e.preventDefault(); } }, {passive: false});
+$('rowPrev').addEventListener('click', () => strip.scrollBy({left: -ROW_DX * 3, behavior: 'smooth'}));
+$('rowNext').addEventListener('click', () => strip.scrollBy({left: ROW_DX * 3, behavior: 'smooth'}));
+/* drag the strip with the mouse; a drag is not a click */
+{ let x0 = null, s0 = 0;
+  strip.addEventListener('pointerdown', e => { if(e.pointerType !== 'mouse' || state !== 'maps') return; x0 = e.clientX; s0 = strip.scrollLeft; strip._dragged = false; });
+  addEventListener('pointermove', e => { if(x0 == null) return; const dx = (e.clientX - x0) / FIT.s; if(Math.abs(dx) > 5){ strip._dragged = true; strip.classList.add('dragging'); } if(strip._dragged) strip.scrollLeft = s0 - dx; });
+  addEventListener('pointerup', () => { x0 = null; strip.classList.remove('dragging'); setTimeout(() => { strip._dragged = false; }, 0); }); }
 /* ============ folding ============ */
 function settle(el, folded){
   el.querySelectorAll('.pn,.shd,.shd2,.fc,.bk').forEach(x => x.getAnimations().forEach(a => a.cancel()));
@@ -174,80 +177,85 @@ function unfold(el, d0, dur){ settle(el, true);
 /* ============ desk → Your maps → a map, and back ============ */
 async function toMaps(){
   if(busy || state !== 'desk') return; busy = true; closeMenus();
-  setState('maps', order.length ? 'Choose a map to open it' : 'Make your first map');
+  strip.scrollLeft = 0; layoutRow();
+  setState('maps', order.length ? 'Choose a map to open it · scroll for more' : 'Make your first map');
+  stripIn.classList.add('landing');
   const moves = [];
   [2, 1, 0].forEach((si, k) => { const el = sheets[si]; el.classList.remove('lift');
     if(!el._topic){ moves.push(anim(el, [{opacity: 1}, {opacity: 0}], {duration: 360, delay: k * 60})); return; }
-    const s = STACK[si];
-    moves.push(Promise.all([move(el, [s.a2[0], s.a2[1] - 26, s.a2[2]], 1.0, 520, k * 90, 'cubic-bezier(.3,0,.3,1)').then(() => move(el, s.a2, 1.0, 420, 0, 'cubic-bezier(.2,.7,.2,1)')), fold(el, 160 + k * 90, 560)])); });
-  await Promise.all(moves); busy = false;
+    const p = slotOf(k);
+    moves.push(Promise.all([move(el, [p[0], p[1] - 26, p[2]], 1.0, 520, k * 90, 'cubic-bezier(.3,0,.3,1)').then(() => move(el, p, 1.0, 420, 0, 'cubic-bezier(.2,.7,.2,1)')), fold(el, 160 + k * 90, 560)])); });
+  await Promise.all(moves);
+  /* the strip takes over: its covers sit exactly where the sheets landed */
+  stripIn.classList.remove('landing'); sheets.forEach(el => { el.style.opacity = '0'; el.style.pointerEvents = 'none'; });
+  busy = false;
 }
 async function toDesk(){
-  if(busy || state !== 'maps') return; busy = true; $('mapList').classList.remove('on');
+  if(busy || state !== 'maps') return; busy = true;
+  if(strip.scrollLeft > 0){ strip.scrollTo({left: 0, behavior: 'smooth'}); await sleep(reduce ? 20 : 420); strip.scrollLeft = 0; }
+  /* the first three covers become the sheets again, and fly back to the stack */
+  stripIn.classList.add('landing');
+  [2, 1, 0].forEach((si, k) => { const el = sheets[si]; el.getAnimations().forEach(a => a.cancel()); if(!el._topic){ el.style.opacity = '0'; return; } settle(el, true); setPose(el, slotOf(k), 1); el.style.opacity = '1'; el.style.pointerEvents = ''; });
   setState('desk', HINT_DESK);
   sheets.forEach((el, k) => { el.style.zIndex = 10 + k; });
-  await Promise.all(sheets.map((el, k) => el._topic ? move(el, STACK[k].a1, 1, 760, k * 70, 'cubic-bezier(.3,.1,.2,1)') : (setPose(el, STACK[k].a1, 1), settle(el, false), anim(el, [{opacity: 0}, {opacity: 1}], {duration: 500, delay: 400}))));
+  await Promise.all(sheets.map((el, k) => el._topic ? move(el, STACK[k].a1, 1, 760, k * 70, 'cubic-bezier(.3,.1,.2,1)') : (setPose(el, STACK[k].a1, 1), settle(el, false), el.style.pointerEvents = '', anim(el, [{opacity: 0}, {opacity: 1}], {duration: 500, delay: 400}))));
   for(const el of sheets){ if(el._topic && el.classList.contains('folded')) await unfold(el, 0, 430); }
-  busy = false;
+  stripIn.classList.remove('landing'); busy = false;
 }
 function coverPose(){ const s = FIT.s, cx = (innerWidth / 2 - FIT.tx) / s, cy = (innerHeight / 2 - FIT.ty) / s;
   return [[cx, cy, 0], Math.max(innerWidth / s / W, innerHeight / s / H) * 1.005]; }
 let current = null;   /* {el, tid, temp, from} */
 function posOf(node){ const r = node.getBoundingClientRect(); return [(r.left + r.width / 2 - FIT.tx) / FIT.s, (r.top + r.height / 2 - FIT.ty) / FIT.s]; }
-async function openTopic(tid, fromNode){
+async function openTopic(tid){
   if(busy || state !== 'maps') return;
-  let el = sheetOf(tid), temp = false, home = null;
-  if(!el){ const t = D.topics.find(x => x.id === tid); if(!t) return;
-    el = makeSheet(); temp = true; paintSheet(el, t); settle(el, true);
-    const [x, y] = fromNode ? posOf(fromNode) : [SLOT4[0], SLOT4[1]]; home = [x, y, SLOT4[2]]; setPose(el, home, 1); el.style.zIndex = 58; }
-  busy = true; setState('opening', ''); el.style.zIndex = 60;
-  current = {el, tid, temp, home: temp ? home : el._slot.a2};
-  sheets.filter(o => o !== el && o._topic).forEach((o, k) => { o._p = o.style.transform; anim(o, [{transform: o.style.transform, opacity: 1}, {transform: o.style.transform + ' translateY(60px)', opacity: 0}], {duration: 420, delay: k * 40, easing: 'ease-in'}); });
+  const t = D.topics.find(x => x.id === tid), card = coverOf(tid); if(!t || !card) return;
+  busy = true;
+  const xc = card.querySelector('.xc'), [x, y] = posOf(xc), i = indexOf(tid);
+  const el = makeSheet(); paintSheet(el, t); settle(el, true); setPose(el, [x, y, TILT[i % TILT.length]], 1); el.style.zIndex = 60;
+  xc.style.visibility = 'hidden'; current = {el, tid};
+  setState('opening', '');
   await move(el, [720, 452, 0], 1.55, 620, 0, 'cubic-bezier(.3,.1,.2,1)');
   await unfold(el, 0, 640);
   const [cp, cs] = coverPose();
   await move(el, cp, cs, 720, 0, 'cubic-bezier(.4,.1,.2,1)');
   if(P) P.openMap(tid);
-  setState('map', '');
+  setState('map', ''); xc.style.visibility = '';
   busy = false;
 }
-/* the app calls this when you come back from a map */
+/* the app calls this when you come back from a map: the map folds up and goes back to its cover */
 async function returnFromMap(tid){
-  if(typeof dismissWelcome === 'function') dismissWelcome(true);
+  dismissWelcome(true);
   D = load(); prefs = Object.assign(prefs, D.prefs || {});
-  const keepOrder = order.map(t => t.id); order = orderedTopics();
-  if(!sheets.some(el => el._topic === tid) && !(current && current.tid === tid)){ /* the map you were on has no sheet: a sheet for it, which goes back to its cover */ }
-  sheets.forEach((el, i) => { const t = D.topics.find(x => x.id === el._topic); if(el._topic && t) paintSheet(el, t); else if(el._topic){ paintSheet(el, null); el.classList.add('blank'); } });
-  layoutRow();
-  let el = sheetOf(tid), temp = false, home;
-  if(el){ home = el._slot.a2; if(current && current.temp && current.el !== el){ current.el.remove(); } }
-  else if(current && current.tid === tid){ el = current.el; temp = current.temp; home = current.home; }
-  else { const t = D.topics.find(x => x.id === tid); if(!t){ show(); return; }
-    el = makeSheet(); temp = true; paintSheet(el, t); const cov = $('rowItems').querySelector('.xcover'); home = cov ? posOf(cov).concat([SLOT4[2]]) : SLOT4.slice(); }
+  if(current && current.el && current.el.parentNode) current.el.remove(); current = null;
+  assignSheets(); sheets.forEach(el => { el.getAnimations().forEach(a => a.cancel()); settle(el, true); el.style.opacity = '0'; el.style.pointerEvents = 'none'; });
+  const t = D.topics.find(x => x.id === tid); if(!t){ show(); return; }
+  strip.scrollLeft = 0;
+  const card = coverOf(tid), i = indexOf(tid); if(!card){ show(); return; }
+  if(i > 3) strip.scrollLeft = Math.max(0, ROW_X0 + i * ROW_DX - 720);
+  const xc = card.querySelector('.xc'); xc.style.visibility = 'hidden';
+  const el = makeSheet(); paintSheet(el, t); settle(el, false); const [cp, cs] = coverPose(); setPose(el, cp, cs); el.style.zIndex = 60;
   busy = true; setState('closing', '');
-  settle(el, false); const [cp, cs] = coverPose(); setPose(el, cp, cs); el.style.opacity = '1'; el.style.zIndex = 60;
-  sheets.filter(o => o !== el).forEach(o => { if(o._topic){ o.style.opacity = 0; settle(o, true); setPose(o, o._slot.a2, 1); } });
   await sleep(40);
   await move(el, [720, 452, 0], 1.55, 620, 0, 'cubic-bezier(.4,.1,.2,1)');
   await fold(el, 0, 520);
-  setState('maps', order.length ? 'Choose a map to open it' : 'Make your first map');
-  sheets.filter(o => o !== el && o._topic).forEach((o, k) => { anim(o, [{transform: poseT(o._slot.a2, 1) + ' translateY(60px)', opacity: 0}, {transform: poseT(o._slot.a2, 1), opacity: 1}], {duration: 460, delay: k * 50, easing: 'cubic-bezier(.2,.7,.2,1)'}); });
-  await move(el, home, 1, 560, 0, 'cubic-bezier(.3,.1,.2,1)');
-  if(temp){ await anim(el, [{opacity: 1}, {opacity: 0}], {duration: 200}); el.remove(); }
-  else el.style.zIndex = 10 + sheets.indexOf(el);
-  current = null; busy = false;
+  setState('maps', order.length ? 'Choose a map to open it · scroll for more' : 'Make your first map');
+  const [x, y] = posOf(xc);
+  await move(el, [x, y, TILT[i % TILT.length]], 1, 560, 0, 'cubic-bezier(.3,.1,.2,1)');
+  xc.style.visibility = ''; el.remove(); rowArrows(); busy = false;
 }
 /* the app calls this to bring the desk back without a map to fold */
 function show(where){
   D = load(); prefs = Object.assign(prefs, D.prefs || {}); refreshAll();
-  if(current){ if(current.temp) current.el.remove(); current = null; }
+  if(current){ if(current.el && current.el.parentNode) current.el.remove(); current = null; }
+  strip.scrollLeft = 0; stripIn.classList.remove('landing'); sheets.forEach(el => { el.style.pointerEvents = ''; });
   sheets.forEach((el, k) => { el.getAnimations().forEach(a => a.cancel()); settle(el, false); setPose(el, STACK[k].a1, 1); el.style.opacity = '1'; el.style.zIndex = 10 + k; });
-  RB.style.opacity = '0'; RB.classList.remove('entered'); rcard.classList.remove('on');
+  RB.style.opacity = '0'; RB.classList.remove('entered'); rcard.classList.remove('on'); PP.style.opacity = '0'; PP.classList.remove('entered');
   if(book.parentNode !== bookHome) bookHome.insertBefore(book, bookNext);
   [book, cover].forEach(x => { x.getAnimations().forEach(a => a.cancel()); x.style.transform = ''; x.style.visibility = ''; });
   document.body.classList.remove('dof'); stage.classList.remove('zooming'); fit();
   setState('desk', HINT_DESK); busy = false;
   if(where === 'papers'){ dismissWelcome(true); renderPapers(); setState('papers', ''); }
+  if(where === 'paper' && arguments[1]){ dismissWelcome(true); renderPapers(); setState('papers', ''); if(fillPaper(arguments[1])){ PP.style.opacity = '1'; PP.style.clipPath = 'none'; setState('paper', ''); PP.classList.add('entered'); } }
 }
 
 /* ============ hover and clicks on the desk ============ */
@@ -286,7 +294,7 @@ function setCup(key){ prefs.cup = key;
   cupImg.classList.remove('on'); setTimeout(() => { cupImg.src = CUPS[key]; cupImg.classList.add('on'); }, 10); }
 document.querySelectorAll('#cupKinds button').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); setCup(b.dataset.cup); savePrefs(); }));
 $('cupHit').addEventListener('click', e => { e.stopPropagation(); if(state === 'desk') cupMenu.classList.toggle('on'); });
-function closeMenus(){ cupMenu.classList.remove('on'); panel.classList.remove('on'); $('mapList').classList.remove('on'); }
+function closeMenus(){ cupMenu.classList.remove('on'); panel.classList.remove('on'); }
 stage.addEventListener('click', e => { if(!e.target.closest('#cupMenu') && !e.target.closest('#cupHit')) cupMenu.classList.remove('on'); });
 
 /* ============ Papers: every paper on your maps, as A4 pages ============ */
@@ -309,9 +317,9 @@ $('pboard').addEventListener('click', e => {
   if(e.target.closest('#pbMore')){ pAll = true; renderPapers(); return; }
   const m = e.target.closest('[data-map]'); if(m){ pFilter.map = m.dataset.map; pAll = false; renderPapers(); return; }
   const s = e.target.closest('#pbSt button'); if(s){ pFilter.st = pFilter.st === s.dataset.st ? '' : s.dataset.st; renderPapers(); return; }
-  const g = e.target.closest('.pg'); if(g && P){ P.openPaper(g.dataset.id); }
+  const g = e.target.closest('.pg'); if(g) openPaperPage(g.dataset.id, g.querySelector('.sheet'));
 });
-$('pboard').addEventListener('keydown', e => { const g = e.target.closest && e.target.closest('.pg'); if(g && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); if(P) P.openPaper(g.dataset.id); } });
+$('pboard').addEventListener('keydown', e => { const g = e.target.closest && e.target.closest('.pg'); if(g && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); openPaperPage(g.dataset.id, g.querySelector('.sheet')); } });
 $('pbQ').addEventListener('input', e => { pFilter.q = e.target.value; pAll = false; renderPapers(); });
 async function toPapers(){ if(busy || state !== 'desk') return; busy = true; closeMenus(); renderPapers(); setState('papers', ''); await sleep(820); busy = false; }
 async function fromPapers(){ if(busy || state !== 'papers') return; busy = true; panel.classList.remove('on'); setState('desk', HINT_DESK); await sleep(700); busy = false; }
@@ -321,6 +329,56 @@ $('ptag').addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === '
 $('tagMaps').addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); if(state === 'desk') toMaps(); } });
 $('papersBack').addEventListener('click', fromPapers);
 $('newPaper').addEventListener('click', () => { if(P) P.newPaper(pFilter.map || (order[0] && order[0].id)); });
+
+
+/* ============ a paper's own page: it opens out of its page in Papers ============ */
+const PP = $('ppage'); let ppId = null, ppFrom = null, ppStack = [];
+function md(s){
+  const inline = t => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\*(.+?)\*/g, '<i>$1</i>');
+  let out = '', list = false, para = [];
+  const flush = () => { if(para.length){ out += '<p>' + para.map(inline).join('<br>') + '</p>'; para = []; } }, endList = () => { if(list){ out += '</ul>'; list = false; } };
+  String(s || '').split('\n').forEach(l => { const h = l.match(/^\s*#{1,6}\s+(.*)/), li = l.match(/^\s*[-*]\s+(.*)/);
+    if(h){ flush(); endList(); out += '<h4>' + inline(h[1]) + '</h4>'; }
+    else if(li){ flush(); if(!list){ out += '<ul>'; list = true; } out += '<li>' + inline(li[1]) + '</li>'; }
+    else if(!l.trim()){ flush(); endList(); }
+    else { endList(); para.push(l); } });
+  flush(); endList(); return out; }
+function fillPaper(id){ const p = P && P.paper(id); if(!p) return false; ppId = id;
+  $('ppK').textContent = [p.v, p.y].filter(Boolean).join(' · ');
+  $('ppT').textContent = p.t || 'Untitled'; $('ppA').textContent = p.au || '';
+  $('ppTags').innerHTML = (p.tags || []).map(t => '<span>' + esc(t) + '</span>').join('') + (p.book ? '<span>Book</span>' : '');
+  document.querySelectorAll('#ppSt button').forEach(b => b.classList.toggle('on', b.dataset.st === (p.st || '')));
+  $('ppPri').textContent = p.pri || '';
+  $('ppNotes').innerHTML = p.n ? md(p.n) : '<p class="empty">No notes yet. Notes &amp; PDF opens them beside the paper.</p>';
+  $('ppLink').hidden = !p.url; $('ppLink').dataset.url = p.url || '';
+  $('ppWhere').textContent = p.where || '';
+  const sec = (title, arr) => arr && arr.length ? '<div class="pp-ln"><h4>' + title + '</h4>' + arr.map(x => '<button data-pid="' + esc(x.id) + '"><b>' + esc(x.t) + '</b><span>' + esc([x.au, x.y].filter(Boolean).join(' · ')) + '</span></button>').join('') + '</div>' : '';
+  $('ppLines').innerHTML = sec('Builds on', p.buildsOn) + sec('Built on by', p.builtOnBy) + sec('Responds to', p.respondsTo) + sec('Challenged by', p.challengedBy) + sec('Related to', p.related) +
+    (p.mentions && p.mentions.length ? '<div class="pp-ln"><h4>Mentions</h4><p class="pp-where">' + esc(p.mentions.join(', ')) + '</p></div>' : '');
+  PP.scrollTop = 0; return true; }
+const insetOf = r => r.top + 'px ' + (innerWidth - r.right) + 'px ' + (innerHeight - r.bottom) + 'px ' + r.left + 'px';
+async function openPaperPage(id, fromEl){
+  if(busy || state !== 'papers' || !fillPaper(id)) return; busy = true; ppFrom = fromEl || null; ppStack = [];
+  const ins = insetOf(fromEl ? fromEl.getBoundingClientRect() : {top: innerHeight / 2 - 110, left: innerWidth / 2 - 78, right: innerWidth / 2 + 78, bottom: innerHeight / 2 + 110});
+  PP.style.opacity = '1'; PP.style.clipPath = 'inset(' + ins + ' round 3px)'; setState('paper', '');
+  PP.classList.remove('entered'); void PP.offsetWidth; PP.classList.add('entered');
+  if(!reduce) await PP.animate([{clipPath: 'inset(' + ins + ' round 3px)'}, {clipPath: 'inset(0px 0px 0px 0px round 0px)'}], {duration: 600, easing: 'cubic-bezier(.25,.8,.2,1)', fill: 'forwards'}).finished.catch(() => {});
+  PP.getAnimations().forEach(a => a.cancel()); PP.style.clipPath = 'none'; busy = false; }
+async function closePaperPage(){
+  if(busy || state !== 'paper') return;
+  if(ppStack.length){ const prev = ppStack.pop(); PP.classList.remove('entered'); void PP.offsetWidth; fillPaper(prev); PP.classList.add('entered'); return; }
+  busy = true; D = load(); renderPapers();
+  const el = [...document.querySelectorAll('#pbGrid .pg')].find(g => g.dataset.id === ppId);
+  setState('papers', '');
+  if(el && !reduce){ el.scrollIntoView({block: 'nearest'}); const ins = insetOf(el.querySelector('.sheet').getBoundingClientRect());
+    await PP.animate([{clipPath: 'inset(0px 0px 0px 0px round 0px)'}, {clipPath: 'inset(' + ins + ' round 3px)'}], {duration: 420, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards'}).finished.catch(() => {}); }
+  PP.style.opacity = '0'; PP.getAnimations().forEach(a => a.cancel()); PP.style.clipPath = ''; PP.classList.remove('entered'); busy = false; }
+PP.addEventListener('click', e => { const b = e.target.closest('[data-pid]'); if(!b) return; ppStack.push(ppId); PP.classList.remove('entered'); void PP.offsetWidth; fillPaper(b.dataset.pid); PP.classList.add('entered'); });
+$('ppBack').addEventListener('click', closePaperPage);
+document.querySelectorAll('#ppSt button').forEach(b => b.addEventListener('click', () => { if(!P || !ppId) return; P.setStatus(ppId, b.dataset.st); D = load(); fillPaper(ppId); }));
+$('ppOnMap').addEventListener('click', () => { if(P && ppId) P.openPaper(ppId, 'paper'); });
+$('ppEdit').addEventListener('click', () => { if(P && ppId) P.openNotes(ppId); });
+$('ppLink').addEventListener('click', e => { const u = e.currentTarget.dataset.url; if(u && P) P.openLink(u); });
 
 /* ============ Readings: its own list, its own categories ============ */
 const RB = $('rboard'), rcard = $('rcard');
@@ -500,7 +558,7 @@ addEventListener('keydown', e => { if(e.key !== 'Escape') return;
   if(fontMenu.classList.contains('on')){ fontMenu.classList.remove('on'); return; }
   if(pastMenu.classList.contains('on')){ pastMenu.classList.remove('on'); return; }
   if(rcard.classList.contains('on')){ rcard.classList.remove('on'); return; }
-  if(state === 'note') closeNote(); else if(state === 'maps') toDesk(); else if(state === 'papers') fromPapers(); else if(state === 'books') closeBook(); });
+  if(state === 'note') closeNote(); else if(state === 'maps') toDesk(); else if(state === 'papers') fromPapers(); else if(state === 'paper') closePaperPage(); else if(state === 'books') closeBook(); });
 
 /* ============ start ============ */
 function refreshAll(){
