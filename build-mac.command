@@ -19,6 +19,7 @@ if ! command -v cargo >/dev/null 2>&1; then
     export PATH="$HOME/.cargo/bin:$PATH"
   fi
 fi
+tiffutil -cathidpicheck src-tauri/dmg/background.png src-tauri/dmg/background@2x.png -out src-tauri/dmg/background.tiff 2>/dev/null
 npm install && npm run mac || { echo "The build stopped: see the messages above."; exit 1; }
 DMG=$(ls -t src-tauri/target/release/bundle/dmg/*.dmg 2>/dev/null | head -1)
 echo "Done: $DMG"
