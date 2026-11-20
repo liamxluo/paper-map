@@ -34,7 +34,7 @@ Your maps lie folded on the desk, the one you opened last on top, drawn with you
 
 ![A map of papers on a timeline, in rows by topic; a paper is chosen and Lens lays out its whole line of thought](assets/tour-map.webp)
 
-Papers sit on their years, in rows by topic. Double-click a dot to link it: **Builds on**, **Responds to** or **Related to**. Give a main line of thought its own colour, drag along the years to zoom into a period, and press **L** on a paper to see its whole line on its own.
+The map lies on your desk as one sheet, with two small bars: your maps on the left; search, new paper, filters, years, export, sync and settings on the right. Papers sit on their years, in rows by topic. Double-click a dot to link it: **Builds on**, **Responds to** or **Related to**. Give a main line of thought its own colour, drag along the years to zoom into a period, and press **L** on a paper to see its whole line on its own.
 
 ### Readings and the research log
 

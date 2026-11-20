@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <script>/* the desk opens first: keep the app out of sight until it is up */
-(function(){ try{ if(window.innerWidth > 760) document.documentElement.classList.add('atlas'); }catch(e){} try{ var q = location.search, h = location.hash; if(h.length > 1 || /[?&](add|title)=/.test(q)) return; var s = JSON.parse(localStorage.getItem('rl:settings') || 'null'); var example = /^https?:$/.test(location.protocol) && !/[?&](app|add|title)\b/.test(q); if(example || !(s && s.desk && s.desk.start === 'map')){ document.documentElement.classList.add('desk-boot'); setTimeout(function(){ document.documentElement.classList.remove('desk-boot'); }, 5000); } }catch(e){} })();</script>
+(function(){ document.documentElement.classList.add('atlas'); try{ var q = location.search, h = location.hash; if(h.length > 1 || /[?&](add|title)=/.test(q)) return; var s = JSON.parse(localStorage.getItem('rl:settings') || 'null'); var example = /^https?:$/.test(location.protocol) && !/[?&](app|add|title)\b/.test(q); if(example || !(s && s.desk && s.desk.start === 'map')){ document.documentElement.classList.add('desk-boot'); setTimeout(function(){ document.documentElement.classList.remove('desk-boot'); }, 5000); } }catch(e){} })();</script>
 <style>html.desk-boot,html.desk-boot body{background:#120604}html.desk-boot body > *:not(#pmDesk){visibility:hidden}</style>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
@@ -1562,28 +1562,109 @@ html.desk-on,html.desk-on body{overflow:hidden}
 .mac-place b{display:block;font-weight:700}
 .mac-place span{display:block;margin-top:3px;font-size:13px;color:var(--muted)}
 .mac-place[disabled]{opacity:.5;cursor:default}
-/* ===================== the map page: the map fills the window, its controls float over it ===================== */
-html.atlas body{background:#EAE3D4}
+/* ===================== the map page, as confirmed: the map on its sheet, on the desk ===================== */
+@font-face{font-family:'PMap Serif';src:url(assets/desk/fonts/pmap-serif-400.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'PMap Serif';src:url(assets/desk/fonts/pmap-serif-700.woff2) format('woff2');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'PMap Serif';src:url(assets/desk/fonts/pmap-serif-400i.woff2) format('woff2');font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:'PMap Sans';src:url(assets/desk/fonts/pmap-sans-400.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'PMap Sans';src:url(assets/desk/fonts/pmap-sans-700.woff2) format('woff2');font-weight:700;font-style:normal;font-display:swap}
+html.atlas{--atl-serif:'PMap Serif','Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;--atl-sans:'PMap Sans','Helvetica Neue',Helvetica,Arial,sans-serif;--atl-ink:#231E1A;--atl-muted:#6E6357;--atl-paper:#EEE6D6}
+html.atlas body{background:#24100a var(--atl-wood, url(assets/desk/bg-mahogany.webp)) center/cover fixed}
+html.atlas body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(10,4,2,.45));pointer-events:none;z-index:0}
+html.atlas .atl-sheet{position:fixed;inset:22px;z-index:1;border-radius:3px;background:var(--atl-hl),var(--atl-mul),url(assets/desk/map-paper.webp),var(--atl-paper);background-size:100% 100%,100% 100%,cover,auto;background-blend-mode:screen,multiply,normal,normal;box-shadow:0 1px 2px rgba(0,0,0,.4),0 18px 50px rgba(0,0,0,.5)}
+/* the old page's furniture is gone */
+html.atlas #bar,html.atlas .map-tools,html.atlas #appTitle,html.atlas #main,html.atlas #mapKey,html.atlas #hfBar,html.atlas #installCard,html.atlas .lane-picker,html.atlas #branchRow{display:none !important}
 html.atlas .page,html.atlas body.toc-open .page{margin-left:0 !important}
-html.atlas .bar{position:fixed;top:14px;left:14px;right:14px;z-index:60;background:transparent;border:0;pointer-events:none}
-html.atlas .appbar-inner{max-width:none;padding:0 !important;gap:8px;pointer-events:none}
-html.atlas .appbar-inner > *{pointer-events:auto}
-html.atlas .bar .btn,html.atlas .bar .toc-toggle,html.atlas .bar .filter-toggle,html.atlas #crumb,html.atlas .bar .save-state:not(:empty),html.atlas .bar .undo-pill,html.atlas .map-tools > .btn,html.atlas .map-tools .export-wrap > .btn,html.atlas .map-tools .br-row,html.atlas .map-tools .zoom{background:rgba(252,250,246,.95);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:0 !important;border-radius:12px !important;box-shadow:0 1px 2px rgba(40,30,20,.12),0 6px 18px rgba(40,30,20,.12)}
-html.atlas #crumb{display:inline-flex;align-items:center;padding:.44em .95em;font-weight:600;min-height:20px}
-html.atlas .bar .save-state:not(:empty){padding:.44em .9em;font-size:.82rem}
-html.atlas .hero{padding:0;max-width:none;margin:0}
-html.atlas #appTitle,html.atlas #main,html.atlas #installCard{display:none !important}
-html.atlas .map-tools{position:fixed;top:64px;right:14px;z-index:55;margin:0;justify-content:flex-end;max-width:calc(100vw - 28px)}
-html.atlas .map-tools .br-row,html.atlas .map-tools .zoom{padding:4px 6px}
-html.atlas .lane-picker{position:fixed;top:112px;right:14px;width:min(560px,calc(100vw - 28px));max-height:calc(100vh - 140px);overflow:auto;z-index:56;margin:0;border:0;border-radius:14px;box-shadow:0 2px 4px rgba(40,30,20,.12),0 18px 50px rgba(40,30,20,.22)}
-html.atlas .filters-row{position:fixed;top:64px;right:14px;width:min(720px,calc(100vw - 28px));z-index:57;background:var(--surface);border:0;border-radius:14px;box-shadow:0 2px 4px rgba(40,30,20,.12),0 18px 50px rgba(40,30,20,.22)}
-html.atlas .map-box{position:fixed;top:112px;left:14px;right:14px;bottom:14px;max-height:none;z-index:10}
-html.atlas .info{position:fixed;right:30px;bottom:30px;width:min(560px,calc(100vw - 60px));max-height:calc(100vh - 190px);overflow:auto;z-index:50;margin:0;border:0;border-radius:18px;box-shadow:0 2px 4px rgba(40,30,20,.12),0 18px 50px rgba(40,30,20,.22)}
+html.atlas .hero{padding:0;margin:0;max-width:none}
+html.atlas .toc{z-index:90}
+/* the map, drawn straight on the paper */
+html.atlas .map-box{position:fixed;top:196px;left:46px;right:46px;bottom:112px;max-height:none;z-index:2;background:transparent !important;box-shadow:none !important;border-radius:0;padding:0;--surface:var(--atl-paper)}
+html.atlas #mapBox .map,html.atlas #mapBox .map-labels,html.atlas #mapBox .map-scroll,html.atlas #mapBox .map-axis{background:transparent !important}
+/* the title on the sheet */
+html.atlas .atl-title{position:fixed;top:104px;left:86px;z-index:3;color:var(--atl-ink);pointer-events:none}
+html.atlas .atl-title h2{margin:0;font:700 30px/1 var(--atl-serif);letter-spacing:9px}
+html.atlas .atl-title p{margin:12px 0 0;font:italic 400 15px var(--atl-serif);color:var(--atl-muted)}
+html.atlas .atl-title i{display:block;width:220px;margin-top:14px;border-top:1.2px solid rgba(35,30,26,.7)}
+/* the two bars */
+html.atlas .atl-pill{position:fixed;top:44px;z-index:60;display:flex;align-items:center;gap:2px;padding:5px;background:rgba(251,247,238,.95);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-radius:14px;box-shadow:0 1px 1px rgba(60,40,20,.12),0 6px 18px rgba(60,40,20,.16),inset 0 1px 0 rgba(255,255,255,.8)}
+html.atlas #atlLeft{left:46px} html.atlas #atlRight{right:46px}
+html.atlas .atl-i{all:unset;box-sizing:border-box;width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;color:#2B2520;cursor:pointer}
+html.atlas .atl-i:hover,html.atlas .atl-name:hover{background:rgba(35,30,26,.07)}
+html.atlas .atl-i:focus-visible,html.atlas .atl-name:focus-visible{outline:2px solid #2B2520;outline-offset:1px}
+html.atlas .atl-sep{width:1px;height:22px;margin:0 4px;background:rgba(35,30,26,.14)}
+html.atlas .atl-lay{display:inline-flex;margin:0 2px 0 6px;color:#2B2520}
+html.atlas .atl-name{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 10px 0 6px;border-radius:10px;font:600 16.5px var(--atl-serif);color:var(--atl-ink);cursor:pointer}
+html.atlas [data-atl="sync"]{color:#2F7F5A}
+html.atlas [data-atl="sync"].warn{color:#B8892E} html.atlas [data-atl="sync"].bad{color:#B4432E} html.atlas [data-atl="sync"].local{color:#8E857A}
+/* the menus and panels under the bars */
+html.atlas .atl-menu{position:fixed;top:94px;left:46px;z-index:70;width:310px;max-height:70vh;overflow:auto;padding:8px;border-radius:14px;background:#FBF7EE;box-shadow:0 2px 2px rgba(60,40,20,.12),0 18px 44px rgba(20,8,2,.32)}
+html.atlas .atl-menu .atl-mk{margin:4px 10px 8px;font:700 10.5px var(--atl-sans);letter-spacing:1.8px;color:var(--atl-muted)}
+html.atlas .atl-menu button{all:unset;display:block;box-sizing:border-box;width:100%;padding:9px 10px;border-radius:10px;cursor:pointer}
+html.atlas .atl-menu button:hover,html.atlas .atl-menu button.on{background:rgba(35,30,26,.07)}
+html.atlas .atl-menu b{display:block;font:700 15px var(--atl-serif);color:var(--atl-ink)}
+html.atlas .atl-menu span{display:block;margin-top:2px;font:400 12px var(--atl-sans);color:var(--atl-muted)}
+html.atlas .atl-menu .atl-ms{height:1px;margin:6px 8px;background:rgba(35,30,26,.1)}
+html.atlas .atl-pop{position:fixed;top:94px;right:46px;z-index:70;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+html.atlas .atl-pop > [hidden]{display:none !important}
+html.atlas .atl-pop .add-menu,html.atlas .atl-pop .export-menu{position:static !important;display:flex;flex-direction:column;min-width:260px;padding:6px;border:0;border-radius:14px;background:#FBF7EE;box-shadow:0 2px 2px rgba(60,40,20,.12),0 18px 44px rgba(20,8,2,.32)}
+html.atlas .atl-pop .zoom{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px;border-radius:14px;background:#FBF7EE;box-shadow:0 2px 2px rgba(60,40,20,.12),0 18px 44px rgba(20,8,2,.32)}
+html.atlas .filters-row{position:fixed;top:94px;right:46px;z-index:70;width:min(720px,calc(100vw - 92px));background:#FBF7EE;border:0;border-radius:14px;box-shadow:0 2px 2px rgba(60,40,20,.12),0 18px 44px rgba(20,8,2,.32)}
+html.atlas .undo-pill{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:65;background:rgba(251,247,238,.95);border-radius:12px;box-shadow:0 6px 18px rgba(60,40,20,.16)}
+html.atlas .preview-banner{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;z-index:58;border-radius:12px}
+/* the card, as confirmed */
+html.atlas .info{position:fixed;right:70px;bottom:72px;z-index:50;width:min(440px,calc(100vw - 100px));max-height:calc(100vh - 240px);overflow:auto;margin:0;padding:20px 24px 16px 30px;border:0;border-radius:20px;background:#FBF8F2;box-shadow:0 2px 4px rgba(40,30,20,.12),0 22px 60px rgba(40,30,20,.28)}
 html.atlas .info:not(.has-sel){display:none}
-html.atlas .map-key{position:fixed;left:30px;bottom:26px;z-index:50;max-width:min(560px,calc(100vw - 480px));background:rgba(252,250,246,.95);border-radius:12px;padding:6px 14px;box-shadow:0 1px 2px rgba(40,30,20,.12),0 6px 18px rgba(40,30,20,.12)}
-html.atlas .map-key:not([open]) > :not(summary){display:none}
-html.atlas .hf-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:26px;z-index:52}
-html.atlas .preview-banner{position:fixed;left:50%;transform:translateX(-50%);top:64px;z-index:58;border-radius:12px}
+html.atlas .acard{position:relative}
+html.atlas .acard::before{content:'';position:absolute;left:-18px;top:2px;bottom:2px;width:4px;border-radius:2px;background:var(--atl-ink)}
+html.atlas .ac-k{margin:0;font:700 11px var(--atl-sans);letter-spacing:2.2px;text-transform:uppercase;color:#5E544A}
+html.atlas .ac-t{margin:6px 0 0;font:700 25px/1.15 var(--atl-serif);color:var(--atl-ink);cursor:pointer}
+html.atlas .ac-a{margin:5px 0 0;font:italic 400 16px var(--atl-serif);color:#4F453B}
+html.atlas .ac-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px}
+html.atlas .ac-st{display:inline-flex;padding:3px;border-radius:11px;background:#EFE9DD}
+html.atlas .ac-st .stbtn{all:unset;padding:7px 14px;border-radius:9px;font:500 14px var(--atl-sans);color:#5E544A;cursor:pointer}
+html.atlas .ac-st .stbtn[aria-pressed="true"]{background:#fff;color:var(--atl-ink);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+html.atlas .ac-ic{display:inline-flex;gap:4px}
+html.atlas .ac-b{all:unset;box-sizing:border-box;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:9px;color:#2B2520;cursor:pointer}
+html.atlas .ac-b:hover{background:rgba(35,30,26,.07)}
+html.atlas .ac-hf{display:flex;align-items:center;gap:6px;margin-top:12px;font:400 14px var(--atl-sans);color:#5E544A}
+html.atlas .ac-hk{margin-right:4px}
+html.atlas .ac-d{all:unset;box-sizing:border-box;min-width:24px;height:24px;padding:0 7px;border-radius:7px;text-align:center;line-height:24px;font:500 13.5px var(--atl-sans);color:#5E544A;cursor:pointer}
+html.atlas .ac-d.on{background:var(--atl-ink);color:#FBF7EE}
+html.atlas .ac-n{margin-left:auto}
+/* the legend and the hint along the bottom of the sheet */
+html.atlas .atl-foot{position:fixed;left:86px;bottom:46px;z-index:3;display:flex;flex-wrap:wrap;gap:8px 26px;font:400 13px var(--atl-sans);color:#5E544A}
+html.atlas .atl-foot span{display:inline-flex;align-items:center;white-space:nowrap}
+html.atlas .atl-foot .lg-l{display:inline-block;width:22px;margin-right:8px;border-top:1.5px solid #3A322B}
+html.atlas .atl-foot .lg-l.dash{border-top-style:dashed} html.atlas .atl-foot .lg-l.dot{border-top-style:dotted}
+html.atlas .atl-foot .lg-l.main{border-top:2px solid #B4432E}
+html.atlas .atl-foot .lg-br{cursor:pointer} html.atlas .atl-foot .lg-br .lg-l{border-top-width:2px}
+html.atlas .atl-foot .lg-d{display:inline-block;box-sizing:border-box;width:9px;height:9px;margin-right:8px;border-radius:50%}
+html.atlas .atl-foot .lg-d.read{background:#231E1A} html.atlas .atl-foot .lg-d.want{border:2px solid #B4432E}
+html.atlas .atl-hint{position:fixed;right:70px;bottom:36px;z-index:3;font:400 12px var(--atl-sans);color:#9A8F80;pointer-events:none}
+/* phones and small windows: the same page, closer to the edges */
+@media (max-width: 760px){
+  html.atlas .atl-sheet{inset:6px}
+  html.atlas .atl-pill{top:14px} html.atlas #atlLeft{left:12px;max-width:calc(100vw - 24px)} html.atlas #atlRight{right:12px;top:62px}
+  html.atlas .atl-i{width:31px;height:31px}
+  html.atlas .atl-name{font-size:14px;max-width:62vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.atlas .atl-title{top:116px;left:22px} html.atlas .atl-title h2{font-size:19px;letter-spacing:4px} html.atlas .atl-title p{font-size:12.5px;margin-top:7px} html.atlas .atl-title i{display:none}
+  html.atlas .map-box{top:172px;left:8px;right:8px;bottom:14px}
+  html.atlas .atl-foot,html.atlas .atl-hint{display:none}
+  html.atlas .info{left:10px;right:10px;bottom:10px;width:auto;max-height:55vh;padding:16px 18px 12px 24px}
+  html.atlas .atl-menu{left:12px;top:60px;width:calc(100vw - 24px)}
+  html.atlas .atl-pop,html.atlas .filters-row{top:108px;right:12px}
+  html.atlas .filters-row{width:calc(100vw - 24px)}
+}
+/* Lens on the same sheet, with its controls as small bars */
+html.atlas .lens-root{background:#24100a var(--atl-wood, url(assets/desk/bg-mahogany.webp)) center/cover;isolation:isolate}
+html.atlas .lens-root::before{content:'';position:fixed;inset:22px;z-index:-1;border-radius:3px;background:var(--atl-hl),var(--atl-mul),url(assets/desk/map-paper.webp),var(--atl-paper);background-size:100% 100%,100% 100%,cover,auto;background-blend-mode:screen,multiply,normal,normal;box-shadow:0 1px 2px rgba(0,0,0,.4),0 18px 50px rgba(0,0,0,.5)}
+html.atlas .lens-bar,html.atlas .lens-ctl{align-self:flex-start;margin:0 46px;padding:6px 12px;border:0;border-radius:14px;background:rgba(251,247,238,.95);box-shadow:0 1px 1px rgba(60,40,20,.12),0 6px 18px rgba(60,40,20,.16),inset 0 1px 0 rgba(255,255,255,.8)}
+html.atlas .lens-bar{margin-top:44px} html.atlas .lens-ctl{margin-top:10px}
+html.atlas .lens-title{font-family:var(--atl-serif)}
+html.atlas .lens-body{margin:0 46px 34px;background:transparent}
+html.atlas .lens-svg .ln-card{fill:#FBF8F2}
+@media (max-width: 760px){ html.atlas .lens-root::before{inset:6px} html.atlas .lens-bar,html.atlas .lens-ctl{margin-left:12px;margin-right:12px} html.atlas .lens-bar{margin-top:14px} html.atlas .lens-body{margin:0 8px 10px} }
+
 </style>
 </head>
 <body>
@@ -1773,7 +1854,7 @@ const DEFAULT_COLORS = {green:'#009473', red:'#E34234'};
 const PREVIEW_DATA = 'example/displaydata.json';
 let PREVIEW = false;
 /* Set this to the tag of the GitHub release you are about to publish (v1.3.0, v1.3.1, …). */
-const APP_VERSION = 'v3.0.0';
+const APP_VERSION = 'v3.0.1';
 const APP_REPO = 'liamxluo/paper-map';
 const RELEASES_URL = 'https://github.com/' + APP_REPO + '/releases';
 /* Installed as an app (or installable): only when the page comes from a website, never from a downloaded file */
@@ -5201,7 +5282,7 @@ function renderHfBar(){
   const has = !!(e && (lib.links.some(l => l[0] === id || l[1] === id) || (e.needs || []).length));
   el.hidden = !has; el.innerHTML = has ? hfBarHTML(id) + '<button type="button" class="dchip lens-btn" data-open-lens="' + id + '" title="See its line of thought laid out (L)">Lens</button>' : '';
 }
-function refreshInfo(){ infoEl.innerHTML = infoHTML(ui.selected); infoEl.classList.toggle('has-sel', !!ui.selected); renderHfBar(); if(bigCard) refreshBigCard(); }
+function refreshInfo(){ const se = ui.selected && lib.entries[ui.selected]; infoEl.innerHTML = se && se.kind === 'paper' && window.__pmAtlasCard ? window.__pmAtlasCard(se) : infoHTML(ui.selected); infoEl.classList.toggle('has-sel', !!ui.selected); renderHfBar(); if(bigCard) refreshBigCard(); }
 function focusNoteHTML(id){
   const R = branchesNear(id);
   let h = '';
@@ -8370,16 +8451,105 @@ async function deskOpen(){
   DK.fromTopic = null;
 }
 document.getElementById('btnDesk').addEventListener('click', deskOpen);
+
+/* ===================== the map page, as confirmed: the map on its sheet, two small bars and the card =====================
+   It works through the app's own buttons and panels, which stay out of sight; the old page is gone. */
+const ATL_IC = {"back": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M15 18l-6-6 6-6\"/></svg>", "layers": "<svg class=\"ic \" width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3 3 7.5l9 4.5 9-4.5L12 3z\"/><path d=\"M3 16.5l9 4.5 9-4.5M3 12l9 4.5 9-4.5\"/></svg>", "chev": "<svg class=\"ic \" width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9l6 6 6-6\"/></svg>", "search": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"M20 20l-3.6-3.6\"/></svg>", "add": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg>", "filter": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 6h16M7 12h10M10 18h4\"/></svg>", "years": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"3.5\" y=\"5\" width=\"17\" height=\"15.5\" rx=\"2.5\"/><path d=\"M8 3v4M16 3v4M3.5 10h17\"/></svg>", "export": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3v12M8 7l4-4 4 4\"/><path d=\"M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13\"/></svg>", "sync": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M17.5 19H8a6 6 0 1 1 5.6-8.2A4.5 4.5 0 1 1 17.5 19z\"/><path d=\"M9.5 14l2 2 3.5-3.5\"/></svg>", "look": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg>", "target": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"6.5\"/><circle cx=\"12\" cy=\"12\" r=\"1.6\" fill=\"currentColor\"/><path d=\"M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3\"/></svg>", "doc": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10.5A.5.5 0 0 1 6.5 20V4a.5.5 0 0 1 .5-.5z\"/><path d=\"M13.5 3.5V8h4.5M9.5 12h5M9.5 15.5h5\"/></svg>", "link": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1.2 1.2\"/><path d=\"M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1.2-1.2\"/></svg>", "more": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"6\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/><circle cx=\"12\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/><circle cx=\"18\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/></svg>"};
+function atlasWood(){ const w = ((settings && settings.desk) || {}).wood || 'mahogany', p = ((settings && settings.desk) || {}).paper === 'smooth' ? 'smooth' : 'creased';
+  document.documentElement.style.setProperty('--atl-wood', 'url(assets/desk/bg-' + w + '.webp)');
+  document.documentElement.style.setProperty('--atl-hl', 'url(assets/desk/light-' + p + '-hl.webp)');
+  document.documentElement.style.setProperty('--atl-mul', 'url(assets/desk/light-' + p + '-mul.webp)'); }
+function atlasUI(){
+  if(document.getElementById('atlLeft')) return;
+  const mk = (tag, id, cls, html) => { const el = document.createElement(tag); if(id) el.id = id; if(cls) el.className = cls; if(html != null) el.innerHTML = html; return el; };
+  const B = (a, label, ic) => '<button type="button" class="atl-i" data-atl="' + a + '" aria-label="' + label + '" title="' + label + '">' + ic + '</button>';
+  const sheet = mk('div', 'atlSheet', 'atl-sheet', '');
+  const left = mk('div', 'atlLeft', 'atl-pill', '<button type="button" class="atl-i" data-atl="back" aria-label="Back to your maps" title="Back to your maps">' + ATL_IC.back + '</button><span class="atl-sep"></span><span class="atl-lay" aria-hidden="true">' + ATL_IC.layers + '</span><button type="button" class="atl-name" data-atl="maps" aria-haspopup="true" aria-expanded="false"><span id="atlNameT"></span>' + ATL_IC.chev + '</button>');
+  const maps = mk('div', 'atlMaps', 'atl-menu', ''); maps.hidden = true;
+  const right = mk('div', 'atlRight', 'atl-pill', B('search', 'Search', ATL_IC.search) + B('add', 'New paper', ATL_IC.add) + B('filter', 'Filters', ATL_IC.filter) + B('years', 'Years', ATL_IC.years) + B('export', 'Export', ATL_IC.export) + '<span class="atl-sep"></span>' + B('sync', 'Sync', ATL_IC.sync) + B('settings', 'Settings', ATL_IC.look));
+  const title = mk('div', 'atlTitle', 'atl-title', '');
+  const foot = mk('div', 'atlFoot', 'atl-foot', '');
+  const hint = mk('div', 'atlHint', 'atl-hint', 'Double-click a dot to link it · L for Lens');
+  const pop = mk('div', 'atlPop', 'atl-pop', '');
+  document.body.prepend(sheet); document.body.append(left, maps, right, title, foot, hint, pop);
+  ['addMenu', 'exportMenu', 'zoomTools'].forEach(id => { const el = document.getElementById(id); if(el) pop.appendChild(el); });
+  const up = document.getElementById('undoPill'); if(up) document.body.appendChild(up);
+  const fl = document.getElementById('filters'); if(fl) document.body.appendChild(fl);   /* the filters lived inside the old bar */
+  const click = id => { const el = document.getElementById(id); if(el) el.click(); };
+  document.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-atl]');
+    if(!b){ if(!ev.target.closest('#atlMaps')) { maps.hidden = true; } return; }
+    ev.stopPropagation(); ev.preventDefault();
+    const a = b.dataset.atl; if(a !== 'maps') maps.hidden = true;
+    if(a === 'back') deskOpen();
+    else if(a === 'maps'){ atlasMaps(); maps.hidden = !maps.hidden; b.setAttribute('aria-expanded', String(!maps.hidden)); }
+    else if(a === 'search'){ const fr = document.getElementById('filters'); if(fr && !fr.classList.contains('open')) click('filterToggle'); const q = document.getElementById('q'); [60, 220].forEach(ms => setTimeout(() => { if(q){ q.focus(); q.select(); } }, ms)); }
+    else if(a === 'add') click('btnAddMore');
+    else if(a === 'filter') click('filterToggle');
+    else if(a === 'years') click('btnZoom');
+    else if(a === 'export') click('btnExport');
+    else if(a === 'sync' || a === 'settings') click('btnSettings');
+  }, true);
+  maps.addEventListener('click', ev => { const t = ev.target.closest('[data-atl-map]'), c = ev.target.closest('[data-atl-contents]'), n = ev.target.closest('[data-atl-new]');
+    if(!t && !c && !n) return; maps.hidden = true;
+    if(t){ deskTouchRecent(t.dataset.atlMap); try{ if(ui.selected) select(null); }catch(e){} openView(t.dataset.atlMap + '-all'); }
+    else if(c) setToc(true); else if(n) openTopicForm(); });
+  /* the cloud says how saving is going */
+  const ss = document.querySelector('.bar [data-save-state]');
+  const syncNote = () => { const t = ss ? ss.textContent.trim() : '', btn = right.querySelector('[data-atl="sync"]');
+    btn.title = t || 'Sync: Settings'; btn.classList.toggle('warn', /saving|wait|unsaved|not saved|changes/i.test(t)); btn.classList.toggle('bad', /fail|couldn|error|offline|expired/i.test(t)); btn.classList.toggle('local', /browser only|this app only/i.test(t)); };
+  if(ss && 'MutationObserver' in window) new MutationObserver(syncNote).observe(ss, {childList: true, characterData: true, subtree: true});
+  syncNote(); atlasWood(); atlasTitle();
+}
+function atlasMaps(){
+  const box = document.getElementById('atlMaps');
+  const n = tid => Object.values(lib.entries).filter(e => e.kind === 'paper' && e.topic === tid).length;
+  box.innerHTML = '<p class="atl-mk">YOUR MAPS</p>' + lib.topics.map(t => '<button type="button" data-atl-map="' + esc(t.id) + '"' + (t.id === ui.topic ? ' class="on"' : '') + '><b>' + esc(t.name) + '</b><span>' + n(t.id) + (n(t.id) === 1 ? ' paper' : ' papers') + '</span></button>').join('') +
+    '<div class="atl-ms"></div><button type="button" data-atl-contents="1"><b>Contents</b><span>topics inside this map, and their order</span></button><button type="button" data-atl-new="1"><b>+ New map</b><span>for another field</span></button>';
+}
+function atlasTitle(){
+  const T = document.getElementById('atlTitle'); if(!T) return;
+  const tp = lib.topics.find(t => t.id === ui.topic);
+  const ps = Object.values(lib.entries).filter(e => e.kind === 'paper' && (!tp || e.topic === tp.id) && typeof e.y === 'number');
+  const ys = ps.map(e => e.y), n = lib.topics.length;
+  T.innerHTML = '<h2>' + esc((tp ? tp.name : (lib.title || 'Paper Map')).toUpperCase()) + '</h2><p>' + ps.length + (ps.length === 1 ? ' paper' : ' papers') + (ys.length ? ' · ' + Math.min(...ys) + ' – ' + Math.max(...ys) : '') + ' · one of ' + n + (n === 1 ? ' map' : ' maps') + '</p><i></i>';
+  const nm = document.getElementById('atlNameT'); if(nm) nm.textContent = tp ? tp.name : 'All maps';
+  const F = document.getElementById('atlFoot');
+  if(F){ const br = (lib.branches || []).filter(b => !b.hidden);
+    F.innerHTML = '<span><i class="lg-l"></i>builds on</span><span><i class="lg-l dash"></i>responds to</span><span><i class="lg-l dot"></i>related to</span>' +
+      (br.length ? br.map(b => '<span class="lg-br" data-branch-manage="1" title="Colour lines"><i class="lg-l" style="border-color:' + esc(b.color || '#B4432E') + '"></i>' + esc(b.name || 'main line') + '</span>').join('') : '<span><i class="lg-l main"></i>main line</span>') +
+      '<span><i class="lg-d read"></i>read</span><span><i class="lg-d want"></i>want to read</span>'; }
+}
+/* the card, as confirmed: where and when, the title, who; read or not; Lens, notes, the paper, more; how far */
+function atlasCardHTML(e){
+  const st = stOf(e), up = (IDX.up[e.id] || []).length, down = (IDX.down[e.id] || []).length;
+  const doi = e.d ? String(e.d).replace(/^https?:\/\/(dx\.)?doi\.org\//i, '') : '', url = /^https?:\/\//.test(e.l || '') ? e.l : (doi ? 'https://doi.org/' + doi : '');
+  const D = [[1, '1'], [2, '2'], [3, '3'], ['all', 'All']];
+  return '<div class="acard ' + stClass(e) + '">' +
+    '<p class="ac-k">' + esc([e.y, e.v].filter(Boolean).join(' · ')) + '</p>' +
+    '<h3 class="ac-t" data-open-card="' + e.id + '" tabindex="0" role="button">' + esc(e.t) + '</h3>' +
+    (e.au ? '<p class="ac-a">' + esc(e.au) + '</p>' : '') +
+    '<div class="ac-row"><span class="ac-st"><button type="button" class="stbtn want" data-st="want" data-id="' + e.id + '" aria-pressed="' + (st === 'want') + '">Want to read</button><button type="button" class="stbtn read" data-st="read" data-id="' + e.id + '" aria-pressed="' + (st === 'read') + '">Read</button></span>' +
+    '<span class="ac-ic"><button type="button" class="ac-b" data-open-lens="' + e.id + '" title="Lens: its line of thought (L)" aria-label="Lens">' + ATL_IC.target + '</button><button type="button" class="ac-b" data-reader="' + e.id + '" title="Notes and PDF" aria-label="Notes and PDF">' + ATL_IC.doc + '</button>' +
+    (url ? '<a class="ac-b" href="' + esc(url) + '" target="_blank" rel="noopener" title="Open the paper" aria-label="Open the paper">' + ATL_IC.link + '</a>' : '') +
+    '<button type="button" class="ac-b" data-open-card="' + e.id + '" title="The whole card" aria-label="More">' + ATL_IC.more + '</button></span></div>' +
+    '<div class="ac-hf"><span class="ac-hk">How far</span>' + D.map(o => '<button type="button" class="ac-d' + (String(ui.depth) === String(o[0]) ? ' on' : '') + '" data-depth="' + o[0] + '">' + o[1] + '</button>').join('') +
+    '<span class="ac-n">' + up + ' before · ' + down + ' after</span></div></div>' + citesHintHTML(e);
+}
+
+window.__pmAtlasCard = atlasCardHTML;
 /* the map page: full window wherever there is room for it (not on a phone held upright) */
-function atlasFollow(){ const on = window.innerWidth > 760, was = document.documentElement.classList.contains('atlas'); document.documentElement.classList.toggle('atlas', on); if(on && !was) setToc(false); if(on !== was){ try{ renderMap(true); }catch(e){} } }
+function atlasFollow(){ const on = true, was = document.documentElement.classList.contains('atlas'); document.documentElement.classList.toggle('atlas', on); if(on && !was) setToc(false); if(on !== was){ try{ renderMap(true); }catch(e){} } }
 /* on the map page a map is a field: opening one shows that field's rows (Topics on the map can add others) */
 function atlasLanes(){ if(!document.documentElement.classList.contains('atlas') || !ui.topic) return; const tp = lib.topics.find(t => t.id === ui.topic); if(!tp) return;
   const want = tp.subs.map(s => s.id), cur = Array.isArray(settings.lanes) ? settings.lanes : null;
   if(cur && cur.length === want.length && want.every(x => cur.includes(x))) return;
-  settings.lanes = want; persistSettings(); try{ renderMap(true); }catch(e){} }
-{ const _ov = openView; openView = function(){ const r = _ov.apply(this, arguments); try{ atlasLanes(); }catch(e){} return r; }; }
+  settings.lanes = want; persistSettings(); try{ const se = ui.selected && lib.entries[ui.selected]; if(se && se.topic !== tp.id) select(null); renderMap(true); }catch(e){} }
+{ const _ov = openView; openView = function(){ const r = _ov.apply(this, arguments); try{ atlasLanes(); atlasTitle(); }catch(e){} return r; }; }
 window.addEventListener('hashchange', () => setTimeout(() => { try{ atlasLanes(); }catch(e){} }, 0));
-window.addEventListener('resize', atlasFollow); atlasFollow(); if(document.documentElement.classList.contains('atlas')){ setToc(false); setTimeout(atlasLanes, 0); }
+window.addEventListener('resize', atlasFollow); atlasFollow(); setToc(false); atlasUI(); setTimeout(atlasLanes, 0);
+{ const _ra2 = renderAll; renderAll = function(){ _ra2(); try{ atlasTitle(); atlasWood(); }catch(e){} }; }
+window.addEventListener('hashchange', () => setTimeout(() => { try{ atlasTitle(); }catch(e){} }, 0));
 { const _om = openModal, _cm = closeModal;
   openModal = function(){ if(DK.shown){ DK.modalHid = true; deskHide(); } return _om.apply(this, arguments); };
   closeModal = function(){ const r = _cm.apply(this, arguments); if(DK.modalHid){ DK.modalHid = false; const page = deskPage(); if(page){ page.show(); deskShowFrame(); } } return r; }; }
