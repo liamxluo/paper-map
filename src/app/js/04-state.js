@@ -31,7 +31,9 @@ function normalizeSettings(S){
   S.undoWindow = [0, 5, 10, 30].includes(S.undoWindow) ? S.undoWindow : 10;
   return S;
 }
+let schemaWarned = false;
 function normalizeLib(L){
+  if(L && (L.schema || 0) > SCHEMA_VERSION && !schemaWarned){ schemaWarned = true; setTimeout(() => toast('This library was saved by a newer Paper Map: update this one before you change it'), 0); }
   if(!Array.isArray(L.tlinks)) L.tlinks = [];
   if(!L.tlinkColor || typeof L.tlinkColor !== 'object' || Array.isArray(L.tlinkColor)) L.tlinkColor = {};
   if(!Array.isArray(L.branches)) L.branches = [];
@@ -48,6 +50,7 @@ function normalizeLib(L){
   L.readings = (Array.isArray(L.readings) ? L.readings : []).filter(b => b && typeof b === 'object' && typeof b.id === 'string' && typeof b.title === 'string');
   L.readingCats = [...new Set((Array.isArray(L.readingCats) ? L.readingCats : []).filter(c => typeof c === 'string' && c.trim()))];
   L.notebooks = (Array.isArray(L.notebooks) ? L.notebooks : []).filter(n => n && typeof n.id === 'string' && Array.isArray(n.pages)).map(n => Object.assign(n, {pages: n.pages.slice(0, 60)}));
+  L.schema = Math.max(L.schema || 0, SCHEMA_VERSION);
   return L;
 }
 function loadAll(){

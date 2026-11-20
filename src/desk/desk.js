@@ -40,7 +40,7 @@ function setState(s, h){ state = s; const cl = document.body.classList; [...cl].
 
 /* ============ map faces and covers, drawn from your own data ============ */
 const PALETTE = ['#B4432E', '#2F7F86', '#4A6FA5', '#4F7A4A', '#A8802F', '#6B4A7A', '#8A5A3A', '#3F6F8F'];
-function topicColor(t){ const i = D.topics.findIndex(x => x.id === t.id); return PALETTE[(i < 0 ? 0 : i) % PALETTE.length]; }
+function topicColor(t){ if(t && t.cover) return t.cover; const i = D.topics.findIndex(x => x.id === t.id); return PALETTE[(i < 0 ? 0 : i) % PALETTE.length]; }
 function svgURL(s){ return 'url("data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s) + '")'; }
 const SERIF = "'PMap Serif',Palatino,Georgia,serif", SANS = "'PMap Sans',Helvetica,Arial,sans-serif";
 function faceSVG(t){
@@ -105,7 +105,7 @@ function metaOf(t){ const n = D.papers.filter(p => p.topic === t.id).length, whe
 /* the row of maps: every map as a cover on a strip you scroll left and right, like brochures on a stand */
 const ROW_X0 = 220, ROW_DX = 250, ROW_Y = 446, TILT = [-2.5, 1.5, -1.0, 2.0, -1.6, 1.0, -0.6, 1.8];
 const strip = $('rowStrip'), stripIn = $('rowIn');
-function coverHTML(t, i){ return '<div class="mcard" data-topic="' + esc(t.id) + '" style="left:' + (ROW_X0 + i * ROW_DX - 93.33) + 'px;--r:' + TILT[i % TILT.length] + 'deg"><div class="xc" role="button" tabindex="0" title="' + esc(t.name) + '" style="background-image:' + esc(svgURL(coverSVG(t))) + ',url(' + AS + 'cover-paper.webp)"></div><div class="mlabel"><b>' + esc(t.name) + '</b><span>' + esc(metaOf(t)) + '</span></div></div>'; }
+function coverHTML(t, i){ return '<div class="mcard" data-topic="' + esc(t.id) + '" style="left:' + (ROW_X0 + i * ROW_DX - 93.33) + 'px;--r:' + TILT[i % TILT.length] + 'deg"><button class="mc-col" data-col="' + esc(t.id) + '" aria-label="Colour of ' + esc(t.name) + '" title="Colour" style="background:' + topicColor(t) + '"></button><div class="xc" role="button" tabindex="0" title="' + esc(t.name) + '" style="background-image:' + esc(svgURL(coverSVG(t))) + ',url(' + AS + 'cover-paper.webp)"></div><div class="mlabel"><b>' + esc(t.name) + '</b><span>' + esc(metaOf(t)) + '</span></div></div>'; }
 function layoutRow(){
   const n = order.length;
   stripIn.innerHTML = order.map(coverHTML).join('') + '<div class="mcard new" style="left:' + (ROW_X0 + n * ROW_DX - 93.33) + 'px;--r:-2deg"><div class="xc" id="newMapCard" role="button" tabindex="0" title="New map" style="background-image:url(' + AS + 'newmap.webp)"></div><div class="mlabel"><b>New map</b><span>for another field</span></div></div>';
@@ -121,6 +121,13 @@ function indexOf(tid){ return order.findIndex(t => t.id === tid); }
 function slotOf(i){ return [ROW_X0 + i * ROW_DX - strip.scrollLeft, ROW_Y, TILT[i % TILT.length]]; }
 function rowArrows(){ const max = strip.scrollWidth - strip.clientWidth; $('rowPrev').classList.toggle('on', strip.scrollLeft > 4); $('rowNext').classList.toggle('on', strip.scrollLeft < max - 4); }
 strip.addEventListener('scroll', rowArrows, {passive: true});
+const colPick = document.createElement('div'); colPick.id = 'colPick'; colPick.className = 'colpick'; document.getElementById('ui').appendChild(colPick);
+stripIn.addEventListener('click', e => { const b = e.target.closest('[data-col]'); if(!b) return; e.stopPropagation(); const r = b.getBoundingClientRect(), tid = b.dataset.col;
+  colPick.innerHTML = PALETTE.map(c => '<button data-hex="' + c + '" style="background:' + c + '" aria-label="' + c + '"></button>').join(''); colPick.dataset.tid = tid;
+  colPick.style.left = Math.min(innerWidth - 230, r.left - 10) + 'px'; colPick.style.top = (r.bottom + 8) + 'px'; colPick.classList.add('on'); });
+colPick.addEventListener('click', e => { const b = e.target.closest('[data-hex]'); if(!b) return; e.stopPropagation(); colPick.classList.remove('on');
+  if(P && P.setMapColor) P.setMapColor(colPick.dataset.tid, b.dataset.hex); D = load(); assignSheets(); sheets.forEach(el => { if(state === 'maps'){ el.style.opacity = '0'; el.style.pointerEvents = 'none'; } }); });
+addEventListener('click', e => { if(!e.target.closest('#colPick,[data-col]')) colPick.classList.remove('on'); });
 strip.addEventListener('wheel', e => { if(state !== 'maps') return; if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){ strip.scrollLeft += e.deltaY; e.preventDefault(); } }, {passive: false});
 $('rowPrev').addEventListener('click', () => strip.scrollBy({left: -ROW_DX * 3, behavior: 'smooth'}));
 $('rowNext').addEventListener('click', () => strip.scrollBy({left: ROW_DX * 3, behavior: 'smooth'}));
@@ -258,6 +265,7 @@ $('deskBack').addEventListener('click', toDesk);
 /* ============ desk surfaces, paper, cup ============ */
 let bgFront = 'A';
 function setWood(v, instant){ prefs.wood = v; document.querySelectorAll('.wd').forEach(w => w.classList.toggle('on', w.dataset.wood === v));
+  { const fr = document.querySelector('#leaf .lf-front'), bk = document.querySelector('#leaf .lf-back'); if(fr) fr.style.backgroundImage = 'url(' + AS + 'leaf-r-' + v + '.webp)'; if(bk) bk.style.backgroundImage = 'url(' + AS + 'leaf-l-' + v + '.webp)'; }
   const url = AS + 'bg-' + v + '.webp', img = new Image();
   img.onload = () => { const back = $(bgFront === 'A' ? 'bgB' : 'bgA'), front = $(bgFront === 'A' ? 'bgA' : 'bgB');
     back.style.backgroundImage = 'url(' + url + ')'; back.style.transition = instant ? 'none' : ''; front.style.transition = instant ? 'none' : '';
@@ -286,18 +294,33 @@ function closeMenus(){ cupMenu.classList.remove('on'); panel.classList.remove('o
 stage.addEventListener('click', e => { if(!e.target.closest('#cupMenu') && !e.target.closest('#cupHit')) cupMenu.classList.remove('on'); });
 
 /* ============ Papers: every paper on your maps, as A4 pages ============ */
-let pFilter = {map: '', st: '', q: ''}, pAll = false; const P_FIRST = 240;
+let pFilter = {map: '', sub: '', st: '', q: ''}, pAll = false, pOpen = new Set(); const P_FIRST = 240;
+/* a map's topics as a tree: children by parent, and every topic's own subtree */
+function topicTree(t){ const rows = (t.rows || []).filter(r => !r.own), kids = {}, roots = [];
+  rows.forEach(r => { const par = r.parent && rows.some(x => x.id === r.parent) ? r.parent : null; if(par) (kids[par] = kids[par] || []).push(r); else roots.push(r); });
+  const own = (t.rows || []).find(r => r.own); return {roots, kids, own: own ? own.id : null}; }
+function subtreeOf(t, id){ const {kids} = topicTree(t), out = new Set([id]); const walk = x => (kids[x] || []).forEach(k => { out.add(k.id); walk(k.id); }); walk(id); return out; }
+function rowPath(t, id){ const rows = t.rows || [], out = []; let r = rows.find(x => x.id === id), guard = 0; while(r && !r.own && guard++ < 20){ out.unshift(r.name); r = r.parent ? rows.find(x => x.id === r.parent) : null; } return out; }
 function renderPapers(){
   const ps = D.papers.slice();
   const tName = {}; D.topics.forEach(t => { tName[t.id] = t.name; });
   $('pbCount').textContent = ps.length + (ps.length === 1 ? ' paper' : ' papers') + ' · ' + ps.filter(p => p.st === 'read').length + ' read · ' + ps.filter(p => p.st === 'want').length + ' to read';
-  $('pbMaps').innerHTML = '<button class="tp' + (pFilter.map ? '' : ' on') + '" data-map=""><span>All papers</span><em>' + ps.length + '</em></button>' + D.topics.map(t => '<button class="tp' + (pFilter.map === t.id ? ' on' : '') + '" data-map="' + esc(t.id) + '"><span>' + esc(t.name) + '</span><em>' + ps.filter(p => p.topic === t.id).length + '</em></button>').join('');
+    { let h = '<button class="tp' + (pFilter.map ? '' : ' on') + '" data-map=""><span>All papers</span><em>' + ps.length + '</em></button>';
+    D.topics.forEach(t => { const tr = topicTree(t), mine = ps.filter(p => p.topic === t.id), has = tr.roots.length > 0, open = pOpen.has(t.id) || pFilter.map === t.id;
+      h += '<div class="tp-row"><button class="tp-tog' + (has ? '' : ' none') + (open ? ' open' : '') + '" data-tog="' + esc(t.id) + '" aria-label="Show its topics"></button><button class="tp' + (pFilter.map === t.id && !pFilter.sub ? ' on' : '') + '" data-map="' + esc(t.id) + '"><span>' + esc(t.name) + '</span><em>' + mine.length + '</em></button></div>';
+      if(!open) return;
+      const row = (r, depth) => { const kids = tr.kids[r.id] || [], o = pOpen.has(r.id) || (pFilter.sub && subtreeOf(t, r.id).has(pFilter.sub) && pFilter.sub !== r.id), n = mine.filter(p => subtreeOf(t, r.id).has(p.sub)).length;
+        h += '<div class="tp-row" style="--d:' + depth + '"><button class="tp-tog' + (kids.length ? '' : ' none') + (o ? ' open' : '') + '" data-tog="' + esc(r.id) + '"></button><button class="tp sub' + (pFilter.sub === r.id ? ' on' : '') + '" data-map="' + esc(t.id) + '" data-sub="' + esc(r.id) + '"><span>' + esc(r.name) + '</span><em>' + n + '</em></button></div>';
+        if(o) kids.forEach(k => row(k, depth + 1)); };
+      tr.roots.forEach(r => row(r, 1)); });
+    $('pbMaps').innerHTML = h; }
   $('pbSt').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.st === pFilter.st));
   const q = pFilter.q.trim().toLowerCase();
-  const list = ps.filter(p => (!pFilter.map || p.topic === pFilter.map) && (!pFilter.st || (pFilter.st === 'none' ? !p.st : p.st === pFilter.st)) && (!q || (p.t + ' ' + p.au + ' ' + p.y + ' ' + (p.v || '')).toLowerCase().includes(q)))
+  const subT = pFilter.map && pFilter.sub ? subtreeOf(D.topics.find(t => t.id === pFilter.map) || {rows: []}, pFilter.sub) : null;
+  const list = ps.filter(p => (!pFilter.map || p.topic === pFilter.map) && (!subT || subT.has(p.sub)) && (!pFilter.st || (pFilter.st === 'none' ? !p.st : p.st === pFilter.st)) && (!q || (p.t + ' ' + p.au + ' ' + p.y + ' ' + (p.v || '')).toLowerCase().includes(q)))
     .sort((a, b) => (tName[a.topic] || '').localeCompare(tName[b.topic] || '') || (a.y || 0) - (b.y || 0));
   const shown = pAll ? list : list.slice(0, P_FIRST);
-  $('pbGrid').innerHTML = list.length ? shown.map((p, i) => '<figure class="pg" data-id="' + esc(p.id) + '" tabindex="0" role="button" style="--i:' + Math.min(i, 40) + '"><div class="sheet"><p class="pj">' + esc((p.v || tName[p.topic] || '').slice(0, 40)) + (p.y ? ' · ' + p.y : '') + '</p><h4>' + esc(String(p.t || 'Untitled').slice(0, 90)) + '</h4><p class="pa">' + esc(String(p.au || '').slice(0, 60)) + '</p><i class="ln"></i>' + (p.st ? '<span class="stamp ' + p.st + '">' + (p.st === 'read' ? 'READ' : 'TO READ') + '</span>' : '') + (p.book ? '<span class="bk-mark">BOOK</span>' : '') + '</div><figcaption><b>' + esc(String(p.t || 'Untitled').slice(0, 70)) + '</b><span>' + esc(tName[p.topic] || '') + '</span></figcaption></figure>').join('')
+  $('pbGrid').innerHTML = list.length ? shown.map((p, i) => '<figure class="pg" data-id="' + esc(p.id) + '" tabindex="0" role="button" style="--i:' + Math.min(i, 40) + '"><div class="sheet"><p class="pj">' + esc((p.v || tName[p.topic] || '').slice(0, 40)) + (p.y ? ' · ' + p.y : '') + '</p><h4>' + esc(String(p.t || 'Untitled').slice(0, 90)) + '</h4><p class="pa">' + esc(String(p.au || '').slice(0, 60)) + '</p><i class="ln"></i>' + (p.st ? '<span class="stamp ' + p.st + '">' + (p.st === 'read' ? 'READ' : 'TO READ') + '</span>' : '') + (p.book ? '<span class="bk-mark">BOOK</span>' : '') + '</div><figcaption><b>' + esc(String(p.t || 'Untitled').slice(0, 70)) + '</b><span>' + esc([tName[p.topic] || ''].concat(rowPath(D.topics.find(t => t.id === p.topic) || {rows: []}, p.sub)).join(' / ')) + '</span></figcaption></figure>').join('')
     : '<p class="pb-empty">' + (ps.length ? 'Nothing matches.' : 'No papers yet. Open a map and add the first one with +.') + '</p>';
   if(list.length > shown.length) $('pbGrid').insertAdjacentHTML('beforeend', '<button class="rc-btn pb-more" id="pbMore">Show all ' + list.length + ' papers</button>');
   const figs = {}; $('pbGrid').querySelectorAll('.pg').forEach(g => { figs[g.dataset.id] = g; });
@@ -306,7 +329,8 @@ function renderPapers(){
 }
 $('pboard').addEventListener('click', e => {
   if(e.target.closest('#pbMore')){ pAll = true; renderPapers(); return; }
-  const m = e.target.closest('[data-map]'); if(m){ pFilter.map = m.dataset.map; pAll = false; renderPapers(); return; }
+  const tg = e.target.closest('[data-tog]'); if(tg){ const k = tg.dataset.tog; if(pOpen.has(k)) pOpen.delete(k); else pOpen.add(k); renderPapers(); return; }
+  const m = e.target.closest('[data-map]'); if(m){ pFilter.map = m.dataset.map; pFilter.sub = m.dataset.sub || ''; if(pFilter.map) pOpen.add(pFilter.map); pAll = false; renderPapers(); return; }
   const s = e.target.closest('#pbSt button'); if(s){ pFilter.st = pFilter.st === s.dataset.st ? '' : s.dataset.st; renderPapers(); return; }
   const g = e.target.closest('.pg'); if(g) openPaperPage(g.dataset.id, g.querySelector('.sheet'));
 });
@@ -337,9 +361,11 @@ function md(s){
 function fillPaper(id){ const p = P && P.paper(id); if(!p) return false; ppId = id;
   $('ppK').textContent = [p.v, p.y].filter(Boolean).join(' · ');
   $('ppT').textContent = p.t || 'Untitled'; $('ppA').textContent = p.au || '';
-  $('ppTags').innerHTML = (p.tags || []).map(t => '<span>' + esc(t) + '</span>').join('') + (p.book ? '<span>Book</span>' : '');
+  $('ppTags').innerHTML = (p.allTags || []).map(t => '<button data-tag="' + esc(t.id) + '" class="' + ((p.tagIds || []).includes(t.id) ? 'on' : '') + '"><i style="background:' + esc(t.color || '#8E8273') + '"></i>' + esc(t.name) + '</button>').join('') + '<span class="pp-newtag"><input id="ppNewTag" placeholder="+ new tag" maxlength="40"></span>' + (p.book ? '<span class="pp-book">Book</span>' : '');
+  document.querySelectorAll('#ppPri button').forEach(x => x.classList.toggle('on', +x.dataset.pri === +p.p));
+  $('ppPdf').hidden = !p.pdf; $('ppPdfImg').removeAttribute('src');
+  if(p.pdf && P && P.pdfThumb) P.pdfThumb(id).then(u => { if(u && ppId === id) $('ppPdfImg').src = u; }).catch(() => {});
   document.querySelectorAll('#ppSt button').forEach(b => b.classList.toggle('on', b.dataset.st === (p.st || '')));
-  $('ppPri').textContent = p.pri || '';
   $('ppNotes').innerHTML = p.n ? md(p.n) : '<p class="empty">No notes yet. Notes &amp; PDF opens them beside the paper.</p>';
   $('ppLink').hidden = !p.url; $('ppLink').dataset.url = p.url || '';
   $('ppWhere').textContent = p.where || '';
@@ -366,6 +392,11 @@ async function closePaperPage(){
   PP.style.opacity = '0'; PP.getAnimations().forEach(a => a.cancel()); PP.style.clipPath = ''; PP.classList.remove('entered'); busy = false; }
 PP.addEventListener('click', e => { const b = e.target.closest('[data-pid]'); if(!b) return; ppStack.push(ppId); PP.classList.remove('entered'); void PP.offsetWidth; fillPaper(b.dataset.pid); PP.classList.add('entered'); });
 $('ppBack').addEventListener('click', closePaperPage);
+$('ppPri').addEventListener('click', e => { const x = e.target.closest('[data-pri]'); if(!x || !P || !ppId) return; P.setPriority(ppId, +x.dataset.pri); D = load(); fillPaper(ppId); });
+$('ppTags').addEventListener('click', e => { const x = e.target.closest('[data-tag]'); if(!x || !P || !ppId) return; P.toggleTag(ppId, x.dataset.tag); D = load(); fillPaper(ppId); });
+$('ppTags').addEventListener('keydown', e => { if(e.key !== 'Enter' || e.target.id !== 'ppNewTag') return; const v = e.target.value.trim(); if(!v || !P || !ppId) return; P.addTag(ppId, v); D = load(); fillPaper(ppId); setTimeout(() => { const i = $('ppNewTag'); if(i) i.focus(); }, 0); });
+$('ppEditDet').addEventListener('click', () => { if(P && ppId) P.editPaper(ppId); });
+$('ppPdf').addEventListener('click', () => { if(P && ppId) P.openNotes(ppId); });
 document.querySelectorAll('#ppSt button').forEach(b => b.addEventListener('click', () => { if(!P || !ppId) return; P.setStatus(ppId, b.dataset.st); D = load(); fillPaper(ppId); }));
 $('ppOnMap').addEventListener('click', () => { if(P && ppId) P.openPaper(ppId, 'paper'); });
 $('ppEdit').addEventListener('click', () => { if(P && ppId) P.openNotes(ppId); });
@@ -501,18 +532,84 @@ function nbFont(){ const f = FONTS[NB.font] || FONTS.ink; memo.style.setProperty
   $('fontName').textContent = f[3]; document.querySelectorAll('#fontMenu button[data-f]').forEach(b => b.classList.toggle('on', b.dataset.f === NB.font)); renderNbList(); }
 function nbSpan(n){ const ds = n.pages.map(p => p.date).filter(Boolean).sort(); if(!ds.length) return 'empty'; const f = d => new Date(d + 'T12:00:00').toLocaleDateString('en-GB', {month: 'short', year: 'numeric'}); return f(ds[0]) === f(ds[ds.length - 1]) ? f(ds[0]) : f(ds[0]) + ' – ' + f(ds[ds.length - 1]); }
 function renderNbList(){ const cur = NBS[NBS.length - 1], past = NBS.slice(0, -1);
-  $('pastBooks').hidden = !past.length; $('pastName').textContent = NB === cur ? 'Past books' : 'Notebook ' + (NBS.indexOf(NB) + 1);
+  $('pastBooks').hidden = true; $('pastName').textContent = NB === cur ? 'Past books' : 'Notebook ' + (NBS.indexOf(NB) + 1);
   $('pastMenu').innerHTML = '<p>PAST BOOKS</p>' + (NB !== cur ? '<button data-nb="' + (NBS.length - 1) + '" class="back">Back to your current notebook</button>' : '') + past.map((n, i) => '<button data-nb="' + i + '"' + (n === NB ? ' class="on"' : '') + '>Notebook ' + (i + 1) + '<em>' + (k => k + (k === 1 ? ' page' : ' pages'))(n.pages.filter(p => p.text && p.text.trim()).length) + ' · ' + nbSpan(n) + '</em></button>').join('');
   const full = NB === cur && NB.cur >= NB_MAX - 1; $('memoNew').hidden = !full; }
 function memoShow(){ const pg = NB.pages[NB.cur] || {text: '', date: null};
   memoText.textContent = pg.text || ''; $('memoDate').textContent = fmtDate(pg.date || today());
   $('memoPage').textContent = (NB.cur + 1) + ' / ' + NB_MAX + (NB.cur + 1 === NB_MAX ? ' · full' : '');
   $('memoPrev').disabled = NB.cur === 0; $('memoNext').disabled = NB.cur >= NB_MAX - 1; renderNbList(); }
-function memoTurn(d){ const n = NB.cur + d; if(n < 0 || n > NB_MAX - 1) return;
-  memoText.classList.add(d > 0 ? 'out-l' : 'out-r');
-  setTimeout(() => { while(NB.pages.length <= n) NB.pages.push({text: '', date: null, edited: null}); NB.cur = n; memoShow(); nbSave();
-    memoText.classList.remove('out-l', 'out-r'); memoText.classList.add(d > 0 ? 'out-r' : 'out-l'); void memoText.offsetWidth; memoText.classList.remove('out-l', 'out-r');
-    if(state === 'note') caretEnd(); }, 170); }
+/* turning a page, as paper bends: the right page's bottom corner is drawn up and over to the left. The fold is the line
+   halfway between where the corner was and where it is now; what lies beyond it is the page's back, folded over. */
+const CW = 180, CH = 290, CM = 44, CURL = {w: null, front: null, back: null};
+let turning = false;
+function curlImgs(){ const w = prefs.wood || 'mahogany'; if(CURL.w === w && CURL.front) return Promise.resolve(); CURL.w = w;
+  const ld = src => new Promise(r => { const im = new Image(); im.onload = () => (im.decode ? im.decode().catch(() => {}) : Promise.resolve()).then(() => r(im)); im.onerror = () => r(null); im.src = src; });
+  return Promise.all([ld(AS + 'leaf-r-' + w + '.webp'), ld(AS + 'leaf-l-' + w + '.webp')]).then(([f, bk]) => { CURL.front = f; CURL.back = bk; }); }
+function clipHalf(poly, M, n, keepPos){ const out = [], side = p => ((p[0] - M[0]) * n[0] + (p[1] - M[1]) * n[1]) * (keepPos ? 1 : -1);
+  for(let i = 0; i < poly.length; i++){ const A = poly[i], B = poly[(i + 1) % poly.length], sa = side(A), sb = side(B);
+    if(sa >= 0) out.push(A); if((sa >= 0) !== (sb >= 0)){ const k = sa / (sa - sb); out.push([A[0] + (B[0] - A[0]) * k, A[1] + (B[1] - A[1]) * k]); } }
+  return out; }
+function pathOf(ctx, poly){ ctx.beginPath(); poly.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath(); }
+function drawCurl(ctx, t){
+  ctx.clearRect(-CM, -CM, 2 * CW + 2 * CM, CH + 2 * CM);
+  if(t <= 0.0005) return;
+  const e = t, C0 = [2 * CW, CH];
+  let P = [2 * CW - 2 * CW * e, CH - 0.20 * CH * Math.sin(Math.PI * Math.min(1, e))];
+  /* paper does not stretch: the corner stays within reach of the spine's two ends */
+  const B = [CW, CH], T = [CW, 0], lim = (c, r) => { const dx = P[0] - c[0], dy = P[1] - c[1], d = Math.hypot(dx, dy); if(d > r){ P = [c[0] + dx / d * r, c[1] + dy / d * r]; } };
+  lim(B, CW); lim(T, Math.hypot(CW, CH));
+  const dx = C0[0] - P[0], dy = C0[1] - P[1], L = Math.hypot(dx, dy) || 1, n = [dx / L, dy / L], M = [(C0[0] + P[0]) / 2, (C0[1] + P[1]) / 2];
+  const page = [[CW, 0], [2 * CW, 0], [2 * CW, CH], [CW, CH]];
+  const flat = clipHalf(page, M, n, false), lifted = clipHalf(page, M, n, true);
+  const refl = p => { const k = 2 * ((p[0] - M[0]) * n[0] + (p[1] - M[1]) * n[1]); return [p[0] - k * n[0], p[1] - k * n[1]]; };
+  const flap = lifted.map(refl);
+  /* where the corner has lifted, the page beneath shows, darkened close to the fold */
+  if(lifted.length > 2){ ctx.save(); pathOf(ctx, lifted); ctx.clip();
+    const g = ctx.createLinearGradient(M[0], M[1], M[0] + n[0] * 60, M[1] + n[1] * 60); g.addColorStop(0, 'rgba(30,18,8,.32)'); g.addColorStop(1, 'rgba(30,18,8,0)');
+    ctx.fillStyle = g; ctx.fillRect(-CM, -CM, 2 * CW + 2 * CM, CH + 2 * CM); ctx.restore(); }
+  /* the part of the page still lying flat */
+  if(flat.length > 2 && CURL.front){ ctx.save(); pathOf(ctx, flat); ctx.clip(); ctx.drawImage(CURL.front, CW, 0, CW, CH); ctx.restore(); }
+  if(flap.length > 2){
+    /* the folded flap's soft shadow on what lies under it */
+    ctx.save(); ctx.shadowColor = 'rgba(20,10,4,.38)'; ctx.shadowBlur = 16; ctx.shadowOffsetX = -n[0] * 5; ctx.shadowOffsetY = -n[1] * 3 + 2;
+    pathOf(ctx, flap); ctx.fillStyle = '#F3EDE0'; ctx.fill(); ctx.restore();
+    /* the flap itself: the back of the page, folded over the line */
+    ctx.save(); pathOf(ctx, flap); ctx.clip();
+    const a = 1 - 2 * n[0] * n[0], bb = -2 * n[0] * n[1], d = 1 - 2 * n[1] * n[1], mn = M[0] * n[0] + M[1] * n[1];
+    ctx.transform(a, bb, bb, d, 2 * mn * n[0], 2 * mn * n[1]);
+    if(CURL.back){ ctx.save(); ctx.translate(3 * CW, 0); ctx.scale(-1, 1); ctx.drawImage(CURL.back, CW, 0, CW, CH); ctx.restore(); }
+    ctx.restore();
+    /* light on the bend: bright beside the fold, deepening towards the free edge */
+    ctx.save(); pathOf(ctx, flap); ctx.clip();
+    const g2 = ctx.createLinearGradient(M[0], M[1], M[0] - n[0] * L, M[1] - n[1] * L);
+    g2.addColorStop(0, 'rgba(60,40,20,.30)'); g2.addColorStop(0.06, 'rgba(255,252,244,.22)'); g2.addColorStop(0.35, 'rgba(255,252,244,0)'); g2.addColorStop(1, 'rgba(60,40,20,.12)');
+    ctx.fillStyle = g2; ctx.fillRect(-CM, -CM, 2 * CW + 2 * CM, CH + 2 * CM);
+    ctx.strokeStyle = 'rgba(60,40,20,.18)'; ctx.lineWidth = .6; pathOf(ctx, flap); ctx.stroke(); ctx.restore(); }
+}
+function penLift(up){ const pen = $('pen'); if(!pen || reduce) return Promise.resolve();
+  const body = pen.querySelector('.pen-b'), sh = pen.querySelector('.pen-sh');
+  const A = {transform: 'translate(0,0) rotate(0deg)'}, Bp = {transform: 'translate(34px,-22px) rotate(-5deg) scale(1.02)'};
+  const SA = {opacity: 1, transform: 'translate(0,0)', filter: 'blur(0px)'}, SB = {opacity: .35, transform: 'translate(42px,-4px)', filter: 'blur(3px)'};
+  const o = {duration: 260, easing: 'cubic-bezier(.3,.1,.3,1)', fill: 'forwards'};
+  body.animate(up ? [A, Bp] : [Bp, A], o); return sh.animate(up ? [SA, SB] : [SB, SA], o).finished.catch(() => {}); }
+async function memoTurn(d){ const n = NB.cur + d; if(n < 0 || n > NB_MAX - 1 || turning) return;
+  while(NB.pages.length <= n) NB.pages.push({text: '', date: null, edited: null});
+  if(reduce){ NB.cur = n; memoShow(); nbSave(); if(state === 'note') caretEnd(); return; }
+  turning = true; memoText.blur();
+  const cv = $('curl'); await curlImgs();
+  const box = cv.getBoundingClientRect(), k = Math.max(1, (box.width || 1) / (2 * CW + 2 * CM)) * (window.devicePixelRatio || 1);
+  cv.width = Math.round((2 * CW + 2 * CM) * k); cv.height = Math.round((CH + 2 * CM) * k);
+  const ctx = cv.getContext('2d'); ctx.setTransform(k, 0, 0, k, CM * k, CM * k); ctx.imageSmoothingQuality = 'high';
+  await penLift(true);
+  if(d < 0){ drawCurl(ctx, 1); NB.cur = n; memoShow(); }     /* turning back, the leaf lies over the left page at first */
+  cv.classList.add('on');
+  const dur = window.__curlDur || 1150, t0 = performance.now(), ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+  await new Promise(res => { const step = now => { const u = Math.min(1, (now - t0) / dur), v = ease(u); drawCurl(ctx, d > 0 ? v : 1 - v);
+    if(u < 1) requestAnimationFrame(step); else res(); }; requestAnimationFrame(step); });
+  if(d > 0){ NB.cur = n; memoShow(); }
+  cv.classList.remove('on'); ctx.clearRect(-CM, -CM, 2 * CW + 2 * CM, CH + 2 * CM);
+  nbSave(); await penLift(false); turning = false; if(state === 'note') caretEnd(); }
 function caretEnd(){ memoText.focus(); const r = document.createRange(); r.selectNodeContents(memoText); r.collapse(false); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); }
 ['memoPrev', 'memoNext'].forEach((id, k) => $(id).addEventListener('click', e => { e.stopPropagation(); memoTurn(k ? 1 : -1); }));
 const fontMenu = $('fontMenu');
@@ -521,8 +618,15 @@ fontMenu.addEventListener('click', e => { e.stopPropagation();
   const f = e.target.closest('button[data-f]'); if(f){ NB.font = f.dataset.f; nbFont(); nbSave(); fontMenu.classList.remove('on'); if(state === 'note') memoText.focus(); } });
 const pastMenu = $('pastMenu');
 $('pastBooks').addEventListener('click', e => { e.stopPropagation(); fontMenu.classList.remove('on'); pastMenu.classList.toggle('on'); });
-pastMenu.addEventListener('click', e => { e.stopPropagation(); const nb = e.target.closest('button[data-nb]'); if(!nb) return;
-  NB = NBS[+nb.dataset.nb]; if(NB !== NBS[NBS.length - 1]) NB.cur = 0; nbFont(); memoShow(); pastMenu.classList.remove('on'); if(state === 'note') caretEnd(); });
+$('nbShelf').addEventListener('click', e => { e.stopPropagation(); fontMenu.classList.remove('on');
+  const cur = NBS[NBS.length - 1], used = n => n.pages.filter(p => (p.text || '').trim()).length, where = P && P.where ? P.where() : 'in this browser';
+  pastMenu.innerHTML = '<p>NOTEBOOKS</p>' + NBS.map((n, i) => '<button data-nb="' + i + '"' + (n === NB ? ' class="on"' : '') + '><b>Notebook ' + (i + 1) + '</b><span>' + used(n) + (used(n) === 1 ? ' page' : ' pages') + '</span></button>').reverse().join('') +
+    '<button data-nbnew="1" class="nb-new"><b>+ New notebook</b></button><p class="nb-where">Saved with your library</p>';
+  pastMenu.classList.toggle('on'); });
+pastMenu.addEventListener('click', e => { e.stopPropagation();
+  if(e.target.closest('[data-nbnew]')){ NB = {id: 'nb-' + Date.now().toString(36), font: NB ? NB.font : 'ink', cur: 0, pages: [{text: '', date: null, edited: null}]}; NBS.push(NB); nbFont(); memoShow(); nbSave(true); pastMenu.classList.remove('on'); if(state === 'note') caretEnd(); return; }
+  const nb = e.target.closest('button[data-nb]'); if(!nb) return;
+  NB = NBS[+nb.dataset.nb]; nbFont(); memoShow(); pastMenu.classList.remove('on'); if(state === 'note') caretEnd(); });
 $('memoNew').addEventListener('click', e => { e.stopPropagation(); const cur = NBS[NBS.length - 1]; if(NB !== cur || NB.cur < NB_MAX - 1) return;
   NB = {id: 'nb-' + Date.now().toString(36), font: cur.font, cur: 0, pages: [{text: '', date: null, edited: null}]}; NBS.push(NB); nbFont(); memoShow(); nbSave(true); toast('A new notebook. The full one is under Past books.'); if(state === 'note') caretEnd(); });
 addEventListener('click', e => { if(!e.target.closest('#fontMenu,#fontPick')) fontMenu.classList.remove('on'); if(!e.target.closest('#pastMenu,#pastBooks')) pastMenu.classList.remove('on'); });
@@ -533,7 +637,7 @@ function zoomTo(on){ stage.classList.add('zooming');
     stage.style.transform = 'translate(' + (innerWidth / 2 - cx * s2) + 'px,' + (innerHeight / 2 - cy * s2) + 'px) scale(' + s2 + ')'; }
   else fit();
   clearTimeout(zoomTo._t); zoomTo._t = setTimeout(() => stage.classList.remove('zooming'), 820); }
-async function openNote(){ if(busy || state !== 'desk') return; busy = true; closeMenus();
+async function openNote(){ if(busy || state !== 'desk') return; busy = true; closeMenus(); D = load(); loadNotebooks(); nbFont(); memoShow();
   setState('note', 'Your research log · up to sixty pages · the right page stays as it is'); zoomTo(true); await sleep(reduce ? 20 : 780);
   memoText.contentEditable = 'true'; caretEnd(); busy = false; }
 async function closeNote(){ if(busy || state !== 'note') return; busy = true; fontMenu.classList.remove('on'); pastMenu.classList.remove('on'); NB = NBS[NBS.length - 1]; nbFont(); memoShow(); memoText.contentEditable = 'false'; memoText.blur(); nbSave(true);

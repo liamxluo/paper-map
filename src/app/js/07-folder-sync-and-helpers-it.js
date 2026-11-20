@@ -262,6 +262,7 @@ async function fsRestore(){
   }, 1500);
 }
 function syncForget(){
+  if(window.__TAURI__){ KC_TOKEN = ''; try{ window.__TAURI__.core.invoke('secret_delete', {key: 'github-token'}).catch(() => {}); }catch(e){} }
   const k = syncKind();
 //   if(k === 'dropbox'){ const c = lsGet(GH_KEY) || {}; if(c.access) fetch(DBX_API + 'auth/token/revoke', {method: 'POST', headers: {'Authorization': 'Bearer ' + c.access}}).catch(() => {}); }
   if(k === 'folder'){ idbDel('dir').catch(() => {}); fsDir = null; fsPending = null; }

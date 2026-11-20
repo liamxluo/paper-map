@@ -7,6 +7,7 @@ const gh = {st:'off', msg:'', when:'', busy:false, again:false, rev:0, timer:nul
 function ghCfg(){
   if(PREVIEW) return null;
   const c = lsGet(GH_KEY); if(!c) return null;
+  if(c.token === '__keychain__') c.token = KC_TOKEN || '';
   const kind = c.kind || 'github';
   if(kind === 'dropbox') return null;   /* Dropbox sign-in is switched off */
   if(kind === 'folder') return fsDir ? Object.assign({path: 'data/paper-map.json'}, c, {kind}) : null;
@@ -17,7 +18,11 @@ function syncName(){ const k = syncKind(); return k === 'dropbox' ? 'Dropbox' : 
 function syncWhere(){ const k = syncKind(); return k === 'dropbox' ? 'In Dropbox' : k === 'folder' ? 'In your folder' : 'On GitHub'; }
 function syncIn(){ const k = syncKind(); return k === 'dropbox' ? 'in Dropbox' : k === 'folder' ? 'in your folder' : 'on GitHub'; }
 function syncShort(){ const k = syncKind(); return k === 'dropbox' ? 'Dropbox' : k === 'folder' ? 'folder’s' : 'GitHub'; }
-function ghStore(c){ lsSet(GH_KEY, c); }
+let KC_TOKEN = '';
+function ghStore(c){
+  if(window.__TAURI__ && c && c.token && c.token !== '__keychain__'){ const tok = c.token; KC_TOKEN = tok; lsSet(GH_KEY, Object.assign({}, c, {token: '__keychain__'}));
+    window.__TAURI__.core.invoke('secret_set', {key: 'github-token', value: tok}).catch(() => { lsSet(GH_KEY, Object.assign({}, c, {token: tok})); }); return; }
+  lsSet(GH_KEY, c); }
 function ghApi(c){ return 'https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + '/contents/' + String(c.path).split('/').filter(Boolean).map(encodeURIComponent).join('/'); }
 function ghHeaders(c, extra){ return Object.assign({'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + c.token}, extra || {}); }
 function b64encode(str){ const bytes = new TextEncoder().encode(str); let bin = ''; for(let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(bin); }
@@ -122,10 +127,54 @@ function adoptSnapshot(obj){
    When both sides changed since, each paper, line, topic, tag and colour line is compared on its own:
    changed on one side only → that change is taken; changed on both sides → you choose, item by item. */
 function syncId(c){ return c ? (c.kind || 'github') + ':' + (c.kind === 'github' || !c.kind ? c.owner + '/' + c.repo + '@' + c.branch : c.name || '') + ':' + c.path : ''; }
-function saveBase(c, data){ try{ localStorage.setItem('rl:base', JSON.stringify({id: syncId(c), lib: data.lib, status: (data.status && data.status.map) || data.status || {}})); }catch(e){ try{ localStorage.removeItem('rl:base'); }catch(e2){} } }
-function loadBase(c){ try{ const b = JSON.parse(localStorage.getItem('rl:base') || 'null'); return b && b.id === syncId(c) && validLib(b.lib) ? b : null; }catch(e){ return null; } }
+/* a small key-value store in IndexedDB: no 5 MB limit, kept by the browser like localStorage */
+const PMDB = (() => { let dbp = null;
+  const open = () => dbp || (dbp = new Promise((res, rej) => { try{ const r = indexedDB.open('paper-map', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }catch(e){ rej(e); } }));
+  return {get: k => open().then(db => new Promise(res => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => res(undefined); })).catch(() => undefined),
+          set: (k, v) => open().then(db => new Promise(res => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = () => res(true); tx.onerror = () => res(false); tx.onabort = () => res(false); })).catch(() => false)}; })();
+window.__pmdb = PMDB;
+let BASE_MEM = null;
+const BASE_READY = (typeof indexedDB !== 'undefined' && !PREVIEW ? PMDB.get('rl:base') : Promise.resolve(undefined)).then(v => { if(v && !BASE_MEM) BASE_MEM = v; });
+function saveBase(c, data){ const b = {id: syncId(c), lib: clone(data.lib), status: (data.status && data.status.map) || data.status || {}}; BASE_MEM = b;
+  PMDB.set('rl:base', b).then(ok => { if(ok){ try{ localStorage.removeItem('rl:base'); }catch(e){} } else { try{ localStorage.setItem('rl:base', JSON.stringify(b)); }catch(e){ try{ localStorage.removeItem('rl:base'); }catch(e2){} } } }); }
+function loadBase(c){ try{ const b = BASE_MEM || JSON.parse(localStorage.getItem('rl:base') || 'null'); return b && b.id === syncId(c) && validLib(b.lib) ? b : null; }catch(e){ return null; } }
 const stableJSON = v => JSON.stringify(v === undefined ? null : v, (k, x) => x && typeof x === 'object' && !Array.isArray(x) ? Object.keys(x).sort().reduce((o, kk) => (o[kk] = x[kk], o), {}) : x);
 function byKey(arr, key){ const m = {}; (arr || []).forEach(x => { m[key(x)] = x; }); return m; }
+/* when both devices changed the same thing, look inside it: fields changed on one side only are taken from that side;
+   notes that both sides only added to keep both additions; a notebook's pages are merged page by page.
+   Only when the very same field was changed differently on both does Paper Map ask. */
+const FIELD_KINDS = new Set(['entry', 'topic', 'tag', 'branch', 'reading', 'notebook']);
+const isPlain = v => v && typeof v === 'object' && !Array.isArray(v);
+function mergeText(b, l, r){
+  b = b || ''; if(l === r) return l; if(l === b) return r; if(r === b) return l;
+  if(l.startsWith(b) && r.startsWith(b)){ const al = l.slice(b.length), ar = r.slice(b.length); return b + al + (al && !al.endsWith('\n') && ar ? '\n' : '') + ar; }
+  return null;
+}
+const TIME_KEYS = new Set(['edited', 'updatedAt', 'changed', 't0']);
+function mergeFields(b, l, r, depth){
+  if(!isPlain(l) || !isPlain(r)) return null;
+  const bb = isPlain(b) ? b : {}, out = {};
+  for(const k of new Set([...Object.keys(bb), ...Object.keys(l), ...Object.keys(r)])){
+    const sb = stableJSON(bb[k]), sl = stableJSON(l[k]), sr = stableJSON(r[k]);
+    let v;
+    if(sl === sr) v = l[k];
+    else if(sl === sb) v = r[k];
+    else if(sr === sb) v = l[k];
+    else if(TIME_KEYS.has(k)) v = String(l[k] || '') > String(r[k] || '') ? l[k] : r[k];
+    else if(typeof l[k] === 'string' && typeof r[k] === 'string' && (typeof bb[k] === 'string' || bb[k] === undefined) && /^(n|notes|text|why|what|desc)$/.test(k)){ v = mergeText(bb[k], l[k], r[k]); if(v === null) return null; }
+    else if(k === 'pages' && Array.isArray(l[k]) && Array.isArray(r[k]) && (depth || 0) < 2){
+      const bp = Array.isArray(bb[k]) ? bb[k] : [], n = Math.max(l[k].length, r[k].length), pages = [];
+      for(let i = 0; i < n; i++){ const pl = l[k][i], pr = r[k][i], pb = bp[i];
+        if(pl === undefined){ pages.push(pr); continue; } if(pr === undefined){ pages.push(pl); continue; }
+        const m = stableJSON(pl) === stableJSON(pr) ? pl : mergeFields(pb, pl, pr, (depth || 0) + 1); if(m === null) return null; pages.push(m); }
+      v = pages;
+    }
+    else if(isPlain(l[k]) && isPlain(r[k]) && (depth || 0) < 2){ v = mergeFields(bb[k], l[k], r[k], (depth || 0) + 1); if(v === null) return null; }
+    else return null;
+    if(v !== undefined) out[k] = v;
+  }
+  return out;
+}
 function mergeMaps(B, L, R, kind, label, out){
   const res = {};
   new Set([...Object.keys(B), ...Object.keys(L), ...Object.keys(R)]).forEach(id => {
@@ -134,7 +183,9 @@ function mergeMaps(B, L, R, kind, label, out){
     if(l === r) v = L[id];
     else if(l === b){ v = R[id]; out.fromThere++; }
     else if(r === b){ v = L[id]; out.fromHere++; }
-    else { out.conflicts.push({kind, id, here: L[id], there: R[id], label: label(L[id] || R[id] || B[id], id)}); v = L[id]; }
+    else { const m = FIELD_KINDS.has(kind) ? mergeFields(B[id], L[id], R[id], 0) : null;
+      if(m){ v = m; out.merged = (out.merged || 0) + 1; }
+      else { out.conflicts.push({kind, id, here: L[id], there: R[id], label: label(L[id] || R[id] || B[id], id)}); v = L[id]; } }
     if(v !== undefined) res[id] = v;
   });
   return res;
@@ -179,7 +230,8 @@ function mergeLibs(base, here, there){
   };
   const mapOf = {entry: 'entries', link: 'links', topic: 'topics', tag: 'tags', branch: 'branches', lineBranch: 'lineBranch', tlink: 'tlinks', tlinkColor: 'tlinkColor', reading: 'readings', readingCat: 'readingCats', notebook: 'notebooks'};
   const choose = (cf, side) => { const m = maps[mapOf[cf.kind]], v = side === 'there' ? cf.there : cf.here; if(v === undefined) delete m[cf.id]; else m[cf.id] = v; };
-  return {conflicts: out.conflicts, fromHere: out.fromHere, fromThere: out.fromThere, build, choose, status: maps.status};
+  { const ents = maps.entries || {}; out.dropped = Object.values(maps.links || {}).filter(l => Array.isArray(l) && (!ents[l[0]] || !ents[l[1]])).length; }
+  return {conflicts: out.conflicts, fromHere: out.fromHere, fromThere: out.fromThere, merged: out.merged || 0, dropped: out.dropped || 0, build, choose, status: maps.status};
 }
 function mergeSummary(cf){
   const d = x => x === undefined ? 'deleted' : 'changed';
@@ -214,7 +266,7 @@ function applyMerge(f, res){
   c.sha = f.sha; c.dirty = true; ghStore(c); gh.rev++;
   saveBase(c, f.data);
   ghSave();
-  toast('Combined the changes: ' + res.fromThere + ' from the other device, ' + res.fromHere + ' from this one', () => { adoptSnapshot(before); ghMark(); toast('Undone'); });
+  toast('Combined the changes: ' + res.fromThere + ' from the other device, ' + res.fromHere + ' from this one' + (res.merged ? ', ' + res.merged + ' combined field by field' : '') + (res.dropped ? '; ' + res.dropped + (res.dropped === 1 ? ' line was' : ' lines were') + ' left out: ' + (res.dropped === 1 ? 'its paper was' : 'their papers were') + ' deleted on the other device' : ''), () => { adoptSnapshot(before); ghMark(); toast('Undone'); });
 }
 
 function ghAdopt(f){

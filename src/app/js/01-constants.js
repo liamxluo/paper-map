@@ -9,11 +9,13 @@ function defaultTags(){ return [
   {id:'maybe', name:'Optional', color:'#9C88CF', map:true}
 ]; }
 const PRIO_LABEL = {3:'★ Must read', 2:'○ Optional', 1:'· Background'};
-const DEFAULT_COLORS = {green:'#009473', red:'#E34234'};
+const DEFAULT_COLORS = {green:'#231E1A', red:'#B4432E'};
 const PREVIEW_DATA = 'example/displaydata.json';
 let PREVIEW = false;
 /* Set this to the tag of the GitHub release you are about to publish (v1.3.0, v1.3.1, …). */
-const APP_VERSION = 'v3.0.2';
+const APP_VERSION = 'v3.1.0';
+/* the shape of a library file: raised whenever it changes, so an older file is always read and brought up to date */
+const SCHEMA_VERSION = 3;
 const APP_REPO = 'liamxluo/paper-map';
 const RELEASES_URL = 'https://github.com/' + APP_REPO + '/releases';
 /* Installed as an app (or installable): only when the page comes from a website, never from a downloaded file */

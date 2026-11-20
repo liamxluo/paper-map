@@ -9,7 +9,7 @@ function deskTouchRecent(tid){ if(!tid || PREVIEW) return; const r = deskRecent(
 function deskAuthors(list){ const fam = (list || []).map(a => { a = String(a).trim(); if(a.includes(',')) return a; const p = a.split(/\s+/); return p.length > 1 ? p[p.length - 1] + ', ' + p.slice(0, -1).join(' ') : a; }); return fam.length > 1 ? fam.slice(0, -1).join(', ') + ' & ' + fam[fam.length - 1] : (fam[0] || ''); }
 window.pmDesk = {
   data(){
-    const topics = (lib.topics || []).map(tp => ({id: tp.id, name: tp.name, rows: (tp.subs || []).map(s => ({id: s.id, name: s.hidden ? tp.name : s.name}))}));
+    const topics = (lib.topics || []).map(tp => ({id: tp.id, name: tp.name, cover: tp.cover || null, rows: (tp.subs || []).map(s => ({id: s.id, name: s.hidden ? tp.name : s.name, parent: s.parent || null, own: !!s.hidden}))}));
     const papers = Object.values(lib.entries).filter(e => e.kind === 'paper').map(e => ({id: e.id, t: e.t || '', au: e.au || '', y: e.y, v: e.v || '', topic: e.topic, sub: e.sub, st: stOf(e), book: !!e.book, pdf: !!e.pdf}));
     const rec = deskRecent(), times = {}; rec.forEach(x => { times[x.id] = x.t; });
     return {title: (lib.title && String(lib.title).trim()) || 'Paper Map', topics, papers, links: (lib.links || []).filter(l => l[2] !== 'o').map(l => [l[0], l[1], l[2]]), branches: clone(lib.branches || []), lineBranch: clone(lib.lineBranch || {}),
@@ -32,7 +32,14 @@ window.pmDesk = {
     return {id, t: e.t || '', au: e.au || '', y: e.y, v: e.v || '', n: e.n || '', st: stOf(e) || '', pri: (PRIO_LABEL[e.p] || '').replace(/^\S+\s/, ''), book: !!e.book,
       tags: (e.tags || []).map(t => (lib.tags.find(x => x.id === t) || {}).name).filter(Boolean), where: laneName(e.sub) || laneName(e.topic),
       url: /^https?:\/\//.test(e.l || '') ? e.l : (doi ? 'https://doi.org/' + doi : ''),
-      buildsOn: up('b'), builtOnBy: down('b'), respondsTo: up('c'), challengedBy: down('c'), related: rel, mentions: (e.mentions || []).map(laneName).filter(Boolean)}; },
+      buildsOn: up('b'), builtOnBy: down('b'), respondsTo: up('c'), challengedBy: down('c'), related: rel, mentions: (e.mentions || []).map(laneName).filter(Boolean),
+      p: e.p || 0, tagIds: (e.tags || []).slice(), allTags: (lib.tags || []).map(t => ({id: t.id, name: t.name, color: t.color})), pdf: !!e.pdf}; },
+  setPriority(id, pr){ const e = lib.entries[id]; if(!e || PREVIEW || ![1, 2, 3].includes(pr)) return; e.p = pr; touchLib(); try{ renderAll(); }catch(err){} },
+  toggleTag(id, tid){ const e = lib.entries[id]; if(!e || PREVIEW) return; e.tags = e.tags || []; const k = e.tags.indexOf(tid); if(k >= 0) e.tags.splice(k, 1); else e.tags.push(tid); touchLib(); try{ refreshAfterTags(); }catch(err){} },
+  addTag(id, name){ const e = lib.entries[id]; if(!e || PREVIEW || !name) return; let x = lib.tags.find(z => z.name.toLowerCase() === name.toLowerCase()); if(!x) x = newTag(name); e.tags = e.tags || []; if(!e.tags.includes(x.id)) e.tags.push(x.id); touchLib(); try{ refreshAfterTags(); }catch(err){} },
+  editPaper(id){ if(!lib.entries[id]) return; DK.fromTopic = lib.entries[id].topic; DK.from = 'paper:' + id; deskHide(); setTimeout(() => { try{ openEntryForm(id); }catch(err){} }, 160); },
+  setMapColor(tid, hex){ const tp = lib.topics.find(t => t.id === tid); if(!tp || PREVIEW || !/^#[0-9a-f]{6}$/i.test(hex)) return; tp.cover = hex; touchLib(); },
+  where(){ const c = ghCfg(); return !c ? 'only in this ' + (window.__TAURI__ ? 'Mac' : 'browser') : c.kind === 'folder' ? (window.__TAURI__ ? 'in your folder on this Mac' : 'in the folder you chose') : c.kind === 'dropbox' ? 'in Dropbox' : 'on GitHub' + (c.repo ? ' (' + c.repo + ')' : ''); },
   setStatus(id, st){ const e = lib.entries[id]; if(!e || PREVIEW) return; const cur = stOf(e) || ''; if(cur === (st || '')) return; toggleStatus(id, st || cur); },
   openNotes(id){ if(!lib.entries[id]) return; DK.fromTopic = lib.entries[id].topic; DK.from = 'paper:' + id; deskHide(); setTimeout(() => { try{ openReader(id); }catch(err){} }, 140); },
   openLink(url){ if(/^https?:\/\//.test(String(url || ''))) window.open(url, '_blank', 'noopener'); },
@@ -91,7 +98,7 @@ document.getElementById('btnDesk').addEventListener('click', deskOpen);
 
 /* ===================== the map page, as confirmed: the map on its sheet, two small bars and the card =====================
    It works through the app's own buttons and panels, which stay out of sight; the old page is gone. */
-const ATL_IC = {"notebook": "<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6.5 3.5h11a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z\"/><path d=\"M8.5 3.5v17\"/><path d=\"M11 8h5M11 11h5M11 14h3\"/></svg>", "back": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M15 18l-6-6 6-6\"/></svg>", "layers": "<svg class=\"ic \" width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3 3 7.5l9 4.5 9-4.5L12 3z\"/><path d=\"M3 16.5l9 4.5 9-4.5M3 12l9 4.5 9-4.5\"/></svg>", "chev": "<svg class=\"ic \" width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9l6 6 6-6\"/></svg>", "search": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"M20 20l-3.6-3.6\"/></svg>", "add": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg>", "filter": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 6h16M7 12h10M10 18h4\"/></svg>", "years": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"3.5\" y=\"5\" width=\"17\" height=\"15.5\" rx=\"2.5\"/><path d=\"M8 3v4M16 3v4M3.5 10h17\"/></svg>", "export": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3v12M8 7l4-4 4 4\"/><path d=\"M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13\"/></svg>", "sync": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M17.5 19H8a6 6 0 1 1 5.6-8.2A4.5 4.5 0 1 1 17.5 19z\"/><path d=\"M9.5 14l2 2 3.5-3.5\"/></svg>", "look": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg>", "target": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"6.5\"/><circle cx=\"12\" cy=\"12\" r=\"1.6\" fill=\"currentColor\"/><path d=\"M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3\"/></svg>", "doc": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10.5A.5.5 0 0 1 6.5 20V4a.5.5 0 0 1 .5-.5z\"/><path d=\"M13.5 3.5V8h4.5M9.5 12h5M9.5 15.5h5\"/></svg>", "link": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1.2 1.2\"/><path d=\"M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1.2-1.2\"/></svg>", "more": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"6\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/><circle cx=\"12\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/><circle cx=\"18\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/></svg>"};
+const ATL_IC = {"metro": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3.5 17.5h5l3.5-6h8.5\"/><path d=\"M12 11.5 9 6.5H3.5\"/><circle cx=\"8.5\" cy=\"17.5\" r=\"1.6\" fill=\"currentColor\"/><circle cx=\"12\" cy=\"11.5\" r=\"1.6\" fill=\"currentColor\"/><circle cx=\"20.5\" cy=\"11.5\" r=\"1.6\" fill=\"currentColor\"/></svg>", "notebook": "<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6.5 3.5h11a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z\"/><path d=\"M8.5 3.5v17\"/><path d=\"M11 8h5M11 11h5M11 14h3\"/></svg>", "back": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M15 18l-6-6 6-6\"/></svg>", "layers": "<svg class=\"ic \" width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3 3 7.5l9 4.5 9-4.5L12 3z\"/><path d=\"M3 16.5l9 4.5 9-4.5M3 12l9 4.5 9-4.5\"/></svg>", "chev": "<svg class=\"ic \" width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9l6 6 6-6\"/></svg>", "search": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"M20 20l-3.6-3.6\"/></svg>", "add": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg>", "filter": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 6h16M7 12h10M10 18h4\"/></svg>", "years": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"3.5\" y=\"5\" width=\"17\" height=\"15.5\" rx=\"2.5\"/><path d=\"M8 3v4M16 3v4M3.5 10h17\"/></svg>", "export": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3v12M8 7l4-4 4 4\"/><path d=\"M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13\"/></svg>", "sync": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M17.5 19H8a6 6 0 1 1 5.6-8.2A4.5 4.5 0 1 1 17.5 19z\"/><path d=\"M9.5 14l2 2 3.5-3.5\"/></svg>", "look": "<svg class=\"ic \" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg>", "target": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"6.5\"/><circle cx=\"12\" cy=\"12\" r=\"1.6\" fill=\"currentColor\"/><path d=\"M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3\"/></svg>", "doc": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10.5A.5.5 0 0 1 6.5 20V4a.5.5 0 0 1 .5-.5z\"/><path d=\"M13.5 3.5V8h4.5M9.5 12h5M9.5 15.5h5\"/></svg>", "link": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1.2 1.2\"/><path d=\"M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1.2-1.2\"/></svg>", "more": "<svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"6\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/><circle cx=\"12\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/><circle cx=\"18\" cy=\"12\" r=\"1.3\" fill=\"currentColor\"/></svg>"};
 function atlasWood(){ const w = ((settings && settings.desk) || {}).wood || 'mahogany', p = ((settings && settings.desk) || {}).paper === 'smooth' ? 'smooth' : 'creased';
   document.documentElement.style.setProperty('--atl-wood', 'url(assets/desk/bg-' + w + '.webp)');
   document.documentElement.style.setProperty('--atl-hl', 'url(assets/desk/light-' + p + '-hl.webp)');
@@ -118,7 +125,9 @@ function atlasUI(){
   const click = id => { const el = document.getElementById(id); if(el) el.click(); };
   document.addEventListener('click', ev => {
     const more = ev.target.closest('[data-atl-more]');
-    if(more){ ev.stopPropagation(); ev.preventDefault(); try{ openBigCard(more.dataset.atlMore, more.closest('.acard') || more); }catch(e){} return; }
+    if(more){ ev.stopPropagation(); ev.preventDefault(); try{ openBigCard(more.dataset.atlMore, document.getElementById('info')); }catch(e){} return; }
+    const lk = ev.target.closest('[data-atl-link]');
+    if(lk){ ev.stopPropagation(); ev.preventDefault(); try{ startLinkMode(lk.dataset.atlLink, 'auto'); }catch(e){} return; }
     const b = ev.target.closest('[data-atl]');
     if(!b){ if(!ev.target.closest('#atlMaps')) { maps.hidden = true; } return; }
     ev.stopPropagation(); ev.preventDefault();
@@ -130,9 +139,9 @@ function atlasUI(){
     else if(a === 'filter'){ const fr = document.getElementById('filters'); if(fr && fr.classList.contains('open')) atlasCloseFilters(false); else click('filterToggle'); }
     else if(a === 'years') click('btnZoom');
     else if(a === 'export') click('btnExport');
-    else if(a === 'notebook'){ DK.from = 'note'; deskOpen(); }
+    else if(a === 'notebook') atlasNote(b);
     else if(a === 'sync') atlasSync(b);
-    else if(a === 'settings') click('btnSettings');
+    else if(a === 'settings') atlasLook(b);
   }, true);
   maps.addEventListener('click', ev => { const t = ev.target.closest('[data-atl-map]'), c = ev.target.closest('[data-atl-contents]'), n = ev.target.closest('[data-atl-new]');
     const mg = ev.target.closest('[data-atl-merge]');
@@ -146,6 +155,14 @@ function atlasUI(){
     btn.title = t || 'Sync: Settings'; btn.classList.toggle('warn', /saving|wait|unsaved|not saved|changes/i.test(t)); btn.classList.toggle('bad', /fail|couldn|error|offline|expired/i.test(t)); btn.classList.toggle('local', /browser only|this app only/i.test(t)); };
   if(ss && 'MutationObserver' in window) new MutationObserver(syncNote).observe(ss, {childList: true, characterData: true, subtree: true});
   syncNote(); atlasWood(); atlasTitle();
+  /* linking from the card: the line follows the mouse; the paper you click decides which way it goes, by year */
+  try{ LINK_HINT.auto = 'Click the paper to link it to'; }catch(e){}
+  document.addEventListener('click', ev => {
+    if(!linkMode || linkMode.kind !== 'auto') return;
+    const tn = ev.target.closest && ev.target.closest('#net .node'); if(!tn) return;
+    const a = lib.entries[linkMode.from], b = lib.entries[tn.dataset.id]; if(!a || !b) return;
+    linkMode.kind = (typeof b.y === 'number' && typeof a.y === 'number' && b.y > a.y) ? 'out' : 'in';
+  }, true);
   /* search and filters: a close button, Esc, and a dot on the filter icon while something is filtered */
   const fr = document.getElementById('filters');
   if(fr && !fr.querySelector('.atl-fx')){ const x = document.createElement('button'); x.type = 'button'; x.className = 'atl-fx'; x.setAttribute('aria-label', 'Close search and filters'); x.title = 'Close (Esc)'; x.innerHTML = '&times;'; x.addEventListener('click', ev => { ev.stopPropagation(); atlasCloseFilters(true); }); fr.appendChild(x); }
@@ -159,21 +176,158 @@ function atlasCloseFilters(clearSearch){
   if(fr && fr.classList.contains('open')){ const t = document.getElementById('filterToggle'); if(t) t.click(); }
   setTimeout(() => { const r = document.getElementById('atlRight'); if(r){ r.querySelector('[data-atl="search"]').classList.remove('on'); } }, 0);
 }
+/* PDFs and the library's size, in the cloud */
+function atlasPdfLine(){
+  const ps = Object.values(lib.entries).filter(e => e.pdf), mb = ps.reduce((n, e) => n + (e.pdf.size || 0), 0) / 1048576, size = JSON.stringify(lib).length / 1048576;
+  const big = ps.filter(e => (e.pdf.size || 0) > 50 * 1048576).length;
+  return '<div class="atl-sy atl-pdfline"><span>Library ' + (size < .1 ? size.toFixed(2) : size.toFixed(1)) + ' MB' + (size > 3.5 && !window.__TAURI__ ? ' · near what a browser keeps (about 5 MB): the Mac app has no such limit' : '') + '</span>' +
+    '<span>' + ps.length + (ps.length === 1 ? ' PDF' : ' PDFs') + (ps.length ? ' · ' + mb.toFixed(1) + ' MB' : '') + (big ? ' · ' + big + ' over 50 MB' : '') + '</span></div>' +
+    (ps.length && ghCfg() ? '<button type="button" class="atl-pbtn" data-sync-a="pdfs">Check the PDFs</button><div class="atl-pdfres" id="atlPdfRes"></div>' : '');
+}
+async function atlasPdfList(c){
+  if(c.kind === 'folder'){ let d; try{ [d] = await fsParent('pdfs/x', false); }catch(e){ return []; }
+    const out = []; for await (const [n, h] of d.entries()){ if(h.kind !== 'file') continue; let size = 0; try{ size = (await h.getFile()).size; }catch(e){} out.push({name: n, path: 'pdfs/' + n, size}); } return out; }
+  const r = await fetch(ghPathUrl(c, 'pdfs') + ghRef(c), {headers: ghHeaders(c, {'Accept': 'application/vnd.github+json'})});
+  if(r.status === 404) return []; if(!r.ok) throw {status: r.status};
+  return (await r.json()).filter(x => x.type === 'file').map(x => ({name: x.name, path: x.path, size: x.size, sha: x.sha}));
+}
+async function atlasPdfCheck(box){
+  const res = box.querySelector('#atlPdfRes'), c = ghCfg(); if(!res || !c) return; res.textContent = 'Checking…';
+  let files; try{ files = await atlasPdfList(c); }catch(e){ res.textContent = 'Could not look just now. Try again in a moment.'; return; }
+  const have = new Map(files.map(f => [f.path, f])), refd = new Set();
+  const missing = Object.values(lib.entries).filter(e => e.pdf && e.pdf.path && (refd.add(e.pdf.path), !have.has(e.pdf.path)));
+  const loose = files.filter(f => !refd.has(f.path));
+  /* Paper Map names a paper's PDF after the paper; such a file with no paper was left by a deleted paper. Any other file is yours: it stays. */
+  const orphan = loose.filter(f => /^[A-Za-z0-9_-]+\.pdf$/.test(f.name) && !lib.entries[f.name.replace(/\.pdf$/, '')]), unlinked = loose.filter(f => !orphan.includes(f));
+  const mb = list => (list.reduce((n, f) => n + (f.size || 0), 0) / 1048576).toFixed(1) + ' MB';
+  res.innerHTML = '<p><b>Storage used</b> · ' + mb(files) + ' in ' + files.length + (files.length === 1 ? ' file' : ' files') + '</p>' +
+    '<p' + (missing.length ? ' class="bad"' : '') + '><b>Missing PDFs</b> · ' + missing.length + (missing.length ? ': the paper is there, its file is not. Click one to add it again.' : '') + '</p>' + missing.slice(0, 12).map(e => '<button type="button" data-pdf-open="' + esc(e.id) + '">' + esc(e.t || 'Untitled') + '</button>').join('') +
+    '<p><b>Unlinked PDFs</b> · ' + unlinked.length + (unlinked.length ? ' (' + mb(unlinked) + '): files of your own with no paper yet. Paper Map leaves them as they are.' : '') + '</p>' + unlinked.slice(0, 8).map(f => '<span class="atl-pdfname">' + esc(f.name) + '</span>').join('') +
+    '<p><b>Orphaned files</b> · ' + orphan.length + (orphan.length ? ' (' + mb(orphan) + '): left by papers you deleted.' : '') + '</p>' + (orphan.length && c.kind !== 'folder' ? '<button type="button" data-pdf-rm="1">Remove the orphaned files…</button>' : '');
+  res._extra = orphan;
+}
+async function atlasPdfRemove(btn, box){
+  const res = box.querySelector('#atlPdfRes'), c = ghCfg(), extra = (res && res._extra) || []; if(!c || !extra.length) return;
+  if(!confirm('Remove ' + extra.length + (extra.length === 1 ? ' file' : ' files') + ' left by deleted papers? GitHub keeps them in the history.')) return;
+  btn.disabled = true; btn.textContent = 'Removing…';
+  let n = 0; for(const f of extra){ try{ const r = await fetch(ghPathUrl(c, f.path), {method: 'DELETE', headers: ghHeaders(c, {'Content-Type': 'application/json'}), body: JSON.stringify({message: 'Paper Map: remove a PDF no paper uses', sha: f.sha, branch: c.branch || 'main'})}); if(r.ok) n++; }catch(e){} }
+  toast('Removed ' + n + (n === 1 ? ' file' : ' files')); atlasPdfCheck(box);
+}
+function atlasPanel(id){ let box = document.getElementById(id);
+  if(!box){ box = document.createElement('div'); box.id = id; box.className = 'atl-menu atl-side'; box.hidden = true; document.body.appendChild(box);
+    document.addEventListener('mousedown', ev => { if(!box.hidden && !ev.target.closest('#' + id + ',[data-atl]') && modal.root.hidden) box.hidden = true; }); }
+  ['atlSync', 'atlLook'].forEach(x => { if(x !== id){ const o = document.getElementById(x); if(o) o.hidden = true; } }); return box; }
+/* the cloud: where the library is kept, and everything about keeping it there */
 function atlasSync(btn){
-  let box = document.getElementById('atlSync');
-  if(box && !box.hidden){ box.hidden = true; return; }
-  if(!box){ box = document.createElement('div'); box.id = 'atlSync'; box.className = 'atl-menu atl-sync'; document.body.appendChild(box);
-    document.addEventListener('click', ev => { if(!box.hidden && !ev.target.closest('#atlSync,[data-atl="sync"]')) box.hidden = true; });
-    box.addEventListener('click', ev => { const a = ev.target.closest('[data-sync-a]'); if(!a) return; box.hidden = true;
-      if(a.dataset.syncA === 'now'){ const c = ghCfg(); if(c){ (c.dirty ? ghSaveNow() : ghLoad()); toast('Syncing with ' + syncName() + '…'); } }
-      else document.getElementById('btnSettings').click(); }); }
-  const c = ghCfg(), st = (document.querySelector('.bar [data-save-state]') || {}).textContent || '';
-  const where = !c ? 'Only in this ' + (window.__TAURI__ ? 'Mac' : 'browser') : c.kind === 'folder' ? (window.__TAURI__ ? 'In your folder on this Mac' : 'In the folder you chose') : c.kind === 'dropbox' ? 'In Dropbox' : 'On GitHub' + (c.repo ? ' · ' + c.repo : '');
-  box.innerHTML = '<p class="atl-mk">WHERE YOUR LIBRARY IS KEPT</p><div class="atl-sy"><b>' + esc(where) + '</b><span>' + esc(st.trim() || (c ? 'Up to date' : 'Not copied anywhere else yet')) + '</span><span>Maps, papers, notes, Readings and your research log all live in this one library.</span></div><div class="atl-ms"></div>' +
-    (c ? '<button type="button" data-sync-a="now"><b>Sync now</b><span>save and fetch the latest</span></button>' : '') +
-    '<button type="button" data-sync-a="set"><b>' + (c ? 'Change where it is kept…' : 'Keep it in iCloud Drive, a folder or GitHub…') + '</b><span>Settings → Sync</span></button>';
+  const box = atlasPanel('atlSync'); if(!box.hidden){ box.hidden = true; return; }
+  const c = ghCfg(), st = ((document.querySelector('.bar [data-save-state]') || {}).textContent || '').trim();
+  const where = !c ? 'Only on this ' + (window.__TAURI__ ? 'Mac' : 'browser') : c.kind === 'folder' ? (window.__TAURI__ ? 'Your folder on this Mac' : 'The folder you chose') : c.kind === 'dropbox' ? 'Dropbox' : 'GitHub' + (c.repo ? ' · ' + c.repo : '');
+  box.innerHTML = '<p class="atl-mk">YOUR LIBRARY</p><div class="atl-sy"><b>' + esc(where) + '</b><span>' + esc(st || (c ? 'Up to date' : 'Not copied anywhere else')) + '</span></div>' +
+    (c ? '<button type="button" class="atl-pbtn" data-sync-a="now">Sync now</button>' : '') + (window.__TAURI__ ? '<button type="button" class="atl-pbtn" data-sync-a="mac">Change where it is kept…</button>' : '') +
+    atlasPdfLine() + '<div class="atl-syncform">' + syncSectionHTML() + '</div>';
+  try{ wireGhSection(box); }catch(e){}
+  box.onclick = ev => { const op = ev.target.closest('[data-pdf-open]'); if(op){ box.hidden = true; try{ openReader(op.dataset.pdfOpen); }catch(e){} return; }
+    const rm = ev.target.closest('[data-pdf-rm]'); if(rm){ atlasPdfRemove(rm, box); return; }
+    const a = ev.target.closest('[data-sync-a]'); if(!a) return;
+    if(a.dataset.syncA === 'now'){ const k = ghCfg(); if(k){ (k.dirty ? ghSaveNow() : ghLoad()); toast('Syncing…'); } box.hidden = true; }
+    if(a.dataset.syncA === 'mac'){ box.hidden = true; try{ macChooseStorage(); }catch(e){} }
+    if(a.dataset.syncA === 'pdfs') atlasPdfCheck(box); };
   box.hidden = false;
 }
+/* New to Paper Map? A short tour on the real page: the page dims, a spotlight shows one thing at a time with a note beside it,
+   and the middle of it is done for real: choose a paper, and draw your first line. */
+function atlasGuide(){ atlasTour(); }
+function tourNode(){ const ns = [...document.querySelectorAll('#net .node')].filter(n => { const e = lib.entries[n.dataset.id]; return e && e.kind === 'paper'; });
+  const pick = ns.find(n => n.dataset.id === (lib.entries.glow1988 ? 'glow1988' : '')) || ns[Math.floor(ns.length / 2)]; return pick ? pick.querySelector('.dot') : null; }
+function atlasTour(){
+  if(document.getElementById('tour')) return;
+  try{ document.querySelectorAll('#atlLook,#atlSync,#atlMaps,#atlRelMenu').forEach(x => x.hidden = true); if(ui.selected) select(null); }catch(e){}
+  const links0 = (lib.links || []).length;
+  const steps = [
+    {at: () => document.querySelector('#atlLeft .atl-name'), title: 'Your maps', text: 'Switch to another map here, open Contents, or start a new map.'},
+    {at: () => document.querySelector('[data-atl="add"]'), title: 'Add a paper', text: 'Paste a DOI or the paper’s web address; Fill in does the rest.'},
+    {at: tourNode, title: 'Choose a paper', text: 'Click this paper.', pad: 16, done: () => !!ui.selected, act: true},
+    {at: () => document.querySelector('.acard [data-atl-link]'), title: 'Now link it', text: 'Click the target, then click any other paper on the map.', done: () => (lib.links || []).length > links0, act: true, free: () => !!linkMode},
+    {at: () => document.querySelector('#net'), title: 'Your first line', text: 'That is Paper Map: papers, and the lines between them. Double-clicking a dot links papers too.', pad: 6},
+    {at: () => document.querySelector('[data-atl="notebook"]'), title: 'Your research log', text: 'A page of your notebook comes up right here.'},
+    {at: () => document.querySelector('[data-atl="sync"]'), title: 'Where it is kept', text: 'iCloud Drive, a folder or GitHub. Nothing goes anywhere else.'},
+    {at: () => document.querySelector('[data-atl="back"]'), title: 'The desk', text: 'Papers, Readings and your notebook are waiting there.'}];
+  const root = document.createElement('div'); root.id = 'tour';
+  root.innerHTML = '<div class="tr-sh" data-s="t"></div><div class="tr-sh" data-s="l"></div><div class="tr-sh" data-s="r"></div><div class="tr-sh" data-s="b"></div><div class="tr-ring"></div>' +
+    '<div class="tr-note" role="dialog" aria-live="polite"><p class="tr-k"></p><b class="tr-t"></b><p class="tr-x"></p><div class="tr-btns"><button type="button" class="tr-skip">Skip the tour</button><button type="button" class="tr-next">Next</button></div></div>';
+  document.body.appendChild(root);
+  let i = 0, timer = null;
+  const sh = k => root.querySelector('.tr-sh[data-s="' + k + '"]'), ring = root.querySelector('.tr-ring'), note = root.querySelector('.tr-note');
+  const place = () => { const st = steps[i], el = st.at(); if(!el){ return; } const r = el.getBoundingClientRect(), pd = st.pad || 8;
+    const x0 = Math.max(0, r.left - pd), y0 = Math.max(0, r.top - pd), x1 = Math.min(innerWidth, r.right + pd), y1 = Math.min(innerHeight, r.bottom + pd), free = st.free && st.free();
+    root.classList.toggle('free', !!free);
+    Object.assign(sh('t').style, {left: 0, top: 0, width: '100%', height: y0 + 'px'}); Object.assign(sh('b').style, {left: 0, top: y1 + 'px', width: '100%', height: Math.max(0, innerHeight - y1) + 'px'});
+    Object.assign(sh('l').style, {left: 0, top: y0 + 'px', width: x0 + 'px', height: (y1 - y0) + 'px'}); Object.assign(sh('r').style, {left: x1 + 'px', top: y0 + 'px', width: Math.max(0, innerWidth - x1) + 'px', height: (y1 - y0) + 'px'});
+    Object.assign(ring.style, {left: x0 + 'px', top: y0 + 'px', width: (x1 - x0) + 'px', height: (y1 - y0) + 'px'});
+    const nw = note.offsetWidth || 300, nh = note.offsetHeight || 140; let nx = x1 + 18, ny = y0;
+    if(nx + nw > innerWidth - 16){ nx = x0 - nw - 18; } if(nx < 16){ nx = Math.min(Math.max(16, x0), innerWidth - nw - 16); ny = y1 + 16; } if(ny + nh > innerHeight - 16) ny = Math.max(16, y0 - nh - 16);
+    note.style.left = nx + 'px'; note.style.top = ny + 'px'; };
+  const show = () => { const st = steps[i]; root.querySelector('.tr-k').textContent = (i + 1) + ' of ' + steps.length; root.querySelector('.tr-t').textContent = st.title; root.querySelector('.tr-x').textContent = st.text;
+    const nx = root.querySelector('.tr-next'); nx.hidden = !!st.act; nx.textContent = i === steps.length - 1 ? 'Done' : 'Next'; place(); };
+  const end = () => { clearInterval(timer); root.remove(); settings.tourDone = true; persistSettings({remote: false}); };
+  const next = () => { i++; if(i >= steps.length){ end(); toast('You know Paper Map now. Enjoy your reading.'); return; } show(); };
+  root.querySelector('.tr-next').addEventListener('click', next);
+  root.querySelector('.tr-skip').addEventListener('click', end);
+  timer = setInterval(() => { if(!document.getElementById('tour')){ clearInterval(timer); return; } const st = steps[i]; if(st.done && st.done()){ next(); return; } place(); }, 220);
+  addEventListener('resize', () => { if(document.getElementById('tour')) place(); });
+  show();
+}
+/* the gear: the same Look as the desk, and a few things for the map */
+const WOODS = [['mahogany', 'Mahogany'], ['oak', 'Oak'], ['walnut', 'Walnut'], ['linen', 'Linen']];
+function atlasLook(btn){
+  const box = atlasPanel('atlLook'); if(!box.hidden){ box.hidden = true; return; }
+  const pr = deskPrefs(), seg = (k, opts) => '<div class="lk-seg">' + opts.map(o => '<button type="button" data-lk="' + k + '" data-v="' + o[0] + '"' + (pr[k] === o[0] ? ' class="on"' : '') + '>' + o[1] + '</button>').join('') + '</div>';
+  box.innerHTML = '<p class="atl-mk">DESK</p><div class="lk-woods">' + WOODS.map(w => '<button type="button" data-lk="wood" data-v="' + w[0] + '"' + (pr.wood === w[0] ? ' class="on"' : '') + ' title="' + w[1] + '" style="background-image:url(assets/desk/bg-' + w[0] + '.webp)"><span>' + w[1] + '</span></button>').join('') + '</div>' +
+    '<p class="atl-mk">PAPER</p>' + seg('paper', [['creased', 'Creased'], ['smooth', 'Smooth']]) +
+    '<p class="atl-mk">OPEN ON</p>' + seg('start', [['desk', 'The desk'], ['map', 'The last map']]) +
+    '<p class="atl-mk">MAP</p><label class="lk-ck"><input type="checkbox" data-lk-set="showRelated"' + (settings.showRelated === false ? '' : ' checked') + '> Related-to lines</label><label class="lk-ck"><input type="checkbox" data-lk-set="readHints"' + (settings.readHints === false ? '' : ' checked') + '> What a paper cites, when I mark it read</label>' +
+    '<div class="lk-btns"><button type="button" data-lk-act="guide">New to Paper Map?</button><button type="button" data-lk-act="tags">Tags</button><button type="button" data-lk-act="export">Back up</button><button type="button" data-lk-act="import">Restore</button><a data-lk-act="bm" href="#" title="Drag to your bookmarks bar">+ Paper Map</a></div>' +
+    '<p class="lk-ver">Paper Map ' + esc(APP_VERSION) + '</p>';
+  const bm = box.querySelector('[data-lk-act="bm"]'); try{ bm.setAttribute('href', bookmarkletHref()); }catch(e){}
+  box.onclick = ev => { const b = ev.target.closest('[data-lk]'), act = ev.target.closest('[data-lk-act]');
+    if(b){ settings.desk = Object.assign({}, deskPrefs(), {[b.dataset.lk]: b.dataset.v}); persistSettings(); atlasWood(); box.querySelectorAll('[data-lk="' + b.dataset.lk + '"]').forEach(x => x.classList.toggle('on', x === b)); try{ const pg = deskPage(); if(pg && pg.refresh) pg.refresh(); }catch(e){} return; }
+    if(act){ const k = act.dataset.lkAct; if(k === 'bm'){ ev.preventDefault(); toast('Drag it to your bookmarks bar'); return; } box.hidden = true;
+      if(k === 'guide') setTimeout(atlasGuide, 0); else if(k === 'tags') setTimeout(openTagManager, 0); else if(k === 'export') exportBackup(); else if(k === 'import') importBackup(); } };
+  box.onchange = ev => { const ck = ev.target.closest('[data-lk-set]'); if(!ck) return;
+    if(ck.dataset.lkSet === 'showRelated'){ try{ setShowRelated(ck.checked); }catch(e){ settings.showRelated = ck.checked; persistSettings(); renderMap(true); } }
+    else { settings.readHints = ck.checked; persistSettings(); } };
+  box.hidden = false;
+}
+/* the notebook icon on the map page: a page of your notebook comes up out of it; click elsewhere and it goes back */
+const NB_FONTS = {ink: "'PMap Ink',cursive", times: "'Times New Roman',Times,serif", georgia: 'Georgia,serif', helvetica: "'Helvetica Neue',Helvetica,Arial,sans-serif", courier: "'Courier New',Courier,monospace"};
+let anT = null;
+function atlasNoteBook(){ if(!Array.isArray(lib.notebooks) || !lib.notebooks.length) lib.notebooks = [{id: 'nb-' + Date.now().toString(36), font: 'ink', cur: 0, pages: [{text: '', date: null, edited: null}]}]; return lib.notebooks[lib.notebooks.length - 1]; }
+function atlasNoteShow(){ const nb = atlasNoteBook(), i = lib.notebooks.length; nb.cur = Math.max(0, Math.min(59, nb.cur || 0)); while(nb.pages.length <= nb.cur) nb.pages.push({text: '', date: null, edited: null});
+  const pg = nb.pages[nb.cur], t = document.getElementById('anText');
+  t.style.fontFamily = NB_FONTS[nb.font] || NB_FONTS.ink; t.classList.toggle('hand', (nb.font || 'ink') === 'ink'); t.innerText = pg.text || '';
+  document.getElementById('anName').textContent = 'Notebook ' + i;
+  document.getElementById('anDate').textContent = new Date((pg.date || new Date().toISOString().slice(0, 10)) + 'T12:00:00').toLocaleDateString('en-GB', {weekday: 'short', day: 'numeric', month: 'short'});
+  document.getElementById('anPg').textContent = (nb.cur + 1) + ' / 60'; }
+function atlasNote(btn){
+  let box = document.getElementById('atlNote');
+  if(!box){ box = document.createElement('div'); box.id = 'atlNote'; box.className = 'atl-note'; box.hidden = true;
+    box.innerHTML = '<div class="an-head"><b id="anName"></b><span id="anDate"></span><span class="an-nav"><button type="button" data-an="-1" aria-label="Page before">‹</button><span id="anPg"></span><button type="button" data-an="1" aria-label="Next page">›</button></span></div><div class="an-text" id="anText" contenteditable="true" spellcheck="false"></div>';
+    document.body.appendChild(box);
+    const t = box.querySelector('#anText');
+    t.addEventListener('input', () => { const nb = atlasNoteBook(), pg = nb.pages[nb.cur]; pg.text = t.innerText.replace(/\n$/, ''); if(!pg.date) pg.date = new Date().toISOString().slice(0, 10); pg.edited = new Date().toISOString(); clearTimeout(anT); anT = setTimeout(() => { touchLib(); }, 500); });
+    box.addEventListener('click', ev => { const nv = ev.target.closest('[data-an]'); if(!nv) return; const nb = atlasNoteBook(), n = nb.cur + +nv.dataset.an; if(n < 0 || n > 59) return; nb.cur = n; atlasNoteShow(); t.focus(); });
+    document.addEventListener('mousedown', ev => { if(!box.hidden && !ev.target.closest('#atlNote,[data-atl="notebook"]')) atlasNoteClose(); });
+    document.addEventListener('keydown', ev => { if(ev.key === 'Escape' && !box.hidden) atlasNoteClose(); }); }
+  if(!box.hidden){ atlasNoteClose(); return; }
+  atlasNoteShow(); box.hidden = false;
+  const r = btn.getBoundingClientRect(), b = box.getBoundingClientRect();
+  box.style.transformOrigin = (r.left + r.width / 2 - b.left) + 'px ' + (r.top + r.height / 2 - b.top) + 'px';
+  box.animate([{transform: 'scale(.04)', opacity: 0}, {transform: 'scale(1)', opacity: 1}], {duration: 380, easing: 'cubic-bezier(.2,.8,.2,1)'});
+  setTimeout(() => { const t = document.getElementById('anText'); t.focus(); const rg = document.createRange(); rg.selectNodeContents(t); rg.collapse(false); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(rg); }, 120);
+}
+function atlasNoteClose(){ const box = document.getElementById('atlNote'); if(!box || box.hidden) return; clearTimeout(anT); touchLib();
+  const a = box.animate([{transform: 'scale(1)', opacity: 1}, {transform: 'scale(.04)', opacity: 0}], {duration: 300, easing: 'cubic-bezier(.4,0,.6,1)'});
+  a.onfinish = () => { box.hidden = true; }; }
 /* maps related to this one, without merging them: a pair in the related topics, kept and synced like every other line */
 function atlasRelOf(tid){ const top = new Set(lib.topics.map(t => t.id)); return (lib.tlinks || []).filter(l => (l[0] === tid || l[1] === tid) && top.has(l[0]) && top.has(l[1])).map(l => l[0] === tid ? l[1] : l[0]); }
 function atlasRel(){
@@ -231,7 +385,7 @@ function atlasCardHTML(e){
     '<h3 class="ac-t" data-open-card="' + e.id + '" tabindex="0" role="button">' + esc(e.t) + '</h3>' +
     (e.au ? '<p class="ac-a">' + esc(e.au) + '</p>' : '') +
     '<div class="ac-row"><span class="ac-st"><button type="button" class="stbtn want" data-st="want" data-id="' + e.id + '" aria-pressed="' + (st === 'want') + '">Want to read</button><button type="button" class="stbtn read" data-st="read" data-id="' + e.id + '" aria-pressed="' + (st === 'read') + '">Read</button></span>' +
-    '<span class="ac-ic"><button type="button" class="ac-b" data-open-lens="' + e.id + '" title="Lens: its line of thought (L)" aria-label="Lens">' + ATL_IC.target + '</button><button type="button" class="ac-b" data-reader="' + e.id + '" title="Notes and PDF" aria-label="Notes and PDF">' + ATL_IC.doc + '</button>' +
+    '<span class="ac-ic"><button type="button" class="ac-b" data-atl-link="' + e.id + '" title="Link it to another paper" aria-label="Link it to another paper">' + ATL_IC.target + '</button><button type="button" class="ac-b" data-reader="' + e.id + '" title="Notes and PDF" aria-label="Notes and PDF">' + ATL_IC.doc + '</button><button type="button" class="ac-b" data-open-lens="' + e.id + '" title="Lens: its line of thought (L)" aria-label="Lens">' + ATL_IC.metro + '</button>' +
     (url ? '<a class="ac-b" href="' + esc(url) + '" target="_blank" rel="noopener" title="Open the paper" aria-label="Open the paper">' + ATL_IC.link + '</a>' : '') +
     '<button type="button" class="ac-b" data-atl-more="' + e.id + '" title="The whole card" aria-label="More">' + ATL_IC.more + '</button></span></div>' +
     '<div class="ac-hf"><span class="ac-hk">How far</span>' + D.map(o => '<button type="button" class="ac-d' + (String(ui.depth) === String(o[0]) ? ' on' : '') + '" data-depth="' + o[0] + '">' + o[1] + '</button>').join('') +
@@ -239,7 +393,9 @@ function atlasCardHTML(e){
 }
 
 window.__pmAtlasCard = atlasCardHTML;
-const PDF_JS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+/* for the automated tests only: ?pmtest in the address opens a door to the library */
+if(/[?&]pmtest\b/.test(location.search)) window.__pm = {lib: () => lib, touchLib, ghLoad, ghSaveNow};
+const PDF_JS = 'assets/vendor/pdfjs/';
 let pdfJsLoading = null, thumbQueue = Promise.resolve();
 function loadPdfJs(){
   if(window.pdfjsLib) return Promise.resolve(window.pdfjsLib);

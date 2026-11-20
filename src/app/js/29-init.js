@@ -18,7 +18,9 @@ if(demo){
   status = (demo.status && demo.status.map) || {}; statusTime = 0;
   settings = normalizeSettings(Object.assign(defaultSettings(), demo.settings || {}));
   document.getElementById('previewBanner').hidden = false;
-}else loadAll();
+}else{ loadAll();
+  /* if this browser's database holds a newer library than its small store (it filled up, say), use that */
+  try{ const v = window.__pmdb ? await window.__pmdb.get('rl:lib') : null; if(v && v.lib && validLib(v.lib) && (v.lib.updatedAt || 0) > ((lib && lib.updatedAt) || 0)) lib = normalizeLib(v.lib); }catch(e){} }
 reindex();
 applyColors();
 ui.depth = settings.focusDepth || 1;

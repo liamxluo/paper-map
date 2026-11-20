@@ -170,6 +170,33 @@ fn open_url(url: String) -> Result<(), String> {
     Ok(())
 }
 
+/// Secrets (the GitHub token) live in the macOS Keychain, under "Paper Map", never in a file.
+const KEYCHAIN_SERVICE: &str = "Paper Map";
+
+#[tauri::command]
+fn secret_set(key: String, value: String) -> Result<(), String> {
+    keyring::Entry::new(KEYCHAIN_SERVICE, &key)
+        .and_then(|e| e.set_password(&value))
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn secret_get(key: String) -> Result<Option<String>, String> {
+    match keyring::Entry::new(KEYCHAIN_SERVICE, &key).and_then(|e| e.get_password()) {
+        Ok(v) => Ok(Some(v)),
+        Err(keyring::Error::NoEntry) => Ok(None),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+#[tauri::command]
+fn secret_delete(key: String) -> Result<(), String> {
+    match keyring::Entry::new(KEYCHAIN_SERVICE, &key).and_then(|e| e.delete_credential()) {
+        Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -182,7 +209,10 @@ pub fn run() {
             fs_list,
             storage_places,
             save_download,
-            open_url
+            open_url,
+            secret_set,
+            secret_get,
+            secret_delete
         ])
         .run(tauri::generate_context!())
         .expect("error while running Paper Map");

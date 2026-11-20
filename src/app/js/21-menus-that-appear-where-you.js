@@ -1,5 +1,5 @@
 /* ===================== menus that appear where you point (no Modify mode) ===================== */
-function moreBtn(key){ return '<button type="button" class="more-btn" data-more-of="' + esc(key) + '" aria-label="More" title="More">⋯</button>'; }
+function moreBtn(key){ return '<button type="button" class="more-btn" data-more-of="' + esc(key) + '" aria-label="Add a subtopic inside, rename or delete" title="Add a subtopic inside, rename or delete">⋯</button>'; }
 function tocMore(kind, id){ return '<button type="button" class="toc-more more-btn" data-more-of="' + kind + ':' + id + '" aria-label="More" title="More">⋯</button>'; }
 function moreItems(key){
   const [k, id] = [key.slice(0, 1), key.slice(2)];

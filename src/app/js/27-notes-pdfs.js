@@ -183,6 +183,8 @@ async function pdfUrl(e){
 async function attachPdf(id, file){
   const e = lib.entries[id], c = ghCfg();
   if(!e || !c) return;
+  if(c.kind !== 'folder' && file.size > 95 * 1048576){ toast('That PDF is ' + fmtSize(file.size) + ': GitHub takes files up to 100 MB. Keep big PDFs in iCloud Drive or a folder instead.'); return; }
+  if(c.kind !== 'folder' && file.size > 50 * 1048576) toast('A big PDF (' + fmtSize(file.size) + '): it may take a while to upload.');
   if(!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf'){ toast('Choose a PDF file'); return; }
   if(file.size > PDF_MAX){ toast('This PDF is larger than 50 MB, too big to keep this way'); return; }
   const path = 'pdfs/' + id + '.pdf';

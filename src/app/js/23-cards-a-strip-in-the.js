@@ -73,14 +73,16 @@ function easeIO(t){ return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) 
 function cardTarget(){ const W = Math.min(520, innerWidth - 24), H = Math.min(innerHeight - 40, 780); return {x: (innerWidth - W) / 2, y: Math.max(20, (innerHeight - H) / 2), w: W, h: H}; }
 function animateCard(fl, a, b, forward, done){
   const back = fl.querySelector('.bc-back'), front = fl.querySelector('.bc-front');
-  if(reduceMotion()){ Object.assign(fl.style, {left: b.x + 'px', top: b.y + 'px', width: b.w + 'px', height: b.h + 'px', transform: forward ? 'rotateY(180deg)' : 'none'}); done(); return; }
+  const grow = document.documentElement.classList.contains('atlas');
+  if(reduceMotion()){ Object.assign(fl.style, {left: b.x + 'px', top: b.y + 'px', width: b.w + 'px', height: b.h + 'px', transform: forward && !grow ? 'rotateY(180deg)' : 'none'}); if(grow){ front.style.opacity = forward ? 0 : 1; back.style.opacity = forward ? 1 : 0; } done(); return; }
   const t0 = performance.now(), dur = 620;
   const step = now => {
     const u = Math.min(1, (now - t0) / dur), k = easeIO(u), lift = Math.sin(Math.PI * k);
-    fl.style.left = (a.x + (b.x - a.x) * k) + 'px'; fl.style.top = (a.y + (b.y - a.y) * k - 6 * lift) + 'px';
+    fl.style.left = (a.x + (b.x - a.x) * k) + 'px'; fl.style.top = (a.y + (b.y - a.y) * k - (grow ? 0 : 6 * lift)) + 'px';
     fl.style.width = (a.w + (b.w - a.w) * k) + 'px'; fl.style.height = (a.h + (b.h - a.h) * k) + 'px';
     const ang = forward ? 180 * k : 180 * (1 - k);
-    fl.style.transform = 'translateZ(' + (110 * lift) + 'px) rotateY(' + ang + 'deg) rotateZ(' + ((forward ? -3 : 3) * lift) + 'deg)';
+    if(grow){ fl.style.transform = 'none'; const v = forward ? k : 1 - k; back.style.opacity = Math.min(1, v * 1.6); front.style.opacity = Math.max(0, 1 - v * 2.2); }
+    else fl.style.transform = 'translateZ(' + (110 * lift) + 'px) rotateY(' + ang + 'deg) rotateZ(' + ((forward ? -3 : 3) * lift) + 'deg)';
     fl.style.boxShadow = '0 ' + (14 + 26 * lift) + 'px ' + (30 + 46 * lift) + 'px rgba(20,30,50,' + (0.16 + 0.08 * lift) + ')';
     if(u < 1) requestAnimationFrame(step); else done();
   };

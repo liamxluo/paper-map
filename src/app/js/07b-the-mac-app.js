@@ -62,3 +62,9 @@ if(TAURI){
     if(/^(https?:|mailto:)/i.test(href)){ ev.preventDefault(); tinvoke('open_url', {url: a.href}).catch(() => {}); } }, true);
   window.open = u => { if(/^(https?:|mailto:)/i.test(String(u || ''))) tinvoke('open_url', {url: String(u)}).catch(() => {}); return null; };
 }
+
+/* the GitHub token in the Mac's Keychain: read at start; a token still kept in plain text moves there */
+if(TAURI){ (async () => {
+  try{ const v = await tinvoke('secret_get', {key: 'github-token'}); if(v){ KC_TOKEN = v; } }catch(e){}
+  try{ const c = lsGet(GH_KEY); if(c && c.token && c.token !== '__keychain__') ghStore(c); else if(c && c.token === '__keychain__' && KC_TOKEN) setTimeout(() => { try{ ghLoad(); }catch(e){} }, 0); }catch(e){}
+})(); }
