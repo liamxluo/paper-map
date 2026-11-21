@@ -66,16 +66,16 @@ window.pmDesk = {
       /* a whole folder or map goes inside another: its own level becomes a topic there, with everything it held */
       const nr = {id: rid('s'), name: A.name, desc: '', groups: []}; if(target) nr.parent = target;
       const rest = A.subs.filter(x => x !== rA).map(x => Object.assign({}, x, x.parent ? {} : {parent: nr.id}));
-      B.subs.push(nr, ...rest);
+      B.subs.push(nr, ...rest); var movedId = nr.id;
       Object.values(lib.entries).forEach(e => { if(e.topic === A.id){ e.topic = B.id; if(!e.sub || (rA && e.sub === rA.id)) e.sub = nr.id; } if(e.folder === A.id){ e.folder = B.id; if(!e.fsub || (rA && e.fsub === rA.id)) e.fsub = nr.id; } });
       lib.topics = lib.topics.filter(t => t !== A); lib.tlinks = (lib.tlinks || []).filter(l => l[0] !== A.id && l[1] !== A.id);
-    } else { const S = A.subs.find(x => x.id === sS); if(!S) return false;
+    } else { const S = A.subs.find(x => x.id === sS); if(!S) return false; var movedId = S.id;
       const tree = new Set([S.id]); let grew = true; while(grew){ grew = false; A.subs.forEach(x => { if(x.parent && tree.has(x.parent) && !tree.has(x.id)){ tree.add(x.id); grew = true; } }); }
       if(A === B && target && tree.has(target)) return false;
       if(A === B){ if(target) S.parent = target; else delete S.parent; }
       else { const moving = A.subs.filter(x => tree.has(x.id)); A.subs = A.subs.filter(x => !tree.has(x.id)); if(target) S.parent = target; else delete S.parent; B.subs.push(...moving);
         Object.values(lib.entries).forEach(e => { if(e.topic === A.id && tree.has(e.sub)) e.topic = B.id; if(e.folder === A.id && tree.has(e.fsub)) e.folder = B.id; }); } }
-    try{ reindex(); }catch(e){} touchLib(); return true; },
+    try{ reindex(); }catch(e){} if(!PREVIEW) touchLib(); return {sub: movedId}; },
   /* a folder inside another, taken out to stand on its own at the top of the list */
   promoteFolder(tid, sid){ const A = lib.topics.find(t => t.id === tid); if(!A) return null; const rA = A.subs.find(x => x.hidden) || A.subs[0], S = A.subs.find(x => x.id === sid); if(!S || S === rA) return null;
     const tree = new Set([S.id]); let grew = true; while(grew){ grew = false; A.subs.forEach(x => { if(x.parent && tree.has(x.parent) && !tree.has(x.id)){ tree.add(x.id); grew = true; } }); }
@@ -84,6 +84,17 @@ window.pmDesk = {
     A.subs = A.subs.filter(x => !tree.has(x.id)); lib.topics.push(T);
     Object.values(lib.entries).forEach(e => { if(e.topic === A.id && tree.has(e.sub)){ e.topic = T.id; if(e.sub === S.id) e.sub = root.id; } if(e.folder === A.id && tree.has(e.fsub)){ e.folder = T.id; if(e.fsub === S.id) e.fsub = root.id; } });
     try{ reindex(); }catch(e){} if(!PREVIEW) touchLib(); return T.id; },
+  /* a folder put beside another, before or after it, at the same level */
+  placeFolder(sT, sS, rT, rS, where){ const Rt = lib.topics.find(t => t.id === rT), St = lib.topics.find(t => t.id === sT); if(!Rt || !St) return false;
+    const rootOf = t => t.subs.find(x => x.hidden) || t.subs[0]; if(sS && sS === rootOf(St).id) sS = null; const refTop = !rS || rS === rootOf(Rt).id;
+    if(refTop){ let tid = sT; if(sS){ tid = this.promoteFolder(sT, sS); if(!tid) return false; } if(tid === rT) return true;
+      const A = lib.topics.find(t => t.id === tid), Rn = lib.topics.find(t => t.id === rT); lib.topics = lib.topics.filter(t => t !== A); const i = lib.topics.indexOf(Rn); lib.topics.splice(where === 'after' ? i + 1 : i, 0, A); }
+    else { const ref = Rt.subs.find(x => x.id === rS); if(!ref) return false; if(sS === rS) return true;
+      const r = this.moveFolder(sT, sS, rT, ref.parent || null); if(!r) return false;
+      const T = lib.topics.find(t => t.id === rT), S = T.subs.find(x => x.id === r.sub), ref2 = T.subs.find(x => x.id === rS); if(!S || !ref2) return false;
+      if(ref2.parent) S.parent = ref2.parent; else delete S.parent;
+      T.subs.splice(T.subs.indexOf(S), 1); const j = T.subs.indexOf(ref2); T.subs.splice(where === 'after' ? j + 1 : j, 0, S); }
+    try{ reindex(); }catch(e){} if(!PREVIEW) touchLib(); return true; },
   movePaper(id, tid, sid){ const e = lib.entries[id], tp = lib.topics.find(t => t.id === tid); if(!e || !tp) return; const root = tp.subs.find(x => x.hidden) || tp.subs[0];
     /* filed in a folder: it stays on whatever map it is on */
     e.folder = tid; e.fsub = sid || (root && root.id); const cur = lib.topics.find(t => t.id === e.topic); if(!cur || cur.shelf){ e.topic = tid; e.sub = e.fsub; }

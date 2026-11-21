@@ -1285,7 +1285,7 @@ document.addEventListener('pointerdown', e => { if(!e.target.closest('#spMk')) $
 
 /* ===================== your own folders and categories: make them, nest them, rename them ===================== */
 const rOpenCats = new Set();
-function catPaths(){ const all = new Set(); allCats().forEach(c => { const parts = String(c).split('/').map(x => x.trim()).filter(Boolean); for(let i = 1; i <= parts.length; i++) all.add(parts.slice(0, i).join('/')); }); return [...all].sort((a, b) => a.localeCompare(b)); }
+function catPaths(){ const all = []; allCats().forEach(c => { const parts = String(c).split('/').map(x => x.trim()).filter(Boolean); for(let i = 1; i <= parts.length; i++){ const p = parts.slice(0, i).join('/'); if(!all.includes(p)) all.push(p); } }); return all; }
 function catTreeHTML(){ const paths = catPaths(), kids = p => paths.filter(x => x.indexOf(p + '/') === 0 && x.slice(p.length + 1).indexOf('/') < 0);
   const count = p => R.filter(b => (b.categories || []).some(c => c === p || c.indexOf(p + '/') === 0)).length;
   let h = ''; const row = (p, depth) => { const ks = kids(p), open = rOpenCats.has(p) || rFilter.indexOf('cat:' + p + '/') === 0, leaf = p.split('/').pop();
@@ -1344,34 +1344,47 @@ document.querySelectorAll('#rSecs').forEach(() => {});
    lights up, and letting go puts it there. A press that does not move is an ordinary click. */
 let sdJust = 0;
 function sideDrag(board, o){ let st = null, ghost = null, over = null;
-  const clear = () => { if(over) over.classList.remove('drop'); over = null; };
+  let zone = 'into'; const clear = () => { if(over) over.classList.remove('drop', 'drop-before', 'drop-after'); over = null; };
   board.addEventListener('pointerdown', e => { if(e.button !== 0 || e.target.closest('.tp-add,.tp-tog,input,.sp-sticky')) return; const src = e.target.closest(o.source); if(!src) return; st = {src, x: e.clientX, y: e.clientY, on: false}; });
   addEventListener('pointermove', e => { if(!st) return;
     if(!st.on){ if(Math.hypot(e.clientX - st.x, e.clientY - st.y) < 7) return; st.payload = o.start(st.src); if(!st.payload){ st = null; return; } st.on = true;
       ghost = document.createElement('div'); ghost.className = 'sd-ghost'; ghost.textContent = st.payload.label || ''; document.body.appendChild(ghost); document.body.classList.add('pm-dragging'); }
     ghost.style.transform = 'translate(' + (e.clientX + 14) + 'px,' + (e.clientY + 10) + 'px)';
     const el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest(o.target);
-    if(t !== over){ clear(); if(t && t !== st.src && (!o.ok || o.ok(st.payload, t))){ over = t; t.classList.add('drop'); } } });
+    let z = 'into'; if(t && o.order && o.order(st.payload)){ const r = t.getBoundingClientRect(), fr = (e.clientY - r.top) / r.height; z = fr < .3 ? 'before' : fr > .7 ? 'after' : 'into'; }
+    if(t !== over || z !== zone){ clear(); zone = z; if(t && t !== st.src && (!o.ok || o.ok(st.payload, t, z))){ over = t; t.classList.add(z === 'into' ? 'drop' : 'drop-' + z); } } });
   const finish = e => { if(!st) return; const s = st; st = null; if(!s.on) return; if(ghost){ ghost.remove(); ghost = null; } document.body.classList.remove('pm-dragging');
-    const t = over; clear(); sdJust = Date.now(); if(t) o.drop(s.payload, t); };
+    const t = over, z = zone; clear(); sdJust = Date.now(); if(t) o.drop(s.payload, t, z); };
   addEventListener('pointerup', finish); addEventListener('pointercancel', () => { if(st && st.on){ if(ghost){ ghost.remove(); ghost = null; } document.body.classList.remove('pm-dragging'); clear(); } st = null; }); }
 /* a drag ends with a click on what was dragged: that click is not a choice */
 addEventListener('click', e => { if(Date.now() - sdJust < 350){ e.stopPropagation(); e.preventDefault(); } }, true);
 sideDrag($('pboard'), {source: '#pbMaps .tp[data-map]:not([data-map=""]), #pbGrid .pg', target: '#pbMaps .tp[data-map]:not([data-map=""])',
   start: el => el.classList.contains('pg') ? {kind: 'paper', id: el.dataset.id, label: (el.querySelector('figcaption b, b') || {}).textContent || 'Paper'} : {kind: 'folder', t: el.dataset.map, s: el.dataset.sub || null, label: el.querySelector('span').textContent},
+  order: p => p.kind === 'folder',
   ok: (p, t) => p.kind === 'paper' || !(p.t === t.dataset.map && (p.s || null) === (t.dataset.sub || null)),
-  drop: (p, t) => { const dT = t.dataset.map, dS = t.dataset.sub || null, name = t.querySelector('span').textContent;
+  drop: (p, t, z) => { const dT = t.dataset.map, dS = t.dataset.sub || null, name = t.querySelector('span').textContent;
+    if(p.kind === 'folder' && z !== 'into'){ const ok = P.placeFolder(p.t, p.s, dT, dS, z); if(!ok) toast('It cannot go inside itself'); pReload(); return; }
     if(p.kind === 'paper'){ P.movePaper(p.id, dT, dS); toast('Moved into ' + name); }
     else { const ok = P.moveFolder(p.t, p.s, dT, dS); if(ok){ pOpen.add(dT); if(dS) pOpen.add(dS); pShut.delete(dT); toast(p.label + ' is now inside ' + name); } else toast('It cannot go inside itself'); }
     pReload(); }});
 sideDrag(RB, {source: '#rcats [data-cat], #rSecs .rbk', target: '#rcats [data-cat]',
   start: el => el.classList.contains('rbk') ? {kind: 'book', id: el.dataset.id, label: ((R.find(b => b.id === el.dataset.id) || {}).title) || 'Book'} : {kind: 'cat', p: el.dataset.cat, label: el.dataset.cat.split('/').pop()},
+  order: p => p.kind === 'cat',
   ok: (p, t) => p.kind === 'book' || !(t.dataset.cat === p.p || t.dataset.cat.indexOf(p.p + '/') === 0),
-  drop: (p, t) => { const dst = t.dataset.cat;
+  drop: (p, t, z) => { const dst = t.dataset.cat;
+    if(p.kind === 'cat' && z !== 'into'){ catPlace(p.p, dst, z); return; }
     if(p.kind === 'book'){ const b = R.find(x => x.id === p.id); if(b){ b.categories = [...new Set((b.categories || []).concat([dst]))]; rSave(); renderReadings(); toast('Put in ' + dst.split('/').pop()); } }
     else { catRename(p.p, dst + '/' + p.p.split('/').pop()); rOpenCats.add(dst); renderReadings(); } }});
 /* a folder inside another can also be taken out to the top of the list */
 $('pboard').addEventListener('contextmenu', e => { const t = e.target.closest('.tp[data-map][data-sub]'); if(!t) return; setTimeout(() => { const m = $('tpMenu'); if(!m || m.hidden || m.querySelector('[data-promote]')) return;
   const b = document.createElement('button'); b.type = 'button'; b.dataset.promote = '1'; b.textContent = 'Move to the top'; m.insertBefore(b, m.lastElementChild);
   b.addEventListener('click', ev => { ev.stopPropagation(); m.hidden = true; const id = P.promoteFolder && P.promoteFolder(t.dataset.map, t.dataset.sub); if(id) pOpen.add(id); pReload(); }); }, 0); });
+
+/* a category put beside another, at its level, before or after it */
+function catPlace(src, ref, where){ const up = ref.split('/').slice(0, -1).join('/'), np = (up ? up + '/' : '') + src.split('/').pop();
+  if(ref === src || ref.indexOf(src + '/') === 0) return;
+  CATS = catPaths(); if(np !== src){ const sw = c => c === src ? np : c.indexOf(src + '/') === 0 ? np + c.slice(src.length) : c; CATS = [...new Set(CATS.map(sw))]; R.forEach(b => { if((b.categories || []).length) b.categories = [...new Set(b.categories.map(sw))]; }); if(rFilter === 'cat:' + src) rFilter = 'cat:' + np; }
+  const mine = c => c === np || c.indexOf(np + '/') === 0, block = CATS.filter(mine); CATS = CATS.filter(c => !mine(c));
+  const inRef = c => c === ref || c.indexOf(ref + '/') === 0; let at = where === 'after' ? CATS.reduce((k, c, i) => inRef(c) ? i + 1 : k, -1) : CATS.findIndex(inRef);
+  if(at < 0) at = CATS.length; CATS.splice(at, 0, ...block); rSave(); renderReadings(); }
 })();
