@@ -314,22 +314,22 @@ function renderPapers(){
   const tName = {}; D.topics.forEach(t => { tName[t.id] = t.name; });
   $('pbCount').textContent = ps.length + (ps.length === 1 ? ' paper' : ' papers') + ' · ' + ps.filter(p => p.st === 'read').length + ' read · ' + ps.filter(p => p.st === 'want').length + ' to read';
     { let h = '<button class="tp' + (pFilter.map ? '' : ' on') + '" data-map=""><span>All papers</span><em>' + ps.length + '</em></button>';
-    const folders = D.topics.filter(t => t.shelf), mapsOnly = D.topics.filter(t => !t.shelf); let lastShelf = null;
-    folders.concat(mapsOnly).forEach(t => { if(lastShelf !== !!t.shelf && (folders.length && mapsOnly.length)){ h += '<p class="h pb-h">' + (t.shelf ? 'FOLDERS' : 'MAPS') + '</p>'; } lastShelf = !!t.shelf;
-      const tr = topicTree(t), mine = ps.filter(p => p.topic === t.id), has = tr.roots.length > 0, open = (pOpen.has(t.id) || pFilter.map === t.id) && !pShut.has(t.id);
-      h += '<div class="tp-row"><button class="tp-tog' + (has ? '' : ' none') + (open ? ' open' : '') + '" data-tog="' + esc(t.id) + '" aria-label="Show its topics"></button><button class="tp' + (pFilter.map === t.id && !pFilter.sub ? ' on' : '') + '" data-map="' + esc(t.id) + '" draggable="true"><span>' + esc(t.name) + '</span><em>' + mine.length + '</em></button><i class="tp-add" data-add-map="' + esc(t.id) + '" title="A folder inside">+</i></div>';
+    const folders = D.topics.filter(t => t.shelf); $('pbMapsH').hidden = true;
+    folders.forEach(t => {
+      const tr = topicTree(t), mine = ps.filter(p => p.folder === t.id), has = tr.roots.length > 0, open = (pOpen.has(t.id) || pFilter.map === t.id) && !pShut.has(t.id);
+      h += '<div class="tp-row"><button class="tp-tog' + (has ? '' : ' none') + (open ? ' open' : '') + '" data-tog="' + esc(t.id) + '" aria-label="Show its topics"></button><button class="tp' + (pFilter.map === t.id && !pFilter.sub ? ' on' : '') + '" data-map="' + esc(t.id) + '"><span>' + esc(t.name) + '</span><em>' + mine.length + '</em></button><i class="tp-add" data-add-map="' + esc(t.id) + '" title="A folder inside">+</i></div>';
       if(!open) return;
-      const row = (r, depth) => { const kids = tr.kids[r.id] || [], o = (pOpen.has(r.id) || (pFilter.sub && subtreeOf(t, r.id).has(pFilter.sub) && pFilter.sub !== r.id)) && !pShut.has(r.id), n = mine.filter(p => subtreeOf(t, r.id).has(p.sub)).length;
-        h += '<div class="tp-row" style="--d:' + depth + '"><button class="tp-tog' + (kids.length ? '' : ' none') + (o ? ' open' : '') + '" data-tog="' + esc(r.id) + '"></button><button class="tp sub' + (pFilter.sub === r.id ? ' on' : '') + '" data-map="' + esc(t.id) + '" data-sub="' + esc(r.id) + '" draggable="true"><span>' + esc(r.name) + '</span><em>' + n + '</em></button><i class="tp-add" data-add-map="' + esc(t.id) + '" data-add-sub="' + esc(r.id) + '" title="A folder inside">+</i></div>';
+      const row = (r, depth) => { const kids = tr.kids[r.id] || [], o = (pOpen.has(r.id) || (pFilter.sub && subtreeOf(t, r.id).has(pFilter.sub) && pFilter.sub !== r.id)) && !pShut.has(r.id), n = mine.filter(p => subtreeOf(t, r.id).has(p.fsub)).length;
+        h += '<div class="tp-row" style="--d:' + depth + '"><button class="tp-tog' + (kids.length ? '' : ' none') + (o ? ' open' : '') + '" data-tog="' + esc(r.id) + '"></button><button class="tp sub' + (pFilter.sub === r.id ? ' on' : '') + '" data-map="' + esc(t.id) + '" data-sub="' + esc(r.id) + '"><span>' + esc(r.name) + '</span><em>' + n + '</em></button><i class="tp-add" data-add-map="' + esc(t.id) + '" data-add-sub="' + esc(r.id) + '" title="A folder inside">+</i></div>';
         if(o) kids.forEach(k => row(k, depth + 1)); };
       tr.roots.forEach(r => row(r, 1)); });
     h += '<button class="tp tp-new" data-newfolder="1"><span>+ New folder</span></button>';
-    $('pbMaps').innerHTML = h; $('pbGrid').querySelectorAll('.pg').forEach(g => { g.draggable = true; }); }
+    $('pbMaps').innerHTML = h; }
   $('pbSt').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.st === pFilter.st));
   const q = pFilter.q.trim().toLowerCase();
   const subT = pFilter.map && pFilter.sub ? subtreeOf(D.topics.find(t => t.id === pFilter.map) || {rows: []}, pFilter.sub) : null;
-  const list = ps.filter(p => (!pFilter.map || p.topic === pFilter.map) && (!subT || subT.has(p.sub)) && (!pFilter.st || (pFilter.st === 'none' ? !p.st : p.st === pFilter.st)) && (!q || (p.t + ' ' + p.au + ' ' + p.y + ' ' + (p.v || '')).toLowerCase().includes(q)))
-    .sort((a, b) => (tName[a.topic] || '').localeCompare(tName[b.topic] || '') || (a.y || 0) - (b.y || 0));
+  const list = ps.filter(p => (!pFilter.map || p.folder === pFilter.map) && (!subT || subT.has(p.fsub)) && (!pFilter.st || (pFilter.st === 'none' ? !p.st : p.st === pFilter.st)) && (!q || (p.t + ' ' + p.au + ' ' + p.y + ' ' + (p.v || '')).toLowerCase().includes(q)))
+    .sort((a, b) => (a.y || 0) - (b.y || 0) || String(a.t || '').localeCompare(String(b.t || '')));
   const shown = pAll ? list : list.slice(0, P_FIRST);
   $('pbGrid').innerHTML = list.length ? shown.map((p, i) => '<figure class="pg" data-id="' + esc(p.id) + '" tabindex="0" role="button" style="--i:' + Math.min(i, 40) + '"><div class="sheet"><p class="pj">' + esc((p.v || tName[p.topic] || '').slice(0, 40)) + (p.y ? ' · ' + p.y : '') + '</p><h4>' + esc(String(p.t || 'Untitled').slice(0, 90)) + '</h4><p class="pa">' + esc(String(p.au || '').slice(0, 60)) + '</p><i class="ln"></i>' + (p.st ? '<span class="stamp ' + p.st + '">' + (p.st === 'read' ? 'READ' : 'TO READ') + '</span>' : '') + (p.book ? '<span class="bk-mark">BOOK</span>' : '') + '</div><figcaption><b>' + esc(String(p.t || 'Untitled').slice(0, 70)) + '</b><span>' + esc([tName[p.topic] || ''].concat(rowPath(D.topics.find(t => t.id === p.topic) || {rows: []}, p.sub)).join(' / ')) + '</span></figcaption></figure>').join('')
     : '<p class="pb-empty">' + (ps.length ? 'Nothing matches.' : 'No papers yet. Open a map and add the first one with +.') + '</p>';
@@ -459,7 +459,7 @@ RB.addEventListener('click', e => {
   const f = e.target.closest('.rbk'); if(f){ openSpread('book', f.dataset.id, f.querySelector('.rcov')); return; }
   if(!e.target.closest('.rc-map')) $('rcMaps').classList.remove('on');
 });
-$('rNewCat').addEventListener('click', () => { const n = (prompt('A new category for your Readings') || '').trim(); if(!n) return; if(!CATS.includes(n)) CATS.push(n); rSave(); renderReadings(); });
+$('rNewCat').addEventListener('click', e => { e.stopPropagation(); askInline({before: $('rNewCat'), placeholder: 'New category'}).then(n => { if(!n) return; if(!CATS.includes(n)) CATS.push(n); rSave(); renderReadings(); }); });
 $('rAdd').addEventListener('click', () => openRCard(null));
 function fieldVal(id){ return $(id).value.trim(); }
 function monthOf(v){ if(!v) return null; if(/^\d{4}-\d{2}$/.test(v)) return v; const d = new Date(v); return isNaN(d) ? null : d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
@@ -488,8 +488,14 @@ function editMode(on){ $('rcSave').hidden = !on; $('rcCancel').hidden = !on; $('
 function renderCardCats(d){ const box = $('rcCats'); box.innerHTML = '';
   (d.categories || []).forEach(c => { const sp = document.createElement('button'); sp.className = 'chip'; sp.textContent = c + ' ×'; sp.title = 'Remove'; sp.addEventListener('click', () => { d.categories = d.categories.filter(x => x !== c); if(rBook){ rBook.categories = d.categories; rSave(); renderReadings(); } renderCardCats(d); }); box.appendChild(sp); });
   const add = document.createElement('button'); add.className = 'add'; add.textContent = '+ Category';
-  add.addEventListener('click', () => { const opts = allCats().filter(c => !(d.categories || []).includes(c)); const n = (prompt('Add a category' + (opts.length ? ' (yours: ' + opts.join(', ') + ')' : '')) || '').trim(); if(!n) return;
-    d.categories = (d.categories || []).concat([n]); if(!CATS.includes(n)) CATS.push(n); if(rBook){ rBook.categories = d.categories; rSave(); renderReadings(); } renderCardCats(d); });
+  /* a category is chosen from your own, or typed in place: no browser pop-up */
+  add.addEventListener('click', () => { const opts = allCats().filter(c => !(d.categories || []).includes(c));
+    const put = n => { n = (n || '').trim(); if(!n) return; d.categories = (d.categories || []).concat([n]); if(!CATS.includes(n)) CATS.push(n); if(rBook){ rBook.categories = d.categories; rSave(); renderReadings(); } renderCardCats(d); };
+    const inp = document.createElement('input'); inp.className = 'rc-catin'; inp.placeholder = 'Category'; inp.setAttribute('list', 'rcCatList'); add.replaceWith(inp);
+    let dl = document.getElementById('rcCatList'); if(!dl){ dl = document.createElement('datalist'); dl.id = 'rcCatList'; document.body.appendChild(dl); } dl.innerHTML = opts.map(o => '<option value="' + esc(o) + '">').join('');
+    let done = false; const end = v => { if(done) return; done = true; put(v); renderCardCats(d); };
+    inp.addEventListener('keydown', e => { e.stopPropagation(); if(e.key === 'Enter'){ e.preventDefault(); end(inp.value); } else if(e.key === 'Escape'){ e.preventDefault(); end(''); } });
+    inp.addEventListener('blur', () => end(inp.value)); requestAnimationFrame(() => inp.focus()); });
   box.appendChild(add); rcard._draft = d; }
 $('rcardX').addEventListener('click', () => rcard.classList.remove('on'));
 $('rcEditBtn').addEventListener('click', () => { if(!rBook) return; rEditing = true; editMode(true); $('rfT').focus(); });
@@ -1283,7 +1289,7 @@ function catPaths(){ const all = new Set(); allCats().forEach(c => { const parts
 function catTreeHTML(){ const paths = catPaths(), kids = p => paths.filter(x => x.indexOf(p + '/') === 0 && x.slice(p.length + 1).indexOf('/') < 0);
   const count = p => R.filter(b => (b.categories || []).some(c => c === p || c.indexOf(p + '/') === 0)).length;
   let h = ''; const row = (p, depth) => { const ks = kids(p), open = rOpenCats.has(p) || rFilter.indexOf('cat:' + p + '/') === 0, leaf = p.split('/').pop();
-    h += '<div class="tp-row" style="--d:' + depth + '"><button class="tp-tog' + (ks.length ? '' : ' none') + (open ? ' open' : '') + '" data-ctog="' + esc(p) + '"></button><button class="tp' + (depth ? ' sub' : '') + (rFilter === 'cat:' + p ? ' on' : '') + '" data-filter="cat:' + esc(p) + '" data-cat="' + esc(p) + '" draggable="true"><span>' + esc(leaf) + '</span><em>' + count(p) + '</em></button><i class="tp-add" data-addcat="' + esc(p) + '" title="A category inside">+</i></div>';
+    h += '<div class="tp-row" style="--d:' + depth + '"><button class="tp-tog' + (ks.length ? '' : ' none') + (open ? ' open' : '') + '" data-ctog="' + esc(p) + '"></button><button class="tp' + (depth ? ' sub' : '') + (rFilter === 'cat:' + p ? ' on' : '') + '" data-filter="cat:' + esc(p) + '" data-cat="' + esc(p) + '"><span>' + esc(leaf) + '</span><em>' + count(p) + '</em></button><i class="tp-add" data-addcat="' + esc(p) + '" title="A category inside">+</i></div>';
     if(open) ks.forEach(x => row(x, depth + 1)); };
   paths.filter(p => p.indexOf('/') < 0).forEach(p => row(p, 0)); return h; }
 function catRename(from, to){ if(!to || to === from || to.indexOf(from + '/') === 0) return;
@@ -1296,42 +1302,76 @@ function tpMenu(x, y, items){ let m = $('tpMenu'); if(!m){ m = document.createEl
   m.innerHTML = items.map((it, i) => '<button type="button" data-ti="' + i + '"' + (it[2] ? ' class="danger"' : '') + '>' + esc(it[0]) + '</button>').join(''); m.hidden = false;
   m.style.left = Math.min(innerWidth - 200, x) + 'px'; m.style.top = Math.min(innerHeight - 40 * items.length - 20, y) + 'px';
   m.onclick = e => { const b = e.target.closest('[data-ti]'); if(!b) return; m.hidden = true; items[+b.dataset.ti][1](); }; }
-const askName = (q, v) => { const n = (prompt(q, v || '') || '').trim().replace(/\//g, '-'); return n.slice(0, 60); };
+/* a name is typed right in the list, in the row it will become: Enter keeps it, Esc lets it go */
+function askInline(o){ return new Promise(res => {
+  const row = document.createElement('div'); row.className = 'tp-row tp-editrow'; row.style.setProperty('--d', o.depth || 0);
+  const inp = document.createElement('input'); inp.className = 'tp-input'; inp.type = 'text'; inp.maxLength = 60; inp.placeholder = o.placeholder || 'Name'; inp.value = o.value || ''; inp.spellcheck = false; row.appendChild(inp);
+  if(o.replace){ o.replace.style.display = 'none'; o.replace.after(row); } else if(o.before) o.before.before(row); else if(o.after) o.after.after(row); else return res(null);
+  let done = false; const end = v => { if(done) return; done = true; row.remove(); if(o.replace) o.replace.style.display = ''; res(v ? v.trim().replace(/\//g, '-').slice(0, 60) : null); };
+  inp.addEventListener('keydown', e => { e.stopPropagation(); if(e.key === 'Enter'){ e.preventDefault(); end(inp.value); } else if(e.key === 'Escape'){ e.preventDefault(); end(null); } });
+  inp.addEventListener('blur', () => end(inp.value)); inp.addEventListener('click', e => e.stopPropagation());
+  requestAnimationFrame(() => { inp.focus(); inp.select(); }); }); }
+const rowOf = el => el && el.closest('.tp-row');
+const depthOf = row => row ? (parseInt(getComputedStyle(row).getPropertyValue('--d')) || 0) : 0;
 function pReload(){ D = load(); renderPapers(); }
 /* Papers: + New folder, + inside a folder, right-click to rename or delete, drag a folder into another, drag a paper into a folder */
 $('pboard').addEventListener('click', e => {
-  if(e.target.closest('[data-newfolder]')){ e.stopPropagation(); const n = askName('A new folder for your papers'); if(n && P && P.newFolder){ const id = P.newFolder(n); pReload(); if(id) pOpen.add(id); } return; }
-  const add = e.target.closest('.tp-add[data-add-map]'); if(add){ e.stopPropagation(); const n = askName('A folder inside it'); if(n && P && P.newFolder){ P.newFolder(n, add.dataset.addMap, add.dataset.addSub || null); pOpen.add(add.dataset.addMap); if(add.dataset.addSub) pOpen.add(add.dataset.addSub); pShut.delete(add.dataset.addMap); pReload(); } return; }
+  const nf = e.target.closest('[data-newfolder]'); if(nf){ e.stopPropagation(); askInline({before: nf, placeholder: 'New folder'}).then(n => { if(n && P && P.newFolder){ const id = P.newFolder(n); if(id) pOpen.add(id); pReload(); } }); return; }
+  const add = e.target.closest('.tp-add[data-add-map]'); if(add){ e.stopPropagation(); const row = rowOf(add), tid = add.dataset.addMap, sid = add.dataset.addSub || null;
+    askInline({after: row, depth: depthOf(row) + 1, placeholder: 'New folder'}).then(n => { if(n && P && P.newFolder){ P.newFolder(n, tid, sid); pOpen.add(tid); if(sid) pOpen.add(sid); pShut.delete(tid); pReload(); } }); return; }
 }, true);
 $('pboard').addEventListener('contextmenu', e => { const t = e.target.closest('.tp[data-map]'); if(!t || !t.dataset.map) return; e.preventDefault(); const tid = t.dataset.map, sid = t.dataset.sub || null, name = t.querySelector('span').textContent;
-  tpMenu(e.clientX, e.clientY, [['Rename', () => { const n = askName('Its new name', name); if(n){ P.renameFolder(tid, sid, n); pReload(); } }], ['A folder inside', () => { const n = askName('A folder inside it'); if(n){ P.newFolder(n, tid, sid); pOpen.add(tid); if(sid) pOpen.add(sid); pReload(); } }],
+  const row = rowOf(t);
+  tpMenu(e.clientX, e.clientY, [['Rename', () => askInline({replace: row, depth: depthOf(row), value: name}).then(n => { if(n && n !== name){ P.renameFolder(tid, sid, n); pReload(); } })],
+    ['A folder inside', () => askInline({after: row, depth: depthOf(row) + 1, placeholder: 'New folder'}).then(n => { if(n){ P.newFolder(n, tid, sid); pOpen.add(tid); if(sid) pOpen.add(sid); pReload(); } })],
     ['Delete', () => { const r = P.deleteFolder(tid, sid); if(r === 'not-empty') toast('Move its papers into another folder first'); else { if(pFilter.map === tid && (!sid || pFilter.sub === sid)){ pFilter.map = ''; pFilter.sub = ''; } pReload(); } }, true]]); });
-let pDrag = null;
-$('pboard').addEventListener('dragstart', e => { const t = e.target.closest && e.target.closest('.tp[data-map]'), g = e.target.closest && e.target.closest('.pg');
-  if(t && t.dataset.map){ pDrag = {kind: 'folder', t: t.dataset.map, s: t.dataset.sub || null}; } else if(g){ pDrag = {kind: 'paper', id: g.dataset.id}; } else return;
-  try{ e.dataTransfer.setData('text/plain', 'pm'); e.dataTransfer.effectAllowed = 'move'; }catch(err){} document.body.classList.add('pm-dragging'); });
-$('pboard').addEventListener('dragover', e => { if(!pDrag) return; const t = e.target.closest('.tp[data-map]'); document.querySelectorAll('#pbMaps .tp.drop').forEach(x => { if(x !== t) x.classList.remove('drop'); }); if(!t || !t.dataset.map) return; e.preventDefault(); t.classList.add('drop'); });
-$('pboard').addEventListener('drop', e => { const t = e.target.closest('.tp[data-map]'); document.querySelectorAll('#pbMaps .tp.drop').forEach(x => x.classList.remove('drop')); if(!pDrag || !t || !t.dataset.map){ pDrag = null; return; } e.preventDefault();
-  const dT = t.dataset.map, dS = t.dataset.sub || null;
-  if(pDrag.kind === 'paper'){ P.movePaper(pDrag.id, dT, dS); toast('Moved into ' + t.querySelector('span').textContent); }
-  else if(!(pDrag.t === dT && (pDrag.s || null) === dS)){ const ok = P.moveFolder(pDrag.t, pDrag.s, dT, dS); if(ok){ pOpen.add(dT); if(dS) pOpen.add(dS); pShut.delete(dT); } else toast('It cannot go inside itself'); }
-  pDrag = null; pReload(); });
-addEventListener('dragend', () => { pDrag = null; rDrag = null; document.body.classList.remove('pm-dragging'); document.querySelectorAll('.tp.drop').forEach(x => x.classList.remove('drop')); });
 /* Readings: categories within categories, made, nested and renamed the same way; drag a book onto a category to put it there */
 RB.addEventListener('click', e => {
   const tg = e.target.closest('[data-ctog]'); if(tg){ e.stopPropagation(); const p = tg.dataset.ctog; if(tg.classList.contains('open')) rOpenCats.delete(p); else rOpenCats.add(p); renderReadings(); return; }
-  const add = e.target.closest('[data-addcat]'); if(add){ e.stopPropagation(); const n = askName('A category inside it'); if(n){ const p = add.dataset.addcat + '/' + n; if(!CATS.includes(p)) CATS.push(p); rOpenCats.add(add.dataset.addcat); rSave(); renderReadings(); } return; }
+  const add = e.target.closest('[data-addcat]'); if(add){ e.stopPropagation(); const row = rowOf(add), up = add.dataset.addcat;
+    askInline({after: row, depth: depthOf(row) + 1, placeholder: 'New category'}).then(n => { if(n){ const p = up + '/' + n; if(!CATS.includes(p)) CATS.push(p); rOpenCats.add(up); rSave(); renderReadings(); } }); return; }
 }, true);
 RB.addEventListener('contextmenu', e => { const t = e.target.closest('[data-cat]'); if(!t) return; e.preventDefault(); const p = t.dataset.cat, leaf = p.split('/').pop(), up = p.split('/').slice(0, -1).join('/');
-  tpMenu(e.clientX, e.clientY, [['Rename', () => { const n = askName('Its new name', leaf); if(n) catRename(p, (up ? up + '/' : '') + n); }], ['A category inside', () => { const n = askName('A category inside it'); if(n){ const q = p + '/' + n; if(!CATS.includes(q)) CATS.push(q); rOpenCats.add(p); rSave(); renderReadings(); } }],
+  const row = rowOf(t);
+  tpMenu(e.clientX, e.clientY, [['Rename', () => askInline({replace: row, depth: depthOf(row), value: leaf}).then(n => { if(n && n !== leaf) catRename(p, (up ? up + '/' : '') + n); })],
+    ['A category inside', () => askInline({after: row, depth: depthOf(row) + 1, placeholder: 'New category'}).then(n => { if(n){ const q = p + '/' + n; if(!CATS.includes(q)) CATS.push(q); rOpenCats.add(p); rSave(); renderReadings(); } })],
     ...(up ? [['Move to the top', () => catRename(p, leaf)]] : []), ['Delete', () => catDelete(p), true]]); });
-let rDrag = null;
-RB.addEventListener('dragstart', e => { const t = e.target.closest && e.target.closest('[data-cat]'), bk = e.target.closest && e.target.closest('.rbk');
-  if(t) rDrag = {kind: 'cat', p: t.dataset.cat}; else if(bk) rDrag = {kind: 'book', id: bk.dataset.id}; else return; try{ e.dataTransfer.setData('text/plain', 'pm'); }catch(err){} });
-RB.addEventListener('dragover', e => { if(!rDrag) return; const t = e.target.closest('[data-cat]'); document.querySelectorAll('#rcats .tp.drop').forEach(x => { if(x !== t) x.classList.remove('drop'); }); if(!t) return; e.preventDefault(); t.classList.add('drop'); });
-RB.addEventListener('drop', e => { const t = e.target.closest('[data-cat]'); document.querySelectorAll('#rcats .tp.drop').forEach(x => x.classList.remove('drop')); if(!rDrag || !t){ rDrag = null; return; } e.preventDefault(); const dst = t.dataset.cat;
-  if(rDrag.kind === 'book'){ const b = R.find(x => x.id === rDrag.id); if(b){ b.categories = [...new Set((b.categories || []).concat([dst]))]; rSave(); renderReadings(); toast('Put in ' + dst.split('/').pop()); } }
-  else { const src = rDrag.p; if(dst === src || dst.indexOf(src + '/') === 0){ toast('It cannot go inside itself'); } else catRename(src, dst + '/' + src.split('/').pop()); }
-  rDrag = null; });
+
 document.querySelectorAll('#rSecs').forEach(() => {});
+
+/* ===================== dragging, the same on every Mac and in every browser =====================
+   Press on a folder, a category, a paper or a book and move: a small label follows the pointer, the row under it
+   lights up, and letting go puts it there. A press that does not move is an ordinary click. */
+let sdJust = 0;
+function sideDrag(board, o){ let st = null, ghost = null, over = null;
+  const clear = () => { if(over) over.classList.remove('drop'); over = null; };
+  board.addEventListener('pointerdown', e => { if(e.button !== 0 || e.target.closest('.tp-add,.tp-tog,input,.sp-sticky')) return; const src = e.target.closest(o.source); if(!src) return; st = {src, x: e.clientX, y: e.clientY, on: false}; });
+  addEventListener('pointermove', e => { if(!st) return;
+    if(!st.on){ if(Math.hypot(e.clientX - st.x, e.clientY - st.y) < 7) return; st.payload = o.start(st.src); if(!st.payload){ st = null; return; } st.on = true;
+      ghost = document.createElement('div'); ghost.className = 'sd-ghost'; ghost.textContent = st.payload.label || ''; document.body.appendChild(ghost); document.body.classList.add('pm-dragging'); }
+    ghost.style.transform = 'translate(' + (e.clientX + 14) + 'px,' + (e.clientY + 10) + 'px)';
+    const el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest(o.target);
+    if(t !== over){ clear(); if(t && t !== st.src && (!o.ok || o.ok(st.payload, t))){ over = t; t.classList.add('drop'); } } });
+  const finish = e => { if(!st) return; const s = st; st = null; if(!s.on) return; if(ghost){ ghost.remove(); ghost = null; } document.body.classList.remove('pm-dragging');
+    const t = over; clear(); sdJust = Date.now(); if(t) o.drop(s.payload, t); };
+  addEventListener('pointerup', finish); addEventListener('pointercancel', () => { if(st && st.on){ if(ghost){ ghost.remove(); ghost = null; } document.body.classList.remove('pm-dragging'); clear(); } st = null; }); }
+/* a drag ends with a click on what was dragged: that click is not a choice */
+addEventListener('click', e => { if(Date.now() - sdJust < 350){ e.stopPropagation(); e.preventDefault(); } }, true);
+sideDrag($('pboard'), {source: '#pbMaps .tp[data-map]:not([data-map=""]), #pbGrid .pg', target: '#pbMaps .tp[data-map]:not([data-map=""])',
+  start: el => el.classList.contains('pg') ? {kind: 'paper', id: el.dataset.id, label: (el.querySelector('figcaption b, b') || {}).textContent || 'Paper'} : {kind: 'folder', t: el.dataset.map, s: el.dataset.sub || null, label: el.querySelector('span').textContent},
+  ok: (p, t) => p.kind === 'paper' || !(p.t === t.dataset.map && (p.s || null) === (t.dataset.sub || null)),
+  drop: (p, t) => { const dT = t.dataset.map, dS = t.dataset.sub || null, name = t.querySelector('span').textContent;
+    if(p.kind === 'paper'){ P.movePaper(p.id, dT, dS); toast('Moved into ' + name); }
+    else { const ok = P.moveFolder(p.t, p.s, dT, dS); if(ok){ pOpen.add(dT); if(dS) pOpen.add(dS); pShut.delete(dT); toast(p.label + ' is now inside ' + name); } else toast('It cannot go inside itself'); }
+    pReload(); }});
+sideDrag(RB, {source: '#rcats [data-cat], #rSecs .rbk', target: '#rcats [data-cat]',
+  start: el => el.classList.contains('rbk') ? {kind: 'book', id: el.dataset.id, label: ((R.find(b => b.id === el.dataset.id) || {}).title) || 'Book'} : {kind: 'cat', p: el.dataset.cat, label: el.dataset.cat.split('/').pop()},
+  ok: (p, t) => p.kind === 'book' || !(t.dataset.cat === p.p || t.dataset.cat.indexOf(p.p + '/') === 0),
+  drop: (p, t) => { const dst = t.dataset.cat;
+    if(p.kind === 'book'){ const b = R.find(x => x.id === p.id); if(b){ b.categories = [...new Set((b.categories || []).concat([dst]))]; rSave(); renderReadings(); toast('Put in ' + dst.split('/').pop()); } }
+    else { catRename(p.p, dst + '/' + p.p.split('/').pop()); rOpenCats.add(dst); renderReadings(); } }});
+/* a folder inside another can also be taken out to the top of the list */
+$('pboard').addEventListener('contextmenu', e => { const t = e.target.closest('.tp[data-map][data-sub]'); if(!t) return; setTimeout(() => { const m = $('tpMenu'); if(!m || m.hidden || m.querySelector('[data-promote]')) return;
+  const b = document.createElement('button'); b.type = 'button'; b.dataset.promote = '1'; b.textContent = 'Move to the top'; m.insertBefore(b, m.lastElementChild);
+  b.addEventListener('click', ev => { ev.stopPropagation(); m.hidden = true; const id = P.promoteFolder && P.promoteFolder(t.dataset.map, t.dataset.sub); if(id) pOpen.add(id); pReload(); }); }, 0); });
 })();

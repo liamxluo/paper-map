@@ -10,7 +10,8 @@ function deskAuthors(list){ const fam = (list || []).map(a => { a = String(a).tr
 window.pmDesk = {
   data(){
     const topics = (lib.topics || []).map(tp => ({id: tp.id, name: tp.name, shelf: !!tp.shelf, cover: tp.cover || null, rows: (tp.subs || []).map(s => ({id: s.id, name: s.hidden ? tp.name : s.name, parent: s.parent || null, own: !!s.hidden}))}));
-    const papers = Object.values(lib.entries).filter(e => e.kind === 'paper').map(e => ({id: e.id, t: e.t || '', au: e.au || '', y: e.y, v: e.v || '', topic: e.topic, sub: e.sub, st: stOf(e), book: !!e.book, pdf: !!e.pdf}));
+    const shelfOf = {}; (lib.topics || []).forEach(tp => { if(tp.shelf) shelfOf[tp.id] = true; });
+    const papers = Object.values(lib.entries).filter(e => e.kind === 'paper').map(e => ({id: e.id, t: e.t || '', au: e.au || '', y: e.y, v: e.v || '', topic: e.topic, sub: e.sub, folder: e.folder || (shelfOf[e.topic] ? e.topic : null), fsub: e.fsub || (shelfOf[e.topic] ? e.sub : null), onMap: shelfOf[e.topic] ? null : e.topic, st: stOf(e), book: !!e.book, pdf: !!e.pdf}));
     const rec = deskRecent(), times = {}; rec.forEach(x => { times[x.id] = x.t; });
     return {title: (lib.title && String(lib.title).trim()) || 'Paper Map', topics, papers, links: (lib.links || []).filter(l => l[2] !== 'o').map(l => [l[0], l[1], l[2]]), branches: clone(lib.branches || []), lineBranch: clone(lib.lineBranch || {}),
       readings: clone(lib.readings || []), readingCats: clone(lib.readingCats || []), notebooks: clone(lib.notebooks || []), minds: (lib.minds || []).map(m => ({id: m.id, name: m.name, papers: m.nodes.filter(n => n.type === 'paper').length, books: m.nodes.filter(n => n.type === 'book').length, words: m.nodes.filter(n => n.type === 'text').length, pin: m.pin || null, updated: m.updated})), prefs: deskPrefs(), recent: rec.map(x => x.id), recentTimes: times, preview: !!PREVIEW};
@@ -46,19 +47,19 @@ window.pmDesk = {
     document.documentElement.classList.add('pm-overdesk'); if(kind === 'note') atlasNote(fake); else if(kind === 'sync') atlasSync(fake); },
   closeOver(){ try{ atlasNoteClose(); }catch(e){} const s2 = document.getElementById('atlSync'); if(s2) s2.hidden = true; },
   /* folders and topics in the Papers list: make them, rename them, nest them by dragging, and move papers into them */
-  newFolder(name, tid, parentSub){ name = String(name || '').trim().slice(0, 80); if(!name || PREVIEW) return null;
-    if(!tid){ const tp = {id: rid('t'), name, shelf: true, subs: [{id: rid('s'), name, desc: '', groups: [], hidden: true}]}; lib.topics.push(tp); try{ reindex(); }catch(e){} touchLib(); return tp.id; }
+  newFolder(name, tid, parentSub){ name = String(name || '').trim().slice(0, 80); if(!name) return null;
+    if(!tid){ const tp = {id: rid('t'), name, shelf: true, subs: [{id: rid('s'), name, desc: '', groups: [], hidden: true}]}; lib.topics.push(tp); try{ reindex(); }catch(e){} if(!PREVIEW) touchLib(); return tp.id; }
     const tp = lib.topics.find(t => t.id === tid); if(!tp) return null; const root = tp.subs.find(x => x.hidden) || tp.subs[0];
-    const sub = {id: rid('s'), name, desc: '', groups: []}; if(parentSub && root && parentSub !== root.id) sub.parent = parentSub; tp.subs.push(sub); try{ reindex(); }catch(e){} touchLib(); return sub.id; },
-  renameFolder(tid, sid, name){ name = String(name || '').trim().slice(0, 80); const tp = lib.topics.find(t => t.id === tid); if(!name || !tp || PREVIEW) return;
+    const sub = {id: rid('s'), name, desc: '', groups: []}; if(parentSub && root && parentSub !== root.id) sub.parent = parentSub; tp.subs.push(sub); try{ reindex(); }catch(e){} if(!PREVIEW) touchLib(); return sub.id; },
+  renameFolder(tid, sid, name){ name = String(name || '').trim().slice(0, 80); const tp = lib.topics.find(t => t.id === tid); if(!name || !tp) return;
     const root = tp.subs.find(x => x.hidden) || tp.subs[0]; if(!sid || (root && sid === root.id)){ tp.name = name; if(root && root.hidden) root.name = name; } else { const x = tp.subs.find(y => y.id === sid); if(x) x.name = name; } touchLib(); },
-  deleteFolder(tid, sid){ const tp = lib.topics.find(t => t.id === tid); if(!tp || PREVIEW) return 'none'; const root = tp.subs.find(x => x.hidden) || tp.subs[0];
-    if(!sid || (root && sid === root.id)){ if(Object.values(lib.entries).some(e => e.topic === tid)) return 'not-empty'; lib.topics = lib.topics.filter(t => t !== tp); lib.tlinks = (lib.tlinks || []).filter(l => l[0] !== tid && l[1] !== tid); try{ reindex(); }catch(e){} touchLib(); return 'ok'; }
+  deleteFolder(tid, sid){ const tp = lib.topics.find(t => t.id === tid); if(!tp) return 'none'; const root = tp.subs.find(x => x.hidden) || tp.subs[0];
+    if(!sid || (root && sid === root.id)){ if(Object.values(lib.entries).some(e => e.topic === tid || e.folder === tid)) return 'not-empty'; lib.topics = lib.topics.filter(t => t !== tp); lib.tlinks = (lib.tlinks || []).filter(l => l[0] !== tid && l[1] !== tid); try{ reindex(); }catch(e){} touchLib(); return 'ok'; }
     const S = tp.subs.find(x => x.id === sid); if(!S) return 'none'; const up = S.parent || (root && root.id);
     tp.subs.forEach(x => { if(x.parent === sid){ if(S.parent) x.parent = S.parent; else delete x.parent; } });
-    Object.values(lib.entries).forEach(e => { if(e.topic === tid && e.sub === sid) e.sub = up; });
+    Object.values(lib.entries).forEach(e => { if(e.topic === tid && e.sub === sid) e.sub = up; if(e.folder === tid && e.fsub === sid) e.fsub = up; });
     tp.subs = tp.subs.filter(x => x !== S); try{ reindex(); }catch(e){} touchLib(); return 'ok'; },
-  moveFolder(sT, sS, dT, dS){ if(PREVIEW) return false; const A = lib.topics.find(t => t.id === sT), B = lib.topics.find(t => t.id === dT); if(!A || !B) return false;
+  moveFolder(sT, sS, dT, dS){ const A = lib.topics.find(t => t.id === sT), B = lib.topics.find(t => t.id === dT); if(!A || !B) return false;
     const rootOf = t => t.subs.find(x => x.hidden) || t.subs[0], rA = rootOf(A), rB = rootOf(B); if(sS && rA && sS === rA.id) sS = null;
     const target = dS && rB && dS !== rB.id ? dS : null;
     if(!sS){ if(A === B) return false;
@@ -66,16 +67,27 @@ window.pmDesk = {
       const nr = {id: rid('s'), name: A.name, desc: '', groups: []}; if(target) nr.parent = target;
       const rest = A.subs.filter(x => x !== rA).map(x => Object.assign({}, x, x.parent ? {} : {parent: nr.id}));
       B.subs.push(nr, ...rest);
-      Object.values(lib.entries).forEach(e => { if(e.topic === A.id){ e.topic = B.id; if(!e.sub || (rA && e.sub === rA.id)) e.sub = nr.id; } });
+      Object.values(lib.entries).forEach(e => { if(e.topic === A.id){ e.topic = B.id; if(!e.sub || (rA && e.sub === rA.id)) e.sub = nr.id; } if(e.folder === A.id){ e.folder = B.id; if(!e.fsub || (rA && e.fsub === rA.id)) e.fsub = nr.id; } });
       lib.topics = lib.topics.filter(t => t !== A); lib.tlinks = (lib.tlinks || []).filter(l => l[0] !== A.id && l[1] !== A.id);
     } else { const S = A.subs.find(x => x.id === sS); if(!S) return false;
       const tree = new Set([S.id]); let grew = true; while(grew){ grew = false; A.subs.forEach(x => { if(x.parent && tree.has(x.parent) && !tree.has(x.id)){ tree.add(x.id); grew = true; } }); }
       if(A === B && target && tree.has(target)) return false;
       if(A === B){ if(target) S.parent = target; else delete S.parent; }
       else { const moving = A.subs.filter(x => tree.has(x.id)); A.subs = A.subs.filter(x => !tree.has(x.id)); if(target) S.parent = target; else delete S.parent; B.subs.push(...moving);
-        Object.values(lib.entries).forEach(e => { if(e.topic === A.id && tree.has(e.sub)) e.topic = B.id; }); } }
+        Object.values(lib.entries).forEach(e => { if(e.topic === A.id && tree.has(e.sub)) e.topic = B.id; if(e.folder === A.id && tree.has(e.fsub)) e.folder = B.id; }); } }
     try{ reindex(); }catch(e){} touchLib(); return true; },
-  movePaper(id, tid, sid){ const e = lib.entries[id], tp = lib.topics.find(t => t.id === tid); if(!e || !tp || PREVIEW) return; const root = tp.subs.find(x => x.hidden) || tp.subs[0]; e.topic = tid; e.sub = sid || (root && root.id); try{ reindex(); }catch(err){} touchLib(); },
+  /* a folder inside another, taken out to stand on its own at the top of the list */
+  promoteFolder(tid, sid){ const A = lib.topics.find(t => t.id === tid); if(!A) return null; const rA = A.subs.find(x => x.hidden) || A.subs[0], S = A.subs.find(x => x.id === sid); if(!S || S === rA) return null;
+    const tree = new Set([S.id]); let grew = true; while(grew){ grew = false; A.subs.forEach(x => { if(x.parent && tree.has(x.parent) && !tree.has(x.id)){ tree.add(x.id); grew = true; } }); }
+    const root = {id: rid('s'), name: S.name, desc: '', groups: [], hidden: true}, T = {id: rid('t'), name: S.name, shelf: !!A.shelf || true, subs: [root]};
+    A.subs.filter(x => tree.has(x.id) && x !== S).forEach(x => { const y = Object.assign({}, x); if(y.parent === S.id) delete y.parent; T.subs.push(y); });
+    A.subs = A.subs.filter(x => !tree.has(x.id)); lib.topics.push(T);
+    Object.values(lib.entries).forEach(e => { if(e.topic === A.id && tree.has(e.sub)){ e.topic = T.id; if(e.sub === S.id) e.sub = root.id; } if(e.folder === A.id && tree.has(e.fsub)){ e.folder = T.id; if(e.fsub === S.id) e.fsub = root.id; } });
+    try{ reindex(); }catch(e){} if(!PREVIEW) touchLib(); return T.id; },
+  movePaper(id, tid, sid){ const e = lib.entries[id], tp = lib.topics.find(t => t.id === tid); if(!e || !tp) return; const root = tp.subs.find(x => x.hidden) || tp.subs[0];
+    /* filed in a folder: it stays on whatever map it is on */
+    e.folder = tid; e.fsub = sid || (root && root.id); const cur = lib.topics.find(t => t.id === e.topic); if(!cur || cur.shelf){ e.topic = tid; e.sub = e.fsub; }
+    try{ reindex(); }catch(err){} if(!PREVIEW) touchLib(); },
   paperLinks(id){ const seen = new Set(); return (lib.links || []).filter(l => l[0] === id || l[1] === id).map(l => l[0] === id ? l[1] : l[0]).filter(x => lib.entries[x] && !seen.has(x) && seen.add(x)).map(x => lib.entries[x].t || ''); },
   paperRead(id){ const e = lib.entries[id]; if(!e) return null; return {n: e.n || '', marks: clone(e.marks || []), quotes: clone(e.quotes || []), stickies: clone(e.stickies || []), at: e.readAt || 0}; },
   setPaperStickies(id, arr){ const e = lib.entries[id]; if(!e || PREVIEW) return; e.stickies = arr; touchLib(); },

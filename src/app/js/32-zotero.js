@@ -53,7 +53,7 @@ async function ztSync(manual){
       if(!ZPAPER.has(d.itemType)) return;
       let e = c.items[it.key] && lib.entries[c.items[it.key]];
       const place = (e ? {topic: e.topic, sub: e.sub} : null) || (inSel[0] ? ztTopicFor(c, colls, inSel[0]) : null) || (unfiled(it) ? ztInbox(c) : null); if(!place) return;
-      if(!e){ const id = rid('z'); e = {id, kind: 'paper', t: title, au: '', y: null, topic: place.topic, sub: place.sub, tags: [], d: [], p: 1, group: '', n: ''}; lib.entries[id] = e; c.items[it.key] = id; made++; } else updated++;
+      if(!e){ const id = rid('z'); e = {id, kind: 'paper', t: title, au: '', y: null, topic: place.topic, sub: place.sub, folder: place.topic, fsub: place.sub, tags: [], d: [], p: 1, group: '', n: ''}; lib.entries[id] = e; c.items[it.key] = id; made++; } else updated++;
       Object.assign(e, {t: title, au: ztAuthors(d.creators).join(' & '), y: ztYear(d.date) || e.y, v: d.publicationTitle || d.proceedingsTitle || d.bookTitle || d.institution || d.university || d.repository || e.v || '', doi: d.DOI || e.doi || '', l: d.url || e.l || '', zkey: it.key});
       const tg = ztTagIds(d.tags); e.tags = [...new Set((e.tags || []).concat(tg))];
       if(st){ const k = keyOf(e); if(status[k] !== st){ status[k] = st; statusTime = Date.now(); } } });

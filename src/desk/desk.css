@@ -754,3 +754,20 @@ body.st-books #rboard{opacity:1}
 .tp-menu button{all:unset;box-sizing:border-box;display:block;width:100%;padding:8px 12px;border-radius:8px;font:500 13.5px var(--sans);color:#231E1A;cursor:pointer}
 .tp-menu button:hover{background:#F1EBE0}
 .tp-menu button.danger{color:#B4432E}
+
+/* the name typed in place, in the desk's glass */
+.tp-editrow{display:flex;align-items:center;padding-left:calc(var(--d, 0) * 14px + 22px);margin:2px 0}
+.tp-input{all:unset;box-sizing:border-box;width:100%;height:32px;padding:0 10px;border-radius:9px;background:rgba(251,247,238,.16);box-shadow:inset 0 0 0 1.5px rgba(246,231,210,.55);color:#F6E7D2;font:500 14px var(--serif)}
+.tp-input::placeholder{color:rgba(246,231,210,.5);font-style:italic}
+
+#rcard .rc-catin{all:unset;box-sizing:border-box;height:28px;min-width:140px;padding:0 10px;border-radius:14px;background:#F1EBE0;box-shadow:inset 0 0 0 1.5px rgba(35,30,26,.2);font:500 13px var(--sans);color:#231E1A}
+
+/* Readings' open and close arrows, drawn like Papers' (they were showing as white bars) */
+#rcats .tp-tog{all:unset;flex:none;width:18px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(246,231,210,.55)}
+#rcats .tp-tog::before{content:'';width:0;height:0;border-left:5px solid currentColor;border-top:4px solid transparent;border-bottom:4px solid transparent;transition:transform .2s}
+#rcats .tp-tog.open::before{transform:rotate(90deg)}
+#rcats .tp-tog.none{visibility:hidden}
+#pbMaps .tp-tog{color:rgba(246,231,210,.55)}
+/* the label that follows a drag */
+.sd-ghost{position:fixed;left:0;top:0;z-index:500;pointer-events:none;padding:6px 12px;border-radius:10px;background:rgba(35,30,26,.86);color:#FBF7EE;font:600 12.5px var(--sans);white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+body.pm-dragging,body.pm-dragging *{user-select:none !important;-webkit-user-select:none !important;cursor:grabbing !important}
