@@ -32,6 +32,7 @@ window.pmDesk = {
       meta.where = c.kind === 'folder' ? 'folder' : 'github'; return meta; }
     const ok = await PMDB.set('file:' + path, file); if(!ok) throw new Error('This browser could not keep the file'); meta.where = 'local'; return meta; },
   async bookFileBlob(f){ if(!f) return null; if(f.where === 'local') return await PMDB.get('file:' + f.path) || null;
+    if(f.where === 'example'){ try{ const r = await fetch('example/' + f.path); return r.ok ? await r.blob() : null; }catch(e){ return null; } }
     if(f.where === 'zotero'){ const zc = ztCfg(); return zc ? await ztFileBlob(zc, f.zotero) : null; }
     const c = ghCfg(); if(!c) return null;
     if(c.kind === 'folder'){ const b = await remoteBytes(c, f.path); return b ? new Blob([b], {type: f.type || 'application/octet-stream'}) : null; }
@@ -69,7 +70,7 @@ window.pmDesk = {
   toggleTag(id, tid){ const e = lib.entries[id]; if(!e || PREVIEW) return; e.tags = e.tags || []; const k = e.tags.indexOf(tid); if(k >= 0) e.tags.splice(k, 1); else e.tags.push(tid); touchLib(); try{ refreshAfterTags(); }catch(err){} },
   addTag(id, name){ const e = lib.entries[id]; if(!e || PREVIEW || !name) return; let x = lib.tags.find(z => z.name.toLowerCase() === name.toLowerCase()); if(!x) x = newTag(name); e.tags = e.tags || []; if(!e.tags.includes(x.id)) e.tags.push(x.id); touchLib(); try{ refreshAfterTags(); }catch(err){} },
   editPaper(id){ if(!lib.entries[id]) return; DK.fromTopic = lib.entries[id].topic; DK.from = null; setTimeout(() => { try{ openEntryForm(id); }catch(err){} }, 0); },
-  setMapColor(tid, hex){ const tp = lib.topics.find(t => t.id === tid); if(!tp || PREVIEW || !/^#[0-9a-f]{6}$/i.test(hex)) return; tp.cover = hex; touchLib(); },
+  setMapColor(tid, hex){ const tp = lib.topics.find(t => t.id === tid); if(!tp || !/^#[0-9a-f]{6}$/i.test(hex)) return; tp.cover = hex; if(!PREVIEW) touchLib(); },
   where(){ const c = ghCfg(); return !c ? 'only in this ' + (window.__TAURI__ ? 'Mac' : 'browser') : c.kind === 'folder' ? (window.__TAURI__ ? 'in your folder on this Mac' : 'in the folder you chose') : c.kind === 'dropbox' ? 'in Dropbox' : 'on GitHub' + (c.repo ? ' (' + c.repo + ')' : ''); },
   setStatus(id, st){ const e = lib.entries[id]; if(!e || PREVIEW) return; const cur = stOf(e) || ''; if(cur === (st || '')) return; toggleStatus(id, st || cur); },
   openNotes(id){ if(!lib.entries[id]) return; DK.fromTopic = lib.entries[id].topic; DK.from = null; deskOver(true); setTimeout(() => { try{ openReader(id); }catch(err){} }, 0); },

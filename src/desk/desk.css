@@ -688,3 +688,30 @@ body.reading #ui > :not(#panel){opacity:0 !important;pointer-events:none !import
 body.reading #rMenu{z-index:200}
 
 .float .fsep:first-child{display:none}
+/* behind Readings and Papers the white maps sink into the dark, so they no longer glare through the glass; the rest of the desk keeps its light */
+body.st-books #maps::after,body.st-papers #maps::after,body.st-paper #maps::after,body.reading #maps::after{-webkit-backdrop-filter:blur(7px) brightness(.36) saturate(.85);backdrop-filter:blur(7px) brightness(.36) saturate(.85)}
+
+/* Readings fades in and out like Papers */
+#rboard{transition:opacity .5s ease}
+body.st-books #rboard{opacity:1}
+
+/* the covers beneath the top one come and go softly, while only the top map flies and folds */
+#rowIn .mcard .xc{transition:opacity .35s ease}
+#rowIn.landing .mcard:nth-child(n+2):nth-child(-n+3) .xc{visibility:visible;opacity:0}
+
+/* the desk's tour: the desk dims around one thing at a time, and a small card says what it is */
+#dtour{position:fixed;inset:0;z-index:260;opacity:0;transition:opacity .35s ease}
+#dtour.on{opacity:1}
+#dtour .dt-hole{position:fixed;border-radius:18px;box-shadow:0 0 0 9999px rgba(10,5,2,.58),0 0 0 2px rgba(246,231,210,.55),0 0 30px rgba(246,231,210,.25);pointer-events:none;transition:left .55s cubic-bezier(.2,.8,.2,1),top .55s cubic-bezier(.2,.8,.2,1),width .55s cubic-bezier(.2,.8,.2,1),height .55s cubic-bezier(.2,.8,.2,1)}
+#dtour .dt-card{position:fixed;width:300px;box-sizing:border-box;padding:16px 18px 14px;border-radius:16px;background:rgba(255,253,248,.95);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 2px 4px rgba(0,0,0,.16),0 18px 44px rgba(10,4,2,.4);transition:left .55s cubic-bezier(.2,.8,.2,1),top .55s cubic-bezier(.2,.8,.2,1)}
+#dtour .dt-card.in{animation:dtIn .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes dtIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#dtour .dt-k{margin:0 0 6px;font:700 10px var(--sans);letter-spacing:1.8px;color:#9A8F80}
+#dtour .dt-card b{display:block;font:700 18px var(--serif);color:#231E1A}
+#dtour .dt-card span{display:block;margin-top:5px;font:400 14px/1.45 var(--sans);color:#5E544A}
+#dtour .dt-bt{display:flex;justify-content:flex-end;gap:6px;margin-top:14px}
+#dtour .dt-bt button{all:unset;cursor:pointer;padding:7px 14px;border-radius:10px;font:600 13px var(--sans)}
+#dtour .dt-skip{color:#8A7F72}
+#dtour .dt-skip:hover{background:rgba(35,30,26,.06)}
+#dtour .dt-next{background:#231E1A;color:#FBF7EE}
+#dtour .dt-next:active{transform:scale(.96)}

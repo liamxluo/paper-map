@@ -175,7 +175,7 @@ async function toMaps(){
   [2, 1, 0].forEach((si, k) => { const el = sheets[si]; el.classList.remove('lift');
     if(!el._topic){ moves.push(anim(el, [{opacity: 1}, {opacity: 0}], {duration: 360, delay: k * 60})); return; }
     const p = slotOf(k);
-    if(k > 0){ moves.push(Promise.all([move(el, p, 1.0, 300, 0, 'cubic-bezier(.2,.7,.2,1)'), fold(el, 0, 1)])); return; }
+    if(k > 0){ moves.push(anim(el, [{opacity: 1}, {opacity: 0}], {duration: 220, easing: 'ease-out'}).then(() => { el.style.opacity = '0'; setPose(el, p, 1); return fold(el, 0, 1); })); return; }
     moves.push(Promise.all([move(el, [p[0], p[1] - 26, p[2]], 1.0, 520, 0, 'cubic-bezier(.3,0,.3,1)').then(() => move(el, p, 1.0, 420, 0, 'cubic-bezier(.2,.7,.2,1)')), fold(el, 160, 560)])); });
   await Promise.all(moves);
   /* the strip takes over: its covers sit exactly where the sheets landed */
@@ -187,10 +187,10 @@ async function toDesk(){
   if(strip.scrollLeft > 0){ strip.scrollTo({left: 0, behavior: 'smooth'}); await sleep(reduce ? 20 : 420); strip.scrollLeft = 0; }
   /* the first three covers become the sheets again, and fly back to the stack */
   stripIn.classList.add('landing');
-  [2, 1, 0].forEach((si, k) => { const el = sheets[si]; el.getAnimations().forEach(a => a.cancel()); el.classList.add('flying'); if(!el._topic){ el.style.opacity = '0'; return; } settle(el, true); setPose(el, slotOf(k), 1); el.style.opacity = '1'; el.style.pointerEvents = ''; });
+  [2, 1, 0].forEach((si, k) => { const el = sheets[si]; el.getAnimations().forEach(a => a.cancel()); el.classList.add('flying'); if(!el._topic){ el.style.opacity = '0'; return; } settle(el, true); setPose(el, k > 0 ? STACK[si].a1 : slotOf(k), 1); el.style.opacity = k > 0 ? '0' : '1'; el.style.pointerEvents = ''; });
   setState('desk', HINT_DESK);
   sheets.forEach((el, k) => { el.style.zIndex = 10 + k; });
-  await Promise.all(sheets.map((el, k) => el._topic ? move(el, STACK[k].a1, 1, k === 2 ? 760 : 420, 0, 'cubic-bezier(.3,.1,.2,1)') : (setPose(el, STACK[k].a1, 1), settle(el, false), el.style.pointerEvents = '', anim(el, [{opacity: 0}, {opacity: 1}], {duration: 500, delay: 400}))));
+  await Promise.all(sheets.map((el, k) => el._topic ? (k === 2 ? move(el, STACK[k].a1, 1, 760, 0, 'cubic-bezier(.3,.1,.2,1)') : anim(el, [{opacity: 0}, {opacity: 1}], {duration: 420, delay: 520, easing: 'ease-out'}).then(() => { el.style.opacity = '1'; })) : (setPose(el, STACK[k].a1, 1), settle(el, false), el.style.pointerEvents = '', anim(el, [{opacity: 0}, {opacity: 1}], {duration: 500, delay: 400}))));
   await Promise.all(sheets.map((el, k) => el._topic && el.classList.contains('folded') ? unfold(el, 0, k === 2 ? 430 : 1) : null));
   sheets.forEach(el => el.classList.remove('flying')); stripIn.classList.remove('landing'); busy = false;
 }
@@ -551,42 +551,15 @@ $('rcMaps').addEventListener('click', e => { const b = e.target.closest('button[
   rBook.onMaps = (rBook.onMaps || []).concat([{map: b.dataset.map, paper: id}]); rBook.edited = new Date().toISOString(); rSave(); D = load();
   $('rcMaps').classList.remove('on'); openRCard(rBook); toast('Added to ' + b.textContent + ' as a book. It stays in your Readings too.'); });
 /* the book opens where it lies, and its title page opens out into Readings */
+/* Readings opens the way Papers does: the desk goes soft behind the glass and the shelves rise into place,
+   the book staying where it lies; nothing heavy moves while the screen changes */
 async function openBook(){ if(busy || state !== 'desk') return; busy = true; closeMenus(); rcard.classList.remove('on');
   R = (D.readings || []).slice(); CATS = (D.readingCats || []).slice(); renderReadings();
-  setState('bookopen', ''); $('fly').appendChild(book); book.classList.add('lifted'); document.body.classList.add('dof');
-  await Promise.all([anim(cover, [{transform: 'rotateY(-26deg)'}, {transform: 'rotateY(-178deg) translateZ(0px)'}], {duration: 620, easing: 'cubic-bezier(.3,.1,.2,1)'}),
-    anim(book, [{transform: 'rotate(7deg)'}, {transform: 'translate(-40px,-30px) rotate(0deg) scale(1.08)'}], {duration: 620, easing: 'cubic-bezier(.3,.1,.2,1)'})]);
-  await sleep(60);
-  const r = book.querySelector('.bpages').getBoundingClientRect();
-  RB.scrollTop = 0; RB.style.clipPath = 'none'; RB.style.opacity = '0';
-  if(reduce){ setState('books', ''); RB.classList.add('entered'); RB.style.opacity = '1'; book.style.visibility = 'hidden'; busy = false; return; }
-  /* first the plain page grows out of the title page, with nothing else changing; only once it covers the screen does
-     the desk change state and the shelf arrive on it, so the heavy work never lands in the middle of the movement */
-  const g = rbGhost(), o = {duration: 600, easing: 'cubic-bezier(.22,.8,.22,1)', fill: 'forwards'};
-  const from = 'translate(' + r.left + 'px,' + r.top + 'px) scale(' + (r.width / innerWidth) + ',' + (r.height / innerHeight) + ')';
-  g.style.transform = from; g.style.opacity = '0'; g.hidden = false; void g.offsetWidth;
-  await new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res)));
-  await g.animate([{transform: from, opacity: 0}, {opacity: 1, offset: .2}, {transform: 'none', opacity: 1}], o).finished.catch(() => {});
-  g.style.transform = 'none'; g.style.opacity = '1'; g.getAnimations().forEach(x => x.cancel());
-  setState('books', ''); RB.classList.add('entered');
-  await RB.animate([{opacity: 0}, {opacity: 1}], {duration: 280, easing: 'ease-out', fill: 'forwards'}).finished.catch(() => {});
-  RB.getAnimations().forEach(x => x.cancel()); RB.style.opacity = '1'; g.hidden = true;
-  book.style.visibility = 'hidden'; busy = false; }
-function rbGhost(){ let g = $('rbGhost'); if(!g){ g = document.createElement('div'); g.id = 'rbGhost'; g.hidden = true; document.body.appendChild(g); } return g; }
+  RB.scrollTop = 0; RB.style.clipPath = ''; RB.style.opacity = ''; RB.classList.remove('growing');
+  setState('books', ''); requestAnimationFrame(() => RB.classList.add('entered'));
+  await sleep(reduce ? 20 : 820); busy = false; }
 async function closeBook(){ if(busy || state !== 'books') return; busy = true; panel.classList.remove('on'); rcard.classList.remove('on'); book.style.visibility = '';
-  const r = book.querySelector('.bpages').getBoundingClientRect();
-  if(!reduce){ const g = rbGhost(), to = 'translate(' + r.left + 'px,' + r.top + 'px) scale(' + (r.width / innerWidth) + ',' + (r.height / innerHeight) + ')';
-    g.style.transform = 'none'; g.style.opacity = '1'; g.hidden = false;
-    await RB.animate([{opacity: 1}, {opacity: 0}], {duration: 220, easing: 'ease-in', fill: 'forwards'}).finished.catch(() => {});
-    RB.style.opacity = '0'; RB.getAnimations().forEach(x => x.cancel());
-    await g.animate([{transform: 'none', opacity: 1}, {opacity: 1, offset: .78}, {transform: to, opacity: 0}], {duration: 480, easing: 'cubic-bezier(.4,0,.25,1)', fill: 'forwards'}).finished.catch(() => {});
-    g.hidden = true; g.getAnimations().forEach(x => x.cancel()); }
-  setState('bookopen', '');
-  RB.style.opacity = '0'; RB.style.clipPath = ''; RB.classList.remove('entered', 'growing');
-  document.body.classList.remove('dof'); book.classList.remove('lifted');
-  await Promise.all([anim(cover, [{transform: cover.style.transform || 'rotateY(-178deg)'}, {transform: 'rotateY(0deg)'}], {duration: 480, easing: 'cubic-bezier(.4,0,.2,1)'}), anim(book, [{transform: book.style.transform || 'none'}, {transform: 'rotate(7deg)'}], {duration: 560, easing: 'cubic-bezier(.4,0,.2,1)'})]);
-  bookHome.insertBefore(book, bookNext); [book, cover].forEach(x => { x.style.transform = ''; });
-  setState('desk', HINT_DESK); await sleep(200); busy = false; }
+  setState('desk', HINT_DESK); await sleep(reduce ? 20 : 520); RB.classList.remove('entered'); busy = false; }
 book.addEventListener('click', openBook);
 book.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openBook(); } });
 $('booksBack').addEventListener('click', closeBook);
@@ -1219,4 +1192,39 @@ document.addEventListener('click', e => { const b = e.target.closest('[data-over
   document.querySelectorAll('[data-over].on').forEach(x => x.classList.remove('on')); P.closeOver(); b.classList.add('on');
   P.over(b.dataset.over, {left: r.left, right: r.right, top: r.top, bottom: r.bottom}); }, true);
 document.addEventListener('pointerdown', e => { if(e.target.closest && e.target.closest('[data-over]')) return; if(P && P.closeOver){ P.closeOver(); document.querySelectorAll('[data-over].on').forEach(x => x.classList.remove('on')); } }, true);
+
+/* ============ the first time at the desk: a short tour of what lies on it ============ */
+const DT_STEPS = [
+  {sel: '#maps', title: 'Your maps', text: 'For when it is time to think it through. Click them to see every map.'},
+  {sel: '#papersLayer', title: 'Papers', text: 'Every paper you keep. Open one to read it, with your notes beside it.'},
+  {sel: '#book', title: 'Readings', text: 'Your books, on their shelves. Open one and read it right here.'},
+  {sel: '#memo', title: 'Your research log', text: 'For a thought, whenever it comes. It is on every screen, too.'}];
+const DT = {i: 0, el: null};
+function deskTour(force){
+  if(!force){ try{ if(localStorage.getItem('pm:deskTour')) return; }catch(e){ return; } }
+  if(state !== 'desk' || DT.el) return;
+  const el = document.createElement('div'); el.id = 'dtour'; el.innerHTML = '<div class="dt-hole" id="dtHole"></div><div class="dt-card" id="dtCard" role="dialog" aria-live="polite"><p class="dt-k" id="dtK"></p><b id="dtT"></b><span id="dtX"></span><div class="dt-bt"><button type="button" class="dt-skip" id="dtSkip">Skip</button><button type="button" class="dt-next" id="dtNext">Next</button></div></div>';
+  document.body.appendChild(el); DT.el = el; DT.i = 0;
+  el.addEventListener('click', e => { if(e.target.id === 'dtNext'){ DT.i++; if(DT.i >= DT_STEPS.length) deskTourEnd(); else dtShow(); } else if(e.target.id === 'dtSkip') deskTourEnd(); });
+  requestAnimationFrame(() => { el.classList.add('on'); dtShow(); }); }
+/* what to light up: the pile of maps as one, the notebook with both its pages */
+function dtRect(s){ if(s.sel === '#maps'){ const rs = [...document.querySelectorAll('#maps .ms')].filter(e => getComputedStyle(e).opacity !== '0').map(e => e.getBoundingClientRect()); if(!rs.length) return null;
+    return {left: Math.min(...rs.map(r => r.left)), top: Math.min(...rs.map(r => r.top)), right: Math.max(...rs.map(r => r.right)), bottom: Math.max(...rs.map(r => r.bottom))}; }
+  const t = document.querySelector(s.sel); if(!t) return null; const r = t.getBoundingClientRect();
+  if(s.sel === '#memo') return {left: r.left - r.width * .2, top: r.top - r.height * .02, right: r.right + r.width * .72, bottom: r.bottom + r.height * .03};
+  return {left: r.left, top: r.top, right: r.right, bottom: r.bottom}; }
+function dtShow(){ const s = DT_STEPS[DT.i], q = dtRect(s); if(!q){ deskTourEnd(); return; }
+  const r = {left: q.left, top: q.top, right: q.right, bottom: q.bottom, width: q.right - q.left, height: q.bottom - q.top}, pad = 16, hole = $('dtHole'), card = $('dtCard');
+  Object.assign(hole.style, {left: (r.left - pad) + 'px', top: (r.top - pad) + 'px', width: (r.width + pad * 2) + 'px', height: (r.height + pad * 2) + 'px'});
+  $('dtK').textContent = (DT.i + 1) + ' OF ' + DT_STEPS.length; $('dtT').textContent = s.title; $('dtX').textContent = s.text; $('dtNext').textContent = DT.i === DT_STEPS.length - 1 ? 'Done' : 'Next';
+  const cw = 300, ch = card.offsetHeight || 150, right = r.right + 28 + cw < innerWidth;
+  card.style.left = Math.max(16, Math.min(innerWidth - cw - 16, right ? r.right + 28 : r.left - cw - 28)) + 'px';
+  card.style.top = Math.max(16, Math.min(innerHeight - ch - 16, r.top + r.height / 2 - ch / 2)) + 'px';
+  card.classList.remove('in'); void card.offsetWidth; card.classList.add('in'); }
+function deskTourEnd(){ try{ localStorage.setItem('pm:deskTour', '1'); }catch(e){} const el = DT.el; DT.el = null; if(!el) return; el.classList.remove('on'); setTimeout(() => el.remove(), 380); }
+addEventListener('keydown', e => { if(DT.el && e.key === 'Escape'){ e.stopPropagation(); deskTourEnd(); } }, true);
+addEventListener('resize', () => { if(DT.el) dtShow(); });
+$('deskTourBtn').addEventListener('click', () => { panel.classList.remove('on'); setTimeout(() => deskTour(true), 200); });
+/* it begins once the welcome has lifted, the first time only */
+if(welcome){ welcome.addEventListener('click', () => setTimeout(() => { if(prefs.start !== 'map') deskTour(); }, 1500)); }
 })();
