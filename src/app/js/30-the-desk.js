@@ -11,9 +11,10 @@ window.pmDesk = {
   data(){
     const topics = (lib.topics || []).map(tp => ({id: tp.id, name: tp.name, shelf: !!tp.shelf, cover: tp.cover || null, rows: (tp.subs || []).map(s => ({id: s.id, name: s.hidden ? tp.name : s.name, parent: s.parent || null, own: !!s.hidden}))}));
     const shelfOf = {}; (lib.topics || []).forEach(tp => { if(tp.shelf) shelfOf[tp.id] = true; });
-    const papers = Object.values(lib.entries).filter(e => e.kind === 'paper').map(e => ({id: e.id, t: e.t || '', au: e.au || '', y: e.y, v: e.v || '', topic: e.topic, sub: e.sub, folder: e.folder || (shelfOf[e.topic] ? e.topic : null), fsub: e.fsub || (shelfOf[e.topic] ? e.sub : null), onMap: shelfOf[e.topic] ? null : e.topic, st: stOf(e), book: !!e.book, pdf: !!e.pdf}));
+    const ztree = clone(lib.ztree || []);
+    const papers = Object.values(lib.entries).filter(e => e.kind === 'paper').map(e => ({id: e.id, t: e.t || '', au: e.au || '', y: e.y, v: e.v || '', topic: e.topic, sub: e.sub, folder: e.folder || (shelfOf[e.topic] && e.topic !== 'ztlib' ? e.topic : null), fsub: e.fsub || (shelfOf[e.topic] && e.topic !== 'ztlib' ? e.sub : null), onMap: shelfOf[e.topic] ? null : e.topic, zcolls: e.zcolls || [], zkey: e.zkey || null, st: stOf(e), book: !!e.book, pdf: !!e.pdf}));
     const rec = deskRecent(), times = {}; rec.forEach(x => { times[x.id] = x.t; });
-    return {title: (lib.title && String(lib.title).trim()) || 'Paper Map', topics, papers, links: (lib.links || []).filter(l => l[2] !== 'o').map(l => [l[0], l[1], l[2]]), branches: clone(lib.branches || []), lineBranch: clone(lib.lineBranch || {}),
+    return {title: (lib.title && String(lib.title).trim()) || 'Paper Map', topics, papers, ztree, links: (lib.links || []).filter(l => l[2] !== 'o').map(l => [l[0], l[1], l[2]]), branches: clone(lib.branches || []), lineBranch: clone(lib.lineBranch || {}),
       readings: clone(lib.readings || []), readingCats: clone(lib.readingCats || []), notebooks: clone(lib.notebooks || []), minds: (lib.minds || []).map(m => ({id: m.id, name: m.name, papers: m.nodes.filter(n => n.type === 'paper').length, books: m.nodes.filter(n => n.type === 'book').length, words: m.nodes.filter(n => n.type === 'text').length, pin: m.pin || null, updated: m.updated})), prefs: deskPrefs(), recent: rec.map(x => x.id), recentTimes: times, preview: !!PREVIEW};
   },
   ready(){ DK.ready = true; },
@@ -53,6 +54,7 @@ window.pmDesk = {
   saveBlob(blob, name){ if(window.__TAURI__ && typeof macSave === 'function'){ macSave(blob, name).then(() => toast('Saved to Downloads: ' + name)).catch(() => toast('Could not save the file')); return; }
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); },
   pdfPage(id, n){ return pdfPageAt(id, n || 0); },
+  pdfWhy(){ return typeof ZT_WHY === 'string' ? ZT_WHY : ''; },
   async paperPdfBlob(id){ const e = lib.entries[id]; if(!e || !e.pdf) return null; try{ const u = await pdfUrl(e); const r = await fetch(u); return r.ok ? await r.blob() : null; }catch(err){ return null; } },
   over(kind, r){ const fake = {getBoundingClientRect: () => ({left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.right - r.left, height: r.bottom - r.top, x: r.left, y: r.top}), classList: {add(){}, remove(){}, toggle(){}, contains(){ return false; }}, closest: () => null};
     document.documentElement.classList.add('pm-overdesk'); if(kind === 'note') atlasNote(fake); else if(kind === 'sync') atlasSync(fake); },

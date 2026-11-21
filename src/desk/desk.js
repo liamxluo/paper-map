@@ -333,8 +333,8 @@ function renderPapers(){
   const ps = D.papers.slice();
   const tName = {}; D.topics.forEach(t => { tName[t.id] = t.name; });
   $('pbCount').textContent = ps.length + (ps.length === 1 ? ' paper' : ' papers') + ' · ' + ps.filter(p => p.st === 'read').length + ' read · ' + ps.filter(p => p.st === 'want').length + ' to read';
-    { let h = '<button class="tp' + (pFilter.map ? '' : ' on') + '" data-map=""><span>All papers</span><em>' + ps.length + '</em></button>';
-    const folders = D.topics.filter(t => t.shelf); $('pbMapsH').hidden = true;
+    { let h = '<button class="tp' + (pFilter.map || pFilter.zc ? '' : ' on') + '" data-map=""><span>All papers</span><em>' + ps.length + '</em></button>'; const allRow = h; h = '';
+    const folders = D.topics.filter(t => t.shelf && t.id !== 'ztlib'); $('pbMapsH').hidden = true;
     folders.forEach(t => {
       const tr = topicTree(t), mine = ps.filter(p => p.folder === t.id), has = tr.roots.length > 0, open = (pOpen.has(t.id) || pFilter.map === t.id) && !pShut.has(t.id);
       h += '<div class="tp-row"><button class="tp-tog' + (has ? '' : ' none') + (open ? ' open' : '') + '" data-tog="' + esc(t.id) + '" aria-label="Show its topics"></button><button class="tp' + (pFilter.map === t.id && !pFilter.sub ? ' on' : '') + '" data-map="' + esc(t.id) + '"><span>' + esc(t.name) + '</span><em>' + mine.length + '</em></button><i class="tp-add" data-add-map="' + esc(t.id) + '" title="A folder inside">+</i></div>';
@@ -343,12 +343,24 @@ function renderPapers(){
         h += '<div class="tp-row" style="--d:' + depth + '"><button class="tp-tog' + (kids.length ? '' : ' none') + (o ? ' open' : '') + '" data-tog="' + esc(r.id) + '"></button><button class="tp sub' + (pFilter.sub === r.id ? ' on' : '') + '" data-map="' + esc(t.id) + '" data-sub="' + esc(r.id) + '"><span>' + esc(r.name) + '</span><em>' + n + '</em></button><i class="tp-add" data-add-map="' + esc(t.id) + '" data-add-sub="' + esc(r.id) + '" title="A folder inside">+</i></div>';
         if(o) kids.forEach(k => row(k, depth + 1)); };
       tr.roots.forEach(r => row(r, 1)); });
-    h += '<button class="tp tp-new" data-newfolder="1"><span>+ New folder</span></button>';
+    if(!pShut.has('sec:pm')) h += '<button class="tp tp-new" data-newfolder="1"><span>+ New folder</span></button>';
+    /* the two libraries: Zotero's collections exactly as Zotero has them (read only), and your own folders */
+    const mine = h; h = '';
+    const zt = D.ztree || [], zp = ps.filter(p => p.zkey);
+    const secHead = (k, name, icon) => '<button class="pb-sec' + (pShut.has('sec:' + k) ? '' : ' open') + '" data-sec="' + k + '"><i class="pb-ico">' + icon + '</i><span>' + name + '</span><b class="pb-chev"></b></button>';
+    const ZI = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 8h8l-8 8h8"/></svg>', MI = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5l5.5-2.5 6 2.5 5.5-2.5v13.5l-5.5 2.5-6-2.5-5.5 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>';
+    if(zt.length || zp.length){ h += secHead('zotero', 'Zotero', ZI); if(!pShut.has('sec:zotero')){
+      const zrow = (k, name, depth, kids, n) => '<div class="tp-row" style="--d:' + depth + '"><button class="tp-tog' + (kids ? (pOpen.has('z:' + k) ? ' open' : '') : ' none') + '" data-ztog="' + esc(k) + '"></button><button class="tp zt' + (pFilter.zc === k ? ' on' : '') + '" data-zc="' + esc(k) + '"><span>' + esc(name) + '</span><em>' + n + '</em></button></div>';
+      h += zrow('*', 'All of Zotero', 0, 0, zp.length);
+      const walk = (parent, depth) => zt.filter(x => (x.parent || null) === parent).sort((a, b) => a.name.localeCompare(b.name)).forEach(x => { const kids = zt.some(y => y.parent === x.key);
+        h += zrow(x.key, x.name, depth, kids, ps.filter(p => (p.zcolls || []).includes(x.key)).length); if(kids && pOpen.has('z:' + x.key)) walk(x.key, depth + 1); });
+      walk(null, 0); } }
+    h = allRow + h + secHead('pm', 'Paper Map', MI) + (pShut.has('sec:pm') ? '' : mine);
     $('pbMaps').innerHTML = h; }
   $('pbSt').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.st === pFilter.st));
   const q = pFilter.q.trim().toLowerCase();
   const subT = pFilter.map && pFilter.sub ? subtreeOf(D.topics.find(t => t.id === pFilter.map) || {rows: []}, pFilter.sub) : null;
-  const list = ps.filter(p => (!pFilter.map || p.folder === pFilter.map) && (!subT || subT.has(p.fsub)) && (!pFilter.st || (pFilter.st === 'none' ? !p.st : p.st === pFilter.st)) && (!q || (p.t + ' ' + p.au + ' ' + p.y + ' ' + (p.v || '')).toLowerCase().includes(q)))
+  const list = ps.filter(p => (pFilter.zc ? (pFilter.zc === '*' ? !!p.zkey : (p.zcolls || []).includes(pFilter.zc)) : ((!pFilter.map || p.folder === pFilter.map) && (!subT || subT.has(p.fsub)))) && (!pFilter.st || (pFilter.st === 'none' ? !p.st : p.st === pFilter.st)) && (!q || (p.t + ' ' + p.au + ' ' + p.y + ' ' + (p.v || '')).toLowerCase().includes(q)))
     .sort((a, b) => (a.y || 0) - (b.y || 0) || String(a.t || '').localeCompare(String(b.t || '')));
   const shown = pAll ? list : list.slice(0, P_FIRST);
   $('pbGrid').innerHTML = list.length ? shown.map((p, i) => '<figure class="pg" data-id="' + esc(p.id) + '" tabindex="0" role="button" style="--i:' + Math.min(i, 40) + '"><div class="sheet"><p class="pj">' + esc((p.v || tName[p.topic] || '').slice(0, 40)) + (p.y ? ' · ' + p.y : '') + '</p><h4>' + esc(String(p.t || 'Untitled').slice(0, 90)) + '</h4><p class="pa">' + esc(String(p.au || '').slice(0, 60)) + '</p><i class="ln"></i>' + (p.st ? '<span class="stamp ' + p.st + '">' + (p.st === 'read' ? 'READ' : 'TO READ') + '</span>' : '') + (p.book ? '<span class="bk-mark">BOOK</span>' : '') + '</div><figcaption><b>' + esc(String(p.t || 'Untitled').slice(0, 70)) + '</b><span>' + esc([tName[p.topic] || ''].concat(rowPath(D.topics.find(t => t.id === p.topic) || {rows: []}, p.sub)).join(' / ')) + '</span></figcaption></figure>').join('')
@@ -361,7 +373,8 @@ function renderPapers(){
 $('pboard').addEventListener('click', e => {
   if(e.target.closest('#pbMore')){ pAll = true; renderPapers(); return; }
   const tg = e.target.closest('[data-tog]'); if(tg){ const k = tg.dataset.tog, was = tg.classList.contains('open'); if(was){ pOpen.delete(k); pShut.add(k); } else { pShut.delete(k); pOpen.add(k); } renderPapers(); return; }
-  const m = e.target.closest('[data-map]'); if(m){ pFilter.map = m.dataset.map; pFilter.sub = m.dataset.sub || ''; if(pFilter.map) pOpen.add(pFilter.map); pAll = false; renderPapers(); return; }
+  const zc = e.target.closest('[data-zc]'); if(zc){ pFilter = {map: '', sub: '', st: '', q: pFilter.q || '', zc: zc.dataset.zc}; pAll = false; renderPapers(); return; }
+  const m = e.target.closest('[data-map]'); if(m){ delete pFilter.zc; pFilter.map = m.dataset.map; pFilter.sub = m.dataset.sub || ''; if(pFilter.map) pOpen.add(pFilter.map); pAll = false; renderPapers(); return; }
   const s = e.target.closest('#pbSt button'); if(s){ pFilter.st = pFilter.st === s.dataset.st ? '' : s.dataset.st; renderPapers(); return; }
   const g = e.target.closest('.pg'); if(g) openSpread('paper', g.dataset.id, g.querySelector('.sheet'));
 });
@@ -1027,7 +1040,7 @@ async function spArrive(kind, fromEl){
 }
 async function spLoadDoc(){ const kind = SP.kind, id = SP.id;
   try{
-    if(kind === 'paper'){ const p = spPaper(); if(p && p.pdf){ spMsg('Opening its PDF…'); const blob = await P.paperPdfBlob(id); if(SP.id !== id) return; if(blob) await spOpenPdf(blob); else spMsg('Its PDF could not be opened just now.'); } else spEmpty(); return; }
+    if(kind === 'paper'){ const p = spPaper(); if(p && p.pdf){ spMsg('Opening its PDF…'); const blob = await P.paperPdfBlob(id); if(SP.id !== id) return; if(blob) await spOpenPdf(blob); else spMsg('Its PDF could not be opened just now.' + (P.pdfWhy && P.pdfWhy() ? ' (' + P.pdfWhy() + ')' : '')); } else spEmpty(); return; }
     const b = spBook(), fs = (b && b.files) || [], f = fs.find(x => /\.(epub|mobi|azw3?|kf8|fb2|fbz|cbz)$/i.test(x.name)) || fs.find(x => /\.epub\.zip$|\.zip$/i.test(x.name)) || fs.find(x => /\.pdf$/i.test(x.name));
     if(!f){ spEmpty(); return; } spMsg('Opening ' + f.name + '…'); const blob = await P.bookFileBlob(f); if(SP.id !== id) return;
     if(!blob){ spMsg('The book’s file could not be read just now.'); return; }
@@ -1177,6 +1190,11 @@ $('spMore').addEventListener('click', e => { e.stopPropagation(); const items = 
   else { const id = SP.id; items.push(['Show it on its map', '', () => { spSaveNotes(true); closeSpread(); P.openPaper(id, 'paper'); }], ['Its mind map', 'This paper in the middle of a map', () => { spSaveNotes(true); P.mindFor && P.mindFor('paper', id); }], ['Details and lines', 'Where it sits, what it builds on', () => { closeSpread(); setTimeout(() => { try{ openPaperPage(id, null); }catch(err){} }, 340); }], ['Edit details', '', () => P.editPaper(id)]); }
   if(SP.kind === 'book') items.push(['Delete this book', 'From your shelves, with its notes and highlights', () => { const b = spBook(); if(b) deleteBook(b.id, () => closeSpread()); }]);
   else items.push(['Delete this paper', 'From your library and from any map it is on', () => { const id = SP.id; P.deletePaper(id, () => { closeSpread(); setTimeout(() => { try{ pReload(); }catch(e){} }, 700); }); }]);
+  /* the file itself, saved where downloads go: the paper's PDF (from GitHub or Zotero, wherever it is kept), or the book's file */
+  { const fname = s => String(s || 'file').replace(/[\\/:*?"<>|]+/g, ' ').trim().slice(0, 90);
+    if(SP.kind === 'paper' && spPaper() && spPaper().pdf) items.push(['Save the PDF with my marks', 'Highlights, notes and handwriting written into it', async () => { toast('Writing your marks into the PDF…'); try{ const b = await pdfWithMarks(SP.id); P.saveBlob(b, fname($('spT').textContent) + ' (marked).pdf'); }catch(err){ toast('The PDF could not be written just now'); } }]);
+    if(SP.kind === 'paper'){ const id = SP.id; if(spPaper() && spPaper().pdf) items.push(['Save the PDF', 'A copy of the paper, in your Downloads', async () => { toast('Saving the PDF…'); const b = await P.paperPdfBlob(id); if(!b){ toast('The PDF could not be fetched just now'); return; } P.saveBlob(b, fname($('spT').textContent) + '.pdf'); }]); }
+    else { const bk = spBook(), f = bk && (bk.files || [])[0]; if(f) items.push(['Save the book file', 'A copy of ' + (f.name || 'the file') + ', in your Downloads', async () => { toast('Saving the file…'); const b = await P.bookFileBlob(f); if(!b){ toast('The file could not be fetched just now'); return; } P.saveBlob(b, f.name || (fname(bk.title) + '.pdf')); }]); } }
   items.push(['Export the notes', 'As Markdown, quotes with their pages', () => { const md = '# ' + $('spT').textContent + '\n\n*' + $('spA').textContent + '*\n\n' + notesToMD($('spNotes')); if(P && P.saveBlob) P.saveBlob(new Blob([md], {type: 'text/markdown;charset=utf-8'}), $('spT').textContent.replace(/[\\/:*?"<>|]+/g, ' ').slice(0, 80) + ' notes.md'); }]);
   /* the menu opens from the button itself, inside the reading page (the Readings menu lives on the shelves, which are hidden here) */
   const p = spPopAt($('spMore'), items.map((it, i) => '<button type="button" class="sp-act" data-act="' + i + '"><b>' + esc(it[0]) + '</b>' + (it[1] ? '<span>' + esc(it[1]) + '</span>' : '') + '</button>').join(''));
@@ -1611,4 +1629,33 @@ addEventListener('dragstart', e => { if(e.target && e.target.closest && e.target
 async function bookPlaceMenu(){ const pl = P.bookPlaces ? await P.bookPlaces() : null; const cur = P.bookPlace();
   const opts = [['', 'With your library', 'On GitHub, so every device can open them']].concat(pl && pl.icloud ? [['icloud', 'iCloud Drive', 'In iCloud Drive › Paper Map Books: your Macs, and GitHub stays small']] : []).concat(pl && pl.documents ? [['documents', 'Documents on this Mac', 'In Documents › Paper Map Books, on this Mac only']] : []);
   rMenu(opts.map(o => [(o[0] === cur ? '✓ ' : '') + o[1], o[2], () => { P.setBookPlace(o[0]); toast('Book files you add from now on: ' + o[1]); }]), $('rMoreBtn')); }
+
+/* ===================== a PDF with your marks written into it =====================
+   Highlights are laid on the page as translucent colour, as a highlighter would; handwriting is drawn as lines; sticky
+   notes become PDF notes, which open in any PDF reader. The original is not changed: this is a new file. */
+function pdfLibLoad(){ if(window.PDFLib) return Promise.resolve(window.PDFLib); return new Promise((res, rej) => { const s = document.createElement('script'); s.src = new URL(VEND, document.baseURI).href + 'pdf-lib/pdf-lib.min.js'; s.onload = () => res(window.PDFLib); s.onerror = rej; document.head.appendChild(s); }); }
+function rgbaOf(c){ const m = String(c || '').match(/rgba?\(([^)]+)\)/); if(m){ const p = m[1].split(',').map(x => parseFloat(x)); return [p[0] / 255, p[1] / 255, p[2] / 255, p[3] == null ? 1 : p[3]]; }
+  const h = String(c || '#F2CF57').replace('#', ''); const n = parseInt(h.length === 3 ? h.split('').map(x => x + x).join('') : h, 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255, 1]; }
+async function pdfMarked(bytes, marks, ink){ const L = await pdfLibLoad(); const doc = await L.PDFDocument.load(bytes, {ignoreEncryption: true}); const pages = doc.getPages();
+  pages.forEach((pg, i) => { const n = i + 1, box = pg.getCropBox ? pg.getCropBox() : {x: 0, y: 0, width: pg.getWidth(), height: pg.getHeight()}, W = box.width, H = box.height, X = box.x, Y = box.y;
+    (marks || []).filter(m => m.page === n && m.rects).forEach(m => { const [r, g, b, a] = rgbaOf(m.color);
+      m.rects.forEach(([x, y, w, h]) => pg.drawRectangle({x: X + x * W, y: Y + H - (y + h) * H, width: w * W, height: h * H, color: L.rgb(r, g, b), opacity: Math.min(0.55, Math.max(0.28, a)), blendMode: L.BlendMode.Multiply})); });
+    const strokes = ((ink || {})[n]) || [];
+    strokes.forEach(s => { const p = s.p; if(!p || p.length < 6) return; let path = 'M ' + (p[0] * W).toFixed(2) + ' ' + (p[1] * W).toFixed(2); for(let j = 3; j < p.length; j += 3) path += ' L ' + (p[j] * W).toFixed(2) + ' ' + (p[j + 1] * W).toFixed(2);
+      const [r, g, b] = rgbaOf(s.c), pr = p.filter((_, j) => j % 3 === 2), avg = pr.reduce((t, x) => t + x, 0) / Math.max(1, pr.length), k = W / 600;
+      pg.drawSvgPath(path, {x: X, y: Y + H, borderColor: L.rgb(r, g, b), borderWidth: (s.h ? s.w : s.w * (0.45 + 1.15 * avg)) * k, borderOpacity: s.h ? 0.38 : 1, borderLineCap: L.LineCapStyle.Round, blendMode: s.h ? L.BlendMode.Multiply : L.BlendMode.Normal}); });
+    (marks || []).filter(m => m.kind === 'note' && m.page === n).forEach(m => { const px = X + m.x * W, py = Y + H - m.y * H, [r, g, b] = rgbaOf(m.color);
+      const note = doc.context.obj({Type: 'Annot', Subtype: 'Text', Rect: [px, py - 18, px + 18, py], Contents: L.PDFHexString.fromText((m.text || '') + (m.quote ? '\n“' + m.quote + '”' : '')), Name: 'Comment', C: [r, g, b], F: 4, Open: false, T: L.PDFHexString.fromText('Paper Map')});
+      pg.node.addAnnot(doc.context.register(note)); }); });
+  return new Blob([await doc.save()], {type: 'application/pdf'}); }
+async function pdfWithMarks(id){ const blob = await P.paperPdfBlob(id); if(!blob) throw new Error('no pdf'); const dd = inkData() || {};
+  return pdfMarked(new Uint8Array(await blob.arrayBuffer()), SP.marks || [], dd.pdf || {}); }
+window.__pdfMarked = pdfMarked;
+
+/* Zotero's collections in the Papers list: choosing one shows the papers Zotero keeps in it; the arrow opens it */
+$('pboard').addEventListener('click', e => { const t = e.target.closest('[data-ztog]'); if(t){ e.stopPropagation(); const k = 'z:' + t.dataset.ztog; pOpen.has(k) ? pOpen.delete(k) : pOpen.add(k); renderPapers(); return; }
+}, true);
+
+/* a library folds away and opens again from its name */
+$('pboard').addEventListener('click', e => { const s = e.target.closest('[data-sec]'); if(!s) return; e.stopPropagation(); const k = 'sec:' + s.dataset.sec; pShut.has(k) ? pShut.delete(k) : pShut.add(k); renderPapers(); }, true);
 })();

@@ -835,3 +835,12 @@ body.ink-on .ink-cv{pointer-events:auto;cursor:crosshair}
 /* covers are not picked up by the browser itself, so dragging a book or a paper moves it into a category or folder */
 #rSecs img,#pbGrid img,.rbk img,.pg img{-webkit-user-drag:none;user-drag:none}
 #rSecs .rbk,#pbGrid .pg{-webkit-user-drag:none}
+
+/* the two libraries in Papers, as an iPad keeps iCloud and the iPad apart */
+.pb-sec{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;margin:18px 0 6px;padding:9px 12px;border-radius:12px;cursor:pointer;color:#F6E7D2;font:600 16px var(--serif)}
+.pb-sec:hover{background:rgba(251,247,238,.08)}
+.pb-sec .pb-ico{display:flex;opacity:.85}
+.pb-sec span{flex:1}
+.pb-sec .pb-chev{width:8px;height:8px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:rotate(-45deg);opacity:.6;transition:transform .2s;margin-right:4px}
+.pb-sec.open .pb-chev{transform:rotate(45deg)}
+#pbMaps .tp.zt{opacity:.95}
