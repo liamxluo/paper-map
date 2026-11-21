@@ -169,7 +169,7 @@ function fileToBase64(file){ return new Promise((res, rej) => { const r = new Fi
 async function pdfUrl(e){
   const key = e.pdf.path + '@' + (e.pdf.sha || '');
   if(pdfUrls[key]) return pdfUrls[key];
-  if(e.pdf.zotero){ const zc = ztCfg(); if(!zc) throw {status: 'nozotero'}; const blob = await ztFileBlob(zc, e.pdf.zotero); return (pdfUrls[key] = URL.createObjectURL(blob)); }
+  if(e.pdf.zotero){ const zc = ztCfg(); if(!zc) throw {status: 'nozotero'}; const blob = await ztFileBlob(zc, e.pdf.zotero, e.pdf.name); if(!blob) throw {status: 404}; return (pdfUrls[key] = URL.createObjectURL(blob)); }
   const c = ghCfg(); if(!c) throw {status:'nogh'};
   let bytes;
   if(c.kind === 'dropbox' || c.kind === 'folder'){ bytes = await remoteBytes(c, e.pdf.path); if(!bytes) throw {status: 404}; }

@@ -45,7 +45,7 @@ window.pmDesk = {
     if(f.where === 'asset'){ const here = await PMDB.get('file:' + f.path); if(here) return here; const c = ghCfg(); if(!c || !f.asset) return null;
       const b = await ghAssetGet(c, f.asset.id); if(b){ try{ await PMDB.set('file:' + f.path, b); }catch(e){} } return b; }
     if(f.where === 'example'){ try{ const r = await fetch('example/' + f.path); return r.ok ? await r.blob() : null; }catch(e){ return null; } }
-    if(f.where === 'zotero'){ const zc = ztCfg(); return zc ? await ztFileBlob(zc, f.zotero) : null; }
+    if(f.where === 'zotero'){ const zc = ztCfg(); return zc ? await ztFileBlob(zc, f.zotero, f.name) : null; }
     const c = ghCfg(); if(!c) return null;
     if(c.kind === 'folder'){ const b = await remoteBytes(c, f.path); return b ? new Blob([b], {type: f.type || 'application/octet-stream'}) : null; }
     const r = await fetch(ghPathUrl(c, f.path) + ghRef(c), {headers: ghHeaders(c, {'Accept': 'application/vnd.github.raw+json'})}); return r.ok ? await r.blob() : null; },

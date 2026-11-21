@@ -455,7 +455,7 @@ function rbookHTML(b, i){ const [c, tc] = clothOf(b);
   return '<figure class="rbk" data-id="' + esc(b.id) + '" style="--i:' + Math.min(i, 30) + '" tabindex="0" role="button"><div class="rcov' + (b.cover ? ' has-img' : '') + '" style="--c:' + c + ';--t:' + tc + '">' + (b.cover ? '<img src="' + esc(b.cover) + '" alt="" loading="lazy" decoding="async" onerror="this.parentNode.classList.remove(\'has-img\');this.remove()">' : '') + '<i class="rsp"></i><b' + coverFit(b.title) + '>' + esc(b.title) + '</b><span>' + esc(shortAuthors(b)) + '</span></div><figcaption><b>' + esc(b.title) + '</b><span>' + esc((b.authors || [])[0] || '') + ((b.authors || []).length > 1 ? ' et al.' : '') + '</span><em>' + esc(metaLine(b)) + '</em>' + (b.status === 'reading' && b.progress ? '<div class="rbar"><i style="width:' + Math.round(b.progress * 100) + '%"></i></div>' : '') + '</figcaption></figure>'; }
 function renderReadings(){
   const [kind, val] = rFilter.split(/:(.+)/);
-  const ok = b => kind === 'st' ? (val === 'all' || b.status === val) : (b.categories || []).some(c => c === val || c.indexOf(val + '/') === 0);
+  const ok = b => kind === 'st' ? (val === 'all' || b.status === val) : (b.categories || []).some(c => c === val);
   const q = ($('rQ') && $('rQ').value || '').trim().toLowerCase(), sort = ($('rSort') && $('rSort').value) || 'shelf';
   const hit = b => !q || [b.title, (b.authors || []).join(' '), b.isbn, (b.categories || []).join(' '), b.notes].concat((b.quotes || []).map(x => x.text + ' ' + (x.note || ''))).join(' ').toLowerCase().includes(q);
   if(q || sort !== 'shelf'){ const key = {added: b => -(Date.parse(b.added || b.edited || 0) || 0), title: b => (b.title || '').toLowerCase(), author: b => lastName((b.authors || [])[0]).toLowerCase(), finished: b => String(9999 - (+String(b.finishedOn || b.finished || '0').slice(0, 4))) + String(b.finishedOn || b.finished || '')}[sort] || (b => (b.title || '').toLowerCase());
@@ -1321,7 +1321,7 @@ document.addEventListener('pointerdown', e => { if(!e.target.closest('#spMk')) $
 const rOpenCats = new Set();
 function catPaths(){ const all = []; allCats().forEach(c => { const parts = String(c).split('/').map(x => x.trim()).filter(Boolean); for(let i = 1; i <= parts.length; i++){ const p = parts.slice(0, i).join('/'); if(!all.includes(p)) all.push(p); } }); return all; }
 function catTreeHTML(){ const paths = catPaths(), kids = p => paths.filter(x => x.indexOf(p + '/') === 0 && x.slice(p.length + 1).indexOf('/') < 0);
-  const count = p => R.filter(b => (b.categories || []).some(c => c === p || c.indexOf(p + '/') === 0)).length;
+  const count = p => R.filter(b => (b.categories || []).some(c => c === p)).length;
   let h = ''; const row = (p, depth) => { const ks = kids(p), open = rOpenCats.has(p) || rFilter.indexOf('cat:' + p + '/') === 0, leaf = p.split('/').pop();
     h += '<div class="tp-row" style="--d:' + depth + '"><button class="tp-tog' + (ks.length ? '' : ' none') + (open ? ' open' : '') + '" data-ctog="' + esc(p) + '"></button><button class="tp' + (depth ? ' sub' : '') + (rFilter === 'cat:' + p ? ' on' : '') + '" data-filter="cat:' + esc(p) + '" data-cat="' + esc(p) + '"><span>' + esc(leaf) + '</span><em>' + count(p) + '</em></button><i class="tp-add" data-addcat="' + esc(p) + '" title="A category inside">+</i></div>';
     if(open) ks.forEach(x => row(x, depth + 1)); };
@@ -1564,7 +1564,7 @@ function inkStroke(g, s, w){ const p = s.p; if(!p || p.length < 6) return; g.sav
   g.restore(); }
 function inkLayer(host, get, set){
   const cv = document.createElement('canvas'); cv.className = 'ink-cv'; host.classList.add('ink-host'); host.appendChild(cv);
-  const L = {cv, host, get, set, draw(){ const w = host.clientWidth, h = Math.max(host.scrollHeight, host.clientHeight), dpr = devicePixelRatio || 1;
+  const L = {cv, host, get, set, draw(){ const w = host.clientWidth, h = Math.min(Math.max(host.scrollHeight, host.clientHeight), 6000), dpr = Math.min(devicePixelRatio || 1, 2, 16000000 / Math.max(1, w * h));
       if(cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)){ cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); cv.style.width = w + 'px'; cv.style.height = h + 'px'; }
       const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h); (get() || []).forEach(s => inkStroke(g, s, w)); }};
   let cur = null;
@@ -1582,13 +1582,22 @@ function inkLayer(host, get, set){
   INK.layers.push(L); L.draw(); return L; }
 function inkErase(L, q){ const a = L.get() || [], r = 0.012; const keep = a.filter(s => { for(let i = 0; i < s.p.length; i += 3) if(Math.hypot(s.p[i] - q[0], s.p[i + 1] - q[1]) < r) return false; return true; });
   if(keep.length !== a.length){ INK.undo.push({L, erased: a.filter(s => !keep.includes(s))}); L.set(keep); inkSave(); L.draw(); } }
-function inkMount(){ document.querySelectorAll('.ink-cv').forEach(c => c.remove()); INK.layers = []; INK.undo = []; const dd = inkData(); if(!dd) return;
-  dd.notes = dd.notes || []; inkLayer($('spSheet'), () => inkData().notes, a => { inkData().notes = a; });
-  if(SP.kind === 'paper') document.querySelectorAll('#spDoc .sp-pg').forEach(pg => { const n = pg.dataset.page; inkLayer(pg, () => (inkData().pdf || {})[n] || [], a => { const x = inkData(); x.pdf = x.pdf || {}; x.pdf[n] = a; }); }); }
+let INK_IO = null;
+function inkMount(){ document.querySelectorAll('.ink-cv').forEach(c => c.remove()); INK.layers = []; INK.undo = []; if(INK_IO){ INK_IO.disconnect(); INK_IO = null; } const dd = inkData(); if(!dd) return;
+  dd.notes = dd.notes || [];
+  /* the notes get their layer only when there is ink on them or ✎ is on */
+  if(INK.on || dd.notes.length) inkLayer($('spSheet'), () => inkData().notes, a => { inkData().notes = a; });
+  if(SP.kind !== 'paper') return;
+  /* a PDF page gets its layer only while it is on screen, and only if it has ink or ✎ is on; it lets it go when it leaves */
+  INK_IO = new IntersectionObserver(es => es.forEach(en => { const pg = en.target, n = pg.dataset.page, has = ((inkData() || {}).pdf || {})[n];
+      const cur = INK.layers.find(L => L.host === pg);
+      if(en.isIntersecting && !cur && (INK.on || (has && has.length))) inkLayer(pg, () => (inkData().pdf || {})[n] || [], a => { const x = inkData(); x.pdf = x.pdf || {}; x.pdf[n] = a; });
+      if(!en.isIntersecting && cur){ cur.cv.remove(); INK.layers = INK.layers.filter(L => L !== cur); } }), {rootMargin: '400px 0px'});
+  document.querySelectorAll('#spDoc .sp-pg').forEach(pg => INK_IO.observe(pg)); }
 const _openSpread = openSpread; openSpread = async function(...args){ const r = await _openSpread.apply(this, args); setTimeout(inkMount, 900); return r; };
 const _spOpenPdf = spOpenPdf; spOpenPdf = async function(...args){ const r = await _spOpenPdf.apply(this, args); setTimeout(inkMount, 300); return r; };
 addEventListener('resize', () => INK.layers.forEach(L => L.draw()));
-$('spInk').addEventListener('click', e => { e.stopPropagation(); INK.on = !INK.on; document.body.classList.toggle('ink-on', INK.on); $('spInk').classList.toggle('on', INK.on); $('inkTools').hidden = !INK.on; if(INK.on && !INK.layers.length) inkMount(); });
+$('spInk').addEventListener('click', e => { e.stopPropagation(); INK.on = !INK.on; document.body.classList.toggle('ink-on', INK.on); $('spInk').classList.toggle('on', INK.on); $('inkTools').hidden = !INK.on; inkMount(); });
 $('inkTools').addEventListener('click', e => { const t = e.target.closest('[data-ink]'); if(!t) return; e.stopPropagation(); const k = t.dataset.ink;
   if(k === 'undo'){ const op = INK.undo.pop(); if(!op) return; const a = (op.L.get() || []).slice(); op.L.set(op.s ? a.filter(x => x !== op.s) : a.concat(op.erased)); inkSave(); op.L.draw(); return; }
   INK.tool = k; if(t.dataset.c) INK.color = t.dataset.c; document.querySelectorAll('#inkTools [data-ink]').forEach(b => b.classList.toggle('on', b === t)); });

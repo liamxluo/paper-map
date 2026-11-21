@@ -254,12 +254,40 @@ fn fetch_bytes(url: String, headers: Vec<(String, String)>) -> Result<tauri::ipc
     Ok(tauri::ipc::Response::new(out.stdout))
 }
 
+/// Sends a file to GitHub the way the system does: GitHub's upload address does not let a web page post across sites.
+/// The bytes come in raw; the address and the key in two headers. Uses the Mac's own curl; returns GitHub's answer.
+#[tauri::command]
+fn upload_bytes(request: tauri::ipc::Request<'_>) -> Result<String, String> {
+    let data = match request.body() { tauri::ipc::InvokeBody::Raw(d) => d.clone(), _ => return Err("no data".into()) };
+    let h = request.headers();
+    let url = h.get("x-url").and_then(|v| v.to_str().ok()).ok_or("no url")?.to_string();
+    if !url.starts_with("https://uploads.github.com/") { return Err("only GitHub uploads".into()); }
+    let auth = h.get("x-auth").and_then(|v| v.to_str().ok()).unwrap_or("").to_string();
+    let tmp = std::env::temp_dir().join(format!("pm-upload-{}-{}", std::process::id(), data.len()));
+    std::fs::write(&tmp, &data).map_err(|e| e.to_string())?;
+    let out = std::process::Command::new("/usr/bin/curl")
+        .arg("-sS").arg("--max-time").arg("3600").arg("-w").arg("\n%{http_code}")
+        .arg("-X").arg("POST")
+        .arg("-H").arg(format!("Authorization: {}", auth))
+        .arg("-H").arg("Accept: application/vnd.github+json")
+        .arg("-H").arg("Content-Type: application/octet-stream")
+        .arg("--data-binary").arg(format!("@{}", tmp.display()))
+        .arg(&url).output().map_err(|e| e.to_string());
+    let _ = std::fs::remove_file(&tmp);
+    let out = out?;
+    let text = String::from_utf8_lossy(&out.stdout).to_string();
+    let (body, code) = match text.rfind('\n') { Some(i) => (text[..i].to_string(), text[i + 1..].trim().to_string()), None => (text.clone(), String::new()) };
+    if !code.starts_with('2') { return Err(format!("GitHub said {}: {}", code, body.chars().take(200).collect::<String>())); }
+    Ok(body)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             fetch_bytes,
+            upload_bytes,
             fs_stat,
             fs_read,
             fs_write,
