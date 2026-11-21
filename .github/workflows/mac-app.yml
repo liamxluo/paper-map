@@ -1,5 +1,7 @@
 # Makes Paper Map for Mac (one app for Apple silicon and Intel) and attaches it to a release:
-# with its version in the name, and as Paper-Map.dmg, which the README's "Download for macOS" link points at.
+# with its version in the name, as Paper-Map.dmg (the README's "Download for macOS" link points at it),
+# and, when the signing key is set up, as a signed update (Paper-Map.app.tar.gz + latest.json) that apps already
+# installed find by themselves and install in place.
 # It runs by itself when you publish a release, or by hand: Actions → Mac app → Run workflow → the release's tag.
 name: Mac app
 
@@ -9,9 +11,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "The release to attach the app to (its tag, for example v3.1.0)"
+        description: "The release to attach the app to (its tag, for example v3.1.1)"
         required: true
-        default: "v3.1.0"
+        default: "v3.1.1"
 
 permissions:
   contents: write
@@ -30,15 +32,37 @@ jobs:
       - run: npm install
       - name: Make the download window sharp on Retina screens
         run: tiffutil -cathidpicheck src-tauri/dmg/background.png src-tauri/dmg/background@2x.png -out src-tauri/dmg/background.tiff || true
-      - name: Make the app and its .dmg
+      - name: Make the app, its .dmg and its signed update
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
+          # without the signing key the app is still made, only without the files it updates itself from
+          EXTRA=""
+          if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ]; then
+            EXTRA='--config {"bundle":{"createUpdaterArtifacts":false}}'
+            echo "::warning::The TAURI_SIGNING_PRIVATE_KEY secret is not set: this release has no self-update files."
+          fi
           # first with the drag-to-Applications window laid out; if the runner cannot do that, a plain .dmg
-          CI=false npm run tauri build -- --target universal-apple-darwin --bundles dmg || npm run tauri build -- --target universal-apple-darwin --bundles dmg
-      - name: Attach it to the release
+          CI=false npm run tauri build -- --target universal-apple-darwin --bundles app,dmg $EXTRA || npm run tauri build -- --target universal-apple-darwin --bundles app,dmg $EXTRA
+      - name: Attach it to the release, with the update for apps already installed
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          REPO: ${{ github.repository }}
         run: |
-          DMG=$(ls src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg | head -1)
+          B=src-tauri/target/universal-apple-darwin/release/bundle
+          DMG=$(ls $B/dmg/*.dmg | head -1)
           cp "$DMG" Paper-Map.dmg
-          gh release upload "$TAG" "$DMG" Paper-Map.dmg --clobber
+          FILES=("$DMG" Paper-Map.dmg)
+          TGZ=$(ls $B/macos/*.app.tar.gz 2>/dev/null | head -1 || true)
+          if [ -n "$TGZ" ] && [ -f "$TGZ.sig" ]; then
+            cp "$TGZ" Paper-Map.app.tar.gz
+            export VERSION="${TAG#v}" SIG="$(cat "$TGZ.sig")" URL="https://github.com/$REPO/releases/download/$TAG/Paper-Map.app.tar.gz"
+            export NOTES="$(gh release view "$TAG" --json body -q .body 2>/dev/null || true)"
+            python3 -c 'import json, os, datetime
+          p = {"signature": os.environ["SIG"], "url": os.environ["URL"]}
+          print(json.dumps({"version": os.environ["VERSION"], "notes": os.environ.get("NOTES", ""), "pub_date": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "platforms": {"darwin-aarch64": p, "darwin-x86_64": p, "darwin-universal": p}}, indent=1))' > latest.json
+            FILES+=(Paper-Map.app.tar.gz latest.json)
+          fi
+          gh release upload "$TAG" "${FILES[@]}" --clobber
