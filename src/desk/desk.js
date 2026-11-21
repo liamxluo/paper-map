@@ -40,7 +40,7 @@ function setState(s, h){ state = s; const cl = document.body.classList; [...cl].
 
 /* ============ map faces and covers, drawn from your own data ============ */
 const PALETTE = ['#B4432E', '#2F7F86', '#4A6FA5', '#4F7A4A', '#A8802F', '#6B4A7A', '#8A5A3A', '#3F6F8F'];
-function topicColor(t){ if(t && t.cover) return t.cover; const i = D.topics.findIndex(x => x.id === t.id); return PALETTE[(i < 0 ? 0 : i) % PALETTE.length]; }
+function topicColor(t){ const i = D.topics.findIndex(x => x.id === t.id); return PALETTE[(i < 0 ? 0 : i) % PALETTE.length]; }
 function svgURL(s){ return 'url("data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s) + '")'; }
 const SERIF = "'PMap Serif',Palatino,Georgia,serif", SANS = "'PMap Sans',Helvetica,Arial,sans-serif";
 function faceSVG(t){
@@ -257,6 +257,7 @@ function show(where){
   document.body.classList.remove('dof'); stage.classList.remove('zooming'); fit();
   setState('desk', HINT_DESK); busy = false;
   if(where === 'papers'){ dismissWelcome(true); renderPapers(); setState('papers', ''); }
+  if(where === 'maps'){ dismissWelcome(true); layoutRow(); strip.scrollLeft = 0; stripIn.classList.remove('landing'); sheets.forEach(el => { el.style.opacity = '0'; el.style.pointerEvents = 'none'; }); setState('maps', order.length ? 'Choose a map to open it · scroll for more' : 'Make your first map'); }
   if(where === 'paper' && arguments[1]){ dismissWelcome(true); renderPapers(); setState('papers', ''); if(fillPaper(arguments[1])){ PP.style.opacity = '1'; PP.style.clipPath = 'none'; setState('paper', ''); PP.classList.add('entered'); } }
 }
 
@@ -316,13 +317,14 @@ function renderPapers(){
     const folders = D.topics.filter(t => t.shelf), mapsOnly = D.topics.filter(t => !t.shelf); let lastShelf = null;
     folders.concat(mapsOnly).forEach(t => { if(lastShelf !== !!t.shelf && (folders.length && mapsOnly.length)){ h += '<p class="h pb-h">' + (t.shelf ? 'FOLDERS' : 'MAPS') + '</p>'; } lastShelf = !!t.shelf;
       const tr = topicTree(t), mine = ps.filter(p => p.topic === t.id), has = tr.roots.length > 0, open = (pOpen.has(t.id) || pFilter.map === t.id) && !pShut.has(t.id);
-      h += '<div class="tp-row"><button class="tp-tog' + (has ? '' : ' none') + (open ? ' open' : '') + '" data-tog="' + esc(t.id) + '" aria-label="Show its topics"></button><button class="tp' + (pFilter.map === t.id && !pFilter.sub ? ' on' : '') + '" data-map="' + esc(t.id) + '"><span>' + esc(t.name) + '</span><em>' + mine.length + '</em></button></div>';
+      h += '<div class="tp-row"><button class="tp-tog' + (has ? '' : ' none') + (open ? ' open' : '') + '" data-tog="' + esc(t.id) + '" aria-label="Show its topics"></button><button class="tp' + (pFilter.map === t.id && !pFilter.sub ? ' on' : '') + '" data-map="' + esc(t.id) + '" draggable="true"><span>' + esc(t.name) + '</span><em>' + mine.length + '</em></button><i class="tp-add" data-add-map="' + esc(t.id) + '" title="A folder inside">+</i></div>';
       if(!open) return;
       const row = (r, depth) => { const kids = tr.kids[r.id] || [], o = (pOpen.has(r.id) || (pFilter.sub && subtreeOf(t, r.id).has(pFilter.sub) && pFilter.sub !== r.id)) && !pShut.has(r.id), n = mine.filter(p => subtreeOf(t, r.id).has(p.sub)).length;
-        h += '<div class="tp-row" style="--d:' + depth + '"><button class="tp-tog' + (kids.length ? '' : ' none') + (o ? ' open' : '') + '" data-tog="' + esc(r.id) + '"></button><button class="tp sub' + (pFilter.sub === r.id ? ' on' : '') + '" data-map="' + esc(t.id) + '" data-sub="' + esc(r.id) + '"><span>' + esc(r.name) + '</span><em>' + n + '</em></button></div>';
+        h += '<div class="tp-row" style="--d:' + depth + '"><button class="tp-tog' + (kids.length ? '' : ' none') + (o ? ' open' : '') + '" data-tog="' + esc(r.id) + '"></button><button class="tp sub' + (pFilter.sub === r.id ? ' on' : '') + '" data-map="' + esc(t.id) + '" data-sub="' + esc(r.id) + '" draggable="true"><span>' + esc(r.name) + '</span><em>' + n + '</em></button><i class="tp-add" data-add-map="' + esc(t.id) + '" data-add-sub="' + esc(r.id) + '" title="A folder inside">+</i></div>';
         if(o) kids.forEach(k => row(k, depth + 1)); };
       tr.roots.forEach(r => row(r, 1)); });
-    $('pbMaps').innerHTML = h; }
+    h += '<button class="tp tp-new" data-newfolder="1"><span>+ New folder</span></button>';
+    $('pbMaps').innerHTML = h; $('pbGrid').querySelectorAll('.pg').forEach(g => { g.draggable = true; }); }
   $('pbSt').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.st === pFilter.st));
   const q = pFilter.q.trim().toLowerCase();
   const subT = pFilter.map && pFilter.sub ? subtreeOf(D.topics.find(t => t.id === pFilter.map) || {rows: []}, pFilter.sub) : null;
@@ -433,7 +435,7 @@ function rbookHTML(b, i){ const [c, tc] = clothOf(b);
   return '<figure class="rbk" data-id="' + esc(b.id) + '" style="--i:' + Math.min(i, 30) + '" tabindex="0" role="button"><div class="rcov' + (b.cover ? ' has-img' : '') + '" style="--c:' + c + ';--t:' + tc + '">' + (b.cover ? '<img src="' + esc(b.cover) + '" alt="" loading="lazy" decoding="async" onerror="this.parentNode.classList.remove(\'has-img\');this.remove()">' : '') + '<i class="rsp"></i><b' + coverFit(b.title) + '>' + esc(b.title) + '</b><span>' + esc(shortAuthors(b)) + '</span></div><figcaption><b>' + esc(b.title) + '</b><span>' + esc((b.authors || [])[0] || '') + ((b.authors || []).length > 1 ? ' et al.' : '') + '</span><em>' + esc(metaLine(b)) + '</em>' + (b.status === 'reading' && b.progress ? '<div class="rbar"><i style="width:' + Math.round(b.progress * 100) + '%"></i></div>' : '') + '</figcaption></figure>'; }
 function renderReadings(){
   const [kind, val] = rFilter.split(/:(.+)/);
-  const ok = b => kind === 'st' ? (val === 'all' || b.status === val) : (b.categories || []).includes(val);
+  const ok = b => kind === 'st' ? (val === 'all' || b.status === val) : (b.categories || []).some(c => c === val || c.indexOf(val + '/') === 0);
   const q = ($('rQ') && $('rQ').value || '').trim().toLowerCase(), sort = ($('rSort') && $('rSort').value) || 'shelf';
   const hit = b => !q || [b.title, (b.authors || []).join(' '), b.isbn, (b.categories || []).join(' '), b.notes].concat((b.quotes || []).map(x => x.text + ' ' + (x.note || ''))).join(' ').toLowerCase().includes(q);
   if(q || sort !== 'shelf'){ const key = {added: b => -(Date.parse(b.added || b.edited || 0) || 0), title: b => (b.title || '').toLowerCase(), author: b => lastName((b.authors || [])[0]).toLowerCase(), finished: b => String(9999 - (+String(b.finishedOn || b.finished || '0').slice(0, 4))) + String(b.finishedOn || b.finished || '')}[sort] || (b => (b.title || '').toLowerCase());
@@ -449,7 +451,7 @@ function renderReadings(){
   rCounts();
   const n = s => R.filter(b => s === 'all' || b.status === s).length;
   $('rStatus').innerHTML = [['all', 'All books'], ['reading', 'Reading now'], ['read', 'Read'], ['want', 'Want to read']].map(([k, l]) => '<button class="tp' + (rFilter === 'st:' + k ? ' on' : '') + '" data-filter="st:' + k + '"><span>' + l + '</span><em>' + n(k) + '</em></button>').join('');
-  $('rcats').innerHTML = allCats().map(c => '<button class="tp' + (rFilter === 'cat:' + c ? ' on' : '') + '" data-filter="cat:' + esc(c) + '"><span>' + esc(c) + '</span><em>' + R.filter(b => (b.categories || []).includes(c)).length + '</em></button>').join('');
+  $('rcats').innerHTML = catTreeHTML();
   $('rFilt').textContent = kind === 'cat' ? 'Books in “' + val + '”' : '';
 }
 RB.addEventListener('click', e => {
@@ -1056,16 +1058,23 @@ function spFromZotero(i){ const dm = SP.dims && SP.dims[i]; if(!dm) return; cons
   SP.marks.forEach(m => { if(m.page !== i || !m.zr || !m.zr.length || m.rects) return; if(m.kind === 'note'){ m.x = m.zr[0][0] / W; m.y = 1 - m.zr[0][3] / H; } else m.rects = m.zr.map(r => [r[0] / W, 1 - r[3] / H, (r[2] - r[0]) / W, (r[3] - r[1]) / H]); }); }
 function spDrawMarks(i){ const pg = $('spDoc').querySelector('.sp-pg[data-page="' + i + '"] .sp-marks'); if(!pg) return;
   spDrawPdfNotes(i);
-  pg.innerHTML = SP.marks.filter(m => m.page === i && m.kind !== 'note').map(m => (m.rects || []).map(r => '<i style="left:' + (r[0] * 100).toFixed(3) + '%;top:' + (r[1] * 100).toFixed(3) + '%;width:' + (r[2] * 100).toFixed(3) + '%;height:' + (r[3] * 100).toFixed(3) + '%"></i>').join('')).join(''); }
+  pg.innerHTML = SP.marks.filter(m => m.page === i && m.kind !== 'note').map(m => (m.rects || []).map(r => '<i style="left:' + (r[0] * 100).toFixed(3) + '%;top:' + (r[1] * 100).toFixed(3) + '%;width:' + (r[2] * 100).toFixed(3) + '%;height:' + (r[3] * 100).toFixed(3) + '%' + (m.color ? ';background:' + m.color : '') + '"></i>').join('')).join(''); }
 /* ---- EPUB, MOBI, AZW3, FB2, comics: foliate-js ---- */
 const EBOOK_CSS = 'html{color:#231E1A;background:transparent} body{font-family:"PMap Serif",Georgia,serif;line-height:1.55;hyphens:auto} p{text-align:justify} a{color:#7A3E2B} ::selection{background:rgba(180,67,46,.25)}';
 async function spOpenEbook(blob, name){ const box = $('spDoc'); box.className = 'sp-doc ebook'; box.innerHTML = '';
   const base = new URL(VEND, document.baseURI).href; await import(base + 'foliate/view.js'); const {Overlayer} = await import(base + 'foliate/overlayer.js');
   const view = document.createElement('foliate-view'); box.appendChild(view); SP.view = view; SP.mode = 'ebook'; const b = spBook();
-  view.addEventListener('load', e => { const {doc, index} = e.detail; doc.addEventListener('pointerup', () => setTimeout(() => spEbookSel(doc, index), 0)); doc.addEventListener('keydown', ev => spKeys(ev)); });
+  view.addEventListener('load', e => { const {doc, index} = e.detail; doc.addEventListener('pointerup', () => setTimeout(() => spEbookSel(doc, index), 0)); doc.addEventListener('keydown', ev => spKeys(ev));
+    /* right-click a word in the book for a sticky note there */
+    doc.addEventListener('contextmenu', ev => { ev.preventDefault(); const r0 = doc.caretRangeFromPoint ? doc.caretRangeFromPoint(ev.clientX, ev.clientY) : null; if(!r0 || r0.startContainer.nodeType !== 3) return;
+      const t = r0.startContainer, s = t.textContent; let a = r0.startOffset, z = r0.startOffset; while(a > 0 && /\S/.test(s[a - 1])) a--; while(z < s.length && /\S/.test(s[z])) z++; if(z <= a) return;
+      const rg = doc.createRange(); rg.setStart(t, a); rg.setEnd(t, z); let cfi = null; try{ cfi = SP.view.getCFI(index, rg); }catch(err){} if(!cfi) return;
+      SP.pending = {cfi, text: s.slice(a, z), loc: spEbookLoc(), doc}; spEbookNote(rg, doc); });
+    doc.addEventListener('pointerdown', () => { $('spMk').hidden = true; }); });
   view.addEventListener('relocate', e => { const d = e.detail || {}; SP.loc = d; $('spLoc').textContent = spEbookLoc(); if(b && d.cfi && b.loc !== d.cfi){ b.loc = d.cfi; b.locLabel = spEbookLoc(); clearTimeout(SP.atT); SP.atT = setTimeout(rSave, 1500); } });
-  view.addEventListener('draw-annotation', e => { const {draw, annotation} = e.detail; draw(Overlayer.highlight, {color: annotation.color || 'rgba(226,182,72,.42)'}); });
-  view.addEventListener('create-overlay', () => { SP.marks.filter(m => m.cfi).forEach(m => { try{ view.addAnnotation({value: m.cfi, color: m.color}); }catch(err){} }); });
+  view.addEventListener('draw-annotation', e => { const {draw, annotation} = e.detail; if(annotation.note) draw(spStickyDraw, {color: annotation.color || '#F6E27A'}); else draw(Overlayer.highlight, {color: annotation.color || 'rgba(242,207,87,.45)'}); });
+  view.addEventListener('show-annotation', e => { const {value, range} = e.detail || {}; spMarkAt(value, range); });
+  view.addEventListener('create-overlay', () => { SP.marks.filter(m => m.cfi).forEach(m => { try{ view.addAnnotation({value: m.cfi, color: m.color, note: m.kind === 'note'}); }catch(err){} }); });
   await view.open(new File([blob], name || 'book.epub', {type: blob.type || ''}));
   if(b && !b.cover){ try{ const cv = view.book && view.book.getCover ? await view.book.getCover() : null; if(cv){ const u = await spThumb(cv); if(u){ b.cover = u; rSave(); } } }catch(e){} }
   try{ view.renderer.setAttribute('flow', spFlow().doc === 'side' ? 'paginated' : 'scrolled'); view.renderer.setAttribute('max-column-count', '1'); view.renderer.setAttribute('margin', '44px'); view.renderer.setAttribute('gap', '7%'); view.renderer.setStyles && view.renderer.setStyles(EBOOK_CSS); }catch(e){}
@@ -1092,7 +1101,7 @@ document.addEventListener('pointerup', () => { if(!SP.kind || SP.mode !== 'pdf')
   SP.pending = {page: +pg.dataset.page, text, rects, loc: 'p. ' + pg.dataset.page}; spShowSel(r.getBoundingClientRect()); }, 0); });
 function spShowSel(r){ const s = $('spSel'); $('spSelLoc').textContent = SP.pending && SP.pending.loc ? ' · ' + SP.pending.loc : ''; s.hidden = false; const w = s.offsetWidth || 160;
   s.style.left = Math.max(12, Math.min(innerWidth - w - 12, r.left + (r.width || 0) / 2 - w / 2)) + 'px'; s.style.top = Math.max(12, r.top - 46) + 'px'; }
-function spKeep(asQuote){ const p = SP.pending; if(!p) return; const mark = {id: 'm-' + Date.now().toString(36), text: p.text, color: asQuote ? 'rgba(180,67,46,.22)' : 'rgba(226,182,72,.42)', date: today()};
+function spKeep(asQuote, colour){ const p = SP.pending; if(!p) return; const mark = {id: 'm-' + Date.now().toString(36), text: p.text, color: colour || (asQuote ? 'rgba(180,67,46,.22)' : 'rgba(242,207,87,.45)'), date: today()};
   if(p.cfi) mark.cfi = p.cfi; else { mark.page = p.page; mark.rects = p.rects; }
   SP.marks.push(mark);
   if(SP.kind === 'paper'){ if(P.setPaperMarks) P.setPaperMarks(SP.id, SP.marks); if(asQuote && P.addPaperQuote) P.addPaperQuote(SP.id, {id: 'q-' + Date.now().toString(36), text: p.text, loc: p.loc, date: today(), src: 'read'}); }
@@ -1101,14 +1110,14 @@ function spKeep(asQuote){ const p = SP.pending; if(!p) return; const mark = {id:
   if(asQuote) spQuote(p.text, p.loc);
   try{ (p.doc ? p.doc.getSelection() : getSelection()).removeAllRanges(); }catch(e){} $('spSel').hidden = true; SP.pending = null; }
 $('spSel').addEventListener('pointerdown', e => e.preventDefault());
-$('spSel').addEventListener('click', e => { const b = e.target.closest('[data-sel]'); if(!b) return; if(b.dataset.sel === 'note'){ spNoteOnSel(); return; } spKeep(b.dataset.sel === 'quote'); });
+$('spSel').addEventListener('click', e => { const b = e.target.closest('[data-sel]'); if(!b) return; if(b.dataset.sel === 'note'){ spNoteOnSel(); return; } spKeep(b.dataset.sel === 'quote', b.dataset.hc); });
 /* ---- turning pages ---- */
 function spTurn(d){ if(SP.mode === 'ebook' && SP.view){ d > 0 ? SP.view.next() : SP.view.prev(); } else if(SP.mode === 'pdf'){ const box = $('spDoc'); if(SP.side){ box.scrollBy({left: d * box.clientWidth, behavior: 'smooth'}); } else box.scrollBy({top: d * box.clientHeight * .9, behavior: 'smooth'}); } }
 $('spPrev').addEventListener('click', () => spTurn(-1)); $('spNext').addEventListener('click', () => spTurn(1));
 function spKeys(e){ if(!SP.kind || (e.target && e.target.closest && e.target.closest('#spNotes'))) return; if(e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); spTurn(1); } else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); spTurn(-1); } else if(e.key === 'Escape'){ if(!$('spPop').hidden) $('spPop').hidden = true; else closeSpread(); } }
 addEventListener('keydown', spKeys, true);
 /* ---- ⓘ about it, Aa paper and type, ⋯ the rest ---- */
-function spPopAt(btn, html){ const p = $('spPop'); if(!p.hidden && p._from === btn){ p.hidden = true; return null; } p.innerHTML = html; p._from = btn; p.hidden = false; const r = btn.getBoundingClientRect(), w = p.offsetWidth || 320; p.style.left = Math.max(12, Math.min(innerWidth - w - 12, r.right - w)) + 'px'; p.style.top = (r.bottom + 10) + 'px'; return p; }
+function spPopAt(btn, html){ const p = $('spPop'); p.classList.remove('sp-menu'); if(!p.hidden && p._from === btn){ p.hidden = true; return null; } p.innerHTML = html; p._from = btn; p.hidden = false; const r = btn.getBoundingClientRect(), w = p.offsetWidth || 320; p.style.left = Math.max(12, Math.min(innerWidth - w - 12, r.right - w)) + 'px'; p.style.top = (r.bottom + 10) + 'px'; return p; }
 $('spInfo').addEventListener('click', e => { e.stopPropagation(); let h = '';
   if(SP.kind === 'book'){ const b = spBook(); if(!b) return; const kq = (b.quotes || []).filter(q => q.src === 'kindle').length, mq = (b.quotes || []).length - kq;
     h = '<div class="sp-about">' + (b.cover ? '<span class="sp-acov" style="background-image:url(&quot;' + esc(b.cover) + '&quot;)"></span>' : '') + '<div><p class="k">' + esc([b.year, b.pages ? b.pages + ' pages' : ''].filter(Boolean).join(' · ')) + '</p><b>' + esc(b.title) + '</b><em>' + esc((b.authors || []).join(', ')) + '</em></div></div>' +
@@ -1129,7 +1138,9 @@ $('spMore').addEventListener('click', e => { e.stopPropagation(); const items = 
   if(SP.kind === 'book'){ const b = spBook(); items.push(['Edit the book', 'Title, authors, ISBN, pages, cover', () => { const bb = spBook(); closeSpread(); setTimeout(() => { openRCard(bb); $('rcEditBtn').click(); }, 340); }], ['Its mind map', 'This book in the middle of a map', () => { spSaveNotes(true); P.mindFor && P.mindFor('book', b.id); }], ['Add another file', 'EPUB, MOBI, PDF…', () => { $('spFile').click(); }]); if(SP.mode === 'pdf') items.push(['Use this page as its cover', 'The page you are on', spPageAsCover]); else if(SP.mode === 'ebook') items.push(['Use the book’s own cover', 'The cover inside the file', spPageAsCover]); }
   else { const id = SP.id; items.push(['Show it on its map', '', () => { spSaveNotes(true); closeSpread(); P.openPaper(id, 'paper'); }], ['Its mind map', 'This paper in the middle of a map', () => { spSaveNotes(true); P.mindFor && P.mindFor('paper', id); }], ['Details and lines', 'Where it sits, what it builds on', () => { closeSpread(); setTimeout(() => { try{ openPaperPage(id, null); }catch(err){} }, 340); }], ['Edit details', '', () => P.editPaper(id)]); }
   items.push(['Export the notes', 'As Markdown, quotes with their pages', () => { const md = '# ' + $('spT').textContent + '\n\n*' + $('spA').textContent + '*\n\n' + notesToMD($('spNotes')); if(P && P.saveBlob) P.saveBlob(new Blob([md], {type: 'text/markdown;charset=utf-8'}), $('spT').textContent.replace(/[\\/:*?"<>|]+/g, ' ').slice(0, 80) + ' notes.md'); }]);
-  $('spPop').hidden = true; rMenu(items, $('spMore')); });
+  /* the menu opens from the button itself, inside the reading page (the Readings menu lives on the shelves, which are hidden here) */
+  const p = spPopAt($('spMore'), items.map((it, i) => '<button type="button" class="sp-act" data-act="' + i + '"><b>' + esc(it[0]) + '</b>' + (it[1] ? '<span>' + esc(it[1]) + '</span>' : '') + '</button>').join(''));
+  if(!p) return; p.classList.add('sp-menu'); p.onclick = ev => { const b = ev.target.closest('[data-act]'); if(!b) return; $('spPop').hidden = true; p.classList.remove('sp-menu'); items[+b.dataset.act][2](); }; });
 addEventListener('click', e => { if(!e.target.closest('#spPop,#spInfo,#spStyle')) $('spPop').hidden = true; });
 
 /* ===================== sticky notes: on a page of the PDF, and on your notes ===================== */
@@ -1146,6 +1157,7 @@ function spNewPdfNote(page, x, y, quote){ const n = {id: 'n-' + Date.now().toStr
 function spNewSheetNote(x, y){ const n = {id: 's-' + Date.now().toString(36), x: Math.max(0, Math.min(.72, x)), y: Math.max(0, y), text: '', color: STK_COLORS[0], date: today(), open: true};
   (SP.stickies || []).forEach(s => s.open = false); SP.stickies = (SP.stickies || []).concat([n]); spStkDraw(); spSaveStickies(); setTimeout(() => { const t = $('spStk').querySelector('[data-stk="' + n.id + '"] .tx'); if(t) t.focus(); }, 30); }
 function spNoteOnSel(){ const p = SP.pending; if(!p) return; if(p.page && p.rects && p.rects.length){ const r = p.rects[p.rects.length - 1]; spNewPdfNote(p.page, r[0] + r[2] + .01, r[1] - .01, p.text); }
+  else if(p.cfi && SP.mode === 'ebook'){ let rg = null; try{ const s = p.doc.getSelection(); rg = s && s.rangeCount ? s.getRangeAt(0).cloneRange() : null; }catch(e){} spEbookNote(rg, p.doc); return; }
   else spNewSheetNote(.55, ($('spSheet').scrollTop || 0) + 60);
   try{ (p.doc ? p.doc.getSelection() : getSelection()).removeAllRanges(); }catch(e){} $('spSel').hidden = true; SP.pending = null; }
 function stkFind(el){ const id = el.closest('[data-stk]').dataset.stk, where = el.closest('[data-stk]').dataset.where; return where === 'pdf' ? [SP.marks.find(m => m.id === id), 'pdf'] : [(SP.stickies || []).find(s => s.id === id), 'sheet']; }
@@ -1165,8 +1177,8 @@ document.addEventListener('pointerdown', e => { const st = e.target.closest && e
   addEventListener('pointermove', mv); addEventListener('pointerup', up); });
 document.addEventListener('input', e => { const t = e.target.closest && e.target.closest('.sp-sticky .tx'); if(!t) return; const [n, where] = stkFind(t); if(!n) return; n.text = t.innerText.trim(); clearTimeout(SP.stkT); SP.stkT = setTimeout(() => stkSave(where), 500); });
 document.addEventListener('click', e => { const st = e.target.closest && e.target.closest('.sp-sticky'); if(!st) return; const [n, where] = stkFind(st); if(!n) return;
-  const c = e.target.closest('[data-stkc]'); if(c){ n.color = c.dataset.stkc; st.style.setProperty('--sc', n.color); stkSave(where); return; }
-  if(e.target.closest('[data-stkdel]')){ if(where === 'pdf'){ SP.marks = SP.marks.filter(m => m.id !== n.id); spDrawPdfNotes(n.page); } else { SP.stickies = SP.stickies.filter(s => s.id !== n.id); spStkDraw(); } stkSave(where); } });
+  const c = e.target.closest('[data-stkc]'); if(c){ n.color = c.dataset.stkc; st.style.setProperty('--sc', n.color); stkSave(where); if(n.cfi && SP.view){ try{ SP.view.deleteAnnotation({value: n.cfi}); SP.view.addAnnotation({value: n.cfi, color: n.color, note: true}); }catch(err){} } return; }
+  if(e.target.closest('[data-stkdel]')){ if(n.cfi && SP.view){ try{ SP.view.deleteAnnotation({value: n.cfi}); }catch(err){} $('spEbNote').hidden = true; } if(where === 'pdf'){ SP.marks = SP.marks.filter(m => m.id !== n.id); spDrawPdfNotes(n.page); } else { SP.stickies = SP.stickies.filter(s => s.id !== n.id); spStkDraw(); } stkSave(where); } });
 
 /* notes in A4 pages, Paper Map's own format: each page is one sheet; when a page is full the writing goes on to the next,
    and the page turns with it; ‹ › turn the pages yourself */
@@ -1227,4 +1239,99 @@ addEventListener('resize', () => { if(DT.el) dtShow(); });
 $('deskTourBtn').addEventListener('click', () => { panel.classList.remove('on'); setTimeout(() => deskTour(true), 200); });
 /* it begins once the welcome has lifted, the first time only */
 if(welcome){ welcome.addEventListener('click', () => setTimeout(() => { if(prefs.start !== 'map') deskTour(); }, 1500)); }
+
+/* ===================== a highlight you can change or take away; sticky notes on e-book pages ===================== */
+function spStickyDraw(rects, o = {}){ const NS = 'http://www.w3.org/2000/svg', g = document.createElementNS(NS, 'g'); if(!rects || !rects.length) return g;
+  for(const r of rects){ const l = document.createElementNS(NS, 'line'); l.setAttribute('x1', r.left); l.setAttribute('x2', r.left + r.width); l.setAttribute('y1', r.top + r.height - 1); l.setAttribute('y2', r.top + r.height - 1); l.setAttribute('stroke', '#B4432E'); l.setAttribute('stroke-width', '1.2'); l.setAttribute('stroke-dasharray', '2 2.5'); l.setAttribute('opacity', '.7'); g.append(l); }
+  const r = rects[rects.length - 1], x = r.left + r.width + 3, y = r.top - 6, s = 15;
+  const sq = document.createElementNS(NS, 'rect'); Object.entries({x, y, width: s, height: s, rx: 2, fill: o.color || '#F6E27A', stroke: 'rgba(0,0,0,.2)', 'stroke-width': .6}).forEach(([k, v]) => sq.setAttribute(k, v)); g.append(sq);
+  const f = document.createElementNS(NS, 'path'); f.setAttribute('d', 'M' + (x + s - 5) + ' ' + (y + s) + 'L' + (x + s) + ' ' + (y + s - 5) + 'L' + (x + s) + ' ' + (y + s) + 'Z'); f.setAttribute('fill', 'rgba(0,0,0,.18)'); g.append(f);
+  return g; }
+function spScreenRect(range, doc){ const fe = doc && doc.defaultView && doc.defaultView.frameElement, fr = fe ? fe.getBoundingClientRect() : {left: 0, top: 0}, rr = range.getBoundingClientRect(); return {left: fr.left + rr.left, top: fr.top + rr.top, right: fr.left + rr.right, bottom: fr.top + rr.bottom, width: rr.width}; }
+/* a sticky note on an e-book: kept with its words, opened beside them */
+function spEbookNote(range, doc){ const p = SP.pending; if(!p || !p.cfi) return;
+  const n = {id: 'n-' + Date.now().toString(36), kind: 'note', cfi: p.cfi, quote: p.text, text: '', color: STK_COLORS[0], date: today(), loc: p.loc, open: true};
+  SP.marks.push(n); spSaveMarks(); try{ SP.view.addAnnotation({value: n.cfi, color: n.color, note: true}); }catch(e){}
+  try{ (p.doc ? p.doc.getSelection() : getSelection()).removeAllRanges(); }catch(e){} $('spSel').hidden = true; SP.pending = null;
+  spOpenEbNote(n, range ? spScreenRect(range, doc) : null); }
+function spOpenEbNote(n, r){ const box = $('spEbNote'); n.open = true; box.innerHTML = stkHTML(n, 'pdf'); box.hidden = false; const st = box.firstElementChild; st.style.left = '0'; st.style.top = '0'; st.style.position = 'relative';
+  const x = r ? r.right + 12 : innerWidth / 2 - 105, y = r ? r.top - 10 : innerHeight / 3; box.style.left = Math.max(12, Math.min(innerWidth - 230, x)) + 'px'; box.style.top = Math.max(12, Math.min(innerHeight - 200, y)) + 'px';
+  setTimeout(() => { const t = box.querySelector('.tx'); if(t) t.focus(); }, 30); }
+/* clicking a highlight: its colour, quote it, or take it away */
+let spMkOn = null;
+function spMarkAt(value, range){ const m = SP.marks.find(x => x.cfi === value); if(!m) return; let doc = null; try{ doc = range && range.startContainer && range.startContainer.ownerDocument; }catch(e){}
+  const r = range && doc ? spScreenRect(range, doc) : {left: innerWidth / 2, top: innerHeight / 2, right: innerWidth / 2, width: 0};
+  if(m.kind === 'note'){ spOpenEbNote(m, r); return; } spShowMk(m, r); }
+function spShowMk(m, r){ spMkOn = m; const bar = $('spMk'); bar.hidden = false; const w = bar.offsetWidth || 240;
+  bar.style.left = Math.max(12, Math.min(innerWidth - w - 12, r.left + (r.width || 0) / 2 - w / 2)) + 'px'; bar.style.top = Math.max(12, r.top - 48) + 'px';
+  bar.querySelectorAll('[data-mkc]').forEach(b => b.classList.toggle('on', b.dataset.mkc === m.color)); }
+$('spMk').addEventListener('pointerdown', e => e.preventDefault());
+$('spMk').addEventListener('click', e => { const m = spMkOn; if(!m) return; const c = e.target.closest('[data-mkc]'), a = e.target.closest('[data-mk]');
+  if(c){ m.color = c.dataset.mkc; spSaveMarks(); if(m.cfi && SP.view){ try{ SP.view.deleteAnnotation({value: m.cfi}); SP.view.addAnnotation({value: m.cfi, color: m.color}); }catch(err){} } else if(m.page) spDrawMarks(m.page); $('spMk').hidden = true; return; }
+  if(a && a.dataset.mk === 'quote'){ spQuote(m.text, m.loc || (m.page ? 'p. ' + m.page : spEbookLoc())); $('spMk').hidden = true; return; }
+  if(a && a.dataset.mk === 'del'){ SP.marks = SP.marks.filter(x => x.id !== m.id); spSaveMarks(); if(m.cfi && SP.view){ try{ SP.view.deleteAnnotation({value: m.cfi}); }catch(err){} } else if(m.page) spDrawMarks(m.page); $('spMk').hidden = true; spMkOn = null; } });
+/* on a PDF page, a click on a highlight (with nothing being selected) opens the same bar */
+$('spDoc').addEventListener('click', e => { if(SP.mode !== 'pdf') return; const s = getSelection(); if(s && !s.isCollapsed) return; const pg = e.target.closest('.sp-pg'); if(!pg || e.target.closest('.sp-sticky')) return;
+  const b = pg.getBoundingClientRect(), x = (e.clientX - b.left) / b.width, y = (e.clientY - b.top) / b.height, page = +pg.dataset.page;
+  const m = SP.marks.slice().reverse().find(k => k.page === page && k.kind !== 'note' && (k.rects || []).some(r => x >= r[0] && x <= r[0] + r[2] && y >= r[1] && y <= r[1] + r[3]));
+  if(m){ e.stopPropagation(); spShowMk(m, {left: e.clientX, top: e.clientY, right: e.clientX, width: 0}); } else $('spMk').hidden = true; });
+document.addEventListener('pointerdown', e => { if(!e.target.closest('#spMk')) $('spMk').hidden = true; if(!e.target.closest('#spEbNote') && !$('spEbNote').hidden){ $('spEbNote').hidden = true; } }, true);
+
+/* ===================== your own folders and categories: make them, nest them, rename them ===================== */
+const rOpenCats = new Set();
+function catPaths(){ const all = new Set(); allCats().forEach(c => { const parts = String(c).split('/').map(x => x.trim()).filter(Boolean); for(let i = 1; i <= parts.length; i++) all.add(parts.slice(0, i).join('/')); }); return [...all].sort((a, b) => a.localeCompare(b)); }
+function catTreeHTML(){ const paths = catPaths(), kids = p => paths.filter(x => x.indexOf(p + '/') === 0 && x.slice(p.length + 1).indexOf('/') < 0);
+  const count = p => R.filter(b => (b.categories || []).some(c => c === p || c.indexOf(p + '/') === 0)).length;
+  let h = ''; const row = (p, depth) => { const ks = kids(p), open = rOpenCats.has(p) || rFilter.indexOf('cat:' + p + '/') === 0, leaf = p.split('/').pop();
+    h += '<div class="tp-row" style="--d:' + depth + '"><button class="tp-tog' + (ks.length ? '' : ' none') + (open ? ' open' : '') + '" data-ctog="' + esc(p) + '"></button><button class="tp' + (depth ? ' sub' : '') + (rFilter === 'cat:' + p ? ' on' : '') + '" data-filter="cat:' + esc(p) + '" data-cat="' + esc(p) + '" draggable="true"><span>' + esc(leaf) + '</span><em>' + count(p) + '</em></button><i class="tp-add" data-addcat="' + esc(p) + '" title="A category inside">+</i></div>';
+    if(open) ks.forEach(x => row(x, depth + 1)); };
+  paths.filter(p => p.indexOf('/') < 0).forEach(p => row(p, 0)); return h; }
+function catRename(from, to){ if(!to || to === from || to.indexOf(from + '/') === 0) return;
+  const sw = c => c === from ? to : c.indexOf(from + '/') === 0 ? to + c.slice(from.length) : c;
+  CATS = [...new Set(CATS.map(sw))]; R.forEach(b => { if((b.categories || []).length) b.categories = [...new Set(b.categories.map(sw))]; });
+  if(rFilter === 'cat:' + from) rFilter = 'cat:' + to; rSave(); renderReadings(); }
+function catDelete(p){ const gone = c => c === p || c.indexOf(p + '/') === 0; CATS = CATS.filter(c => !gone(c)); R.forEach(b => { if(b.categories) b.categories = b.categories.filter(c => !gone(c)); }); if(rFilter.indexOf('cat:' + p) === 0) rFilter = 'st:all'; rSave(); renderReadings(); }
+/* a small menu of its own for the two sidebars */
+function tpMenu(x, y, items){ let m = $('tpMenu'); if(!m){ m = document.createElement('div'); m.id = 'tpMenu'; m.className = 'tp-menu'; document.body.appendChild(m); document.addEventListener('pointerdown', e => { if(!e.target.closest('#tpMenu')) m.hidden = true; }, true); }
+  m.innerHTML = items.map((it, i) => '<button type="button" data-ti="' + i + '"' + (it[2] ? ' class="danger"' : '') + '>' + esc(it[0]) + '</button>').join(''); m.hidden = false;
+  m.style.left = Math.min(innerWidth - 200, x) + 'px'; m.style.top = Math.min(innerHeight - 40 * items.length - 20, y) + 'px';
+  m.onclick = e => { const b = e.target.closest('[data-ti]'); if(!b) return; m.hidden = true; items[+b.dataset.ti][1](); }; }
+const askName = (q, v) => { const n = (prompt(q, v || '') || '').trim().replace(/\//g, '-'); return n.slice(0, 60); };
+function pReload(){ D = load(); renderPapers(); }
+/* Papers: + New folder, + inside a folder, right-click to rename or delete, drag a folder into another, drag a paper into a folder */
+$('pboard').addEventListener('click', e => {
+  if(e.target.closest('[data-newfolder]')){ e.stopPropagation(); const n = askName('A new folder for your papers'); if(n && P && P.newFolder){ const id = P.newFolder(n); pReload(); if(id) pOpen.add(id); } return; }
+  const add = e.target.closest('.tp-add[data-add-map]'); if(add){ e.stopPropagation(); const n = askName('A folder inside it'); if(n && P && P.newFolder){ P.newFolder(n, add.dataset.addMap, add.dataset.addSub || null); pOpen.add(add.dataset.addMap); if(add.dataset.addSub) pOpen.add(add.dataset.addSub); pShut.delete(add.dataset.addMap); pReload(); } return; }
+}, true);
+$('pboard').addEventListener('contextmenu', e => { const t = e.target.closest('.tp[data-map]'); if(!t || !t.dataset.map) return; e.preventDefault(); const tid = t.dataset.map, sid = t.dataset.sub || null, name = t.querySelector('span').textContent;
+  tpMenu(e.clientX, e.clientY, [['Rename', () => { const n = askName('Its new name', name); if(n){ P.renameFolder(tid, sid, n); pReload(); } }], ['A folder inside', () => { const n = askName('A folder inside it'); if(n){ P.newFolder(n, tid, sid); pOpen.add(tid); if(sid) pOpen.add(sid); pReload(); } }],
+    ['Delete', () => { const r = P.deleteFolder(tid, sid); if(r === 'not-empty') toast('Move its papers into another folder first'); else { if(pFilter.map === tid && (!sid || pFilter.sub === sid)){ pFilter.map = ''; pFilter.sub = ''; } pReload(); } }, true]]); });
+let pDrag = null;
+$('pboard').addEventListener('dragstart', e => { const t = e.target.closest && e.target.closest('.tp[data-map]'), g = e.target.closest && e.target.closest('.pg');
+  if(t && t.dataset.map){ pDrag = {kind: 'folder', t: t.dataset.map, s: t.dataset.sub || null}; } else if(g){ pDrag = {kind: 'paper', id: g.dataset.id}; } else return;
+  try{ e.dataTransfer.setData('text/plain', 'pm'); e.dataTransfer.effectAllowed = 'move'; }catch(err){} document.body.classList.add('pm-dragging'); });
+$('pboard').addEventListener('dragover', e => { if(!pDrag) return; const t = e.target.closest('.tp[data-map]'); document.querySelectorAll('#pbMaps .tp.drop').forEach(x => { if(x !== t) x.classList.remove('drop'); }); if(!t || !t.dataset.map) return; e.preventDefault(); t.classList.add('drop'); });
+$('pboard').addEventListener('drop', e => { const t = e.target.closest('.tp[data-map]'); document.querySelectorAll('#pbMaps .tp.drop').forEach(x => x.classList.remove('drop')); if(!pDrag || !t || !t.dataset.map){ pDrag = null; return; } e.preventDefault();
+  const dT = t.dataset.map, dS = t.dataset.sub || null;
+  if(pDrag.kind === 'paper'){ P.movePaper(pDrag.id, dT, dS); toast('Moved into ' + t.querySelector('span').textContent); }
+  else if(!(pDrag.t === dT && (pDrag.s || null) === dS)){ const ok = P.moveFolder(pDrag.t, pDrag.s, dT, dS); if(ok){ pOpen.add(dT); if(dS) pOpen.add(dS); pShut.delete(dT); } else toast('It cannot go inside itself'); }
+  pDrag = null; pReload(); });
+addEventListener('dragend', () => { pDrag = null; rDrag = null; document.body.classList.remove('pm-dragging'); document.querySelectorAll('.tp.drop').forEach(x => x.classList.remove('drop')); });
+/* Readings: categories within categories, made, nested and renamed the same way; drag a book onto a category to put it there */
+RB.addEventListener('click', e => {
+  const tg = e.target.closest('[data-ctog]'); if(tg){ e.stopPropagation(); const p = tg.dataset.ctog; if(tg.classList.contains('open')) rOpenCats.delete(p); else rOpenCats.add(p); renderReadings(); return; }
+  const add = e.target.closest('[data-addcat]'); if(add){ e.stopPropagation(); const n = askName('A category inside it'); if(n){ const p = add.dataset.addcat + '/' + n; if(!CATS.includes(p)) CATS.push(p); rOpenCats.add(add.dataset.addcat); rSave(); renderReadings(); } return; }
+}, true);
+RB.addEventListener('contextmenu', e => { const t = e.target.closest('[data-cat]'); if(!t) return; e.preventDefault(); const p = t.dataset.cat, leaf = p.split('/').pop(), up = p.split('/').slice(0, -1).join('/');
+  tpMenu(e.clientX, e.clientY, [['Rename', () => { const n = askName('Its new name', leaf); if(n) catRename(p, (up ? up + '/' : '') + n); }], ['A category inside', () => { const n = askName('A category inside it'); if(n){ const q = p + '/' + n; if(!CATS.includes(q)) CATS.push(q); rOpenCats.add(p); rSave(); renderReadings(); } }],
+    ...(up ? [['Move to the top', () => catRename(p, leaf)]] : []), ['Delete', () => catDelete(p), true]]); });
+let rDrag = null;
+RB.addEventListener('dragstart', e => { const t = e.target.closest && e.target.closest('[data-cat]'), bk = e.target.closest && e.target.closest('.rbk');
+  if(t) rDrag = {kind: 'cat', p: t.dataset.cat}; else if(bk) rDrag = {kind: 'book', id: bk.dataset.id}; else return; try{ e.dataTransfer.setData('text/plain', 'pm'); }catch(err){} });
+RB.addEventListener('dragover', e => { if(!rDrag) return; const t = e.target.closest('[data-cat]'); document.querySelectorAll('#rcats .tp.drop').forEach(x => { if(x !== t) x.classList.remove('drop'); }); if(!t) return; e.preventDefault(); t.classList.add('drop'); });
+RB.addEventListener('drop', e => { const t = e.target.closest('[data-cat]'); document.querySelectorAll('#rcats .tp.drop').forEach(x => x.classList.remove('drop')); if(!rDrag || !t){ rDrag = null; return; } e.preventDefault(); const dst = t.dataset.cat;
+  if(rDrag.kind === 'book'){ const b = R.find(x => x.id === rDrag.id); if(b){ b.categories = [...new Set((b.categories || []).concat([dst]))]; rSave(); renderReadings(); toast('Put in ' + dst.split('/').pop()); } }
+  else { const src = rDrag.p; if(dst === src || dst.indexOf(src + '/') === 0){ toast('It cannot go inside itself'); } else catRename(src, dst + '/' + src.split('/').pop()); }
+  rDrag = null; });
+document.querySelectorAll('#rSecs').forEach(() => {});
 })();

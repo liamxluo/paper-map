@@ -112,13 +112,14 @@ function mmMenu(){
 /* ---- opening and closing ---- */
 function openMind(id){
   const m = mindOf(id); if(!m) return; mmEnsure(); MM.id = id; MM.sel = null; MM.editing = null;
+  if(!DK.mindFrom) DK.mindFrom = 'maps';
   MM.view = m.view ? {x: m.view.x + innerWidth / 2, y: m.view.y + innerHeight / 2, k: m.view.k || 1} : {x: innerWidth / 2, y: innerHeight / 2 + 20, k: 1};
   mmApply(); mmRender(); try{ deskHide(); }catch(e){}
   document.documentElement.classList.add('mind-on'); MM.el.hidden = false; requestAnimationFrame(() => MM.el.classList.add('on'));
   try{ document.title = m.name + ' · Paper Map'; }catch(e){}
 }
 function closeMind(toDesk){ if(!MM.el || MM.el.hidden) return; mmCommitText(); mmSave(); MM.el.classList.remove('on');
-  setTimeout(() => { MM.el.hidden = true; document.documentElement.classList.remove('mind-on'); }, 260); MM.id = null; if(toDesk !== false) try{ deskOpen(); }catch(e){} }
+  setTimeout(() => { MM.el.hidden = true; document.documentElement.classList.remove('mind-on'); }, 260); MM.id = null; if(toDesk !== false) try{ DK.from = DK.mindFrom === 'desk' ? 'desk' : 'mind'; DK.mindFrom = null; deskOpen(); }catch(e){} }
 function mmCommitText(){ if(!MM.editing) return; const m = mindOf(MM.id), id = MM.editing; MM.editing = null; if(!m) return;
   const el = document.querySelector('#mmNodes [data-n="' + id + '"] .mm-txt'), n = m.nodes.find(x => x.id === id); if(!n) return;
   const t = el ? el.innerText.trim() : (n.text || ''); if(!t){ m.nodes = m.nodes.filter(x => x.id !== id); m.edges = m.edges.filter(e => e.a !== id && e.b !== id); if(MM.sel === id) MM.sel = null; } else n.text = t;

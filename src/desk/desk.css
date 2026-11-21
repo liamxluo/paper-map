@@ -715,3 +715,42 @@ body.st-books #rboard{opacity:1}
 #dtour .dt-skip:hover{background:rgba(35,30,26,.06)}
 #dtour .dt-next{background:#231E1A;color:#FBF7EE}
 #dtour .dt-next:active{transform:scale(.96)}
+
+/* no colour to choose on a cover: the maps take the palette's colours in turn */
+.mcard .mc-col,#colPick{display:none !important}
+/* while the top map lands, every other cover waits, and then they all come in together */
+#rowIn.landing .mcard:nth-child(-n+3) .xc{visibility:visible}
+#rowIn.landing .mcard:first-child .xc{visibility:hidden}
+#rowIn .mcard:nth-child(n+2) .xc,#rowIn .mcard:nth-child(n+2) .mlabel{transition:opacity .45s ease}
+#rowIn.landing .mcard:nth-child(n+2) .xc,#rowIn.landing .mcard:nth-child(n+2) .mlabel{opacity:0 !important}
+
+/* five highlighters in the selection bar, and the bar that opens on a highlight */
+#spread .sp-sel .hl{width:15px;height:15px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+#spread .sp-sel [data-sel="mark"],#spread .sp-mk [data-mkc]{padding:0 6px}
+#spread .sp-mk [data-mkc].on .hl{box-shadow:0 0 0 2px #FBF7EE}
+#spread .sp-ebnote{position:fixed;z-index:165}
+#spread .sp-ebnote[hidden]{display:none}
+#spread .sp-ebnote .sp-sticky{position:relative !important;transform:rotate(-1.2deg)}
+
+/* the glass pill: every divider sits on the middle line */
+#spread .sp-tools{align-items:center}
+#spread .sp-glass .sp-gsep{align-self:center;flex:none}
+/* ⋯ is a short list */
+#spread .sp-pop.sp-menu{width:260px;padding:8px}
+
+/* folders and categories you make yourself: a + appears on a row to make one inside it; drag one onto another to put it inside */
+#pbMaps .tp-row,#rcats .tp-row{position:relative}
+.tp-row .tp-add{position:absolute;right:30px;top:50%;margin-top:-10px;width:20px;height:20px;border-radius:6px;text-align:center;line-height:19px;font:500 15px var(--sans);font-style:normal;color:rgba(246,231,210,.75);cursor:pointer;opacity:0;transition:opacity .15s ease}
+.tp-row:hover .tp-add{opacity:1}
+.tp-row .tp-add:hover{background:rgba(251,247,238,.16);color:#fff}
+#rcats .tp-row{display:flex;align-items:center}
+#rcats .tp-row .tp-tog{flex:none;margin-left:calc(var(--d, 0) * 14px)}
+#rcats .tp-row .tp{flex:1;min-width:0}
+.tp.drop{background:rgba(251,247,238,.22) !important;box-shadow:inset 0 0 0 1.5px rgba(246,231,210,.7) !important}
+.tp.tp-new span{font-style:italic;opacity:.75}
+.pg[draggable="true"],.rbk{-webkit-user-drag:element}
+.tp-menu{position:fixed;z-index:400;min-width:180px;padding:6px;border-radius:12px;background:rgba(255,253,248,.96);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 2px 4px rgba(0,0,0,.14),0 14px 34px rgba(20,10,4,.3)}
+.tp-menu[hidden]{display:none}
+.tp-menu button{all:unset;box-sizing:border-box;display:block;width:100%;padding:8px 12px;border-radius:8px;font:500 13.5px var(--sans);color:#231E1A;cursor:pointer}
+.tp-menu button:hover{background:#F1EBE0}
+.tp-menu button.danger{color:#B4432E}

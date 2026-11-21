@@ -22,8 +22,8 @@ window.pmDesk = {
   openPaper(id, from){ const e = lib.entries[id]; if(!e) return; deskTouchRecent(e.topic); DK.fromTopic = e.topic; DK.from = from === 'paper' ? 'paper:' + id : 'papers'; deskHide(); setTimeout(() => { goTo(id); try{ select(id, true); }catch(err){} }, 90); },
   newMap(){ setTimeout(() => openTopicForm(), 140); },
   pdfThumb(id){ return pdfFirstPage(id); },
-  openMind(id){ setTimeout(() => { try{ openMind(id); }catch(e){} }, 40); },
-  mindFor(kind, id){ setTimeout(() => { try{ mindFor(kind, id); }catch(e){} }, 40); },
+  openMind(id){ DK.mindFrom = 'maps'; setTimeout(() => { try{ openMind(id); }catch(e){} }, 40); },
+  mindFor(kind, id){ DK.mindFrom = 'desk'; setTimeout(() => { try{ mindFor(kind, id); }catch(e){} }, 40); },
   async bookFileSave(bookId, file){ const c = ghCfg(), name = String(file.name || 'book').replace(/[\\/:*?"<>|#%]+/g, ' ').trim().slice(-90), path = 'books/' + bookId + '/' + name;
     const meta = {name: file.name, path, size: file.size, type: file.type || '', added: new Date().toISOString()};
     if(c){ if(c.kind !== 'folder' && file.size > 95 * 1048576) throw new Error('That file is ' + fmtSize(file.size) + ': GitHub takes files up to 100 MB. Keep it in iCloud Drive or a folder instead.');
@@ -45,6 +45,37 @@ window.pmDesk = {
   over(kind, r){ const fake = {getBoundingClientRect: () => ({left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.right - r.left, height: r.bottom - r.top, x: r.left, y: r.top}), classList: {add(){}, remove(){}, toggle(){}, contains(){ return false; }}, closest: () => null};
     document.documentElement.classList.add('pm-overdesk'); if(kind === 'note') atlasNote(fake); else if(kind === 'sync') atlasSync(fake); },
   closeOver(){ try{ atlasNoteClose(); }catch(e){} const s2 = document.getElementById('atlSync'); if(s2) s2.hidden = true; },
+  /* folders and topics in the Papers list: make them, rename them, nest them by dragging, and move papers into them */
+  newFolder(name, tid, parentSub){ name = String(name || '').trim().slice(0, 80); if(!name || PREVIEW) return null;
+    if(!tid){ const tp = {id: rid('t'), name, shelf: true, subs: [{id: rid('s'), name, desc: '', groups: [], hidden: true}]}; lib.topics.push(tp); try{ reindex(); }catch(e){} touchLib(); return tp.id; }
+    const tp = lib.topics.find(t => t.id === tid); if(!tp) return null; const root = tp.subs.find(x => x.hidden) || tp.subs[0];
+    const sub = {id: rid('s'), name, desc: '', groups: []}; if(parentSub && root && parentSub !== root.id) sub.parent = parentSub; tp.subs.push(sub); try{ reindex(); }catch(e){} touchLib(); return sub.id; },
+  renameFolder(tid, sid, name){ name = String(name || '').trim().slice(0, 80); const tp = lib.topics.find(t => t.id === tid); if(!name || !tp || PREVIEW) return;
+    const root = tp.subs.find(x => x.hidden) || tp.subs[0]; if(!sid || (root && sid === root.id)){ tp.name = name; if(root && root.hidden) root.name = name; } else { const x = tp.subs.find(y => y.id === sid); if(x) x.name = name; } touchLib(); },
+  deleteFolder(tid, sid){ const tp = lib.topics.find(t => t.id === tid); if(!tp || PREVIEW) return 'none'; const root = tp.subs.find(x => x.hidden) || tp.subs[0];
+    if(!sid || (root && sid === root.id)){ if(Object.values(lib.entries).some(e => e.topic === tid)) return 'not-empty'; lib.topics = lib.topics.filter(t => t !== tp); lib.tlinks = (lib.tlinks || []).filter(l => l[0] !== tid && l[1] !== tid); try{ reindex(); }catch(e){} touchLib(); return 'ok'; }
+    const S = tp.subs.find(x => x.id === sid); if(!S) return 'none'; const up = S.parent || (root && root.id);
+    tp.subs.forEach(x => { if(x.parent === sid){ if(S.parent) x.parent = S.parent; else delete x.parent; } });
+    Object.values(lib.entries).forEach(e => { if(e.topic === tid && e.sub === sid) e.sub = up; });
+    tp.subs = tp.subs.filter(x => x !== S); try{ reindex(); }catch(e){} touchLib(); return 'ok'; },
+  moveFolder(sT, sS, dT, dS){ if(PREVIEW) return false; const A = lib.topics.find(t => t.id === sT), B = lib.topics.find(t => t.id === dT); if(!A || !B) return false;
+    const rootOf = t => t.subs.find(x => x.hidden) || t.subs[0], rA = rootOf(A), rB = rootOf(B); if(sS && rA && sS === rA.id) sS = null;
+    const target = dS && rB && dS !== rB.id ? dS : null;
+    if(!sS){ if(A === B) return false;
+      /* a whole folder or map goes inside another: its own level becomes a topic there, with everything it held */
+      const nr = {id: rid('s'), name: A.name, desc: '', groups: []}; if(target) nr.parent = target;
+      const rest = A.subs.filter(x => x !== rA).map(x => Object.assign({}, x, x.parent ? {} : {parent: nr.id}));
+      B.subs.push(nr, ...rest);
+      Object.values(lib.entries).forEach(e => { if(e.topic === A.id){ e.topic = B.id; if(!e.sub || (rA && e.sub === rA.id)) e.sub = nr.id; } });
+      lib.topics = lib.topics.filter(t => t !== A); lib.tlinks = (lib.tlinks || []).filter(l => l[0] !== A.id && l[1] !== A.id);
+    } else { const S = A.subs.find(x => x.id === sS); if(!S) return false;
+      const tree = new Set([S.id]); let grew = true; while(grew){ grew = false; A.subs.forEach(x => { if(x.parent && tree.has(x.parent) && !tree.has(x.id)){ tree.add(x.id); grew = true; } }); }
+      if(A === B && target && tree.has(target)) return false;
+      if(A === B){ if(target) S.parent = target; else delete S.parent; }
+      else { const moving = A.subs.filter(x => tree.has(x.id)); A.subs = A.subs.filter(x => !tree.has(x.id)); if(target) S.parent = target; else delete S.parent; B.subs.push(...moving);
+        Object.values(lib.entries).forEach(e => { if(e.topic === A.id && tree.has(e.sub)) e.topic = B.id; }); } }
+    try{ reindex(); }catch(e){} touchLib(); return true; },
+  movePaper(id, tid, sid){ const e = lib.entries[id], tp = lib.topics.find(t => t.id === tid); if(!e || !tp || PREVIEW) return; const root = tp.subs.find(x => x.hidden) || tp.subs[0]; e.topic = tid; e.sub = sid || (root && root.id); try{ reindex(); }catch(err){} touchLib(); },
   paperLinks(id){ const seen = new Set(); return (lib.links || []).filter(l => l[0] === id || l[1] === id).map(l => l[0] === id ? l[1] : l[0]).filter(x => lib.entries[x] && !seen.has(x) && seen.add(x)).map(x => lib.entries[x].t || ''); },
   paperRead(id){ const e = lib.entries[id]; if(!e) return null; return {n: e.n || '', marks: clone(e.marks || []), quotes: clone(e.quotes || []), stickies: clone(e.stickies || []), at: e.readAt || 0}; },
   setPaperStickies(id, arr){ const e = lib.entries[id]; if(!e || PREVIEW) return; e.stickies = arr; touchLib(); },
@@ -119,6 +150,8 @@ async function deskOpen(){
   for(let i = 0; i < 80 && page.busy && page.busy(); i++) await sleep(50);
   const from = DK.from; DK.from = null;
   if(from === 'papers'){ page.show('papers'); deskShowFrame(); DK.fromTopic = null; return; }
+  if(from === 'mind'){ page.show('maps'); deskShowFrame(); DK.fromTopic = null; return; }
+  if(from === 'desk'){ page.show(); deskShowFrame(); DK.fromTopic = null; return; }
   if(from === 'note'){ page.show(); deskShowFrame(); DK.fromTopic = null; setTimeout(() => { try{ page.openNote(); }catch(e){} }, 380); return; }
   if(from && from.indexOf('paper:') === 0){ try{ closeReader(); }catch(e){} page.show('paper', from.slice(6)); deskShowFrame(); DK.fromTopic = null; return; }
   const tid = ui.topic && lib.topics.some(t => t.id === ui.topic) ? ui.topic : null;
