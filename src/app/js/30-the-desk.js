@@ -1,3 +1,4 @@
+let PDF_WHY = '';
 /* ===================== the desk =====================
    The front of Paper Map: your maps folded on a desk, your papers, your Readings and a research log.
    It is a page of its own (an iframe from srcdoc, same origin) that reads and saves through window.pmDesk. */
@@ -46,7 +47,7 @@ window.pmDesk = {
     if(f.where === 'asset'){ const here = await PMDB.get('file:' + f.path); if(here) return here; const c = ghCfg(); if(!c || !f.asset) return null;
       const b = await ghAssetGet(c, f.asset.id); if(b){ try{ await PMDB.set('file:' + f.path, b); }catch(e){} } return b; }
     if(f.where === 'example'){ try{ const r = await fetch('example/' + f.path); return r.ok ? await r.blob() : null; }catch(e){ return null; } }
-    if(f.where === 'zotero'){ const zc = ztCfg(); return zc ? await ztFileBlob(zc, f.zotero, f.name) : null; }
+    if(f.where === 'zotero'){ const zc = ztCfg(); return zc ? await ztFileBlob(zc, f.zotero, f.name, f.zpath) : null; }
     const c = ghCfg(); if(!c) return null;
     if(c.kind === 'folder'){ const b = await remoteBytes(c, f.path); return b ? new Blob([b], {type: f.type || 'application/octet-stream'}) : null; }
     const r = await fetch(ghPathUrl(c, f.path) + ghRef(c), {headers: ghHeaders(c, {'Accept': 'application/vnd.github.raw+json'})}); return r.ok ? await r.blob() : null; },
@@ -54,8 +55,11 @@ window.pmDesk = {
   saveBlob(blob, name){ if(window.__TAURI__ && typeof macSave === 'function'){ macSave(blob, name).then(() => toast('Saved to Downloads: ' + name)).catch(() => toast('Could not save the file')); return; }
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); },
   pdfPage(id, n){ return pdfPageAt(id, n || 0); },
-  pdfWhy(){ return typeof ZT_WHY === 'string' ? ZT_WHY : ''; },
-  async paperPdfBlob(id){ const e = lib.entries[id]; if(!e || !e.pdf) return null; try{ const u = await pdfUrl(e); const r = await fetch(u); return r.ok ? await r.blob() : null; }catch(err){ return null; } },
+  async paperPdfBlob(id){ const e = lib.entries[id]; PDF_WHY = ''; if(typeof ZT_LOG !== 'undefined') ZT_LOG = []; if(!e || !e.pdf) return null; try{ const u = await pdfUrl(e); const r = await fetch(u); if(!r.ok){ PDF_WHY = 'read back: ' + r.status; return null; } const b = await r.blob(); if(!b || !b.size){ PDF_WHY = 'the file came back empty'; return null; } return b; }
+    catch(err){ const st = err && err.status, fromZ = (e.pdf.zotero || /^zotero:/.test(e.pdf.path || '')) && !(e.pdf.path || '').startsWith('pdfs/');
+      PDF_WHY = st === 'nozotero' ? 'Zotero is not connected on this device; connect it in the Mac app' : fromZ && !window.__TAURI__ ? 'Zotero keeps this PDF; it opens in the Mac app' : st === 'nogh' ? 'no library is set up on this device' : st === 404 ? 'the file is not in your library' : String(st || (err && err.message) || 'unknown').slice(0, 80);
+      return null; } },
+  pdfWhy(){ const w = (typeof ZT_WHY === 'string' && ZT_WHY) || PDF_WHY, l = typeof ZT_LOG !== 'undefined' && ZT_LOG.length ? ' — ' + ZT_LOG.join(' › ') : ''; return (w || (lib.entries && '')) + l + (w || l ? '' : 'path ' + ''); },
   over(kind, r){ const fake = {getBoundingClientRect: () => ({left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.right - r.left, height: r.bottom - r.top, x: r.left, y: r.top}), classList: {add(){}, remove(){}, toggle(){}, contains(){ return false; }}, closest: () => null};
     document.documentElement.classList.add('pm-overdesk'); if(kind === 'note') atlasNote(fake); else if(kind === 'sync') atlasSync(fake); },
   closeOver(){ try{ atlasNoteClose(); }catch(e){} const s2 = document.getElementById('atlSync'); if(s2) s2.hidden = true; },

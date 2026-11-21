@@ -52,16 +52,17 @@ function ztStatusOf(tags){ const n = (tags || []).map(t => t.tag.toLowerCase());
 async function ztSync(manual){
   const c = ztCfg(); if(!c || !c.key || ZT.busy) return; ZT.busy = true; c.items = c.items || {}; c.children = c.children || {};
   try{
-    const colls = (await ztAll(c, '/users/' + c.user + '/collections')).items;
+    const colls = (await ztAll(c, '/users/' + c.user + '/collections')).items.filter(x => !(x.data && x.data.deleted));
     const chosen = new Set(c.include === 'all' || !c.include ? colls.map(x => x.key) : c.include);
-    const {items, version} = await ztAll(c, '/users/' + c.user + '/items' + (c.version ? '?since=' + c.version : ''));
+    const full = !lib.ztFull; const {items, version} = await ztAll(c, '/users/' + c.user + '/items' + (c.version && !full ? '?since=' + c.version : ''));
     let made = 0, updated = 0, notes = 0, marks = 0;
-    const tops = items.filter(i => !i.data.parentItem && i.data.itemType !== 'attachment' && i.data.itemType !== 'note' && i.data.itemType !== 'annotation');
+    const lone = i => i.data.itemType === 'attachment' && !i.data.parentItem && /pdf/i.test(i.data.contentType || '') && /imported|linked_file/.test(i.data.linkMode || '');
+    const tops = items.filter(i => !i.data.parentItem && ((i.data.itemType !== 'attachment' && i.data.itemType !== 'note' && i.data.itemType !== 'annotation') || lone(i)));
     const unfiled = it => !(it.data.collections || []).length && c.unfiled !== false;
-    const ZL = ztLib(); lib.ztree = colls.filter(x => chosen.has(x.key)).map(x => ({key: x.key, name: x.data.name, parent: x.data.parentCollection && chosen.has(x.data.parentCollection) ? x.data.parentCollection : null}));
+    const ZL = ztLib(); lib.ztFull = true; lib.ztree = colls.filter(x => chosen.has(x.key)).map(x => ({key: x.key, name: x.data.name, parent: x.data.parentCollection && chosen.has(x.data.parentCollection) ? x.data.parentCollection : null}));
     try{ ztUnfold(c); }catch(err){}
-    tops.forEach(it => { const d = it.data, inSel = (d.collections || []).filter(k => chosen.has(k)); if(!inSel.length && !(c.items[it.key]) && !unfiled(it)) return;
-      const st = ztStatusOf(d.tags), title = (d.title || '').trim(); if(!title) return;
+    tops.forEach(it => { const d = it.data, inSel = (d.collections || []).filter(k => chosen.has(k)); if(d.deleted){ const x = c.items[it.key] && lib.entries[c.items[it.key]]; if(x) x.zcolls = []; return; } if(!inSel.length && !(c.items[it.key]) && !unfiled(it)) return;
+      const st = ztStatusOf(d.tags), title = (d.title || String(d.filename || '').replace(/\.pdf$/i, '')).trim(); if(!title) return;
       if(typeof c.items[it.key] === 'string' && c.items[it.key].startsWith('r:')){ R_ztBook(c, it, st) === 'new' ? made++ : updated++; return; }
       const doiOf = s => String(s || '').toLowerCase().replace(/^https?:\/\/(dx\.)?doi\.org\//, '').trim(), tnorm = s => ztName(s).replace(/[^a-z0-9\u4e00-\u9fff]+/g, ' ').trim();
       const zdoi = doiOf(d.DOI), zt = tnorm(d.title), zy = (String(d.date || '').match(/\d{4}/) || [])[0];
@@ -72,7 +73,8 @@ async function ztSync(manual){
       inSel.sort((a, b) => depth(b) - depth(a));
       const place = e ? {topic: e.topic, sub: e.sub} : {topic: ZL.id, sub: ZL.subs[0].id};
       if(!e){ const id = rid('z'); e = {id, kind: 'paper', t: title, au: '', y: null, topic: place.topic, sub: place.sub, tags: [], d: [], p: 1, group: '', n: ''}; lib.entries[id] = e; c.items[it.key] = id; made++; } else updated++;
-      e.ztype = d.itemType; e.zkey = it.key; e.zcolls = (d.collections || []).filter(k => chosen.has(k)); if(d.itemType && !ZPAPER.has(d.itemType) && !e.l) e.l = ({book: 'Book', bookSection: 'Book chapter', encyclopediaArticle: 'Encyclopedia', dictionaryEntry: 'Dictionary', presentation: 'Talk', document: 'Document'})[d.itemType] || '';
+      if(lone(it) && !e.pdf){ e.pdf = {path: 'zotero:' + it.key, name: d.filename || (title + '.pdf'), zotero: it.key}; if(d.linkMode === 'linked_file' && d.path) e.pdf.zpath = d.path; }
+      e.ztype = lone(it) ? 'PDF' : d.itemType; e.zkey = it.key; e.zcolls = (d.collections || []).filter(k => chosen.has(k)); if(d.itemType && !ZPAPER.has(d.itemType) && !e.l) e.l = ({book: 'Book', bookSection: 'Book chapter', encyclopediaArticle: 'Encyclopedia', dictionaryEntry: 'Dictionary', presentation: 'Talk', document: 'Document'})[d.itemType] || '';
       Object.assign(e, {t: title, au: ztAuthors(d.creators).join(' & '), y: ztYear(d.date) || e.y, v: d.publicationTitle || d.proceedingsTitle || d.bookTitle || d.institution || d.university || d.repository || e.v || '', doi: d.DOI || e.doi || '', l: d.url || e.l || '', zkey: it.key});
       const tg = ztTagIds(d.tags); e.tags = [...new Set((e.tags || []).concat(tg))];
       if(st){ const k = keyOf(e); if(status[k] !== st){ status[k] = st; statusTime = Date.now(); } } });
@@ -82,10 +84,11 @@ async function ztSync(manual){
     items.filter(i => i.data.itemType === 'note' && i.data.parentItem && c.items[i.data.parentItem]).forEach(i => { const tid = c.items[i.data.parentItem], md = ztMd(i.data.note);
       if(tid.startsWith('r:')){ const b = (lib.readings || []).find(x => x.id === tid.slice(2)); if(b && !(b.zNotes || []).includes(i.key)){ b.notes = [b.notes, md].filter(Boolean).join('\n\n'); b.zNotes = (b.zNotes || []).concat([i.key]); notes++; } }
       else { const e = lib.entries[tid]; if(e && !(e.zNotes || []).includes(i.key)){ e.n = [e.n, md].filter(Boolean).join('\n\n'); e.zNotes = (e.zNotes || []).concat([i.key]); notes++; } } });
-    items.filter(i => i.data.itemType === 'attachment' && i.data.parentItem && c.items[i.data.parentItem] && /pdf|epub/i.test(i.data.contentType || '') && /imported/.test(i.data.linkMode || '')).forEach(i => { const tid = c.items[i.data.parentItem], f = {name: i.data.filename || i.data.title || 'file', zotero: i.key, size: 0, type: i.data.contentType, where: 'zotero'};
+    items.filter(i => i.data.itemType === 'attachment' && i.data.parentItem && c.items[i.data.parentItem] && /pdf|epub/i.test(i.data.contentType || '') && /imported|linked_file/.test(i.data.linkMode || '')).forEach(i => { const tid = c.items[i.data.parentItem], f = {name: i.data.filename || String(i.data.path || '').split('/').pop() || i.data.title || 'file', zotero: i.key, size: 0, type: i.data.contentType, where: 'zotero'}; if(i.data.linkMode === 'linked_file' && i.data.path) f.zpath = i.data.path;
       c.children[i.key] = {owner: tid};
       if(tid.startsWith('r:')){ const b = (lib.readings || []).find(x => x.id === tid.slice(2)); if(b && !(b.files || []).some(x => x.zotero === i.key)) b.files = (b.files || []).concat([f]); }
-      else { const e = lib.entries[tid]; if(e && !e.pdf && /pdf/i.test(i.data.contentType)) e.pdf = {path: 'zotero:' + i.key, name: f.name, zotero: i.key}; } });
+      else { const e = lib.entries[tid]; const stale = e && e.pdf && /^zotero:/.test(e.pdf.path || '') && (!e.pdf.zotero || !e.pdf.name);
+        if(e && (!e.pdf || stale) && /pdf/i.test(i.data.contentType)){ e.pdf = {path: 'zotero:' + i.key, name: f.name, zotero: i.key}; if(f.zpath) e.pdf.zpath = f.zpath; } } });
     items.filter(i => i.data.itemType === 'annotation').forEach(i => { const att = i.data.parentItem, owner = c.children[att] && c.children[att].owner; if(!owner) return; const d = i.data;
       let pos = null; try{ pos = typeof d.annotationPosition === 'string' ? JSON.parse(d.annotationPosition) : d.annotationPosition; }catch(e){}
       const m = {id: 'za-' + i.key, src: 'zotero', zkey: i.key, text: d.annotationText || '', color: d.annotationColor ? d.annotationColor + '66' : 'rgba(226,182,72,.42)', date: (d.dateModified || '').slice(0, 10), loc: d.annotationPageLabel ? 'p. ' + d.annotationPageLabel : ''};
@@ -97,6 +100,7 @@ async function ztSync(manual){
     c.version = Math.max(c.version || 0, version); c.last = Date.now(); ztSave(c); reindex(); touchLib(); persistStatus(); try{ renderAll(); }catch(e){}
     if(manual || made || notes || marks) toast('Zotero: ' + made + ' new, ' + updated + ' brought up to date' + (notes ? ', ' + notes + ' notes' : '') + (marks ? ', ' + marks + ' highlights and sticky notes' : ''));
   }catch(err){ if(manual) toast('Zotero could not be reached just now (' + String((err && err.message) || err).slice(0, 60) + ')'); }
+  setTimeout(() => { ztKeepPdfs(); }, 3000);
   ZT.busy = false;
 }
 function R_ztBook(c, it, st){ const d = it.data; lib.readings = lib.readings || []; let b = c.items[it.key] && lib.readings.find(x => 'r:' + x.id === c.items[it.key]), isNew = false;
@@ -105,13 +109,14 @@ function R_ztBook(c, it, st){ const d = it.data; lib.readings = lib.readings || 
   if(st && st !== b.status && st !== 'want') b.status = st; return isNew ? 'new' : 'old'; }
 /* a PDF from Zotero's storage: the page asks first; Zotero's storage does not let a page read across sites, so in the Mac app
    the system fetches it instead. Whatever comes back is checked to be the file, not an error page. */
-let ZT_WHY = '';
-async function ztFileBlob(c, key, name){ const url = ZAPI + '/users/' + c.user + '/items/' + key + '/file'; ZT_WHY = '';
-  if(window.__TAURI__ && window.__TAURI__.core){ try{ const b = await ztLocalFile(key, name); if(b) return b; ZT_WHY = 'not in ' + ((await ztDataDir()) || '~/Zotero') + '/storage/' + key; }catch(e){ ZT_WHY = 'reading Zotero’s folder: ' + String(e && e.message || e).slice(0, 80); } }
+let ZT_WHY = '', ZT_LOG = [];
+function ztLog(s){ ZT_LOG.push(String(s).slice(0, 90)); }
+async function ztFileBlob(c, key, name, zpath){ const url = ZAPI + '/users/' + c.user + '/items/' + key + '/file'; ZT_WHY = ''; ZT_LOG = []; ztLog('key ' + key + (name ? ', ' + name : '') + (zpath ? ', linked ' + zpath : '')); ztLog(window.__TAURI__ && window.__TAURI__.core ? 'Mac app' : 'browser');
+  if(window.__TAURI__ && window.__TAURI__.core){ try{ const b = await ztLocalFile(key, name, zpath); if(b) return b; if(zpath){ ZT_WHY = 'a linked file at ' + zpath + ', not found on this Mac'; return null; } ZT_WHY = 'not in ' + ((await ztDataDir()) || '~/Zotero') + '/storage/' + key; }catch(e){ ZT_WHY = 'reading Zotero’s folder: ' + String(e && e.message || e).slice(0, 80); } }
   const real = b => b && b.size > 800 && !/json|html|xml/i.test(b.type || '');
   try{ const r = await fetch(url, {headers: {'Zotero-API-Key': c.key, 'Zotero-API-Version': '3'}}); if(r.ok){ const b = await r.blob(); if(real(b)) return b; ZT_WHY += (ZT_WHY ? '; ' : '') + 'zotero.org sent no PDF'; } else ZT_WHY += (ZT_WHY ? '; ' : '') + 'zotero.org: ' + r.status + (r.status === 404 ? ' (the file is not in Zotero’s online storage)' : ''); }catch(e){ ZT_WHY += (ZT_WHY ? '; ' : '') + 'zotero.org could not be reached from here'; }
   if(window.__TAURI__ && window.__TAURI__.core){ try{ const buf = await window.__TAURI__.core.invoke('fetch_bytes', {url, headers: [['Zotero-API-Key', c.key], ['Zotero-API-Version', '3']]});
-      const b = new Blob([buf], {type: 'application/pdf'}); if(real(b)) return b; }catch(e){} }
+      const b = new Blob([buf], {type: 'application/pdf'}); ztLog('Mac download ' + b.size + ' bytes'); if(real(b)) return b; }catch(e){ ztLog('Mac download: ' + String(e && e.message || e).slice(0, 60)); } }
   return null; }
 /* connecting: the key, then which collections */
 function openZotero(){
@@ -181,10 +186,15 @@ async function ztDataDir(){ if(ZT_DIR) return ZT_DIR; const inv = window.__TAURI
         if(use && m){ dir = m[1].replace(/\\\\/g, '\\'); break; } }catch(e){} } }catch(e){}
   return (ZT_DIR = dir); }
 function b64ToBlob(b64, type){ const bin = atob(b64), u = new Uint8Array(bin.length); for(let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], {type}); }
-async function ztLocalFile(key, name){ const inv = window.__TAURI__.core.invoke, dir = await ztDataDir(); if(!dir) return null; const store = dir + '/storage';
+async function ztBaseDir(){ try{ const inv = window.__TAURI__.core.invoke, pl = await inv('storage_places'), prof = pl.home + '/Library/Application Support/Zotero/Profiles', list = await inv('fs_list', {path: prof}) || [];
+  for(const p of list){ try{ const txt = atob(await inv('fs_read', {path: prof + '/' + (p.name || p) + '/prefs.js'})), m = txt.match(/user_pref\("extensions\.zotero\.baseAttachmentPath",\s*"([^"]+)"\)/); if(m) return m[1]; }catch(e){} } }catch(e){} return null; }
+async function ztLinkedFile(zpath){ const inv = window.__TAURI__.core.invoke; let p = String(zpath || '');
+  if(/^attachments:/.test(p)){ const base = await ztBaseDir(); if(!base) return null; p = base.replace(/\/$/, '') + '/' + p.replace(/^attachments:/, ''); }
+  try{ if(!(await inv('fs_stat', {path: p}))) return null; return b64ToBlob(await inv('fs_read', {path: p}), /\.epub$/i.test(p) ? 'application/epub+zip' : 'application/pdf'); }catch(e){ return null; } }
+async function ztLocalFile(key, name, zpath){ const inv = window.__TAURI__.core.invoke; if(zpath){ const b = await ztLinkedFile(zpath); ztLog('linked: ' + (b ? b.size + ' bytes' : 'not found')); if(b) return b; } const dir = await ztDataDir(); ztLog('Zotero folder ' + dir); if(!dir) return null; const store = dir + '/storage';
   const type = /\.epub$/i.test(name || '') ? 'application/epub+zip' : 'application/pdf';
-  try{ const inside = await inv('fs_list', {path: store + '/' + key}) || []; const files = inside.map(x => x.name || x).filter(n => /\.(pdf|epub)$/i.test(n));
-    const pick = files.find(n => n === name) || files[0]; if(pick) return b64ToBlob(await inv('fs_read', {path: store + '/' + key + '/' + pick}), type); }catch(e){}
+  try{ const inside = await inv('fs_list', {path: store + '/' + key}) || []; const files = inside.map(x => x.name || x).filter(n => /\.(pdf|epub)$/i.test(n)); ztLog('storage/' + key + ': ' + inside.length + ' files, ' + files.length + ' PDF');
+    const pick = files.find(n => n === name) || files[0]; if(pick){ const bb = b64ToBlob(await inv('fs_read', {path: store + '/' + key + '/' + pick}), type); ztLog('read ' + bb.size + ' bytes'); return bb; } }catch(e){ ztLog('storage/' + key + ': ' + String(e && e.message || e).slice(0, 60)); }
   if(name){ try{ const dirs = await inv('fs_list', {path: store}) || []; for(const d of dirs){ const dn = d.name || d; try{ const st = await inv('fs_stat', {path: store + '/' + dn + '/' + name}); if(st) return b64ToBlob(await inv('fs_read', {path: store + '/' + dn + '/' + name}), type); }catch(e){} } }catch(e){} }
   return null; }
 
@@ -196,3 +206,14 @@ function ztUnfold(c){ if(lib.ztUnfolded) return; const made = new Set(Object.val
     Object.values(lib.entries).forEach(e => { if(e.zkey && (e.folder === t.id || e.topic === t.id)){ if(e.topic === t.id){ e.topic = ZL.id; e.sub = ZL.subs[0].id; } if(e.folder === t.id){ delete e.folder; delete e.fsub; } } });
     const left = Object.values(lib.entries).some(e => e.topic === t.id || e.folder === t.id); if(!left) lib.topics = lib.topics.filter(x => x !== t); });
   lib.ztUnfolded = true; try{ reindex(); }catch(e){} touchLib(); }
+
+/* every Zotero PDF is kept with your library too, quietly, as soon as it comes in: then any device opens it from your own
+   repository, and Zotero is no longer needed to read it. Only the Mac app can fetch Zotero's files, so it does the copying. */
+let ZT_COPYING = false;
+async function ztKeepPdfs(){ if(ZT_COPYING || !(window.__TAURI__ && window.__TAURI__.core)) return; const c = ghCfg(), zc = ztCfg(); if(!c || !zc) return; ZT_COPYING = true;
+  try{ const todo = Object.values(lib.entries).filter(e => e.kind === 'paper' && e.pdf && (e.pdf.zotero || /^zotero:/.test(e.pdf.path || '')) && !(e.pdf.path || '').startsWith('pdfs/'));
+    for(const e of todo){ try{ const zk = e.pdf.zotero || e.pdf.path.slice(7); const blob = await ztFileBlob(zc, zk, e.pdf.name, e.pdf.zpath); if(!blob || blob.size > 95 * 1048576) continue;
+        const path = 'pdfs/' + e.id + '.pdf', content = await fileToBase64(blob);
+        const sha = await ghSerial(async () => { let r = await ghPutPath(c, path, content, 'PDF: ' + (e.t || e.id), null); if(r.status === 409 || r.status === 422){ const known = await ghPathSha(c, path); r = await ghPutPath(c, path, content, 'PDF: ' + (e.t || e.id), known); } if(!r.ok) throw {status: r.status}; const j = await r.json(); return j && j.content && j.content.sha; });
+        e.pdf = {path, name: e.pdf.name || (e.t + '.pdf'), size: blob.size, sha: sha || null, zotero: zk}; touchLib([e.topic]); await new Promise(r => setTimeout(r, 400)); }catch(err){} } }
+  finally{ ZT_COPYING = false; } }

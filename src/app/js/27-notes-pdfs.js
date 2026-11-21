@@ -169,7 +169,8 @@ function fileToBase64(file){ return new Promise((res, rej) => { const r = new Fi
 async function pdfUrl(e){
   const key = e.pdf.path + '@' + (e.pdf.sha || '');
   if(pdfUrls[key]) return pdfUrls[key];
-  if(e.pdf.zotero){ const zc = ztCfg(); if(!zc) throw {status: 'nozotero'}; const blob = await ztFileBlob(zc, e.pdf.zotero, e.pdf.name); if(!blob) throw {status: 404}; return (pdfUrls[key] = URL.createObjectURL(blob)); }
+  const zkey = e.pdf.zotero || (/^zotero:/.test(e.pdf.path || '') ? e.pdf.path.slice(7) : null);
+  if(zkey && !(e.pdf.path || '').startsWith('pdfs/')){ const zc = ztCfg(); if(!zc) throw {status: 'nozotero'}; const blob = await ztFileBlob(zc, zkey, e.pdf.name, e.pdf.zpath); if(!blob) throw {status: 404}; return (pdfUrls[key] = URL.createObjectURL(blob)); }
   const c = ghCfg(); if(!c) throw {status:'nogh'};
   let bytes;
   if(c.kind === 'dropbox' || c.kind === 'folder'){ bytes = await remoteBytes(c, e.pdf.path); if(!bytes) throw {status: 404}; }
@@ -250,7 +251,7 @@ async function renderReaderPdf(){
   }
   const head = '<div class="pdf-head"><span class="pdf-name">' + esc(e.pdf.name || 'PDF') + (e.pdf.size ? ' · ' + fmtSize(e.pdf.size) : '') + '</span>' +
     '<a class="linkbtn" id="pdfOpen" target="_blank" rel="noopener" hidden>Open in new tab</a><button type="button" class="linkbtn" data-pdf-pick="1">Replace</button><button type="button" class="linkbtn" data-pdf-remove="1">Remove</button></div>';
-  if(!c){ pane.innerHTML = head + '<p class="pdf-msg">This PDF is stored with your synced list. Connect sync in Settings to open it here.</p>'; return; }
+  if(!c && !(e.pdf.zotero || /^zotero:/.test(e.pdf.path || ''))){ pane.innerHTML = head + '<p class="pdf-msg">This PDF is stored with your synced list. Connect sync in Settings to open it here.</p>'; return; }
   pane.innerHTML = head + '<div class="pdf-frame"><p class="pdf-msg">Loading the PDF…</p></div>';
   const id = e.id;
   try{

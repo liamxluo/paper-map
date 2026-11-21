@@ -1040,7 +1040,7 @@ async function spArrive(kind, fromEl){
 }
 async function spLoadDoc(){ const kind = SP.kind, id = SP.id;
   try{
-    if(kind === 'paper'){ const p = spPaper(); if(p && p.pdf){ spMsg('Opening its PDF…'); const blob = await P.paperPdfBlob(id); if(SP.id !== id) return; if(blob) await spOpenPdf(blob); else spMsg('Its PDF could not be opened just now.' + (P.pdfWhy && P.pdfWhy() ? ' (' + P.pdfWhy() + ')' : '')); } else spEmpty(); return; }
+    if(kind === 'paper'){ const p = spPaper(); if(p && p.pdf){ spMsg('Opening its PDF…'); const blob = await P.paperPdfBlob(id); if(SP.id !== id) return; if(blob){ try{ await spOpenPdf(blob); }catch(err){ spMsg('Its PDF was found (' + blob.size + ' bytes) but could not be shown: ' + String(err && err.message || err).slice(0, 80)); } } else spMsg('Its PDF could not be opened just now. (' + ((P.pdfWhy && P.pdfWhy()) || '') + ' · ' + String(p.pdf && (p.pdf.path || '') + (p.pdf.zotero ? ' · zotero ' + p.pdf.zotero : '')).slice(0, 80) + ')'); } else spEmpty(); return; }
     const b = spBook(), fs = (b && b.files) || [], f = fs.find(x => /\.(epub|mobi|azw3?|kf8|fb2|fbz|cbz)$/i.test(x.name)) || fs.find(x => /\.epub\.zip$|\.zip$/i.test(x.name)) || fs.find(x => /\.pdf$/i.test(x.name));
     if(!f){ spEmpty(); return; } spMsg('Opening ' + f.name + '…'); const blob = await P.bookFileBlob(f); if(SP.id !== id) return;
     if(!blob){ spMsg('The book’s file could not be read just now.'); return; }
