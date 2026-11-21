@@ -22,7 +22,7 @@ function mmEnsure(){
     '<div class="mm-stage" id="mmStage"><div class="mm-world" id="mmWorld"><svg class="mm-svg" id="mmSvg" width="1" height="1"><g id="mmEdges"></g><path id="mmRubber" class="mm-rubber" d=""></path></svg><div id="mmNodes"></div></div></div>' +
     '<div class="mm-head"><h1 id="mmTitle" spellcheck="false"></h1><p id="mmSub"></p><i class="mm-rule"></i></div>' +
     '<div class="mm-bar mm-l"><button type="button" data-mm="back" aria-label="Back to the desk" title="Back to the desk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button><button type="button" data-mm="maps" class="mm-name"><span id="mmName"></span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></button></div>' +
-    '<div class="mm-bar mm-r"><button type="button" data-mm="paper">+ Paper</button><button type="button" data-mm="book">+ Book</button><button type="button" data-mm="text">+ Words</button><i class="mm-sep"></i><button type="button" data-mm="fit" aria-label="See all of it" title="See all of it"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>' +
+    '<div class="mm-bar mm-r"><button type="button" data-mm="paper" aria-label="Add a paper" title="Add a paper"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5z"/><path d="M13.5 3v5.5H19"/><path d="M12 11.5v6M9 14.5h6"/></svg></button><button type="button" data-mm="book" aria-label="Add a book" title="Add a book"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2C5 4.8 8.4 4.9 12 6.8c3.6-1.9 7-2 9.5-.6v12.6c-2.5-1.4-5.9-1.3-9.5.6-3.6-1.9-7-2-9.5-.6z"/><path d="M12 6.8v12.6"/><path d="M19 1.2v4M17 3.2h4"/></svg></button><button type="button" data-mm="text" aria-label="Add words" title="Add words"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5V4.5h11v2M9.5 4.5v13.5M7.5 18h4"/><path d="M18.5 12v7M15 15.5h7"/></svg></button><i class="mm-sep"></i><button type="button" data-mm="fit" aria-label="See all of it" title="See all of it"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button type="button" data-mm="export" aria-label="Export as vector PDF or SVG" title="Export as vector PDF or SVG"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v11M7.5 10l4.5 4.5 4.5-4.5"/><path d="M5 19.5h14"/></svg></button><i class="mm-sep"></i><button type="button" data-mm="note" aria-label="Your research log" title="Your research log"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v18M12.5 8h3.5M12.5 12h3.5"/></svg></button><button type="button" data-mm="sync" aria-label="Where your library is kept" title="Where your library is kept"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 18.5h9.8a4.2 4.2 0 0 0 .6-8.36A6 6 0 0 0 6.3 9.2a4.7 4.7 0 0 0 1.2 9.3z"/></svg></button><button type="button" data-mm="look" aria-label="Settings" title="Settings"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3 1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8 1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg></button></div>' +
     '<p class="mm-hint" id="mmHint">Click anywhere to begin</p>' +
     '<div class="mm-pin" id="mmPin" hidden><i class="mm-tack"></i><div class="mm-pin-in" id="mmPinIn"></div></div>' +
     '<div class="mm-pick" id="mmPick" hidden><input id="mmPickQ" type="search" placeholder="Find" autocomplete="off"><div id="mmPickList"></div></div>' +
@@ -30,7 +30,8 @@ function mmEnsure(){
   document.body.appendChild(d); MM.el = d; mmWire(); return d;
 }
 const mm$ = id => document.getElementById(id);
-function mmApply(){ mm$('mmWorld').style.transform = 'translate(' + MM.view.x + 'px,' + MM.view.y + 'px) scale(' + MM.view.k + ')'; }
+function mmApply(){ mm$('mmWorld').style.transform = 'translate(' + MM.view.x + 'px,' + MM.view.y + 'px) scale(' + MM.view.k + ')';
+  const sh = MM.el && MM.el.querySelector('.mm-sheet'); if(sh){ sh.style.setProperty('--bgx', MM.view.x + 'px'); sh.style.setProperty('--bgy', MM.view.y + 'px'); sh.style.setProperty('--bgs', Math.max(40, 300 * MM.view.k) + 'px'); } }
 function mmToWorld(cx, cy){ return [(cx - MM.view.x) / MM.view.k, (cy - MM.view.y) / MM.view.k]; }
 function mmNodeHTML(n, m){
   let inner = '';
@@ -49,7 +50,7 @@ function mmRender(){
   const by = {}; m.nodes.forEach(n => by[n.id] = n);
   m.edges = m.edges.filter(e => by[e.a] && by[e.b]);
   mm$('mmEdges').innerHTML = m.edges.map(e => { const c = mmCurve(by[e.a], by[e.b]);
-    return '<g class="mm-edge' + (MM.sel === e.id ? ' sel' : '') + '" data-e="' + esc(e.id) + '"><path class="hit" d="' + c.d + '"></path><path class="ln" d="' + c.d + '"></path>' + (e.label ? '<text x="' + c.mx.toFixed(1) + '" y="' + (c.my - 6).toFixed(1) + '" text-anchor="middle">' + esc(e.label) + '</text>' : '') + '</g>'; }).join('');
+    return '<g class="mm-edge' + (MM.sel === e.id ? ' sel' : '') + '" data-e="' + esc(e.id) + '"><path class="hit" d="' + c.d + '"></path><path class="ln" d="' + c.d + '"' + (e.color ? ' style="stroke:' + e.color + '"' : '') + '></path>' + (e.label ? '<text x="' + c.mx.toFixed(1) + '" y="' + (c.my - 6).toFixed(1) + '" text-anchor="middle">' + esc(e.label) + '</text>' : '') + '</g>'; }).join('');
   mm$('mmNodes').innerHTML = m.nodes.map(n => mmNodeHTML(n, m)).join('');
   mm$('mmTitle').textContent = m.name; mm$('mmName').textContent = m.name;
   const np = m.nodes.filter(n => n.type === 'paper').length, nb = m.nodes.filter(n => n.type === 'book').length;
@@ -181,9 +182,11 @@ function mmWire(){
   st.addEventListener('contextmenu', ev => { const node = ev.target.closest('.mm-node'), edge = ev.target.closest('.mm-edge'); if(!node && !edge) return; ev.preventDefault();
     MM.sel = (node && node.dataset.n) || edge.dataset.e; mmRender(); const m = mindOf(MM.id), n = node && m.nodes.find(x => x.id === node.dataset.n);
     const items = []; if(n && n.type === 'paper') items.push({label: 'Notes & PDF', fn: () => openReader(n.ref)}); if(n && n.type === 'text') items.push({label: 'Edit', fn: () => { MM.editing = n.id; mmRender(); }});
-    if(edge) items.push({label: 'Write on this line', fn: () => mmEditLabel(edge.dataset.e)}); items.push({sep: 1}, {label: 'Delete', danger: 1, fn: mmDelete});
+    if(edge){ const eid = edge.dataset.e, px = ev.clientX, py = ev.clientY; items.push({label: 'Write on this line', fn: () => mmEditLabel(eid)}, {label: 'Colour of the line…', fn: () => mmLineColour(eid, px, py)}); } items.push({sep: 1}, {label: 'Delete', danger: 1, fn: mmDelete});
     openFloatMenu(ev.clientX + 2, ev.clientY + 2, items); });
   MM.el.addEventListener('click', ev => {
+    const bx = ev.target.closest('[data-mm="export"],[data-mm="note"],[data-mm="sync"],[data-mm="look"]');
+    if(bx){ const k = bx.dataset.mm; if(k === 'export') mmExportMenu(bx); else if(k === 'note') atlasNote(bx); else if(k === 'sync') atlasSync(bx); else atlasLook(bx); return; }
     const b = ev.target.closest('[data-mm]'), pick = ev.target.closest('[data-pick]'), menu = ev.target.closest('#mmMenu button');
     if(pick){ const kind = mm$('mmPick').dataset.kind; mm$('mmPick').hidden = true; mmAdd(kind, pick.dataset.pick); return; }
     if(menu){ mm$('mmMenu').hidden = true;
@@ -225,3 +228,40 @@ let _otfOriginal = null;
 { _otfOriginal = openTopicForm; openTopicForm = function(tid){ if(tid) return _otfOriginal.apply(this, arguments); mapKindChooser(); }; }
 /* a mind map for one paper or one book: the one pinned to it, or a new one with it in the middle */
 function mindFor(kind, id){ let m = mindsAll().find(x => x.pin && x.pin.kind === kind && x.pin.id === id); if(!m) m = mindNew('', {kind, id}); openMind(m.id); return m.id; }
+
+/* ===================== a mind map's lines in colour, and the map as a vector PDF or an SVG ===================== */
+const MM_LINE_COLOURS = [['#231E1A', 'Ink'], ['#B4432E', 'Red'], ['#2F5E8E', 'Blue'], ['#2F6B4A', 'Green'], ['#B8862E', 'Ochre'], ['#6B3F6B', 'Plum']];
+function mmLineColour(eid, x, y){ let pal = document.getElementById('mmPal'); if(!pal){ pal = document.createElement('div'); pal.id = 'mmPal'; pal.className = 'mm-pal'; document.body.appendChild(pal);
+    document.addEventListener('pointerdown', ev => { if(!pal.hidden && !ev.target.closest('#mmPal')) pal.hidden = true; }, true); }
+  const m = mindOf(MM.id), e = m && m.edges.find(z => z.id === eid); if(!e) return;
+  pal.innerHTML = MM_LINE_COLOURS.map(c => '<button type="button" data-c="' + c[0] + '" title="' + c[1] + '" aria-label="' + c[1] + '" style="background:' + c[0] + '"' + ((e.color || '#231E1A') === c[0] ? ' class="on"' : '') + '></button>').join('');
+  pal.style.left = Math.min(innerWidth - 230, x) + 'px'; pal.style.top = Math.min(innerHeight - 60, y) + 'px'; pal.hidden = false;
+  pal.onclick = ev => { const b = ev.target.closest('[data-c]'); if(!b) return; e.color = b.dataset.c === '#231E1A' ? '' : b.dataset.c; pal.hidden = true; mmSave(); mmRender(); }; }
+function mmExportMenu(btn){ const r = btn.getBoundingClientRect(); openFloatMenu(r.left, r.bottom + 6, [{label: 'Vector PDF', fn: () => mmExport('pdf')}, {label: 'SVG', fn: () => mmExport('svg')}]); }
+function mmWrap(text, font, maxW){ const g = pdfMeasureCtx(); g.font = font; const out = []; String(text || '').split(/\n/).forEach(par => { let line = '';
+    par.split(/\s+/).filter(Boolean).forEach(w => { const t = line ? line + ' ' + w : w; if(g.measureText(t).width > maxW && line){ out.push(line); line = w; } else line = t; }); out.push(line); }); return out; }
+function mmSvg(){ const m = mindOf(MM.id); if(!m) return null; const by = {}; m.nodes.forEach(n => by[n.id] = n);
+  const xe = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const boxes = [], parts = []; let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  m.nodes.forEach(n => { const el = document.querySelector('#mmNodes .mm-node[data-n="' + n.id + '"]'); if(!el) return; const w = el.offsetWidth, h = el.offsetHeight, bx = n.x - w / 2, by2 = n.y - h / 2;
+    boxes.push({n, el, w, h, x: bx, y: by2}); x0 = Math.min(x0, bx); y0 = Math.min(y0, by2); x1 = Math.max(x1, bx + w); y1 = Math.max(y1, by2 + h); });
+  if(!boxes.length) return null;
+  const pad = 48; x0 -= pad; y0 -= pad; x1 += pad; y1 += pad; const W = Math.ceil(x1 - x0), H = Math.ceil(y1 - y0);
+  parts.push('<rect x="' + x0 + '" y="' + y0 + '" width="' + W + '" height="' + H + '" fill="#FBF8F2"/>');
+  m.edges.forEach(e => { if(!by[e.a] || !by[e.b]) return; const c = mmCurve(by[e.a], by[e.b]);
+    parts.push('<path d="' + c.d + '" fill="none" stroke="' + (e.color || '#231E1A') + '" stroke-width="1.6" stroke-linecap="round"/>');
+    if(e.label) parts.push('<text x="' + c.mx.toFixed(1) + '" y="' + (c.my - 6).toFixed(1) + '" text-anchor="middle" font-family="Times New Roman, serif" font-style="italic" font-size="12" fill="#5E544A">' + xe(e.label) + '</text>'); });
+  boxes.forEach(B => { const {n, el, w, h, x, y} = B, card = n.type !== 'text';
+    if(card) parts.push('<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w + '" height="' + h + '" rx="6" fill="#FFFDF8" stroke="#D9D0C1" stroke-width="1"/>');
+    let ty = y + 18; const lx = x + 12, maxW = w - 24, line = (t, size, weight, style, fam, colour) => { parts.push('<text x="' + lx.toFixed(1) + '" y="' + ty.toFixed(1) + '" font-family="' + fam + '" font-size="' + size + '"' + (weight ? ' font-weight="' + weight + '"' : '') + (style ? ' font-style="' + style + '"' : '') + ' fill="' + colour + '">' + xe(t) + '</text>'); ty += size * 1.3; };
+    if(card){ const k = el.querySelector('.k'), b = el.querySelector('b'), em = el.querySelector('em');
+      if(k && k.textContent.trim()) line(k.textContent.trim().toUpperCase(), 8.5, 700, '', 'Helvetica, Arial, sans-serif', '#8A7F72');
+      if(b) mmWrap(b.textContent.trim(), '700 14px "Times New Roman", serif', maxW).forEach(t => line(t, 14, 700, '', 'Times New Roman, serif', '#231E1A'));
+      if(em && em.textContent.trim()) line(em.textContent.trim(), 11.5, '', 'italic', 'Times New Roman, serif', '#5E544A'); }
+    else { const t = (el.querySelector('.mm-txt') || el).innerText.trim(); ty = y + 20; mmWrap(t, '400 15px "Times New Roman", serif', w - 16).forEach(s2 => { parts.push('<text x="' + (x + w / 2).toFixed(1) + '" y="' + ty.toFixed(1) + '" text-anchor="middle" font-family="Times New Roman, serif" font-size="15" fill="#231E1A">' + xe(s2) + '</text>'); ty += 19.5; }); } });
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="' + x0.toFixed(1) + ' ' + y0.toFixed(1) + ' ' + W + ' ' + H + '"><g>' + parts.join('') + '</g></svg>';
+  return {svg, w: W, h: H, x0, y0, name: m.name}; }
+async function mmExport(kind){ const x = mmSvg(); if(!x){ toast('Nothing on this mind map yet'); return; } const name = slugName(x.name || 'mind-map');
+  if(kind === 'svg'){ await saveBlobAs(new Blob([x.svg], {type: 'image/svg+xml'}), name + '.svg'); return; }
+  const shifted = x.svg.replace(/viewBox="[^"]*"/, 'viewBox="0 0 ' + x.w + ' ' + x.h + '"').replace('<g>', '<g transform="translate(' + (-x.x0).toFixed(1) + ',' + (-x.y0).toFixed(1) + ')">');
+  const page = mapPdfPage({w: x.w, h: x.h, svg: shifted}); await saveBlobAs(vectorPdf([page], x.name || 'Mind map'), name + '.pdf'); }

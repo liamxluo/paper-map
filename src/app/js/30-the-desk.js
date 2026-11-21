@@ -41,6 +41,10 @@ window.pmDesk = {
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); },
   pdfPage(id, n){ return pdfPageAt(id, n || 0); },
   async paperPdfBlob(id){ const e = lib.entries[id]; if(!e || !e.pdf) return null; try{ const u = await pdfUrl(e); const r = await fetch(u); return r.ok ? await r.blob() : null; }catch(err){ return null; } },
+  over(kind, r){ const fake = {getBoundingClientRect: () => ({left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.right - r.left, height: r.bottom - r.top, x: r.left, y: r.top}), classList: {add(){}, remove(){}, toggle(){}, contains(){ return false; }}, closest: () => null};
+    document.documentElement.classList.add('pm-overdesk'); if(kind === 'note') atlasNote(fake); else if(kind === 'sync') atlasSync(fake); },
+  closeOver(){ try{ atlasNoteClose(); }catch(e){} const s2 = document.getElementById('atlSync'); if(s2) s2.hidden = true; },
+  paperLinks(id){ const seen = new Set(); return (lib.links || []).filter(l => l[0] === id || l[1] === id).map(l => l[0] === id ? l[1] : l[0]).filter(x => lib.entries[x] && !seen.has(x) && seen.add(x)).map(x => lib.entries[x].t || ''); },
   paperRead(id){ const e = lib.entries[id]; if(!e) return null; return {n: e.n || '', marks: clone(e.marks || []), quotes: clone(e.quotes || []), stickies: clone(e.stickies || []), at: e.readAt || 0}; },
   setPaperStickies(id, arr){ const e = lib.entries[id]; if(!e || PREVIEW) return; e.stickies = arr; touchLib(); },
   setPaperNotes(id, md){ const e = lib.entries[id]; if(!e || PREVIEW) return; if((e.n || '') === md) return; e.n = md; touchLib(); },
@@ -71,7 +75,7 @@ window.pmDesk = {
   openNotes(id){ if(!lib.entries[id]) return; DK.fromTopic = lib.entries[id].topic; DK.from = null; deskOver(true); setTimeout(() => { try{ openReader(id); }catch(err){} }, 0); },
   openLink(url){ if(/^https?:\/\//.test(String(url || ''))) window.open(url, '_blank', 'noopener'); },
   newPaper(tid){ setTimeout(() => { if(tid && lib.topics.some(t => t.id === tid)){ DK.fromTopic = tid; openView(tid + '-all'); } openEntryForm(null); }, 140); },
-  openSettings(){ setTimeout(() => openSettings(), 140); },
+  openSettings(back){ setTimeout(() => openSettings(back), 140); },
   savePrefs(p){ settings.desk = Object.assign({}, deskPrefs(), p || {}); persistSettings(); },
   saveReadings(r, cats){ if(PREVIEW) return; lib.readings = clone(r || []); lib.readingCats = clone(cats || []); normalizeLib(lib);
     /* a book put on a map follows its Readings entry: title, authors and year */

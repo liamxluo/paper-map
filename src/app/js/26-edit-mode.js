@@ -897,7 +897,7 @@ function syncSectionHTML(){
     '<div class="sync-pane" data-sync-pane="folder"' + (k === 'folder' ? '' : ' hidden') + '>' + fsSectionHTML() + '</div></div>';
 }
 function ghSectionHTML(){
-  if(PREVIEW) return '<div class="set-section"><h3>Sync</h3><p class="hint">Not available in the preview. Download the page to use it with your own list.</p></div>';
+  if(PREVIEW) return '<div class="set-section"><h3>Sync</h3><a class="set-go" href="' + esc(location.pathname) + '?app">This is the example. Open your own Paper Map to sync<span>›</span></a></div>';
   const g0 = lsGet(GH_KEY) || {}, g = (g0.kind || 'github') === 'github' ? g0 : {};
   const has = !!(g.owner && g.repo && g.token);
   return '<div class="set-section"><h3>GitHub sync</h3>' +

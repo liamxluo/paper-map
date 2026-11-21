@@ -585,8 +585,8 @@ body.st-books #deskLayer::before,body.st-papers #deskLayer::before,body.st-paper
 #rboard .rb-side .tadd span{color:rgba(246,231,210,.6)}
 #rboard .rsec h3,#pboard .rsec h3,#rboard .rfilt{color:rgba(246,231,210,.7);border-color:rgba(246,231,210,.18) !important}
 #rboard .rsec h3 em{color:rgba(246,231,210,.5)}
-#rboard .rbk figcaption b,#pboard .pg figcaption b,#pboard .pg b{color:#F6E7D2}
-#rboard .rbk figcaption span,#pboard .pg figcaption span,#pboard .pg em,#pboard .pg span{color:rgba(246,231,210,.62)}
+#rboard .rbk figcaption b,#pboard .pg figcaption b,#pboard .pg > b{color:#F6E7D2}
+#rboard .rbk figcaption span,#pboard .pg figcaption span,#pboard .pg > em,#pboard .pg > span{color:rgba(246,231,210,.62)}
 #rboard .rbar{background:rgba(246,231,210,.2)} #rboard .rbar i{background:#F6E7D2}
 #rboard .pb-empty,#pboard .pb-empty{color:rgba(246,231,210,.7)}
 /* the desk's own glass for every control on them */
@@ -648,3 +648,43 @@ body.st-books .float svg,body.st-papers .float svg{stroke:#F6E7D2}
 #spread .sp-covwrap .rcov{width:120px;height:180px;transition:none}
 
 #pboard .pb-h{margin:16px 0 6px 10px;font:700 10px var(--sans);letter-spacing:1.8px;color:rgba(246,231,210,.55)}
+
+#rbGhost{background:transparent !important;box-shadow:none !important}
+.sp-flywrap .sp-flypg{position:absolute;inset:0;margin:0;width:100%;height:100%}
+.sp-flywrap .sp-flypg .sheet{height:100% !important;box-shadow:0 2px 3px rgba(0,0,0,.25),0 18px 44px rgba(10,4,2,.45)}
+
+/* nothing to show for the page yet: no empty space, no lone divider */
+#spread .sp-glass .sp-loc:empty,#spread .sp-glass .sp-loc:empty + .sp-gsep{display:none}
+/* A4 pages: one sheet at a time, turned, never slid */
+#spread .sp-sheet.side .sp-notes{overflow:hidden;scroll-snap-type:none}
+#spread .sp-right{position:relative}
+#spread .sp-npg{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;z-index:4;font:600 11.5px var(--sans);color:#8A7F72}
+#spread .sp-npg[hidden]{display:none}
+#spread .sp-npg button{all:unset;cursor:pointer;width:24px;height:24px;border-radius:50%;text-align:center;line-height:22px;font:400 17px var(--sans);color:#5E544A}
+#spread .sp-npg button:hover{background:rgba(35,30,26,.07);color:#231E1A}
+#spread .sp-npg button:disabled{opacity:.25;cursor:default;background:none}
+/* the desk's panel opens over the reading page */
+body.reading #panel{z-index:190}
+/* the desk's settings come up over the reading page; the desk's own bars stay out of the way while you read */
+body.reading #ui{z-index:170}
+body.reading #ui > :not(#panel){opacity:0 !important;pointer-events:none !important}
+/* no page to turn yet: no turning buttons */
+#spread .sp-doc.empty ~ .sp-turn,#spread .sp-doc.msg ~ .sp-turn{display:none}
+
+/* the floating bars: a hairline between a screen's own tools and the three that are everywhere */
+.float .fsep{width:1px;height:18px;margin:0 3px;background:currentColor;opacity:.22;align-self:center}
+.float [data-over].on,#spread .sp-ib[data-over].on{background:rgba(255,255,255,.14)}
+/* gold foil that catches the light: the lettering and the frame of every cloth cover */
+.rcov b,.rcov span{background:linear-gradient(105deg,var(--t) 0%,color-mix(in srgb,var(--t) 45%,#fff) 16%,var(--t) 30%,color-mix(in srgb,var(--t) 62%,#2a1a05) 52%,var(--t) 70%,color-mix(in srgb,var(--t) 50%,#fff) 86%,var(--t) 100%);background-size:220% 100%;background-position:30% 0;-webkit-background-clip:text;background-clip:text;color:transparent !important;filter:drop-shadow(0 .6px 0 rgba(0,0,0,.35)) drop-shadow(0 -.4px 0 rgba(255,250,220,.22))}
+.rcov::after{border:1px solid transparent !important;border-image:linear-gradient(135deg,color-mix(in srgb,var(--t) 50%,#fff),var(--t) 35%,color-mix(in srgb,var(--t) 60%,#2a1a05) 60%,var(--t) 80%,color-mix(in srgb,var(--t) 55%,#fff)) 1 !important;opacity:.8 !important}
+.rbk:hover .rcov b,.rbk:hover .rcov span{background-position:70% 0;transition:background-position .8s ease}
+/* lifted off the shelf, the foil turns in the light as the book comes towards you */
+.sp-flycov b,.sp-flycov span{animation:spFoil 1.3s ease-in-out both}
+@keyframes spFoil{0%{background-position:0% 0}100%{background-position:100% 0}}
+
+#spread .sp-flowrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 6px}
+#spread .sp-flowrow > span{font:500 12.5px var(--sans);color:#5E544A}
+#spread .sp-pop{width:340px}
+body.reading #rMenu{z-index:200}
+
+.float .fsep:first-child{display:none}

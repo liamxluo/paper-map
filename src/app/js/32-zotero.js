@@ -104,3 +104,20 @@ async function ztChoose(){ const c = ztCfg(); if(!c) return; let colls = [];
   setTimeout(() => { try{ settingsTidy && document.getElementById('modalRoot').classList.add('pm-settings'); }catch(e){} }, 0);
 }
 if(!PREVIEW){ setTimeout(() => { if(ztCfg()) ztSync(false); }, 5000); setInterval(() => { if(ztCfg() && document.visibilityState === 'visible') ztSync(false); }, 5 * 60e3); }
+/* ===================== back one step, never all the way =====================
+   A dialog opened from Settings closes back into Settings, where you were in it; Settings closes back to whatever
+   opened it (the desk's settings panel, say), not past it. */
+let SET_OPEN = false, SET_CHILD = false, SET_SCROLL = 0, SET_BACK = null, SET_OPENING = false, SET_T = null, SET_PENDING = null;
+/* a dialog may open a moment after the one before it closes, so the step back waits a little before deciding */
+{ const _os2 = openSettings; openSettings = function(back){ if(typeof back === 'function') SET_BACK = back; clearTimeout(SET_T); SET_PENDING = null; SET_OPENING = true; let r; try{ r = _os2.apply(this, []); } finally { SET_OPENING = false; } SET_OPEN = true; SET_CHILD = false; return r; }; }
+{ const _om = openModal; openModal = function(o){ if(!SET_OPENING){ if(SET_OPEN){ const mb = document.querySelector('#modalRoot .modal'); SET_SCROLL = mb ? mb.scrollTop : 0; SET_OPEN = false; SET_CHILD = true; }
+    else if(SET_PENDING){ clearTimeout(SET_T); SET_PENDING = null; SET_CHILD = true; } }
+  return _om.apply(this, arguments); }; }
+{ const _cm = closeModal; closeModal = function(){ const wasSettings = SET_OPEN, wasChild = SET_CHILD;
+  if(wasSettings){ const mb = document.querySelector('#modalRoot .modal'); SET_SCROLL = mb ? mb.scrollTop : 0; }
+  const r = _cm.apply(this, arguments);
+  if(wasSettings || wasChild){ SET_OPEN = false; SET_CHILD = false; SET_PENDING = wasSettings ? 'settings' : 'child'; clearTimeout(SET_T);
+    SET_T = setTimeout(() => { const k = SET_PENDING; SET_PENDING = null; if(!k || !modal.root.hidden) return;
+      if(k === 'settings'){ const b = SET_BACK; SET_BACK = null; if(b){ try{ b(); }catch(e){} } }
+      else { const back = SET_SCROLL; openSettings(); [30, 160, 360].forEach(t => setTimeout(() => { const mb = document.querySelector('#modalRoot .modal'); if(mb && !modal.root.hidden) mb.scrollTop = back; }, t)); } }, 420); }
+  return r; }; }

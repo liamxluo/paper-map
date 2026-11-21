@@ -1,7 +1,7 @@
 {
   "name": "Paper Map",
   "short_name": "Paper Map",
-  "description": "Your research desk: every paper and book in one place, read with your notes beside them, synced with Zotero, mapped when you need to think.",
+  "description": "Your research desk: every paper and book in one place, read with your notes beside them, synced with Zotero, and mapped when you need to think, as vector PDF or SVG.",
   "id": "./?app",
   "start_url": "./?app",
   "scope": "./",
