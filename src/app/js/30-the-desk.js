@@ -1,3 +1,6 @@
+/* a file's bytes as a Blob of its own, so what is kept does not depend on the dropped file still being there */
+async function bytesOf(file){ try{ return new Blob([await file.arrayBuffer()], {type: file.type || ''}); }catch(e){ return file; } }
+async function hereCopy(path){ try{ const b = await PMDB.get('file:' + path); if(!b) return null; const buf = await b.arrayBuffer(); if(!buf.byteLength) return null; return new Blob([buf], {type: b.type || ''}); }catch(e){ try{ await PMDB.set('file:' + path, null); }catch(x){} return null; } }
 let PDF_WHY = '';
 /* ===================== the desk =====================
    The front of Paper Map: your maps folded on a desk, your papers, your Readings and a research log.
@@ -35,19 +38,24 @@ window.pmDesk = {
         await inv('fs_write', {path: root + '/' + rel, data: await fileToBase64(file)}); meta.where = 'mac'; meta.root = place; meta.rel = rel; return meta; } }
     if(c && c.kind !== 'folder'){
       /* a big book goes to the data repository's Releases as an attachment (up to 2 GB, outside its history), with a copy kept here */
-      const as = await ghAssetPut(c, bookId + '-' + name.replace(/\s+/g, '-'), file); meta.where = 'asset'; meta.asset = as; try{ await PMDB.set('file:' + path, file); }catch(e){} return meta; }
+      const bytes = await bytesOf(file); try{ await PMDB.set('file:' + path, bytes); }catch(e){}
+      meta.where = 'asset'; meta.aname = bookId + '-' + name.replace(/\s+/g, '-');
+      try{ meta.asset = await ghAssetPut(c, meta.aname, bytes); }catch(err){ meta.pending = true; } return meta; }
     if(c){ if(c.kind !== 'folder' && file.size > 95 * 1048576) throw new Error('That file is ' + fmtSize(file.size) + ': GitHub takes files up to 100 MB. Keep it in iCloud Drive or a folder instead.');
       const content = await fileToBase64(file);
       await ghSerial(async () => { let r = await ghPutPath(c, path, content, 'Book file: ' + name, null); if(r.status === 409 || r.status === 422){ const known = await ghPathSha(c, path); r = await ghPutPath(c, path, content, 'Book file: ' + name, known); } if(!r.ok) throw new Error('Could not keep the file (' + r.status + ')'); });
       meta.where = c.kind === 'folder' ? 'folder' : 'github'; return meta; }
-    const ok = await PMDB.set('file:' + path, file); if(!ok) throw new Error('This browser could not keep the file'); meta.where = 'local'; return meta; },
-  async bookFileBlob(f){ if(!f) return null; if(f.where === 'local') return await PMDB.get('file:' + f.path) || null;
+    const ok = await PMDB.set('file:' + path, await bytesOf(file)); if(!ok) throw new Error('This browser could not keep the file'); meta.where = 'local'; return meta; },
+  /* a book file that could not be sent to GitHub yet is sent again from the copy on this Mac; true when it is on GitHub now */
+  async bookFileRetry(f){ if(!f || !f.pending) return false; const c = ghCfg(); if(!c || c.kind === 'folder') return false; const b = await hereCopy(f.path); if(!b) return false;
+    try{ f.asset = await ghAssetPut(c, f.aname || f.name, b); delete f.pending; return true; }catch(e){ return false; } },
+  async bookFileBlob(f){ if(!f) return null; if(f.where === 'local') return await hereCopy(f.path);
     if(f.where === 'mac'){ if(!window.__TAURI__) return null; const root = await bookRoot(f.root); if(!root) return null;
       try{ const b64 = await window.__TAURI__.core.invoke('fs_read', {path: root + '/' + f.rel}); const bin = atob(b64), u = new Uint8Array(bin.length); for(let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], {type: f.type || ''}); }catch(e){ return null; } }
-    if(f.where === 'asset'){ const here = await PMDB.get('file:' + f.path); if(here) return here; const c = ghCfg(); if(!c || !f.asset) return null;
-      const b = await ghAssetGet(c, f.asset.id); if(b){ try{ await PMDB.set('file:' + f.path, b); }catch(e){} } return b; }
+    if(f.where === 'asset'){ const here = await hereCopy(f.path); if(here) return here; const c = ghCfg(); if(!c || !f.asset) return null;
+      const b = await ghAssetGet(c, f.asset.id); if(b){ try{ await PMDB.set('file:' + f.path, await bytesOf(b)); }catch(e){} } return b; }
     if(f.where === 'example'){ try{ const r = await fetch('example/' + f.path); return r.ok ? await r.blob() : null; }catch(e){ return null; } }
-    if(f.where === 'zotero'){ const zc = ztCfg(); return zc ? await ztFileBlob(zc, f.zotero, f.name, f.zpath) : null; }
+    if(f.where === 'zotero'){ const zc = typeof ztCfg === 'function' ? ztCfg() : null; return zc ? await ztFileBlob(zc, f.zotero, f.name, f.zpath) : null; }
     const c = ghCfg(); if(!c) return null;
     if(c.kind === 'folder'){ const b = await remoteBytes(c, f.path); return b ? new Blob([b], {type: f.type || 'application/octet-stream'}) : null; }
     const r = await fetch(ghPathUrl(c, f.path) + ghRef(c), {headers: ghHeaders(c, {'Accept': 'application/vnd.github.raw+json'})}); return r.ok ? await r.blob() : null; },

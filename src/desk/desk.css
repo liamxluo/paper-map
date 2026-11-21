@@ -844,3 +844,8 @@ body.ink-on .ink-cv{pointer-events:auto;cursor:crosshair}
 .pb-sec .pb-chev{width:8px;height:8px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:rotate(-45deg);opacity:.6;transition:transform .2s;margin-right:4px}
 .pb-sec.open .pb-chev{transform:rotate(45deg)}
 #pbMaps .tp.zt{opacity:.95}
+
+/* the page counter, typed into */
+#spLoc{cursor:text}
+.sp-jump{all:unset;width:4.2em;font:inherit;color:inherit;text-align:center;border-bottom:1px solid rgba(251,247,238,.4)}
+.sp-jump::placeholder{color:rgba(251,247,238,.45)}

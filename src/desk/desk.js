@@ -1040,7 +1040,7 @@ async function spArrive(kind, fromEl){
 }
 async function spLoadDoc(){ const kind = SP.kind, id = SP.id;
   try{
-    if(kind === 'paper'){ const p = spPaper(); if(p && p.pdf){ spMsg('Opening its PDF…'); const blob = await P.paperPdfBlob(id); if(SP.id !== id) return; if(blob){ try{ await spOpenPdf(blob); }catch(err){ spMsg('Its PDF was found (' + blob.size + ' bytes) but could not be shown: ' + String(err && err.message || err).slice(0, 80)); } } else spMsg('Its PDF could not be opened just now. (' + ((P.pdfWhy && P.pdfWhy()) || '') + ' · ' + String(p.pdf && (p.pdf.path || '') + (p.pdf.zotero ? ' · zotero ' + p.pdf.zotero : '')).slice(0, 80) + ')'); } else spEmpty(); return; }
+    if(kind === 'paper'){ const p = spPaper(); if(p && p.pdf){ spMsg('Opening its PDF…'); let blob = await P.paperPdfBlob(id); if(SP.id !== id) return; if(!blob){ await new Promise(r => setTimeout(r, 1500)); if(SP.id !== id) return; blob = await P.paperPdfBlob(id); if(SP.id !== id) return; } if(blob){ try{ await spOpenPdf(blob); }catch(err){ spMsg('Its PDF was found (' + blob.size + ' bytes) but could not be shown: ' + String(err && err.message || err).slice(0, 80)); } } else spMsg('Its PDF could not be opened just now. (' + ((P.pdfWhy && P.pdfWhy()) || '') + ' · ' + String(p.pdf && (p.pdf.path || '') + (p.pdf.zotero ? ' · zotero ' + p.pdf.zotero : '')).slice(0, 80) + ')'); } else spEmpty(); return; }
     const b = spBook(), fs = (b && b.files) || [], f = fs.find(x => /\.(epub|mobi|azw3?|kf8|fb2|fbz|cbz)$/i.test(x.name)) || fs.find(x => /\.epub\.zip$|\.zip$/i.test(x.name)) || fs.find(x => /\.pdf$/i.test(x.name));
     if(!f){ spEmpty(); return; } spMsg('Opening ' + f.name + '…'); const blob = await P.bookFileBlob(f); if(SP.id !== id) return;
     if(!blob){ spMsg('The book’s file could not be read just now.'); return; }
@@ -1083,10 +1083,18 @@ async function spOpenPdf(blob){ const lib2 = await deskPdfJs(), doc = await lib2
   for(let i = 1; i <= doc.numPages; i++){ const pg = document.createElement('div'); pg.className = 'sp-pg'; pg.dataset.page = i; pg.style.width = W + 'px'; pg.style.height = Math.round(v1.height * sc) + 'px'; box.appendChild(pg); }
   SP.io = new IntersectionObserver(es => es.forEach(en => { if(en.isIntersecting) spRenderPage(+en.target.dataset.page); }), {root: box, rootMargin: side ? '0px 900px' : '700px 0px'});
   box.querySelectorAll('.sp-pg').forEach(p => SP.io.observe(p));
-  const onScroll = () => { const pgs = box.querySelectorAll('.sp-pg'), mid = side ? box.scrollLeft + box.clientWidth * .5 : box.scrollTop + box.clientHeight * .4; let cur = 1; pgs.forEach(p => { if((side ? p.offsetLeft : p.offsetTop) <= mid) cur = +p.dataset.page; });
+  const onScroll = () => { if(SP.restoring) return; const pgs = box.querySelectorAll('.sp-pg'), mid = side ? box.scrollLeft + box.clientWidth * .5 : box.scrollTop + box.clientHeight * .4; let cur = 1; pgs.forEach(p => { if((side ? p.offsetLeft : p.offsetTop) <= mid) cur = +p.dataset.page; });
     $('spLoc').textContent = 'p. ' + cur + ' / ' + doc.numPages; if(cur !== SP.cur){ SP.cur = cur; if(SP.kind === 'paper'){ if(P.setPaperAt) P.setPaperAt(SP.id, cur); } else { const b = spBook(); if(b && b.pdfAt !== cur){ b.pdfAt = cur; clearTimeout(SP.atT); SP.atT = setTimeout(rSave, 1500); } } } };
   box.addEventListener('scroll', onScroll, {passive: true});
-  const back = SP.kind === 'paper' ? SP.at : ((spBook() || {}).pdfAt || 0); if(back > 1){ const t = box.querySelector('.sp-pg[data-page="' + back + '"]'); if(t){ if(side) box.scrollLeft = t.offsetLeft - (box.clientWidth - t.offsetWidth) / 2; else box.scrollTop = t.offsetTop - 12; } } onScroll(); }
+  const back = SP.kind === 'paper' ? SP.at : ((spBook() || {}).pdfAt || 0);
+  if(back > 1){ SP.restoring = true; let tries = 0; const put = () => { spPdfGo(back, true); const t = box.querySelector('.sp-pg[data-page="' + back + '"]'), want = t ? (side ? t.offsetLeft - (box.clientWidth - t.offsetWidth) / 2 : t.offsetTop - 12) : 0, at = side ? box.scrollLeft : box.scrollTop;
+      if(Math.abs(at - want) > 4 && tries++ < 30) requestAnimationFrame(put); else { SP.restoring = false; onScroll(); } }; requestAnimationFrame(put); }
+  else onScroll();
+  /* a PDF book without a cover takes its first page as one */
+  if(SP.kind !== 'paper'){ const b = spBook(); if(b && !b.cover){ try{ const vp = p1.getViewport({scale: 360 / v1.width}), cv = document.createElement('canvas'); cv.width = Math.round(vp.width); cv.height = Math.round(vp.height); await p1.render({canvasContext: cv.getContext('2d'), viewport: vp}).promise; b.cover = cv.toDataURL('image/jpeg', 0.86); rSave(); }catch(e){} } } }
+/* to a page of the PDF */
+function spPdfGo(n, quiet){ const box = $('spDoc'); if(!SP.pdf) return; n = Math.max(1, Math.min(SP.pdf.numPages, Math.round(n))); const t = box.querySelector('.sp-pg[data-page="' + n + '"]'); if(!t) return;
+  if(SP.side) box.scrollLeft = t.offsetLeft - (box.clientWidth - t.offsetWidth) / 2; else box.scrollTop = t.offsetTop - 12; if(!quiet) spRenderPage(n); }
 async function spRenderPage(i){ const box = $('spDoc'), pg = box.querySelector('.sp-pg[data-page="' + i + '"]'); if(!pg || pg.dataset.done || !SP.pdf) return; pg.dataset.done = '1';
   try{ const page = await SP.pdf.getPage(i), vp = page.getViewport({scale: SP.scale}), dpr = Math.min(2, window.devicePixelRatio || 1);
     SP.dims = SP.dims || {}; SP.dims[i] = [page.view[2] - page.view[0], page.view[3] - page.view[1]]; spFromZotero(i);
@@ -1460,10 +1468,16 @@ async function bookFromFile(file){
       const au = Array.isArray(md.author) ? md.author : md.author ? [md.author] : []; authors = au.map(str).map(s => s.trim()).filter(Boolean);
       const y = String(md.published || md.date || '').match(/\b(1[5-9]\d\d|20\d\d)\b/); if(y) year = +y[1];
       if(bk.getCover){ const cb = await bk.getCover(); if(cb) cover = await spThumb(cb); } }catch(e){} }
+  const fp = file.size + ':' + await (async () => { try{ const buf = await file.slice(0, 65536).arrayBuffer(), h = await crypto.subtle.digest('SHA-1', buf); return [...new Uint8Array(h)].slice(0, 8).map(x => x.toString(16).padStart(2, '0')).join(''); }catch(e){ return ''; } })();
+  const au0 = s => normT((s || '').split(/\s+/).pop()), sameTitle = x => normT(x.title) === normT(title) && (!authors.length || !(x.authors || []).length || au0((x.authors || [])[0]) === au0(authors[0]));
+  const twin = R.find(x => (x.files || []).some(f => f.fp === fp && fp.length > 8)) || R.find(x => sameTitle(x));
+  if(twin && (twin.files || []).length){ let ok = null; try{ ok = await P.bookFileBlob(twin.files[0]); }catch(e){} if(!ok) twin.files = []; }
+  if(twin){ if(!(twin.files || []).length){ try{ const meta = await P.bookFileSave(twin.id, file); meta.fp = fp; twin.files = [meta]; if(cover && !twin.cover) twin.cover = cover; rSave(); renderReadings(); toast('“' + twin.title + '” has its file again'); }catch(err){} }
+    else toast('“' + twin.title + '” is already in your Readings'); twin._dup = true; return twin; }
   const kind = rFilter.split(/:(.+)/), b = {id: 'r-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), title: title || 'Untitled', authors, year, status: 'want', categories: kind[0] === 'cat' ? [kind[1]] : [], notes: '', quotes: [], files: [], onMaps: [], added: new Date().toISOString()};
   if(cover) b.cover = cover;
   R.unshift(b); rSave(); renderReadings();
-  try{ const meta = await P.bookFileSave(b.id, file); b.files = [meta]; rSave(); }catch(err){ toast('“' + b.title + '” is on your shelves, but its file could not be kept: ' + String((err && err.message) || err).slice(0, 80)); }
+  try{ const meta = await P.bookFileSave(b.id, file); meta.fp = fp; b.files = [meta]; rSave(); }catch(err){ toast('“' + b.title + '” is on your shelves, but its file could not be kept: ' + String((err && err.message) || err).slice(0, 80)); }
   return b; }
 let rDropN = 0;
 addEventListener('dragenter', e => { if(state !== 'books' || !(e.dataTransfer && [...e.dataTransfer.types].includes('Files'))) return; rDropN++; document.body.classList.add('r-filedrop'); });
@@ -1476,7 +1490,7 @@ addEventListener('drop', async e => { if(state !== 'books' || !e.dataTransfer ||
     else { const f = it.getAsFile && it.getAsFile(); if(f && BOOK_RE.test(f.name)) files.push(f); } }
   if(!files.length) [...e.dataTransfer.files].filter(f => BOOK_RE.test(f.name)).forEach(f => files.push(f));
   if(!files.length){ toast('Paper Map reads EPUB, MOBI, AZW3, FB2, comics and PDF'); return; }
-  for(const f of files){ const b = await bookFromFile(f); toast('Added “' + b.title + '”'); setTimeout(() => offerOldNotes(b), 1200); } });
+  for(const f of files){ const b = await bookFromFile(f); if(b._dup){ delete b._dup; continue; } toast('Added “' + b.title + '”'); setTimeout(() => offerOldNotes(b), 1200); } });
 
 /* ===================== EPUBs that arrive zipped or as folders =====================
    The Mac hands over an EPUB kept as a folder either as that folder or zipped as Name.epub.zip, with everything one level
@@ -1658,4 +1672,20 @@ $('pboard').addEventListener('click', e => { const t = e.target.closest('[data-z
 
 /* a library folds away and opens again from its name */
 $('pboard').addEventListener('click', e => { const s = e.target.closest('[data-sec]'); if(!s) return; e.stopPropagation(); const k = 'sec:' + s.dataset.sec; pShut.has(k) ? pShut.delete(k) : pShut.add(k); renderPapers(); }, true);
+
+/* the page counter takes a page number: click it, type the page, Enter; Esc leaves it */
+async function spJump(n){ n = parseInt(n, 10); if(!n) return;
+  if(SP.mode === 'pdf'){ spPdfGo(n); return; }
+  if(SP.view){ try{ const pl = SP.view.book && SP.view.book.pageList, hit = pl && pl.find(p => String(p.label || '').trim() === String(n));
+      if(hit && hit.href){ await SP.view.goTo(hit.href); return; }
+      const tot = SP.loc && SP.loc.location && SP.loc.location.total; if(tot) await SP.view.goToFraction(Math.max(0, Math.min(1, (n - 1) / tot))); }catch(e){} } }
+$('spLoc').addEventListener('click', e => { const el = $('spLoc'); if(el.querySelector('input') || !SP.kind) return; e.stopPropagation(); const was = el.textContent;
+  el.innerHTML = '<input class="sp-jump" inputmode="numeric" aria-label="Go to page" placeholder="' + (String(was).match(/\d+/) || [''])[0] + '">'; const ip = el.querySelector('input'); ip.focus();
+  const done = go => { const v = ip.value; el.textContent = was; if(go && v) spJump(v); };
+  ip.addEventListener('keydown', ev => { if(ev.key === 'Enter'){ ev.preventDefault(); done(true); } else if(ev.key === 'Escape'){ ev.preventDefault(); done(false); } ev.stopPropagation(); });
+  ip.addEventListener('blur', () => done(false)); });
+
+/* books whose file has not reached GitHub yet are sent again, quietly, a little after the desk opens and every half hour */
+async function rSendPending(){ if(!P || !P.bookFileRetry) return; let any = false; for(const b of R){ for(const f of (b.files || [])){ if(f.pending && await P.bookFileRetry(f)) any = true; } } if(any) rSave(); }
+setTimeout(rSendPending, 20000); setInterval(rSendPending, 30 * 60000);
 })();

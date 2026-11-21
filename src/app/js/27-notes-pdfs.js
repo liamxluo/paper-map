@@ -170,7 +170,7 @@ async function pdfUrl(e){
   const key = e.pdf.path + '@' + (e.pdf.sha || '');
   if(pdfUrls[key]) return pdfUrls[key];
   const zkey = e.pdf.zotero || (/^zotero:/.test(e.pdf.path || '') ? e.pdf.path.slice(7) : null);
-  if(zkey && !(e.pdf.path || '').startsWith('pdfs/')){ const zc = ztCfg(); if(!zc) throw {status: 'nozotero'}; const blob = await ztFileBlob(zc, zkey, e.pdf.name, e.pdf.zpath); if(!blob) throw {status: 404}; return (pdfUrls[key] = URL.createObjectURL(blob)); }
+  if(zkey && !(e.pdf.path || '').startsWith('pdfs/')){ const zc = typeof ztCfg === 'function' ? ztCfg() : null; if(!zc) throw {status: 'nozotero'}; const blob = await ztFileBlob(zc, zkey, e.pdf.name, e.pdf.zpath); if(!blob) throw {status: 404}; return (pdfUrls[key] = URL.createObjectURL(blob)); }
   const c = ghCfg(); if(!c) throw {status:'nogh'};
   let bytes;
   if(c.kind === 'dropbox' || c.kind === 'folder'){ bytes = await remoteBytes(c, e.pdf.path); if(!bytes) throw {status: 404}; }

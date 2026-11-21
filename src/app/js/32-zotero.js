@@ -54,7 +54,7 @@ async function ztSync(manual){
   try{
     const colls = (await ztAll(c, '/users/' + c.user + '/collections')).items.filter(x => !(x.data && x.data.deleted));
     const chosen = new Set(c.include === 'all' || !c.include ? colls.map(x => x.key) : c.include);
-    const full = !lib.ztFull; const {items, version} = await ztAll(c, '/users/' + c.user + '/items' + (c.version && !full ? '?since=' + c.version : ''));
+    const full = !lib.ztFull || !!manual; const {items, version} = await ztAll(c, '/users/' + c.user + '/items' + (c.version && !full ? '?since=' + c.version : ''));
     let made = 0, updated = 0, notes = 0, marks = 0;
     const lone = i => i.data.itemType === 'attachment' && !i.data.parentItem && /pdf/i.test(i.data.contentType || '') && /imported|linked_file/.test(i.data.linkMode || '');
     const tops = items.filter(i => !i.data.parentItem && ((i.data.itemType !== 'attachment' && i.data.itemType !== 'note' && i.data.itemType !== 'annotation') || lone(i)));
@@ -80,16 +80,19 @@ async function ztSync(manual){
       if(st){ const k = keyOf(e); if(status[k] !== st){ status[k] = st; statusTime = Date.now(); } } });
     /* what hangs under an item: notes, files, annotations */
     const parentOf = {}; items.forEach(i => { if(i.data.parentItem) parentOf[i.key] = i.data.parentItem; });
+    const paperOfTop = k => { const id = c.items[k]; if(id && (id.startsWith('r:') || lib.entries[id])) return id; const e = Object.values(lib.entries).find(x => x.zkey === k); if(e){ c.items[k] = e.id; return e.id; } return null; };
     const known = k => c.items[k] || (c.children[k] && c.children[k].owner);
-    items.filter(i => i.data.itemType === 'note' && i.data.parentItem && c.items[i.data.parentItem]).forEach(i => { const tid = c.items[i.data.parentItem], md = ztMd(i.data.note);
+    items.filter(i => i.data.itemType === 'note' && i.data.parentItem && paperOfTop(i.data.parentItem)).forEach(i => { const tid = paperOfTop(i.data.parentItem), md = ztMd(i.data.note);
       if(tid.startsWith('r:')){ const b = (lib.readings || []).find(x => x.id === tid.slice(2)); if(b && !(b.zNotes || []).includes(i.key)){ b.notes = [b.notes, md].filter(Boolean).join('\n\n'); b.zNotes = (b.zNotes || []).concat([i.key]); notes++; } }
       else { const e = lib.entries[tid]; if(e && !(e.zNotes || []).includes(i.key)){ e.n = [e.n, md].filter(Boolean).join('\n\n'); e.zNotes = (e.zNotes || []).concat([i.key]); notes++; } } });
-    items.filter(i => i.data.itemType === 'attachment' && i.data.parentItem && c.items[i.data.parentItem] && /pdf|epub/i.test(i.data.contentType || '') && /imported|linked_file/.test(i.data.linkMode || '')).forEach(i => { const tid = c.items[i.data.parentItem], f = {name: i.data.filename || String(i.data.path || '').split('/').pop() || i.data.title || 'file', zotero: i.key, size: 0, type: i.data.contentType, where: 'zotero'}; if(i.data.linkMode === 'linked_file' && i.data.path) f.zpath = i.data.path;
-      c.children[i.key] = {owner: tid};
+    items.filter(i => i.data.itemType === 'attachment' && i.data.parentItem && paperOfTop(i.data.parentItem) && /pdf|epub/i.test(i.data.contentType || '') && /imported|linked_file/.test(i.data.linkMode || '')).forEach(i => { const tid = paperOfTop(i.data.parentItem), f = {name: i.data.filename || String(i.data.path || '').split('/').pop() || i.data.title || 'file', zotero: i.key, size: 0, type: i.data.contentType, where: 'zotero'}; if(i.data.linkMode === 'linked_file' && i.data.path) f.zpath = i.data.path;
+      c.children[i.key] = {owner: tid, parent: i.data.parentItem};
       if(tid.startsWith('r:')){ const b = (lib.readings || []).find(x => x.id === tid.slice(2)); if(b && !(b.files || []).some(x => x.zotero === i.key)) b.files = (b.files || []).concat([f]); }
       else { const e = lib.entries[tid]; const stale = e && e.pdf && /^zotero:/.test(e.pdf.path || '') && (!e.pdf.zotero || !e.pdf.name);
         if(e && (!e.pdf || stale) && /pdf/i.test(i.data.contentType)){ e.pdf = {path: 'zotero:' + i.key, name: f.name, zotero: i.key}; if(f.zpath) e.pdf.zpath = f.zpath; } } });
-    items.filter(i => i.data.itemType === 'annotation').forEach(i => { const att = i.data.parentItem, owner = c.children[att] && c.children[att].owner; if(!owner) return; const d = i.data;
+    const paperOf = k => { if(!k) return null; const id = c.items[k]; if(id && (id.startsWith('r:') || lib.entries[id])) return id; const e = Object.values(lib.entries).find(x => x.zkey === k); return e ? e.id : null; };
+    items.filter(i => i.data.itemType === 'annotation').forEach(i => { const att = i.data.parentItem, ch = c.children[att] || {};
+      const owner = paperOf(ch.parent || parentOf[att]) || paperOf(att) || (ch.owner && (ch.owner.startsWith('r:') || lib.entries[ch.owner]) ? ch.owner : null); if(!owner) return; const d = i.data;
       let pos = null; try{ pos = typeof d.annotationPosition === 'string' ? JSON.parse(d.annotationPosition) : d.annotationPosition; }catch(e){}
       const m = {id: 'za-' + i.key, src: 'zotero', zkey: i.key, text: d.annotationText || '', color: d.annotationColor ? d.annotationColor + '66' : 'rgba(226,182,72,.42)', date: (d.dateModified || '').slice(0, 10), loc: d.annotationPageLabel ? 'p. ' + d.annotationPageLabel : ''};
       if(pos && pos.type === 'FragmentSelector' && pos.value) m.cfi = pos.value; else if(pos && typeof pos.pageIndex === 'number'){ m.page = pos.pageIndex + 1; m.zr = pos.rects || []; }
