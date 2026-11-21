@@ -777,3 +777,37 @@ body.pm-dragging,body.pm-dragging *{user-select:none !important;-webkit-user-sel
 .tp.drop-before::after,.tp.drop-after::after{content:'';position:absolute;left:6px;right:6px;height:2px;border-radius:2px;background:#F6E7D2;box-shadow:0 0 8px rgba(246,231,210,.6)}
 .tp.drop-before::after{top:-2px}
 .tp.drop-after::after{bottom:-2px}
+
+/* the cover the top map lands on is wherever that map now stands in the row */
+#rowIn.landing .mcard:first-child .xc{visibility:visible}
+#rowIn.landing .mcard.lt .xc{visibility:hidden;opacity:1 !important}
+#rowIn.landing .mcard.lt .mlabel{opacity:1 !important}
+#rowIn.landing .mcard:first-child:not(.lt) .xc,#rowIn.landing .mcard:first-child:not(.lt) .mlabel{opacity:0 !important}
+.mcard .mlabel b.editing{outline:none;border-radius:6px;background:rgba(251,247,238,.18);box-shadow:inset 0 0 0 1.5px rgba(246,231,210,.6);padding:0 4px}
+
+/* a book file held over Readings: the shelves wait for it */
+.r-drophint{position:fixed;inset:18px;z-index:120;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-radius:24px;border:2px dashed rgba(246,231,210,.55);background:rgba(20,10,4,.35);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);color:#F6E7D2;opacity:0;pointer-events:none;transition:opacity .2s ease}
+.r-drophint b{font:600 22px var(--serif)}
+.r-drophint span{font:500 13px var(--sans);letter-spacing:1px;opacity:.75}
+body.r-filedrop.st-books .r-drophint{opacity:1}
+
+body > #rMenu{z-index:210}
+
+body.p-filedrop.st-papers .p-drophint{opacity:1}
+body.st-papers .r-drophint:not(.p-drophint),body.st-books .p-drophint{opacity:0 !important}
+
+#toast.act{pointer-events:auto;display:flex;align-items:center;gap:14px}
+#toast .toast-act{all:unset;cursor:pointer;font-weight:700;color:#F6E7D2;text-decoration:underline;text-underline-offset:3px}
+
+/* the save dot on every cloud: nothing when saved, yellow while saving, red and blinking when it is not saved */
+[data-sync] [data-over="sync"],[data-sync] [data-mm="sync"],[data-sync] [data-atl="sync"]{position:relative}
+[data-sync="busy"] [data-over="sync"]::after,[data-sync="err"] [data-over="sync"]::after,
+[data-sync="busy"] [data-mm="sync"]::after,[data-sync="err"] [data-mm="sync"]::after,
+[data-sync="busy"] [data-atl="sync"]::after,[data-sync="err"] [data-atl="sync"]::after{content:'';position:absolute;right:calc(50% - 7.5px);bottom:calc(50% - 6px);width:4px;height:4px;border-radius:50%;box-shadow:0 0 0 1px rgba(255,253,248,.92);pointer-events:none}
+[data-sync="busy"] [data-over="sync"]::after,[data-sync="busy"] [data-mm="sync"]::after,[data-sync="busy"] [data-atl="sync"]::after{background:#E9BB2F}
+[data-sync="err"] [data-over="sync"]::after,[data-sync="err"] [data-mm="sync"]::after,[data-sync="err"] [data-atl="sync"]::after{background:#E0503F;animation:pmDotBlink 1.2s ease-in-out infinite}
+@keyframes pmDotBlink{0%,100%{opacity:1}50%{opacity:.2}}
+
+#drinkAnim{position:absolute;pointer-events:none;opacity:0;transition:opacity .45s ease}
+#drinkAnim.on{opacity:1}
+#cupKinds [data-cup][hidden]{display:none}

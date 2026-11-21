@@ -3,7 +3,8 @@
    What goes where, and nothing else: an item becomes a paper (a book becomes a book in Readings), a collection a map and
    its sub-collections its topics, tags stay tags (read and to-read mark a paper read or wanted), a child note joins the
    paper's notes, PDF and EPUB annotations become its highlights and sticky notes, and its PDF or EPUB opens from Zotero's
-   storage. Paper Map keeps a record of which Zotero item is which paper, so nothing is ever added twice. */
+   storage. Paper Map keeps a record of which Zotero item is which paper, so nothing is ever added twice.
+   It only reads: nothing is ever written to Zotero. */
 const ZT = {busy: false, timer: null};
 const ZAPI = 'https://api.zotero.org';
 const ZPAPER = new Set(['journalArticle', 'conferencePaper', 'preprint', 'report', 'thesis', 'bookSection', 'magazineArticle', 'newspaperArticle', 'manuscript', 'workingPaper', 'webpage', 'blogPost', 'presentation', 'document', 'encyclopediaArticle', 'dictionaryEntry', 'case', 'statute', 'patent', 'dataset']);
@@ -20,19 +21,27 @@ function ztMd(html){ const d = document.createElement('div'); d.innerHTML = Stri
   d.querySelectorAll('h1,h2,h3,p,li,blockquote,pre').forEach(n => { if(n.closest('li') && n.tagName !== 'LI') return; const t = n.textContent.replace(/\s+/g, ' ').trim(); if(!t) return;
     out.push(n.tagName === 'LI' ? '- ' + t : n.tagName === 'BLOCKQUOTE' ? '> ' + t : /^H\d$/.test(n.tagName) ? '### ' + t : t); });
   return out.length ? out.join('\n') : d.textContent.trim(); }
-/* collections → maps and their topics: a top-level collection is a map, the ones inside it its topics */
+/* Zotero's tree, copied into Papers: a top-level collection is a folder, every collection inside it a folder inside that,
+   to any depth; a folder that is already there under the same name and in the same place is used, not doubled */
 function ztTopicFor(c, colls, key){
   c.map = c.map || {}; const byKey = {}; colls.forEach(x => byKey[x.key] = x.data);
-  let top = key; while(byKey[top] && byKey[top].parentCollection) top = byKey[top].parentCollection;
-  if(!byKey[top]) return null;
+  if(!byKey[key]) return null;
+  let top = key; while(byKey[top].parentCollection && byKey[byKey[top].parentCollection]) top = byKey[top].parentCollection;
   let tp = lib.topics.find(t => t.id === c.map[top]);
-  if(!tp){ tp = {id: rid('t'), name: byKey[top].name, shelf: true, subs: [{id: rid('s'), name: byKey[top].name, desc: '', groups: [], hidden: true}]}; lib.topics.push(tp); c.map[top] = tp.id; }
-  if(key === top) return {topic: tp.id, sub: (tp.subs.find(s => s.hidden) || tp.subs[0]).id};
+  if(!tp){ tp = lib.topics.find(t => t.shelf && t.name === byKey[top].name) || null;
+    if(!tp){ tp = {id: rid('t'), name: byKey[top].name, shelf: true, subs: [{id: rid('s'), name: byKey[top].name, desc: '', groups: [], hidden: true}]}; lib.topics.push(tp); }
+    c.map[top] = tp.id; }
+  const root = tp.subs.find(s => s.hidden) || tp.subs[0];
+  if(key === top) return {topic: tp.id, sub: root.id};
+  const pk = byKey[key].parentCollection, up = pk && pk !== top ? ztTopicFor(c, colls, pk) : null, parentId = up ? up.sub : null;
   let sub = tp.subs.find(s => s.id === c.map[key]);
-  if(!sub){ const parentKey = byKey[key].parentCollection, parentSub = parentKey && parentKey !== top ? tp.subs.find(s => s.id === c.map[parentKey]) : null;
-    sub = {id: rid('s'), name: byKey[key].name, desc: '', groups: []}; if(parentSub) sub.parent = parentSub.id; tp.subs.push(sub); c.map[key] = sub.id; }
+  if(!sub){ sub = tp.subs.find(s => !s.hidden && s.name === byKey[key].name && (s.parent || null) === parentId) || null;
+    if(!sub){ sub = {id: rid('s'), name: byKey[key].name, desc: '', groups: []}; if(parentId) sub.parent = parentId; tp.subs.push(sub); }
+    c.map[key] = sub.id; }
   return {topic: tp.id, sub: sub.id};
 }
+/* every chosen collection gets its folder, even one with nothing in it yet */
+function ztMirror(c, colls, chosen){ colls.forEach(x => { if(chosen.has(x.key)) ztTopicFor(c, colls, x.key); }); }
 function ztInbox(c){ c.map = c.map || {}; let tp = lib.topics.find(t => t.id === c.map['@inbox']);
   if(!tp){ tp = {id: rid('t'), name: 'From Zotero', shelf: true, subs: [{id: rid('s'), name: 'From Zotero', desc: '', groups: [], hidden: true}]}; lib.topics.push(tp); c.map['@inbox'] = tp.id; }
   return {topic: tp.id, sub: (tp.subs.find(x => x.hidden) || tp.subs[0]).id}; }
@@ -47,6 +56,7 @@ async function ztSync(manual){
     let made = 0, updated = 0, notes = 0, marks = 0;
     const tops = items.filter(i => !i.data.parentItem && i.data.itemType !== 'attachment' && i.data.itemType !== 'note' && i.data.itemType !== 'annotation');
     const unfiled = it => !(it.data.collections || []).length && c.unfiled !== false;
+    try{ ztMirror(c, colls, chosen); }catch(err){}
     tops.forEach(it => { const d = it.data, inSel = (d.collections || []).filter(k => chosen.has(k)); if(!inSel.length && !(c.items[it.key]) && !unfiled(it)) return;
       const st = ztStatusOf(d.tags), title = (d.title || '').trim(); if(!title) return;
       if(d.itemType === 'book'){ R_ztBook(c, it, st) === 'new' ? made++ : updated++; return; }
@@ -88,7 +98,7 @@ async function ztFileBlob(c, key){ const r = await ztGet(c, '/users/' + c.user +
 /* connecting: the key, then which collections */
 function openZotero(){
   const c = ztCfg();
-  if(!c){ openModal({title: 'Zotero', body: '<p class="zt-p">Make a key on zotero.org with read and write access to your library, then paste it here.</p><p><a href="https://www.zotero.org/settings/keys/new" target="_blank" rel="noopener">Make a key</a></p><label class="zt-l">Key<input type="password" id="ztKey" autocomplete="off" spellcheck="false"></label><p class="zt-err" id="ztErr"></p>',
+  if(!c){ openModal({title: 'Zotero', body: '<p class="zt-p">Make a key on zotero.org that can read your library (reading is all it needs), then paste it here.</p><p><a href="https://www.zotero.org/settings/keys/new" target="_blank" rel="noopener">Make a key</a></p><label class="zt-l">Key<input type="password" id="ztKey" autocomplete="off" spellcheck="false"></label><p class="zt-err" id="ztErr"></p>',
     actions: [{label: 'Cancel'}, {label: 'Connect', primary: true, onClick: () => { (async () => { const key = (document.getElementById('ztKey').value || '').trim(); if(!key) return;
       try{ const r = await fetch(ZAPI + '/keys/' + encodeURIComponent(key), {headers: {'Zotero-API-Version': '3'}}); if(!r.ok) throw 0; const j = await r.json(); ztSave({key, user: j.userID, name: j.username, include: 'all', items: {}, children: {}, map: {}}); closeModal(); setTimeout(ztChoose, 0); }
       catch(e){ document.getElementById('ztErr').textContent = 'That key did not work. Check it, and that it can read your library.'; } })(); return false; }}]}); return; }

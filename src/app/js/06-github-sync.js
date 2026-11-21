@@ -44,7 +44,10 @@ function saveStateText(){
   if(syncKind() === 'folder') return 'Folder needs permission again: Settings → Sync';
   return 'Saved in this browser only';
 }
-function updateSaveState(){ const txt = saveStateText(); document.querySelectorAll('[data-save-state]').forEach(el => { el.textContent = txt; }); }
+/* the dot on every cloud: green when saved, yellow while saving, red when not saved anywhere but here, or when saving failed */
+function syncDot(){ if(PREVIEW) return ''; if(ghCfg()){ if(gh.st === 'error') return 'err'; if(gh.st === 'pending' || gh.st === 'saving' || gh.st === 'loading') return 'busy'; return 'ok'; } return 'err'; }
+function paintSyncDot(){ const d = syncDot(); document.documentElement.dataset.sync = d; const f = document.getElementById('pmDesk'); try{ if(f && f.contentDocument && f.contentDocument.documentElement) f.contentDocument.documentElement.dataset.sync = d; }catch(e){} }
+function updateSaveState(){ const txt = saveStateText(); document.querySelectorAll('[data-save-state]').forEach(el => { el.textContent = txt; }); paintSyncDot(); }
 function setGh(st, msg){ gh.st = st; gh.msg = msg || ''; updateSaveState(); }
 function ghErr(e){
   const s = e && e.status, k = syncKind();

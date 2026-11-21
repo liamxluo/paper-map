@@ -80,11 +80,11 @@ function mmFreeSpot(m, from){
   return [o.x + 60, o.y + 60];
 }
 function mmAdd(type, ref, at){
-  const m = mindOf(MM.id); if(!m) return null;
+  if(MM.editing) mmCommitText(); const m = mindOf(MM.id); if(!m) return null;
   const from = MM.sel ? m.nodes.find(n => n.id === MM.sel) : null, [x, y] = at || mmFreeSpot(m, from);
   const n = {id: mmId('n'), type, x, y}; if(ref) n.ref = ref; if(type === 'text') n.text = '';
   m.nodes.push(n); if(from) m.edges.push({id: mmId('e'), a: from.id, b: n.id, label: ''});
-  MM.sel = n.id; if(type === 'text') MM.editing = n.id; mmRender(); mmSave(); mmShow(n); return n;
+  MM.sel = n.id; if(type === 'text') MM.editing = n.id; mmRender(); mmSave(); mmShow(n); if(type === 'text') mmFocusText(n.id); return n;
 }
 function mmShow(n){ const sx = n.x * MM.view.k + MM.view.x, sy = n.y * MM.view.k + MM.view.y; if(sx < 120 || sx > innerWidth - 120 || sy < 140 || sy > innerHeight - 120){ MM.view.x += innerWidth / 2 - sx; MM.view.y += innerHeight / 2 - sy; mmApply(); } }
 function mmFit(){ const m = mindOf(MM.id); if(!m) return;
@@ -112,7 +112,9 @@ function mmMenu(){
 /* ---- opening and closing ---- */
 function openMind(id){
   const m = mindOf(id); if(!m) return; mmEnsure(); MM.id = id; MM.sel = null; MM.editing = null;
+  { const empty = new Set(m.nodes.filter(n => n.type === 'text' && !String(n.text || '').trim()).map(n => n.id)); if(empty.size){ m.nodes = m.nodes.filter(n => !empty.has(n.id)); m.edges = m.edges.filter(e => !empty.has(e.a) && !empty.has(e.b)); } }
   if(!DK.mindFrom) DK.mindFrom = 'maps';
+  try{ deskTouchRecent('mind:' + id); }catch(e){}
   MM.view = m.view ? {x: m.view.x + innerWidth / 2, y: m.view.y + innerHeight / 2, k: m.view.k || 1} : {x: innerWidth / 2, y: innerHeight / 2 + 20, k: 1};
   mmApply(); mmRender(); try{ deskHide(); }catch(e){}
   document.documentElement.classList.add('mind-on'); MM.el.hidden = false; requestAnimationFrame(() => MM.el.classList.add('on'));
@@ -148,7 +150,7 @@ function mmWire(){
     if(rs){ ev.preventDefault(); const n = m.nodes.find(x => x.id === rs.dataset.rs), el = rs.closest('.mm-node'); MM.drag = {kind: 'size', n, el, sx: ev.clientX, ow: el.getBoundingClientRect().width / MM.view.k}; st.setPointerCapture(ev.pointerId); return; }
     if(dot){ ev.preventDefault(); MM.drag = {kind: 'link', from: dot.dataset.dot, sx: ev.clientX, sy: ev.clientY}; st.setPointerCapture(ev.pointerId); return; }
     if(node){ const n = m.nodes.find(x => x.id === node.dataset.n); MM.drag = {kind: 'node', n, sx: ev.clientX, sy: ev.clientY, ox: n.x, oy: n.y, moved: false}; st.setPointerCapture(ev.pointerId); return; }
-    if(edge){ MM.sel = edge.dataset.e; mmRender(); return; }
+    if(edge){ mmSelect(edge.dataset.e); return; }
     MM.drag = {kind: 'pan', sx: ev.clientX, sy: ev.clientY, lx: ev.clientX, ly: ev.clientY, vx: MM.view.x, vy: MM.view.y, moved: false}; st.setPointerCapture(ev.pointerId); st.classList.add('panning');
   });
   st.addEventListener('pointermove', ev => { const d = MM.drag; if(!d) return;
@@ -159,20 +161,21 @@ function mmWire(){
       document.querySelectorAll('#mmNodes .mm-node.target').forEach(x => x.classList.remove('target')); const t = document.elementFromPoint(ev.clientX, ev.clientY), tn = t && t.closest && t.closest('.mm-node'); if(tn && tn.dataset.n !== d.from) tn.classList.add('target'); }
   });
   const end = ev => { const d = MM.drag; MM.drag = null; st.classList.remove('panning'); if(!d) return; const m = mindOf(MM.id); if(!m) return;
-    if(d.kind === 'pan'){ if(d.moved){ mmSave(); return; } MM.sel = null;
-      if(!m.nodes.length){ const [wx, wy] = mmToWorld(ev.clientX, ev.clientY); mmAdd('text', null, [Math.round(wx), Math.round(wy)]); return; } mmRender(); return; }
+    if(d.kind === 'pan'){ if(d.moved){ mmSave(); return; }
+      if(!m.nodes.length){ MM.sel = null; const [wx, wy] = mmToWorld(ev.clientX, ev.clientY); mmAdd('text', null, [Math.round(wx), Math.round(wy)]); return; } if(MM.editing){ mmCommitText(); } mmSelect(null); return; }
     if(d.kind === 'size'){ mmSave(); mmEdgesOnly(); return; }
-    if(d.kind === 'node'){ if(d.moved){ mmSave(); return; } MM.sel = d.n.id; mmRender(); return; }
+    if(d.kind === 'node'){ if(d.moved){ mmSave(); return; } mmSelect(d.n.id); return; }
     if(d.kind === 'link'){ mm$('mmRubber').setAttribute('d', ''); const t = document.elementFromPoint(ev.clientX, ev.clientY), tn = t && t.closest && t.closest('.mm-node');
       document.querySelectorAll('#mmNodes .mm-node.target').forEach(x => x.classList.remove('target'));
       if(tn && tn.dataset.n !== d.from){ const b = tn.dataset.n; if(!m.edges.some(e => (e.a === d.from && e.b === b) || (e.a === b && e.b === d.from))){ const e = {id: mmId('e'), a: d.from, b, label: ''}; m.edges.push(e); MM.sel = e.id; mmRender(); mmSave(); setTimeout(() => mmEditLabel(e.id), 60); } }
       else if(Math.hypot(ev.clientX - d.sx, ev.clientY - d.sy) > 40){ const [wx, wy] = mmToWorld(ev.clientX, ev.clientY); MM.sel = d.from; mmAdd('text', null, [Math.round(wx), Math.round(wy)]); } }
   };
   st.addEventListener('pointerup', end); st.addEventListener('pointercancel', end);
-  st.addEventListener('dblclick', ev => { const node = ev.target.closest('.mm-node'), edge = ev.target.closest('.mm-edge'); const m = mindOf(MM.id); if(!m) return;
+  st.addEventListener('dblclick', ev => { let node = ev.target.closest('.mm-node'), edge = ev.target.closest('.mm-edge'); const m = mindOf(MM.id); if(!m) return;
+    if(!node && !edge){ const hit = document.elementsFromPoint(ev.clientX, ev.clientY); node = (hit.find(x => x.closest && x.closest('#mmNodes .mm-node')) || {closest: () => null}).closest('.mm-node'); edge = node ? null : (hit.find(x => x.closest && x.closest('#mmEdges .mm-edge')) || {closest: () => null}).closest('.mm-edge'); }
     if(edge){ mmEditLabel(edge.dataset.e); return; }
     if(node){ const n = m.nodes.find(x => x.id === node.dataset.n); if(!n) return;
-      if(n.type === 'text'){ MM.editing = n.id; MM.sel = n.id; mmRender(); }
+      if(n.type === 'text'){ if(MM.editing && MM.editing !== n.id) mmCommitText(); MM.editing = n.id; MM.sel = n.id; mmRender(); mmFocusText(n.id); }
       else if(n.type === 'paper'){ try{ openReader(n.ref); }catch(e){} }
       return; }
     const [wx, wy] = mmToWorld(ev.clientX, ev.clientY); MM.sel = null; mmAdd('text', null, [Math.round(wx), Math.round(wy)]); });
@@ -266,3 +269,8 @@ async function mmExport(kind){ const x = mmSvg(); if(!x){ toast('Nothing on this
   if(kind === 'svg'){ await saveBlobAs(new Blob([x.svg], {type: 'image/svg+xml'}), name + '.svg'); return; }
   const shifted = x.svg.replace(/viewBox="[^"]*"/, 'viewBox="0 0 ' + x.w + ' ' + x.h + '"').replace('<g>', '<g transform="translate(' + (-x.x0).toFixed(1) + ',' + (-x.y0).toFixed(1) + ')">');
   const page = mapPdfPage({w: x.w, h: x.h, svg: shifted}); await saveBlobAs(vectorPdf([page], x.name || 'Mind map'), name + '.pdf'); }
+
+function mmSelect(id){ MM.sel = id; document.querySelectorAll('#mmNodes .mm-node').forEach(el => el.classList.toggle('sel', el.dataset.n === id)); document.querySelectorAll('#mmEdges .mm-edge').forEach(el => el.classList.toggle('sel', el.dataset.e === id)); }
+function mmFocusText(id){ requestAnimationFrame(() => { const t = document.querySelector('#mmNodes [data-n="' + id + '"] .mm-txt'); if(!t) return; t.focus(); const r = document.createRange(); r.selectNodeContents(t); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }); }
+/* the title is the name: click it to rename the map */
+document.addEventListener('click', e => { const t = e.target.closest && e.target.closest('#mmTitle'); if(!t || t.isContentEditable) return; t.contentEditable = 'true'; t.focus(); const r = document.createRange(); r.selectNodeContents(t); const s = getSelection(); s.removeAllRanges(); s.addRange(r); });

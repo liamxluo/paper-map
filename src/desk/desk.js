@@ -110,10 +110,15 @@ function mindCoverHTML(m, i){ const meta = [m.papers ? m.papers + (m.papers === 
   return '<div class="mcard mind" data-mind="' + esc(m.id) + '" style="left:' + (ROW_X0 + i * ROW_DX - 93.33) + 'px;--r:' + TILT[i % TILT.length] + 'deg"><div class="xc" role="button" tabindex="0" title="' + esc(m.name) + '">' +
     '<svg class="mfig" viewBox="0 0 160 120" aria-hidden="true"><g fill="none" stroke="#3B332C" stroke-width="1.2" opacity=".7"><path d="M80 60Q58 40 34 30"/><path d="M80 60Q104 38 128 28"/><path d="M80 60Q60 82 36 92"/><path d="M80 60Q102 84 126 94"/><path d="M34 30Q22 46 18 62"/></g><rect x="62" y="51" width="36" height="18" rx="4" fill="#231E1A"/><g fill="#FBF8F2" stroke="#3B332C" stroke-width="1.2"><rect x="18" y="22" width="30" height="14" rx="3"/><rect x="114" y="20" width="30" height="14" rx="3"/><rect x="20" y="86" width="30" height="14" rx="3"/><rect x="112" y="88" width="30" height="14" rx="3"/></g>' + (m.pin ? '<circle cx="132" cy="104" r="5" fill="#C8492F"/>' : '') + '</svg>' +
     '<b class="mt">' + esc(m.name) + '</b><em class="mk">MIND MAP</em></div><div class="mlabel"><b>' + esc(m.name) + '</b><span>' + esc(meta) + '</span></div></div>'; }
+let ROWPOS = {};
+const topSlot = () => slotOf(order[0] && ROWPOS[order[0].id] != null ? ROWPOS[order[0].id] : 0);
 function layoutRow(){
   const n = order.length;
-  const MMs = D.minds || [], n2 = n + MMs.length;
-  stripIn.innerHTML = order.map(coverHTML).join('') + MMs.map((m, j) => mindCoverHTML(m, n + j)).join('') + '<div class="mcard new" style="left:' + (ROW_X0 + n2 * ROW_DX - 93.33) + 'px;--r:-2deg"><div class="xc" id="newMapCard" role="button" tabindex="0" title="New map" style="background-image:url(' + AS + 'newmap.webp)"></div><div class="mlabel"><b>New map</b><span>for another field</span></div></div>';
+  const MMs = D.minds || [], n2 = n + MMs.length, rt = D.recentTimes || {};
+  /* the row runs in the order you last opened things, timelines and mind maps together */
+  const items = order.map((t, i) => ({t, at: rt[t.id] || 0, i})).concat(MMs.map((m, i) => ({m, at: rt['mind:' + m.id] || 0, i: n + i}))).sort((a, b) => (b.at - a.at) || (a.i - b.i));
+  ROWPOS = {}; items.forEach((x, k) => { if(x.t) ROWPOS[x.t.id] = k; });
+  stripIn.innerHTML = items.map((x, k) => x.t ? coverHTML(x.t, k).replace('class="mcard"', 'class="mcard' + (order[0] && x.t.id === order[0].id ? ' lt' : '') + '"') : mindCoverHTML(x.m, k)).join('') + '<div class="mcard new" style="left:' + (ROW_X0 + n2 * ROW_DX - 93.33) + 'px;--r:-2deg"><div class="xc" id="newMapCard" role="button" tabindex="0" title="New map" style="background-image:url(' + AS + 'newmap.webp)"></div><div class="mlabel"><b>New map</b><span>for another field</span></div></div>';
   stripIn.style.width = (ROW_X0 + n2 * ROW_DX + 93.33 + 140) + 'px';
   stripIn.querySelectorAll('.mcard.mind .xc').forEach(c => { const go = () => { if(state === 'maps' && !strip._dragged && P && P.openMind){ c.parentNode.classList.add('lift'); P.openMind(c.parentNode.dataset.mind); } }; c.addEventListener('click', go); c.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } }); });
   stripIn.querySelectorAll('.mcard[data-topic] .xc').forEach(c => { const go = () => { if(state === 'maps' && !strip._dragged) openTopic(c.parentNode.dataset.topic); }; c.addEventListener('click', go); c.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } }); });
@@ -176,6 +181,7 @@ async function toMaps(){
     if(!el._topic){ moves.push(anim(el, [{opacity: 1}, {opacity: 0}], {duration: 360, delay: k * 60})); return; }
     const p = slotOf(k);
     if(k > 0){ moves.push(anim(el, [{opacity: 1}, {opacity: 0}], {duration: 220, easing: 'ease-out'}).then(() => { el.style.opacity = '0'; setPose(el, p, 1); return fold(el, 0, 1); })); return; }
+    const pt = topSlot(); p[0] = pt[0]; p[1] = pt[1]; p[2] = pt[2];
     moves.push(Promise.all([move(el, [p[0], p[1] - 26, p[2]], 1.0, 520, 0, 'cubic-bezier(.3,0,.3,1)').then(() => move(el, p, 1.0, 420, 0, 'cubic-bezier(.2,.7,.2,1)')), fold(el, 160, 560)])); });
   await Promise.all(moves);
   /* the strip takes over: its covers sit exactly where the sheets landed */
@@ -187,7 +193,7 @@ async function toDesk(){
   if(strip.scrollLeft > 0){ strip.scrollTo({left: 0, behavior: 'smooth'}); await sleep(reduce ? 20 : 420); strip.scrollLeft = 0; }
   /* the first three covers become the sheets again, and fly back to the stack */
   stripIn.classList.add('landing');
-  [2, 1, 0].forEach((si, k) => { const el = sheets[si]; el.getAnimations().forEach(a => a.cancel()); el.classList.add('flying'); if(!el._topic){ el.style.opacity = '0'; return; } settle(el, true); setPose(el, k > 0 ? STACK[si].a1 : slotOf(k), 1); el.style.opacity = k > 0 ? '0' : '1'; el.style.pointerEvents = ''; });
+  [2, 1, 0].forEach((si, k) => { const el = sheets[si]; el.getAnimations().forEach(a => a.cancel()); el.classList.add('flying'); if(!el._topic){ el.style.opacity = '0'; return; } settle(el, true); setPose(el, k > 0 ? STACK[si].a1 : topSlot(), 1); el.style.opacity = k > 0 ? '0' : '1'; el.style.pointerEvents = ''; });
   setState('desk', HINT_DESK);
   sheets.forEach((el, k) => { el.style.zIndex = 10 + k; });
   await Promise.all(sheets.map((el, k) => el._topic ? (k === 2 ? move(el, STACK[k].a1, 1, 760, 0, 'cubic-bezier(.3,.1,.2,1)') : anim(el, [{opacity: 0}, {opacity: 1}], {duration: 420, delay: 520, easing: 'ease-out'}).then(() => { el.style.opacity = '1'; })) : (setPose(el, STACK[k].a1, 1), settle(el, false), el.style.pointerEvents = '', anim(el, [{opacity: 0}, {opacity: 1}], {duration: 500, delay: 400}))));
@@ -272,14 +278,25 @@ $('deskBack').addEventListener('click', toDesk);
 
 /* ============ desk surfaces, paper, cup ============ */
 let bgFront = 'A';
-function setWood(v, instant){ prefs.wood = v; document.querySelectorAll('.wd').forEach(w => w.classList.toggle('on', w.dataset.wood === v));
+/* drinks with a vessel of their own: the whole desk is drawn with them in the cup's place */
+const VESSELS = {osmanthus: true, longjing: true, whisky: true, teaglass: true};
+/* drinks that move: a small layer over the glass plays the ice drifting or the leaves turning; some drinks belong to some desks only */
+const DRINK_ANIM = {whisky: {l: 1230, t: 45, s: 195}, teaglass: {l: 1265, t: 80, s: 125}};
+const DRINK_WOODS = {whisky: ['honey', 'linen'], teaglass: ['honey']};
+const drinkOn = (k, wood) => !DRINK_WOODS[k] || DRINK_WOODS[k].includes(wood || prefs.wood || 'mahogany');
+function paintDrinkAnim(){ const el = $('drinkAnim'); if(!el) return; const k = prefs.cup, a = DRINK_ANIM[k];
+  if(!a || !drinkOn(k)){ el.classList.remove('on'); return; }
+  Object.assign(el.style, {left: a.l + 'px', top: a.t + 'px', width: a.s + 'px', height: a.s + 'px'}); const src = AS + 'anim-' + (prefs.wood || 'mahogany') + '-' + k + '.webp';
+  if(el.getAttribute('src') !== src) el.src = src; el.classList.add('on'); }
+function setWood(v, instant){ prefs.wood = v; if(!drinkOn(prefs.cup, v)) prefs.cup = '';
+  document.querySelectorAll('#cupKinds [data-cup]').forEach(b => { b.hidden = !drinkOn(b.dataset.cup, v); b.classList.toggle('on', (b.dataset.cup || '') === (prefs.cup || '')); }); document.querySelectorAll('.wd').forEach(w => w.classList.toggle('on', w.dataset.wood === v));
   { const fr = document.querySelector('#leaf .lf-front'), bk = document.querySelector('#leaf .lf-back'); if(fr) fr.style.backgroundImage = 'url(' + AS + 'leaf-r-' + v + '.webp)'; if(bk) bk.style.backgroundImage = 'url(' + AS + 'leaf-l-' + v + '.webp)'; }
-  const url = AS + 'bg-' + v + '.webp', img = new Image();
+  const url = AS + 'bg-' + v + (VESSELS[prefs.cup] ? '-' + prefs.cup : '') + '.webp', img = new Image();
   img.onload = () => { const back = $(bgFront === 'A' ? 'bgB' : 'bgA'), front = $(bgFront === 'A' ? 'bgA' : 'bgB');
     back.style.backgroundImage = 'url(' + url + ')'; back.style.transition = instant ? 'none' : ''; front.style.transition = instant ? 'none' : '';
     back.style.opacity = 1; front.style.opacity = 0; bgFront = bgFront === 'A' ? 'B' : 'A'; document.body.classList.add('ready'); };
   img.onerror = () => document.body.classList.add('ready');
-  img.src = url; }
+  img.src = url; setTimeout(paintDrinkAnim, 350); }
 function setPaper(v){ prefs.paper = v; document.querySelectorAll('.opt').forEach(o => o.classList.toggle('on', o.dataset.paper === v));
   sheets.forEach(el => { const t = D.topics.find(x => x.id === el._topic) || null; paintSheet(el, t); }); setState(state); }
 function setStart(v){ prefs.start = v; document.querySelectorAll('.st-opt').forEach(o => o.classList.toggle('on', o.dataset.start === v)); }
@@ -290,11 +307,12 @@ const panel = $('panel');
 document.querySelectorAll('[data-look]').forEach(g => g.addEventListener('click', e => { e.stopPropagation(); panel.classList.toggle('on'); }));
 $('panelX').addEventListener('click', () => panel.classList.remove('on'));
 $('moreSettings').addEventListener('click', () => { panel.classList.remove('on'); if(P) P.openSettings(() => { if(state === 'desk' || document.body.classList.contains('reading')) panel.classList.add('on'); }); });
-const CUPS = {heart: AS + 'cup-heart.webp', tea: AS + 'cup-tea.webp'};
+const CUPS = {heart: AS + 'cup-heart.webp', tea: AS + 'cup-tea.webp', greentea: AS + 'cup-greentea.webp'};
 const cupImg = $('cupLiquid'), cupMenu = $('cupMenu');
-function setCup(key){ prefs.cup = key;
+function setCup(key){ const was = !!VESSELS[prefs.cup]; prefs.cup = key; if(was !== !!VESSELS[key]) setWood(prefs.wood || 'mahogany');
   document.querySelectorAll('#cupKinds button').forEach(b => b.classList.toggle('on', (b.dataset.cup || '') === key));
-  if(!CUPS[key]){ cupImg.classList.remove('on'); return; }
+  paintDrinkAnim();
+  if(!CUPS[key] || VESSELS[key]){ cupImg.classList.remove('on'); return; }
   cupImg.classList.remove('on'); setTimeout(() => { cupImg.src = CUPS[key]; cupImg.classList.add('on'); }, 10); }
 document.querySelectorAll('#cupKinds button').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); setCup(b.dataset.cup); savePrefs(); }));
 $('cupHit').addEventListener('click', e => { e.stopPropagation(); if(state === 'desk') cupMenu.classList.toggle('on'); });
@@ -418,11 +436,11 @@ $('ppLink').addEventListener('click', e => { const u = e.currentTarget.dataset.u
 /* ============ Readings: its own list, its own categories ============ */
 const RB = $('rboard'), rcard = $('rcard');
 const book = $('book'), bookHome = book.parentNode, bookNext = book.nextSibling, cover = book.querySelector('.bcover');
-let R = (D.readings || []).slice(), CATS = (D.readingCats || []).slice(), rFilter = 'st:all', rBook = null, rEditing = false;
+let R = (D.readings || []).filter(b => !b.deleted), RDEL = (D.readings || []).filter(b => b.deleted), CATS = (D.readingCats || []).slice(), rFilter = 'st:all', rBook = null, rEditing = false;
 const BOOKC = [['#2F4A3A', '#D6B670'], ['#6B2A2A', '#E2C58A'], ['#24344F', '#D6B670'], ['#E6DCC6', '#3A2E24'], ['#6A4026', '#E2C58A'], ['#2D5653', '#D9C08A'], ['#A8802F', '#2B2118'], ['#4A5560', '#E0CFA4'], ['#4E3448', '#D9BE84']];
 function hashOf(s){ let h = 0; for(const c of String(s)) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); }
 function clothOf(b){ return b.cover && b.cover.cloth ? [b.cover.cloth, b.cover.ink] : BOOKC[hashOf(b.title + b.id) % BOOKC.length]; }
-function rSave(){ if(!P) return; try{ P.saveReadings(R, CATS); }catch(e){} }
+function rSave(){ if(!P) return; try{ P.saveReadings(R.concat(RDEL), CATS); }catch(e){} }
 function rid(){ return 'r-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 function lastName(a){ const p = String(a || '').trim().split(/\s+/); return p[p.length - 1] || ''; }
 function shortAuthors(b){ const a = b.authors || []; return a.length > 1 ? lastName(a[0]) + ' & ' + lastName(a[1]) : lastName(a[0]); }
@@ -509,8 +527,8 @@ $('rcSave').addEventListener('click', () => {
   Object.assign(b, {title: t, authors: fieldVal('rfA').split(/\s*[;,]\s*|\s+&\s+|\s+and\s+/).map(x => x.trim()).filter(Boolean), year: isFinite(y) ? y : null, status: st, finished: st === 'read' ? monthOf(fieldVal('rfF')) : null, progress: st === 'reading' && isFinite(pr) ? Math.max(0, Math.min(1, pr / 100)) : null, categories: d.categories || [], notes: $('rcNotes').innerText || '', edited: new Date().toISOString(),
     cover: rcard._cover || null, added: b.added || new Date().toISOString(), started: st === 'reading' ? (b.started || today()) : (b.started || null), finishedOn: st === 'read' ? (b.finishedOn || today()) : null,
     isbn: isbnOf(fieldVal('rfI')) || (b.isbn || null), pages: isFinite(pg) && pg > 0 ? pg : null, at: st === 'reading' && isFinite(at) ? Math.max(0, isFinite(pg) && pg > 0 ? Math.min(pg, at) : at) : (st === 'read' ? null : b.at || null)});
-  if(!rBook) R.push(b);
-  rSave(); renderReadings(); openRCard(b); toast(rBook ? 'Saved.' : 'Added to your Readings.');
+  const isNew = !rBook; if(isNew) R.push(b);
+  rSave(); renderReadings(); openRCard(b); toast(rBook ? 'Saved.' : 'Added to your Readings.'); if(isNew) setTimeout(() => offerOldNotes(b), 900);
 });
 /* Find: by ISBN (or, with no ISBN, by title and author), from Google Books, then Open Library; nothing is kept until you save */
 function isbnOf(s){ const d = String(s || '').replace(/[^0-9Xx]/g, '').toUpperCase(); return d.length === 13 || d.length === 10 ? d : ''; }
@@ -562,7 +580,7 @@ $('rcMaps').addEventListener('click', e => { const b = e.target.closest('button[
 /* Readings opens the way Papers does: the desk goes soft behind the glass and the shelves rise into place,
    the book staying where it lies; nothing heavy moves while the screen changes */
 async function openBook(){ if(busy || state !== 'desk') return; busy = true; closeMenus(); rcard.classList.remove('on');
-  R = (D.readings || []).slice(); CATS = (D.readingCats || []).slice(); renderReadings();
+  R = (D.readings || []).filter(b => !b.deleted); RDEL = (D.readings || []).filter(b => b.deleted); CATS = (D.readingCats || []).slice(); renderReadings();
   RB.scrollTop = 0; RB.style.clipPath = ''; RB.style.opacity = ''; RB.classList.remove('growing');
   setState('books', ''); requestAnimationFrame(() => RB.classList.add('entered'));
   await sleep(reduce ? 20 : 820); busy = false; }
@@ -708,12 +726,12 @@ function zoomTo(on){ stage.classList.add('zooming');
     stage.style.transform = 'translate(' + (innerWidth / 2 - cx * s2) + 'px,' + (innerHeight / 2 - cy * s2) + 'px) scale(' + s2 + ')'; }
   else fit();
   clearTimeout(zoomTo._t); zoomTo._t = setTimeout(() => stage.classList.remove('zooming'), 820); }
-async function openNote(){ if(busy || state !== 'desk') return; busy = true; closeMenus(); nbSave(true); D = load(); loadNotebooks(); NB.cur = lastWritten(NB); nbFont(); memoShow();
+async function openNote(){ if(busy || state !== 'desk') return; busy = true; closeMenus(); nbSave(true); D = load(); loadNotebooks(true); NB.cur = lastWritten(NB); nbFont(); memoShow();
   setState('note', 'Your research log · up to sixty pages · the right page stays as it is'); zoomTo(true); await sleep(reduce ? 20 : 780);
   memoText.contentEditable = 'true'; caretEnd(); busy = false; }
-async function closeNote(){ if(busy || state !== 'note') return; busy = true; fontMenu.classList.remove('on'); pastMenu.classList.remove('on'); nbSave(true); const backToCurrent = NB !== NBS[NBS.length - 1]; memoText.contentEditable = 'false'; memoText.blur(); nbSave(true);
+async function closeNote(){ if(busy || state !== 'note') return; busy = true; fontMenu.classList.remove('on'); pastMenu.classList.remove('on'); nbSave(true); memoText.contentEditable = 'false'; memoText.blur(); nbSave(true);
   setState('desk', HINT_DESK); zoomTo(false); await sleep(reduce ? 20 : 800);
-  if(backToCurrent){ NB = NBS[NBS.length - 1]; NB.cur = lastWritten(NB); nbFont(); memoShow(); } busy = false; }
+  busy = false; }
 memo.addEventListener('click', e => { if(state === 'desk'){ e.stopPropagation(); openNote(); } });
 $('noteBack').addEventListener('click', closeNote);
 stage.addEventListener('click', e => { if(state === 'note' && !e.target.closest('#memo')) closeNote(); });
@@ -731,7 +749,7 @@ addEventListener('keydown', e => { if(e.key !== 'Escape') return;
 function refreshAll(){
   $('brandName').textContent = D.title || 'Paper Map';
   const np = D.papers.length; $('ptagCount').textContent = np + (np === 1 ? ' paper' : ' papers');
-  assignSheets(); R = (D.readings || []).slice(); CATS = (D.readingCats || []).slice(); loadNotebooks(true); nbFont(); if(!(state === 'note' && document.activeElement === memoText) && !busy) memoShow();
+  assignSheets(); R = (D.readings || []).filter(b => !b.deleted); RDEL = (D.readings || []).filter(b => b.deleted); CATS = (D.readingCats || []).slice(); loadNotebooks(true); nbFont(); if(!(state === 'note' && document.activeElement === memoText) && !busy) memoShow();
   setCup(prefs.cup || 'espresso'); setStart(prefs.start || 'desk');
   document.querySelectorAll('.opt').forEach(o => o.classList.toggle('on', o.dataset.paper === prefs.paper));
   document.querySelectorAll('.wd').forEach(w => w.classList.toggle('on', w.dataset.wood === prefs.wood));
@@ -814,7 +832,7 @@ $('rvSave').addEventListener('click', () => { if(rvBlob && P) P.saveBlob(rvBlob,
 /* ---- import: Kindle highlights (My Clippings.txt), a Kindle notebook (HTML), Goodreads (CSV) ---- */
 const normT = t => String(t || '').toLowerCase().replace(/\(.*?\)|\[.*?\]/g, '').split(':')[0].replace(/[^a-z0-9\u4e00-\u9fff]+/g, ' ').trim();
 function bookByTitle(t, author){ const n = normT(t); return R.find(b => normT(b.title) === n) || null; }
-function ensureBook(t, author, extra){ let b = bookByTitle(t, author); if(b) return [b, false];
+function ensureBook(t, author, extra){ let b = bookByTitle(t, author); if(b) return [b, false]; setTimeout(() => { const nb = bookByTitle(t, author); if(nb) offerOldNotes(nb); }, 1500);
   b = Object.assign({id: rid(), title: String(t).trim(), authors: author ? String(author).split(/\s*;\s*|\s*&\s*/).map(x => x.split(',').reverse().map(s => s.trim()).join(' ').trim()).filter(Boolean) : [], year: null, status: 'read', finished: null, categories: [], notes: '', onMaps: [], added: new Date().toISOString()}, extra || {}); R.push(b); return [b, true]; }
 function addQuote(b, q){ b.quotes = b.quotes || []; if(q.text && b.quotes.some(x => x.text === q.text)) return false; b.quotes.push(q); return true; }
 function parseClippings(txt){ const out = [];
@@ -853,8 +871,11 @@ function importHighlights(items){ let books = 0, hl = 0; const touched = new Set
     if(it.kind === 'n'){ const last = (b.quotes || []).slice().reverse().find(x => x.src === 'kindle' && x.text && x.loc === loc && !x.note); if(last){ last.note = it.text; hl++; return; } if(addQuote(b, {text: '', note: it.text, loc, date: it.date, src: 'kindle'})) hl++; return; }
     if(addQuote(b, {text: it.text, loc, date: it.date, src: 'kindle'})) hl++; });
   return {books, hl, touched: touched.size}; }
-function rMenu(items, at){ const m = $('rMenu'); m.innerHTML = items.map((x, i) => '<button type="button" data-ri="' + i + '"><b>' + esc(x[0]) + '</b><span>' + esc(x[1]) + '</span></button>').join(''); const r = at.getBoundingClientRect();
-  m.style.left = Math.max(12, Math.min(innerWidth - 340, r.right - 320)) + 'px'; m.style.top = (r.bottom + 8) + 'px'; m.classList.add('on'); m._items = items; }
+/* the menu belongs to the screen, not to the toolbar it opens from (the toolbar's own movement would carry it off the edge) */
+if($('rMenu') && $('rMenu').parentNode !== document.body) document.body.appendChild($('rMenu'));
+function rMenu(items, at){ const m = $('rMenu'); if(m.parentNode !== document.body) document.body.appendChild(m); m.innerHTML = items.map((x, i) => '<button type="button" data-ri="' + i + '"><b>' + esc(x[0]) + '</b><span>' + esc(x[1]) + '</span></button>').join(''); const r = at.getBoundingClientRect();
+  m.classList.add('on'); const w = m.offsetWidth || 320, h = m.offsetHeight || 200;
+  m.style.left = Math.max(12, Math.min(innerWidth - w - 12, r.right - w)) + 'px'; m.style.top = Math.max(12, Math.min(innerHeight - h - 12, r.bottom + 8)) + 'px'; m._items = items; }
 $('rMenu').addEventListener('click', e => { const b = e.target.closest('[data-ri]'); if(!b) return; const it = $('rMenu')._items[+b.dataset.ri]; $('rMenu').classList.remove('on'); it[2](); });
 addEventListener('click', e => { if(!e.target.closest('#rMenu,#rImportBtn,#rExportBtn')) $('rMenu').classList.remove('on'); });
 let impKind = null;
@@ -1005,10 +1026,10 @@ async function spArrive(kind, fromEl){
 async function spLoadDoc(){ const kind = SP.kind, id = SP.id;
   try{
     if(kind === 'paper'){ const p = spPaper(); if(p && p.pdf){ spMsg('Opening its PDF…'); const blob = await P.paperPdfBlob(id); if(SP.id !== id) return; if(blob) await spOpenPdf(blob); else spMsg('Its PDF could not be opened just now.'); } else spEmpty(); return; }
-    const b = spBook(), fs = (b && b.files) || [], f = fs.find(x => /\.(epub|mobi|azw3?|kf8|fb2|fbz|cbz)$/i.test(x.name)) || fs.find(x => /\.pdf$/i.test(x.name));
+    const b = spBook(), fs = (b && b.files) || [], f = fs.find(x => /\.(epub|mobi|azw3?|kf8|fb2|fbz|cbz)$/i.test(x.name)) || fs.find(x => /\.epub\.zip$|\.zip$/i.test(x.name)) || fs.find(x => /\.pdf$/i.test(x.name));
     if(!f){ spEmpty(); return; } spMsg('Opening ' + f.name + '…'); const blob = await P.bookFileBlob(f); if(SP.id !== id) return;
     if(!blob){ spMsg('The book’s file could not be read just now.'); return; }
-    if(/\.pdf$/i.test(f.name)) await spOpenPdf(blob); else await spOpenEbook(blob, f.name);
+    if(/\.pdf$/i.test(f.name)) await spOpenPdf(blob); else if(/\.zip$/i.test(f.name)){ const nf = await normalizeBook(new File([blob], f.name)); await spOpenEbook(nf, nf.name); } else await spOpenEbook(blob, f.name);
   }catch(err){ spMsg('This file could not be opened here.' + (err && err.message ? ' (' + String(err.message).slice(0, 60) + ')' : '')); }
 }
 function spMsg(t){ $('spDoc').className = 'sp-doc msg'; $('spDoc').innerHTML = '<p class="sp-m">' + esc(t) + '</p>'; }
@@ -1067,7 +1088,15 @@ function spDrawMarks(i){ const pg = $('spDoc').querySelector('.sp-pg[data-page="
   pg.innerHTML = SP.marks.filter(m => m.page === i && m.kind !== 'note').map(m => (m.rects || []).map(r => '<i style="left:' + (r[0] * 100).toFixed(3) + '%;top:' + (r[1] * 100).toFixed(3) + '%;width:' + (r[2] * 100).toFixed(3) + '%;height:' + (r[3] * 100).toFixed(3) + '%' + (m.color ? ';background:' + m.color : '') + '"></i>').join('')).join(''); }
 /* ---- EPUB, MOBI, AZW3, FB2, comics: foliate-js ---- */
 const EBOOK_CSS = 'html{color:#231E1A;background:transparent} body{font-family:"PMap Serif",Georgia,serif;line-height:1.55;hyphens:auto} p{text-align:justify} a{color:#7A3E2B} ::selection{background:rgba(180,67,46,.25)}';
+/* a book locked by the store that sold it (Apple Books, Kindle, Adobe) can only be opened by that store's own app: say so plainly */
+async function drmOf(blob){ try{ const base = new URL(VEND, document.baseURI).href, z = await import(base + 'foliate/vendor/zip.js'); try{ z.configure({useWebWorkers: false}); }catch(e){}
+  const names = (await new z.ZipReader(new z.BlobReader(blob)).getEntries()).map(e => e.filename);
+  if(names.some(n => /META-INF\/sinf\.xml$/i.test(n))) return 'Apple Books';
+  if(names.some(n => /META-INF\/rights\.xml$/i.test(n))) return 'Adobe';
+  const enc = (await new z.ZipReader(new z.BlobReader(blob)).getEntries()).find(e => /META-INF\/encryption\.xml$/i.test(e.filename));
+  if(enc){ const t = await enc.getData(new z.TextWriter()); if(!/obfuscation|idpf\.org\/2008\/embedding|ns\.adobe\.com\/pdf\/enc#RC/i.test(t)) return 'its store'; } }catch(e){} return null; }
 async function spOpenEbook(blob, name){ const box = $('spDoc'); box.className = 'sp-doc ebook'; box.innerHTML = '';
+  if(/\.epub$/i.test(name || '')){ const who = await drmOf(blob); if(who){ spMsg('This book is locked by ' + who + ' (copy protection), so only that store\u2019s own app can open it. Books without copy protection open here.'); return; } }
   const base = new URL(VEND, document.baseURI).href; await import(base + 'foliate/view.js'); const {Overlayer} = await import(base + 'foliate/overlayer.js');
   const view = document.createElement('foliate-view'); box.appendChild(view); SP.view = view; SP.mode = 'ebook'; const b = spBook();
   view.addEventListener('load', e => { const {doc, index} = e.detail; doc.addEventListener('pointerup', () => setTimeout(() => spEbookSel(doc, index), 0)); doc.addEventListener('keydown', ev => spKeys(ev));
@@ -1084,7 +1113,8 @@ async function spOpenEbook(blob, name){ const box = $('spDoc'); box.className = 
   await view.open(new File([blob], name || 'book.epub', {type: blob.type || ''}));
   if(b && !b.cover){ try{ const cv = view.book && view.book.getCover ? await view.book.getCover() : null; if(cv){ const u = await spThumb(cv); if(u){ b.cover = u; rSave(); } } }catch(e){} }
   try{ view.renderer.setAttribute('flow', spFlow().doc === 'side' ? 'paginated' : 'scrolled'); view.renderer.setAttribute('max-column-count', '1'); view.renderer.setAttribute('margin', '44px'); view.renderer.setAttribute('gap', '7%'); view.renderer.setStyles && view.renderer.setStyles(EBOOK_CSS); }catch(e){}
-  await view.init({lastLocation: (b && b.loc) || null, showTextStart: !(b && b.loc)}); }
+  await view.init({lastLocation: (b && b.loc) || null, showTextStart: !(b && b.loc)});
+  setTimeout(() => spPlaceKindle(view, b), 800); }
 async function spThumb(blob){ return new Promise(res => { const url = URL.createObjectURL(blob), im = new Image(); im.onload = () => { const w = 360, h = Math.round(im.naturalHeight * w / im.naturalWidth), cv = document.createElement('canvas'); cv.width = w; cv.height = h; cv.getContext('2d').drawImage(im, 0, 0, w, h); URL.revokeObjectURL(url); res(cv.toDataURL('image/jpeg', 0.86)); }; im.onerror = () => res(null); im.src = url; }); }
 async function spPageAsCover(){ const b = spBook(); if(!b) return;
   if(SP.mode === 'pdf' && SP.pdf){ const page = await SP.pdf.getPage(SP.cur || 1), v = page.getViewport({scale: 1}), sc = 360 / v.width, vp = page.getViewport({scale: sc}), cv = document.createElement('canvas'); cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
@@ -1143,6 +1173,8 @@ $('spStyle').addEventListener('click', e => { e.stopPropagation(); const s = spS
 $('spMore').addEventListener('click', e => { e.stopPropagation(); const items = [];
   if(SP.kind === 'book'){ const b = spBook(); items.push(['Edit the book', 'Title, authors, ISBN, pages, cover', () => { const bb = spBook(); closeSpread(); setTimeout(() => { openRCard(bb); $('rcEditBtn').click(); }, 340); }], ['Its mind map', 'This book in the middle of a map', () => { spSaveNotes(true); P.mindFor && P.mindFor('book', b.id); }], ['Add another file', 'EPUB, MOBI, PDF…', () => { $('spFile').click(); }]); if(SP.mode === 'pdf') items.push(['Use this page as its cover', 'The page you are on', spPageAsCover]); else if(SP.mode === 'ebook') items.push(['Use the book’s own cover', 'The cover inside the file', spPageAsCover]); }
   else { const id = SP.id; items.push(['Show it on its map', '', () => { spSaveNotes(true); closeSpread(); P.openPaper(id, 'paper'); }], ['Its mind map', 'This paper in the middle of a map', () => { spSaveNotes(true); P.mindFor && P.mindFor('paper', id); }], ['Details and lines', 'Where it sits, what it builds on', () => { closeSpread(); setTimeout(() => { try{ openPaperPage(id, null); }catch(err){} }, 340); }], ['Edit details', '', () => P.editPaper(id)]); }
+  if(SP.kind === 'book') items.push(['Delete this book', 'From your shelves, with its notes and highlights', () => { const b = spBook(); if(b) deleteBook(b.id, () => closeSpread()); }]);
+  else items.push(['Delete this paper', 'From your library and from any map it is on', () => { const id = SP.id; P.deletePaper(id, () => { closeSpread(); setTimeout(() => { try{ pReload(); }catch(e){} }, 700); }); }]);
   items.push(['Export the notes', 'As Markdown, quotes with their pages', () => { const md = '# ' + $('spT').textContent + '\n\n*' + $('spA').textContent + '*\n\n' + notesToMD($('spNotes')); if(P && P.saveBlob) P.saveBlob(new Blob([md], {type: 'text/markdown;charset=utf-8'}), $('spT').textContent.replace(/[\\/:*?"<>|]+/g, ' ').slice(0, 80) + ' notes.md'); }]);
   /* the menu opens from the button itself, inside the reading page (the Readings menu lives on the shelves, which are hidden here) */
   const p = spPopAt($('spMore'), items.map((it, i) => '<button type="button" class="sp-act" data-act="' + i + '"><b>' + esc(it[0]) + '</b>' + (it[1] ? '<span>' + esc(it[1]) + '</span>' : '') + '</button>').join(''));
@@ -1387,4 +1419,128 @@ function catPlace(src, ref, where){ const up = ref.split('/').slice(0, -1).join(
   const mine = c => c === np || c.indexOf(np + '/') === 0, block = CATS.filter(mine); CATS = CATS.filter(c => !mine(c));
   const inRef = c => c === ref || c.indexOf(ref + '/') === 0; let at = where === 'after' ? CATS.reduce((k, c, i) => inRef(c) ? i + 1 : k, -1) : CATS.findIndex(inRef);
   if(at < 0) at = CATS.length; CATS.splice(at, 0, ...block); rSave(); renderReadings(); }
+
+/* right-click a cover in Your maps to rename it, in place */
+stripIn.addEventListener('contextmenu', e => { const c = e.target.closest('.mcard[data-topic], .mcard.mind'); if(!c || state !== 'maps') return; e.preventDefault();
+  tpMenu(e.clientX, e.clientY, [['Rename', () => { const b = c.querySelector('.mlabel b'); if(!b) return; const old = b.textContent; b.contentEditable = 'true'; b.classList.add('editing'); b.focus();
+    const r = document.createRange(); r.selectNodeContents(b); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    let done = false; const end = keep => { if(done) return; done = true; b.contentEditable = 'false'; b.classList.remove('editing'); const v = b.textContent.trim().slice(0, 80);
+      if(!keep || !v || v === old){ b.textContent = old; return; } if(c.dataset.topic) P.renameFolder(c.dataset.topic, null, v); else if(c.dataset.mind && P.renameMind) P.renameMind(c.dataset.mind, v); D = load(); const sl = strip.scrollLeft; layoutRow(); strip.scrollLeft = sl; assignSheets(); sheets.forEach(el => { el.style.opacity = '0'; el.style.pointerEvents = 'none'; }); };
+    b.addEventListener('keydown', ev => { ev.stopPropagation(); if(ev.key === 'Enter'){ ev.preventDefault(); end(true); } else if(ev.key === 'Escape'){ ev.preventDefault(); end(false); } }); b.addEventListener('blur', () => end(true), {once: true}); }]]); });
+
+/* ===================== a book dropped on Readings: any EPUB, MOBI, AZW3, FB2, comic or PDF from your Mac =====================
+   Its title, authors and cover are read from the file itself; the file is kept with the book. */
+const BOOK_RE = /\.(epub|mobi|azw3?|kf8|fb2|fbz|cbz|pdf|zip)$/i;
+async function bookFromFile(file){
+  file = await normalizeBook(file);
+  let title = file.name.replace(/\.[^.]+$/, '').replace(/[_]+/g, ' ').trim(), authors = [], cover = null, year = null;
+  if(!/\.pdf$/i.test(file.name)){ try{ const base = new URL(VEND, document.baseURI).href, {makeBook} = await import(base + 'foliate/view.js'), bk = await makeBook(file), md = bk.metadata || {};
+      const str = v => typeof v === 'string' ? v : v && typeof v === 'object' ? (v.name ? str(v.name) : Object.values(v)[0] || '') : '';
+      const t = str(md.title); if(t) title = t.trim();
+      const au = Array.isArray(md.author) ? md.author : md.author ? [md.author] : []; authors = au.map(str).map(s => s.trim()).filter(Boolean);
+      const y = String(md.published || md.date || '').match(/\b(1[5-9]\d\d|20\d\d)\b/); if(y) year = +y[1];
+      if(bk.getCover){ const cb = await bk.getCover(); if(cb) cover = await spThumb(cb); } }catch(e){} }
+  const kind = rFilter.split(/:(.+)/), b = {id: 'r-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), title: title || 'Untitled', authors, year, status: 'want', categories: kind[0] === 'cat' ? [kind[1]] : [], notes: '', quotes: [], files: [], onMaps: [], added: new Date().toISOString()};
+  if(cover) b.cover = cover;
+  R.unshift(b); rSave(); renderReadings();
+  try{ const meta = await P.bookFileSave(b.id, file); b.files = [meta]; rSave(); }catch(err){ toast('“' + b.title + '” is on your shelves, but its file could not be kept: ' + String((err && err.message) || err).slice(0, 80)); }
+  return b; }
+let rDropN = 0;
+addEventListener('dragenter', e => { if(state !== 'books' || !(e.dataTransfer && [...e.dataTransfer.types].includes('Files'))) return; rDropN++; document.body.classList.add('r-filedrop'); });
+addEventListener('dragleave', e => { if(state !== 'books') return; rDropN = Math.max(0, rDropN - 1); if(!rDropN) document.body.classList.remove('r-filedrop'); });
+addEventListener('dragover', e => { if(state === 'books' && e.dataTransfer && [...e.dataTransfer.types].includes('Files')){ e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } });
+addEventListener('drop', async e => { if(state !== 'books' || !e.dataTransfer || !e.dataTransfer.files.length) return; e.preventDefault(); rDropN = 0; document.body.classList.remove('r-filedrop');
+  /* a book kept as a folder (Apple Books keeps EPUBs this way) is read file by file and made into one EPUB */
+  const files = []; for(const it of [...(e.dataTransfer.items || [])]){ const en = it.webkitGetAsEntry && it.webkitGetAsEntry();
+    if(en && en.isDirectory && /\.epub$/i.test(en.name)){ try{ const list = await filesFromEntry(en, ''); files.push(epubFrom(await Promise.all(list.map(async x => ({path: x.path, data: new Uint8Array(await x.file.arrayBuffer())}))), en.name)); }catch(err){} }
+    else { const f = it.getAsFile && it.getAsFile(); if(f && BOOK_RE.test(f.name)) files.push(f); } }
+  if(!files.length) [...e.dataTransfer.files].filter(f => BOOK_RE.test(f.name)).forEach(f => files.push(f));
+  if(!files.length){ toast('Paper Map reads EPUB, MOBI, AZW3, FB2, comics and PDF'); return; }
+  for(const f of files){ const b = await bookFromFile(f); toast('Added “' + b.title + '”'); setTimeout(() => offerOldNotes(b), 1200); } });
+
+/* ===================== EPUBs that arrive zipped or as folders =====================
+   The Mac hands over an EPUB kept as a folder either as that folder or zipped as Name.epub.zip, with everything one level
+   down; a reader cannot open that. Paper Map unpacks it and packs it again as a proper EPUB (its mimetype first). */
+const CRC_T = (() => { const t = new Uint32Array(256); for(let n = 0; n < 256; n++){ let c = n; for(let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(u){ let c = 0xFFFFFFFF; for(let i = 0; i < u.length; i++) c = CRC_T[(c ^ u[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStore(files){ const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+  files.forEach(f => { const nm = enc.encode(f.name), dd = f.data, crc = crc32(dd), h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true); h.setUint16(10, 0, true); h.setUint16(12, 0x21, true); h.setUint32(14, crc, true); h.setUint32(18, dd.length, true); h.setUint32(22, dd.length, true); h.setUint16(26, nm.length, true); h.setUint16(28, 0, true);
+    parts.push(new Uint8Array(h.buffer), nm, dd);
+    const c = new DataView(new ArrayBuffer(46)); c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true); c.setUint16(12, 0, true); c.setUint16(14, 0x21, true); c.setUint32(16, crc, true); c.setUint32(20, dd.length, true); c.setUint32(24, dd.length, true); c.setUint16(28, nm.length, true); c.setUint32(42, off, true);
+    central.push(new Uint8Array(c.buffer), nm); off += 30 + nm.length + dd.length; });
+  const cd = central.reduce((s, p) => s + p.length, 0), e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, cd, true); e.setUint32(16, off, true);
+  return new Blob([...parts, ...central, new Uint8Array(e.buffer)], {type: 'application/epub+zip'}); }
+function epubFrom(list, name){ const c = list.find(x => /(^|\/)META-INF\/container\.xml$/i.test(x.path)), strip = c ? c.path.slice(0, c.path.length - 'META-INF/container.xml'.length) : '';
+  const files = [{name: 'mimetype', data: new TextEncoder().encode('application/epub+zip')}];
+  list.forEach(x => { if(!x.path.startsWith(strip)) return; const p = x.path.slice(strip.length); if(!p || p === 'mimetype' || /(^|\/)(\.DS_Store|__MACOSX)(\/|$)/.test(p) || p.endsWith('/')) return; files.push({name: p, data: x.data}); });
+  return new File([zipStore(files)], String(name).replace(/\.zip$/i, '').replace(/\.epub$/i, '') + '.epub', {type: 'application/epub+zip'}); }
+async function filesFromEntry(entry, prefix){ if(entry.isFile) return [await new Promise((res, rej) => entry.file(f => res({path: prefix + entry.name, file: f}), rej))];
+  const reader = entry.createReader(), out = []; let batch; do { batch = await new Promise((res, rej) => reader.readEntries(res, rej)); for(const x of batch) out.push(...await filesFromEntry(x, prefix + entry.name + '/')); } while(batch.length); return out; }
+async function normalizeBook(file){ if(!file || !/\.zip$/i.test(file.name)) return file;
+  try{ const base = new URL(VEND, document.baseURI).href, z = await import(base + 'foliate/vendor/zip.js'); try{ z.configure({useWebWorkers: false}); }catch(e){}
+    const entries = await new z.ZipReader(new z.BlobReader(file)).getEntries(), list = [];
+    for(const en of entries){ if(en.directory) continue; const b = await en.getData(new z.BlobWriter()); list.push({path: en.filename, data: new Uint8Array(await b.arrayBuffer())}); }
+    if(list.some(x => /META-INF\/container\.xml$/i.test(x.path))) return epubFrom(list, file.name); }catch(e){}
+  return file; }
+/* every way a book's file comes in goes through the same repair */
+if(P && P.bookFileSave && !P.bookFileSave._norm){ const _bfs = P.bookFileSave; P.bookFileSave = async function(id, f){ return _bfs.call(P, id, await normalizeBook(f)); }; P.bookFileSave._norm = true; }
+
+/* ===================== a PDF dropped on Papers: a paper in your library =====================
+   Its title and authors come from the PDF itself, its DOI from its first page; with a DOI, the details are filled in. */
+async function paperInfoFromPdf(file){ const info = {t: file.name.replace(/\.pdf$/i, '').replace(/[_]+/g, ' ').trim()};
+  try{ const lib2 = await deskPdfJs(), doc = await lib2.getDocument({data: new Uint8Array(await file.arrayBuffer())}).promise;
+    try{ const md = await doc.getMetadata(), inf = (md && md.info) || {}; if(inf.Title && String(inf.Title).trim().length > 3 && !/^untitled|microsoft word|\.docx?$/i.test(inf.Title)) info.t = String(inf.Title).trim(); if(inf.Author) info.au = String(inf.Author).trim(); }catch(e){}
+    for(let i = 1; i <= Math.min(2, doc.numPages) && !info.doi; i++){ const tc = await (await doc.getPage(i)).getTextContent(), txt = tc.items.map(x => x.str).join(' ');
+      const m = txt.match(/\b(10\.\d{4,9}\/[^\s"<>]+[^\s"<>.,;)\]])/); if(m) info.doi = m[1]; }
+    doc.destroy(); }catch(e){}
+  return info; }
+let pDropN = 0;
+addEventListener('dragenter', e => { if(state !== 'papers' || !(e.dataTransfer && [...e.dataTransfer.types].includes('Files'))) return; pDropN++; document.body.classList.add('p-filedrop'); });
+addEventListener('dragleave', e => { if(state !== 'papers') return; pDropN = Math.max(0, pDropN - 1); if(!pDropN) document.body.classList.remove('p-filedrop'); });
+addEventListener('dragover', e => { if(state === 'papers' && e.dataTransfer && [...e.dataTransfer.types].includes('Files')){ e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } });
+addEventListener('drop', async e => { if(state !== 'papers' || !e.dataTransfer || !e.dataTransfer.files.length) return; e.preventDefault(); pDropN = 0; document.body.classList.remove('p-filedrop');
+  const files = [...e.dataTransfer.files].filter(f => /\.pdf$/i.test(f.name)); if(!files.length){ toast('Drop PDFs here to add them as papers'); return; }
+  const fol = D.topics.find(t => t.id === pFilter.map && t.shelf);
+  for(const f of files){ const info = await paperInfoFromPdf(f); const r = P.newPaperFromPdf ? await P.newPaperFromPdf(info, f, fol ? fol.id : null, fol ? (pFilter.sub || null) : null) : null; D = load(); renderPapers(); if(r) toast(r.pdf ? 'Added “' + r.t + '”' : 'Added “' + r.t + '”; its PDF needs a place to be kept: choose one in the cloud'); } });
+/* ===================== Kindle highlights, found again in your own copy of the book =====================
+   A highlight imported from a Kindle keeps its words; when the same book is opened here, those words are looked for in
+   the file and, where they are found, marked on its page. */
+async function spPlaceKindle(view, b){ if(!view || !b) return; const marks = SP.marks, placed = new Set(marks.filter(m => m.kq).map(m => m.kq));
+  const todo = (b.quotes || []).filter(q => q.src === 'kindle' && q.text && !placed.has(q.id || q.text.slice(0, 60))).slice(0, 40); let n = 0;
+  for(const q of todo){ if(SP.view !== view) return; const words = q.text.replace(/\s+/g, ' ').trim().slice(0, 70);
+    try{ for await (const r of view.search({query: words, matchCase: false, matchDiacritics: false, matchWholeWords: false})){ const it = r && r.subitems && r.subitems[0]; if(it && it.cfi){
+          const m = {id: 'mk-' + Math.random().toString(36).slice(2, 9), cfi: it.cfi, text: q.text, color: 'rgba(242,207,87,.45)', src: 'kindle', kq: q.id || q.text.slice(0, 60), date: q.date || today()};
+          marks.push(m); try{ view.addAnnotation({value: m.cfi, color: m.color}); }catch(e){} n++; break; } } }catch(e){}
+    try{ view.clearSearch(); }catch(e){} }
+  if(n){ b.marks = marks.slice(); rSave(); toast(n + (n === 1 ? ' Kindle highlight' : ' Kindle highlights') + ' found in this copy'); } }
+
+/* ===================== deleting a paper or a book ===================== */
+function deleteBook(id, after){ const b = R.find(x => x.id === id); if(!b) return;
+  P.confirmDanger('Delete book', 'Delete “' + b.title + '”? Its notes and highlights are kept aside: add the same book again and you can bring them back.', () => {
+    const at = R.indexOf(b), files = b.files; R = R.filter(x => x !== b); b.deleted = true; b.deletedOn = today(); b.files = []; RDEL.push(b); rSave(); if(after) try{ after(); }catch(e){} renderReadings();
+    toastAct('Deleted “' + b.title + '”', 'Undo', () => { RDEL = RDEL.filter(x => x !== b); delete b.deleted; delete b.deletedOn; b.files = files; R.splice(Math.min(at, R.length), 0, b); rSave(); renderReadings(); toast('“' + b.title + '” is back'); }); }); }
+/* a toast with one thing to do */
+function toastAct(t, label, fn, ms){ const el = $('toast'); el.textContent = ''; const s = document.createElement('span'); s.textContent = t; const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'toast-act'; bt.textContent = label;
+  bt.addEventListener('click', e => { e.stopPropagation(); el.classList.remove('on', 'act'); fn(); }); el.append(s, bt); el.classList.add('on', 'act'); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove('on', 'act'), ms || 7000); }
+/* the same book added again: its old notes are offered back, never put back unasked */
+function oldNotesFor(b){ const n = normT(b.title); return RDEL.find(x => (b.isbn && x.isbn && x.isbn === b.isbn) || (n && normT(x.title) === n)) || null; }
+function offerOldNotes(b){ const old = oldNotesFor(b); if(!old) return; const nq = (old.quotes || []).length + (old.marks || []).length + (old.stickies || []).length;
+  toastAct('You kept notes for “' + old.title + '”' + (nq ? ' (' + nq + (nq === 1 ? ' highlight' : ' highlights and quotes') + ')' : ''), 'Bring them back', () => {
+    const plain = h => String(h || '').replace(/<[^>]*>/g, '').trim();
+    if(plain(old.notes)) b.notes = plain(b.notes) ? b.notes + '<p></p>' + old.notes : old.notes;
+    const seen = new Set((b.quotes || []).map(q => q.text)); b.quotes = (b.quotes || []).concat((old.quotes || []).filter(q => !seen.has(q.text)));
+    b.marks = (b.marks || []).concat(old.marks || []); b.stickies = (b.stickies || []).concat(old.stickies || []);
+    b.categories = [...new Set((b.categories || []).concat(old.categories || []))];
+    ['rating', 'started', 'finishedOn', 'review'].forEach(k => { if(old[k] != null && b[k] == null) b[k] = old[k]; });
+    RDEL = RDEL.filter(x => x !== old); rSave(); renderReadings(); toast('Your notes for “' + b.title + '” are back'); }, 12000); }
+/* right-click a paper in Papers, or a book in Readings, to delete it */
+$('pboard').addEventListener('contextmenu', e => { const g = e.target.closest('#pbGrid .pg'); if(!g) return; e.preventDefault();
+  tpMenu(e.clientX, e.clientY, [['Open', () => g.click()], ['Delete this paper', () => P.deletePaper(g.dataset.id, () => setTimeout(() => { try{ pReload(); }catch(err){} }, 300))]]); });
+RB.addEventListener('contextmenu', e => { const g = e.target.closest('#rSecs .rbk'); if(!g) return; e.preventDefault();
+  tpMenu(e.clientX, e.clientY, [['Open', () => g.click()], ['Delete this book', () => deleteBook(g.dataset.id)]]); });
+
+/* a small window onto the shelves, for checking them */
+window.__desk = {get R(){ return R; }, get RDEL(){ return RDEL; }, addBook(b){ R.unshift(b); rSave(); renderReadings(); }};
 })();

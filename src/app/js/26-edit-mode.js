@@ -553,19 +553,21 @@ function confirmDanger(title, text, label, fn, warn){
     onOpen: (b, a) => { const cb = b.querySelector('#dangerAgree'), go = a.querySelector('[data-mi="1"]'); cb.addEventListener('change', () => { go.disabled = !cb.checked; }); }
   });
 }
-function deleteEntry(id){
+/* one plain question, for deleting one thing that Undo can bring back */
+function confirmSimple(title, text, label, fn){ openModal({title, body: '<p>' + esc(text) + '</p>', actions: [{label: 'Cancel'}, {label: label, primary: true, onClick: () => { fn(); }}]}); }
+function deleteEntry(id, after, quick){
   const e = lib.entries[id];
   if(!e) return;
   const kids = e.kind === 'concept' ? (IDX.children[id] || []) : [];
   const name = e.kind === 'concept' ? 'concept “' + e.t + '”' : '“' + e.t + '”';
-  confirmDanger('Delete ' + (e.kind === 'concept' ? 'concept' : 'paper'), 'Delete ' + name + '? Its lines are deleted too' + (kids.length ? ', along with its ' + kids.length + ' readings' : '') + '.' + (e.pdf ? ' Its PDF stays in your GitHub repository.' : ''), 'Delete', () => {
+  (quick && e.kind !== 'concept' ? confirmSimple : confirmDanger)('Delete ' + (e.kind === 'concept' ? 'concept' : 'paper'), 'Delete ' + name + '? Its lines are deleted too' + (kids.length ? ', along with its ' + kids.length + ' readings' : '') + '.' + (e.pdf ? ' Its PDF stays in your GitHub repository.' : ''), 'Delete', () => {
     const before = clone(lib), stBefore = clone(status);
     [id].concat(kids).forEach(k => { const x = lib.entries[k]; if(x) delete status[keyOf(x)]; delete lib.entries[k]; });
     statusTime = Date.now(); persistStatus();
     Object.values(lib.entries).forEach(x => { if(x.needs) x.needs = x.needs.filter(c => c !== id); });
     lib.links = lib.links.filter(l => l[0] !== id && l[1] !== id && !kids.includes(l[0]) && !kids.includes(l[1]));
     if(ui.selected === id) ui.selected = null;
-    reindex(); touchAllTopics(); renderAll();
+    reindex(); touchAllTopics(); renderAll(); if(after) try{ after(); }catch(err){}
     toast('Deleted ' + name, () => { lib = before; status = stBefore; statusTime = Date.now(); persistStatus(); reindex(); touchAllTopics(); renderAll(); toast('Undone'); });
   }, deletionWarning([id].concat(kids)));
 }

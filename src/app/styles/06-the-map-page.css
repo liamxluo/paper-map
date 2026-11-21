@@ -443,3 +443,16 @@ html.atlas .atl-pill{background:rgba(255,253,248,.55) !important;-webkit-backdro
 .set-go{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;margin:4px 0;border-radius:12px;color:inherit;text-decoration:none;font:400 16px var(--sans)}
 .set-go:hover{background:rgba(35,30,26,.05)}
 .set-go span{opacity:.5}
+
+.atl-mrename{all:unset;box-sizing:border-box;display:block;width:100%;margin-top:4px;padding:8px 12px;border-radius:10px;font:500 13.5px var(--sans);color:inherit;cursor:pointer;opacity:.8}
+.atl-mrename:hover{background:rgba(35,30,26,.06);opacity:1}
+.rn-in{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid var(--rule);font:500 16px var(--serif)}
+
+/* the save dot on every cloud: nothing when saved, yellow while saving, red and blinking when it is not saved */
+[data-sync] [data-over="sync"],[data-sync] [data-mm="sync"],[data-sync] [data-atl="sync"]{position:relative}
+[data-sync="busy"] [data-over="sync"]::after,[data-sync="err"] [data-over="sync"]::after,
+[data-sync="busy"] [data-mm="sync"]::after,[data-sync="err"] [data-mm="sync"]::after,
+[data-sync="busy"] [data-atl="sync"]::after,[data-sync="err"] [data-atl="sync"]::after{content:'';position:absolute;right:calc(50% - 7.5px);bottom:calc(50% - 6px);width:4px;height:4px;border-radius:50%;box-shadow:0 0 0 1px rgba(255,253,248,.92);pointer-events:none}
+[data-sync="busy"] [data-over="sync"]::after,[data-sync="busy"] [data-mm="sync"]::after,[data-sync="busy"] [data-atl="sync"]::after{background:#E9BB2F}
+[data-sync="err"] [data-over="sync"]::after,[data-sync="err"] [data-mm="sync"]::after,[data-sync="err"] [data-atl="sync"]::after{background:#E0503F;animation:pmDotBlink 1.2s ease-in-out infinite}
+@keyframes pmDotBlink{0%,100%{opacity:1}50%{opacity:.2}}

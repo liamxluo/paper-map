@@ -99,6 +99,18 @@ window.pmDesk = {
     /* filed in a folder: it stays on whatever map it is on */
     e.folder = tid; e.fsub = sid || (root && root.id); const cur = lib.topics.find(t => t.id === e.topic); if(!cur || cur.shelf){ e.topic = tid; e.sub = e.fsub; }
     try{ reindex(); }catch(err){} if(!PREVIEW) touchLib(); },
+  renameMind(id, name){ name = String(name || '').trim().slice(0, 80); const m = (lib.minds || []).find(x => x.id === id); if(!m || !name) return; m.name = name; m.updated = new Date().toISOString(); if(!PREVIEW) touchLib(); },
+  /* a PDF dropped on Papers becomes a paper in your library, its details filled in from its DOI when it has one */
+  async newPaperFromPdf(info, file, ftid, fsid){ let tp = ftid && lib.topics.find(t => t.id === ftid && t.shelf);
+    if(!tp){ tp = lib.topics.find(t => t.shelf && t.name === 'Inbox'); if(!tp){ tp = {id: rid('t'), name: 'Inbox', shelf: true, subs: [{id: rid('s'), name: 'Inbox', desc: '', groups: [], hidden: true}]}; lib.topics.push(tp); } fsid = null; }
+    const root = tp.subs.find(x => x.hidden) || tp.subs[0], sub = fsid || (root && root.id), id = rid('p');
+    const e = {id, kind: 'paper', t: info.t || 'Untitled', au: info.au || '', y: info.y || null, v: info.v || '', doi: info.doi || '', topic: tp.id, sub, folder: tp.id, fsub: sub, tags: [], d: [], p: 1, group: '', n: ''};
+    lib.entries[id] = e; try{ reindex(); }catch(err){} if(!PREVIEW) touchLib();
+    if(info.doi){ try{ const m = await lookupDoi(info.doi); if(m && m.t){ e.t = m.t; if(m.au) e.au = m.au; if(m.y) e.y = +m.y || e.y; if(m.v) e.v = m.v; if(!PREVIEW) touchLib(); } }catch(err){} }
+    try{ await attachPdf(id, file); }catch(err){}
+    return {id, t: e.t, pdf: !!(lib.entries[id] && lib.entries[id].pdf)}; },
+  deletePaper(id, after){ if(PREVIEW){ toast('This is the example: nothing in it can be deleted'); return; } deleteEntry(id, after, true); },
+  confirmDanger(title, text, yes){ confirmSimple(title, text, 'Delete', yes); },
   paperLinks(id){ const seen = new Set(); return (lib.links || []).filter(l => l[0] === id || l[1] === id).map(l => l[0] === id ? l[1] : l[0]).filter(x => lib.entries[x] && !seen.has(x) && seen.add(x)).map(x => lib.entries[x].t || ''); },
   paperRead(id){ const e = lib.entries[id]; if(!e) return null; return {n: e.n || '', marks: clone(e.marks || []), quotes: clone(e.quotes || []), stickies: clone(e.stickies || []), at: e.readAt || 0}; },
   setPaperStickies(id, arr){ const e = lib.entries[id]; if(!e || PREVIEW) return; e.stickies = arr; touchLib(); },
@@ -155,7 +167,7 @@ window.pmDesk = {
 };
 function deskEnsure(){
   if(DK.frame) return DK.frame;
-  const f = document.createElement('iframe'); f.id = 'pmDesk'; f.title = 'Paper Map desk'; f.srcdoc = DESK_SRC;
+  const f = document.createElement('iframe'); f.id = 'pmDesk'; f.title = 'Paper Map desk'; f.srcdoc = DESK_SRC; f.addEventListener('load', () => { try{ paintSyncDot(); }catch(e){} });
   document.body.appendChild(f); DK.frame = f; return f;
 }
 function deskPage(){ try{ return DK.frame && DK.frame.contentWindow && DK.frame.contentWindow.pmDeskPage; }catch(e){ return null; } }
@@ -238,7 +250,8 @@ function atlasUI(){
     else if(a === 'settings') atlasLook(b);
   }, true);
   maps.addEventListener('click', ev => { const t = ev.target.closest('[data-atl-map]'), c = ev.target.closest('[data-atl-contents]'), n = ev.target.closest('[data-atl-new]');
-    const mg = ev.target.closest('[data-atl-merge]');
+    const mg = ev.target.closest('[data-atl-merge]'), rn = ev.target.closest('[data-atl-rename]');
+    if(rn){ maps.hidden = true; openRenameMap(ui.topic); return; }
     if(mg){ maps.hidden = true; openMergeMaps(); return; }
     if(!t && !c && !n) return; maps.hidden = true;
     if(t){ deskTouchRecent(t.dataset.atlMap); try{ if(ui.selected) select(null); }catch(e){} openView(t.dataset.atlMap + '-all'); }
@@ -415,7 +428,7 @@ function atlasTour(){
   show();
 }
 /* the gear: the same Look as the desk, and a few things for the map */
-const WOODS = [['mahogany', 'Mahogany'], ['oak', 'Oak'], ['walnut', 'Walnut'], ['linen', 'Linen']];
+const WOODS = [['mahogany', 'Mahogany'], ['oak', 'Oak'], ['walnut', 'Walnut'], ['honey', 'Honey oak'], ['linen', 'Linen']];
 function atlasLook(btn){
   const box = atlasPanel('atlLook'); if(!box.hidden){ box.hidden = true; return; }
   const pr = deskPrefs(), seg = (k, opts) => '<div class="lk-seg">' + opts.map(o => '<button type="button" data-lk="' + k + '" data-v="' + o[0] + '"' + (pr[k] === o[0] ? ' class="on"' : '') + '>' + o[1] + '</button>').join('') + '</div>';
@@ -497,7 +510,7 @@ function atlasMaps(){
   const n = tid => Object.values(lib.entries).filter(e => e.kind === 'paper' && e.topic === tid).length;
   box.innerHTML = '<p class="atl-mk">YOUR MAPS</p>' + lib.topics.filter(t => !t.shelf).map(t => '<button type="button" data-atl-map="' + esc(t.id) + '"' + (t.id === ui.topic ? ' class="on"' : '') + '><b>' + esc(t.name) + '</b><span>' + n(t.id) + (n(t.id) === 1 ? ' paper' : ' papers') + '</span></button>').join('') +
     (lib.minds || []).map(m => '<button type="button" data-atl-mind="' + esc(m.id) + '"><b>' + esc(m.name) + '</b><span>Mind map</span></button>').join('') +
-    '<div class="atl-ms"></div><button type="button" data-atl-contents="1"><b>Contents</b><span>topics inside this map, and their order</span></button><button type="button" data-atl-merge="1"><b>Merge into another map…</b><span>this map becomes a topic inside another</span></button><button type="button" data-atl-new="1"><b>+ New map</b><span>for another field</span></button>';
+    '<div class="atl-ms"></div><button type="button" data-atl-contents="1"><b>Contents</b><span>topics inside this map, and their order</span></button><button type="button" data-atl-rename="1"><b>Rename this map</b><span>its name, wherever it shows</span></button><button type="button" data-atl-merge="1"><b>Merge into another map…</b><span>this map becomes a topic inside another</span></button><button type="button" data-atl-new="1"><b>+ New map</b><span>for another field</span></button>';
 }
 function atlasTitle(){
   const T = document.getElementById('atlTitle'); if(!T) return;
@@ -636,3 +649,9 @@ window.addEventListener('beforeunload', ev => {
 });
 })();
 })();
+
+/* a map's name, changed where you see it */
+function openRenameMap(tid){ const tp = lib.topics.find(t => t.id === tid); if(!tp) return;
+  openModal({title: 'Rename the map', body: '<input id="rnIn" class="rn-in" type="text" maxlength="80" value="' + esc(tp.name) + '">', actions: [{label: 'Cancel'}, {label: 'Rename', primary: true, onClick: () => { const v = (document.getElementById('rnIn').value || '').trim(); if(!v) return false;
+    tp.name = v; const root = (tp.subs || []).find(x => x.hidden); if(root) root.name = v; if(!PREVIEW) touchLib(); try{ renderAll(); }catch(e){} }}]});
+  setTimeout(() => { const i = document.getElementById('rnIn'); if(!i) return; i.focus(); i.select(); i.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); document.querySelector('#modalRoot .btn.primary').click(); } }); }, 30); }
