@@ -70,7 +70,7 @@ Plain HTML, CSS and JavaScript in `src/`, joined by `node scripts/build.mjs` int
 
 ## Licence
 
-Apache License 2.0: use it, change it and build on it, as long as you keep the attribution in [NOTICE](NOTICE). Versions up to 3.0.1 were released under MIT.
+Apache License 2.0: use it, change it and build on it, as long as you keep the attribution in [NOTICE](NOTICE).
 
 ---
 
