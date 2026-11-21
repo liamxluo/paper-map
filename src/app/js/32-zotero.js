@@ -59,11 +59,11 @@ async function ztSync(manual){
     try{ ztMirror(c, colls, chosen); }catch(err){}
     tops.forEach(it => { const d = it.data, inSel = (d.collections || []).filter(k => chosen.has(k)); if(!inSel.length && !(c.items[it.key]) && !unfiled(it)) return;
       const st = ztStatusOf(d.tags), title = (d.title || '').trim(); if(!title) return;
-      if(d.itemType === 'book'){ R_ztBook(c, it, st) === 'new' ? made++ : updated++; return; }
-      if(!ZPAPER.has(d.itemType)) return;
+      if(typeof c.items[it.key] === 'string' && c.items[it.key].startsWith('r:')){ R_ztBook(c, it, st) === 'new' ? made++ : updated++; return; }
       let e = c.items[it.key] && lib.entries[c.items[it.key]];
       const place = (e ? {topic: e.topic, sub: e.sub} : null) || (inSel[0] ? ztTopicFor(c, colls, inSel[0]) : null) || (unfiled(it) ? ztInbox(c) : null); if(!place) return;
       if(!e){ const id = rid('z'); e = {id, kind: 'paper', t: title, au: '', y: null, topic: place.topic, sub: place.sub, folder: place.topic, fsub: place.sub, tags: [], d: [], p: 1, group: '', n: ''}; lib.entries[id] = e; c.items[it.key] = id; made++; } else updated++;
+      e.ztype = d.itemType; if(d.itemType && !ZPAPER.has(d.itemType) && !e.l) e.l = ({book: 'Book', bookSection: 'Book chapter', encyclopediaArticle: 'Encyclopedia', dictionaryEntry: 'Dictionary', presentation: 'Talk', document: 'Document'})[d.itemType] || '';
       Object.assign(e, {t: title, au: ztAuthors(d.creators).join(' & '), y: ztYear(d.date) || e.y, v: d.publicationTitle || d.proceedingsTitle || d.bookTitle || d.institution || d.university || d.repository || e.v || '', doi: d.DOI || e.doi || '', l: d.url || e.l || '', zkey: it.key});
       const tg = ztTagIds(d.tags); e.tags = [...new Set((e.tags || []).concat(tg))];
       if(st){ const k = keyOf(e); if(status[k] !== st){ status[k] = st; statusTime = Date.now(); } } });
@@ -94,7 +94,14 @@ function R_ztBook(c, it, st){ const d = it.data; lib.readings = lib.readings || 
   if(!b){ b = {id: rid('r'), title: d.title, authors: [], status: st === 'read' ? 'read' : st === 'want' ? 'want' : 'reading', categories: [], notes: '', onMaps: [], added: new Date().toISOString()}; lib.readings.push(b); c.items[it.key] = 'r:' + b.id; isNew = true; }
   Object.assign(b, {title: d.title, authors: (d.creators || []).map(x => x.lastName ? [x.firstName, x.lastName].filter(Boolean).join(' ') : (x.name || '')).filter(Boolean), year: ztYear(d.date) || b.year || null, isbn: (d.ISBN || '').split(/\s+/)[0] || b.isbn || null, pages: +(d.numPages || 0) || b.pages || null, zkey: it.key});
   if(st && st !== b.status && st !== 'want') b.status = st; return isNew ? 'new' : 'old'; }
-async function ztFileBlob(c, key){ const r = await ztGet(c, '/users/' + c.user + '/items/' + key + '/file'); return await r.blob(); }
+/* a PDF from Zotero's storage: the page asks first; Zotero's storage does not let a page read across sites, so in the Mac app
+   the system fetches it instead. Whatever comes back is checked to be the file, not an error page. */
+async function ztFileBlob(c, key){ const url = ZAPI + '/users/' + c.user + '/items/' + key + '/file';
+  const real = b => b && b.size > 800 && !/json|html|xml/i.test(b.type || '');
+  try{ const r = await fetch(url, {headers: {'Zotero-API-Key': c.key, 'Zotero-API-Version': '3'}}); if(r.ok){ const b = await r.blob(); if(real(b)) return b; } }catch(e){}
+  if(window.__TAURI__ && window.__TAURI__.core){ try{ const buf = await window.__TAURI__.core.invoke('fetch_bytes', {url, headers: [['Zotero-API-Key', c.key], ['Zotero-API-Version', '3']]});
+      const b = new Blob([buf], {type: 'application/pdf'}); if(real(b)) return b; }catch(e){} }
+  return null; }
 /* connecting: the key, then which collections */
 function openZotero(){
   const c = ztCfg();

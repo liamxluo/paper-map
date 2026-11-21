@@ -14,7 +14,7 @@
 
 <p align="center"><sub>macOS 11 or later, Apple silicon and Intel &nbsp;·&nbsp; Chrome, Edge or Safari &nbsp;·&nbsp; free and open source (Apache-2.0)</sub></p>
 
-![Paper Map opening: the welcome veil lifts from the desk; a click on Maps fans the maps out into a row of covers, and ‹ Desk folds the top one back onto the desk](assets/tour-desk.webp)
+![Paper Map: the welcome veil lifts from a honey oak desk with a whisky beside the work; the desk turns to linen with osmanthus wine, then to dark mahogany with Longjing](assets/tour-intro.webp)
 
 **Your papers and your books, in one library.** Papers in folders, books on shelves with their covers, how far you have read, and every highlight, Kindle and Goodreads included.
 
@@ -24,7 +24,10 @@
 
 **Think in maps, when it is time to think.** For a review, a chapter or a question: lay the papers out on a boundless mind map, with lines in colour and words on them, or as a timeline of who built on whom. **Export either as a true vector PDF or SVG**: real lines and real, selectable text, sharp at any size, ready for a paper or a slide.
 
+![Paper Map opening: the welcome veil lifts from the desk; a click on Maps fans the maps out into a row of covers, and ‹ Desk folds the top one back onto the desk](assets/tour-desk.webp)
+
 ![Readings: your shelves rise on the glass over the desk; a book leaves its shelf and opens, the EPUB on the left and your notes on the right; a line is selected and quoted into the notes with its place](assets/tour-readings.webp)
+
 
 ## Opening it on a Mac for the first time
 
@@ -68,9 +71,6 @@ Plain HTML, CSS and JavaScript in `src/`, joined by `node scripts/build.mjs` int
 
 </details>
 
-## Licence
-
-Apache License 2.0: use it, change it and build on it, as long as you keep the attribution in [NOTICE](NOTICE).
 
 ---
 

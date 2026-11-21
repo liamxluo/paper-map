@@ -811,3 +811,27 @@ body.st-papers .r-drophint:not(.p-drophint),body.st-books .p-drophint{opacity:0 
 #drinkAnim{position:absolute;pointer-events:none;opacity:0;transition:opacity .45s ease}
 #drinkAnim.on{opacity:1}
 #cupKinds [data-cup][hidden]{display:none}
+
+#drinkT,#drinkE{position:absolute;pointer-events:none;opacity:0;transition:opacity .35s ease}
+#drinkT{mix-blend-mode:multiply}
+#drinkE{mix-blend-mode:plus-lighter}
+#drinkT.on,#drinkE.on{opacity:1}
+
+/* handwriting */
+.ink-host{position:relative}
+.ink-cv{position:absolute;left:0;top:0;pointer-events:none;mix-blend-mode:multiply;z-index:3}
+body.ink-on .ink-cv{pointer-events:auto;cursor:crosshair}
+#spInk.on{background:rgba(251,247,238,.22)}
+.ink-tools{display:flex;align-items:center;gap:4px;margin-left:4px}
+.ink-tools[hidden]{display:none}
+.ink-tools button{all:unset;cursor:pointer;width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:inherit;font:600 13px var(--sans)}
+.ink-tools button.on{background:rgba(251,247,238,.22)}
+.ink-tools i{width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 1.5px rgba(255,253,248,.8)}
+.ink-tools i.hl{border-radius:3px;width:14px;height:8px;background:#F2CF57}
+
+#drinkL{position:absolute;pointer-events:none;opacity:0;transition:opacity .35s ease}
+#drinkL.on{opacity:1}
+
+/* covers are not picked up by the browser itself, so dragging a book or a paper moves it into a category or folder */
+#rSecs img,#pbGrid img,.rbk img,.pg img{-webkit-user-drag:none;user-drag:none}
+#rSecs .rbk,#pbGrid .pg{-webkit-user-drag:none}

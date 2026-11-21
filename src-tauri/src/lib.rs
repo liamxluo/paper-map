@@ -240,11 +240,26 @@ async fn update_install(app: tauri::AppHandle) -> Result<(), String> {
     app.restart();
 }
 
+/// Fetches a file the way the system does, outside the web page's cross-site rules: Zotero hands its PDFs over from a
+/// storage service that a page may not read directly. Uses the Mac's own curl, follows redirects, returns the bytes.
+#[tauri::command]
+fn fetch_bytes(url: String, headers: Vec<(String, String)>) -> Result<tauri::ipc::Response, String> {
+    if !url.starts_with("https://") { return Err("only https".into()); }
+    let mut cmd = std::process::Command::new("/usr/bin/curl");
+    cmd.arg("-sSL").arg("--fail").arg("--max-time").arg("300");
+    for (k, v) in headers { cmd.arg("-H").arg(format!("{}: {}", k, v)); }
+    cmd.arg(&url);
+    let out = cmd.output().map_err(|e| e.to_string())?;
+    if !out.status.success() { return Err(String::from_utf8_lossy(&out.stderr).trim().to_string()); }
+    Ok(tauri::ipc::Response::new(out.stdout))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
+            fetch_bytes,
             fs_stat,
             fs_read,
             fs_write,

@@ -278,20 +278,23 @@ $('deskBack').addEventListener('click', toDesk);
 
 /* ============ desk surfaces, paper, cup ============ */
 let bgFront = 'A';
-/* drinks with a vessel of their own: the whole desk is drawn with them in the cup's place */
-const VESSELS = {osmanthus: true, longjing: true, whisky: true, teaglass: true};
-/* drinks that move: a small layer over the glass plays the ice drifting or the leaves turning; some drinks belong to some desks only */
-const DRINK_ANIM = {whisky: {l: 1230, t: 45, s: 195}, teaglass: {l: 1265, t: 80, s: 125}};
-const DRINK_WOODS = {whisky: ['honey', 'linen'], teaglass: ['honey']};
-const drinkOn = (k, wood) => !DRINK_WOODS[k] || DRINK_WOODS[k].includes(wood || prefs.wood || 'mahogany');
-function paintDrinkAnim(){ const el = $('drinkAnim'); if(!el) return; const k = prefs.cup, a = DRINK_ANIM[k];
-  if(!a || !drinkOn(k)){ el.classList.remove('on'); return; }
-  Object.assign(el.style, {left: a.l + 'px', top: a.t + 'px', width: a.s + 'px', height: a.s + 'px'}); const src = AS + 'anim-' + (prefs.wood || 'mahogany') + '-' + k + '.webp';
-  if(el.getAttribute('src') !== src) el.src = src; el.classList.add('on'); }
-function setWood(v, instant){ prefs.wood = v; if(!drinkOn(prefs.cup, v)) prefs.cup = '';
-  document.querySelectorAll('#cupKinds [data-cup]').forEach(b => { b.hidden = !drinkOn(b.dataset.cup, v); b.classList.toggle('on', (b.dataset.cup || '') === (prefs.cup || '')); }); document.querySelectorAll('.wd').forEach(w => w.classList.toggle('on', w.dataset.wood === v));
+/* ===================== drinks, made once, for every desk =====================
+   Each drink is two pictures laid over the wood: what it lets through of the desk (multiplied with it: its shadow, the
+   colour of the whisky or the tea) and the light it gives itself (added: the porcelain, reflections, ice, peel, leaves).
+   So a drink looks right on any desk, and the ice or the leaves move the same on all of them. */
+const VESSELS = {};
+const DRINKS = {'': 'espresso', espresso: 'espresso', heart: 'espresso', tea: 'espresso', greentea: 'espresso', osmanthus: 'osmanthus', longjing: 'longjing', whisky: 'whisky', teaglass: 'teaglass'};
+const DRINK_BOX = {espresso: [1080, 0, 360], osmanthus: [1080, 0, 360], longjing: [1080, 0, 360], whisky: [1160, 0, 280], teaglass: [1160, 0, 280]};
+const drinkOn = () => true;
+function paintDrink(){ const k = DRINKS[prefs.cup || ''] || 'espresso', bx = DRINK_BOX[k], T = $('drinkT'), E = $('drinkE'); if(!T || !E) return;
+  const Lf = $('drinkL'); if(Lf){ Object.assign(Lf.style, {left: bx[0] + 'px', top: bx[1] + 'px', width: bx[2] + 'px', height: bx[2] + 'px'}); if(k === 'teaglass'){ const s2 = AS + 'drink-teaglass-l.webp'; if(Lf.getAttribute('src') !== s2){ Lf.onload = () => Lf.classList.add('on'); Lf.src = s2; } else Lf.classList.add('on'); } else Lf.classList.remove('on'); }
+  [T, E].forEach((el, n) => { Object.assign(el.style, {left: bx[0] + 'px', top: bx[1] + 'px', width: bx[2] + 'px', height: bx[2] + 'px'});
+    const src = AS + 'drink-' + k + (n ? '-e' : '-t') + '.webp'; el.onerror = () => el.classList.remove('on');
+    if(el.getAttribute('src') !== src){ el.classList.remove('on'); el.onload = () => el.classList.add('on'); el.src = src; } else el.classList.add('on'); }); }
+const paintDrinkAnim = paintDrink;
+function setWood(v, instant){ prefs.wood = v; document.querySelectorAll('.wd').forEach(w => w.classList.toggle('on', w.dataset.wood === v));
   { const fr = document.querySelector('#leaf .lf-front'), bk = document.querySelector('#leaf .lf-back'); if(fr) fr.style.backgroundImage = 'url(' + AS + 'leaf-r-' + v + '.webp)'; if(bk) bk.style.backgroundImage = 'url(' + AS + 'leaf-l-' + v + '.webp)'; }
-  const url = AS + 'bg-' + v + (VESSELS[prefs.cup] ? '-' + prefs.cup : '') + '.webp', img = new Image();
+  const url = AS + 'bg-' + v + '.webp', img = new Image();
   img.onload = () => { const back = $(bgFront === 'A' ? 'bgB' : 'bgA'), front = $(bgFront === 'A' ? 'bgA' : 'bgB');
     back.style.backgroundImage = 'url(' + url + ')'; back.style.transition = instant ? 'none' : ''; front.style.transition = instant ? 'none' : '';
     back.style.opacity = 1; front.style.opacity = 0; bgFront = bgFront === 'A' ? 'B' : 'A'; document.body.classList.add('ready'); };
@@ -309,10 +312,9 @@ $('panelX').addEventListener('click', () => panel.classList.remove('on'));
 $('moreSettings').addEventListener('click', () => { panel.classList.remove('on'); if(P) P.openSettings(() => { if(state === 'desk' || document.body.classList.contains('reading')) panel.classList.add('on'); }); });
 const CUPS = {heart: AS + 'cup-heart.webp', tea: AS + 'cup-tea.webp', greentea: AS + 'cup-greentea.webp'};
 const cupImg = $('cupLiquid'), cupMenu = $('cupMenu');
-function setCup(key){ const was = !!VESSELS[prefs.cup]; prefs.cup = key; if(was !== !!VESSELS[key]) setWood(prefs.wood || 'mahogany');
+function setCup(key){ prefs.cup = key; paintDrink();
   document.querySelectorAll('#cupKinds button').forEach(b => b.classList.toggle('on', (b.dataset.cup || '') === key));
-  paintDrinkAnim();
-  if(!CUPS[key] || VESSELS[key]){ cupImg.classList.remove('on'); return; }
+  if(!CUPS[key] || DRINKS[key] !== 'espresso'){ cupImg.classList.remove('on'); return; }
   cupImg.classList.remove('on'); setTimeout(() => { cupImg.src = CUPS[key]; cupImg.classList.add('on'); }, 10); }
 document.querySelectorAll('#cupKinds button').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); setCup(b.dataset.cup); savePrefs(); }));
 $('cupHit').addEventListener('click', e => { e.stopPropagation(); if(state === 'desk') cupMenu.classList.toggle('on'); });
@@ -508,7 +510,7 @@ function renderCardCats(d){ const box = $('rcCats'); box.innerHTML = '';
   const add = document.createElement('button'); add.className = 'add'; add.textContent = '+ Category';
   /* a category is chosen from your own, or typed in place: no browser pop-up */
   add.addEventListener('click', () => { const opts = allCats().filter(c => !(d.categories || []).includes(c));
-    const put = n => { n = (n || '').trim(); if(!n) return; d.categories = (d.categories || []).concat([n]); if(!CATS.includes(n)) CATS.push(n); if(rBook){ rBook.categories = d.categories; rSave(); renderReadings(); } renderCardCats(d); };
+    const put = n => { n = (n || '').trim(); if(!n) return; d.categories = [n]; if(!CATS.includes(n)) CATS.push(n); if(rBook){ rBook.categories = d.categories; rSave(); renderReadings(); } renderCardCats(d); };
     const inp = document.createElement('input'); inp.className = 'rc-catin'; inp.placeholder = 'Category'; inp.setAttribute('list', 'rcCatList'); add.replaceWith(inp);
     let dl = document.getElementById('rcCatList'); if(!dl){ dl = document.createElement('datalist'); dl.id = 'rcCatList'; document.body.appendChild(dl); } dl.innerHTML = opts.map(o => '<option value="' + esc(o) + '">').join('');
     let done = false; const end = v => { if(done) return; done = true; put(v); renderCardCats(d); };
@@ -1405,7 +1407,7 @@ sideDrag(RB, {source: '#rcats [data-cat], #rSecs .rbk', target: '#rcats [data-ca
   ok: (p, t) => p.kind === 'book' || !(t.dataset.cat === p.p || t.dataset.cat.indexOf(p.p + '/') === 0),
   drop: (p, t, z) => { const dst = t.dataset.cat;
     if(p.kind === 'cat' && z !== 'into'){ catPlace(p.p, dst, z); return; }
-    if(p.kind === 'book'){ const b = R.find(x => x.id === p.id); if(b){ b.categories = [...new Set((b.categories || []).concat([dst]))]; rSave(); renderReadings(); toast('Put in ' + dst.split('/').pop()); } }
+    if(p.kind === 'book'){ const b = R.find(x => x.id === p.id); if(b){ b.categories = [dst]; rSave(); renderReadings(); toast('Put in ' + dst.split('/').pop()); } }
     else { catRename(p.p, dst + '/' + p.p.split('/').pop()); rOpenCats.add(dst); renderReadings(); } }});
 /* a folder inside another can also be taken out to the top of the list */
 $('pboard').addEventListener('contextmenu', e => { const t = e.target.closest('.tp[data-map][data-sub]'); if(!t) return; setTimeout(() => { const m = $('tpMenu'); if(!m || m.hidden || m.querySelector('[data-promote]')) return;
@@ -1519,7 +1521,7 @@ async function spPlaceKindle(view, b){ if(!view || !b) return; const marks = SP.
 /* ===================== deleting a paper or a book ===================== */
 function deleteBook(id, after){ const b = R.find(x => x.id === id); if(!b) return;
   P.confirmDanger('Delete book', 'Delete “' + b.title + '”? Its notes and highlights are kept aside: add the same book again and you can bring them back.', () => {
-    const at = R.indexOf(b), files = b.files; R = R.filter(x => x !== b); b.deleted = true; b.deletedOn = today(); b.files = []; RDEL.push(b); rSave(); if(after) try{ after(); }catch(e){} renderReadings();
+    const at = R.indexOf(b), files = b.files; R = R.filter(x => x !== b); setTimeout(() => { if(b.deleted && P.bookFileDrop) (files || []).forEach(f => P.bookFileDrop(f)); }, 9000); b.deleted = true; b.deletedOn = today(); b.files = []; RDEL.push(b); rSave(); if(after) try{ after(); }catch(e){} renderReadings();
     toastAct('Deleted “' + b.title + '”', 'Undo', () => { RDEL = RDEL.filter(x => x !== b); delete b.deleted; delete b.deletedOn; b.files = files; R.splice(Math.min(at, R.length), 0, b); rSave(); renderReadings(); toast('“' + b.title + '” is back'); }); }); }
 /* a toast with one thing to do */
 function toastAct(t, label, fn, ms){ const el = $('toast'); el.textContent = ''; const s = document.createElement('span'); s.textContent = t; const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'toast-act'; bt.textContent = label;
@@ -1532,7 +1534,7 @@ function offerOldNotes(b){ const old = oldNotesFor(b); if(!old) return; const nq
     if(plain(old.notes)) b.notes = plain(b.notes) ? b.notes + '<p></p>' + old.notes : old.notes;
     const seen = new Set((b.quotes || []).map(q => q.text)); b.quotes = (b.quotes || []).concat((old.quotes || []).filter(q => !seen.has(q.text)));
     b.marks = (b.marks || []).concat(old.marks || []); b.stickies = (b.stickies || []).concat(old.stickies || []);
-    b.categories = [...new Set((b.categories || []).concat(old.categories || []))];
+    if(!(b.categories || []).length && (old.categories || []).length) b.categories = [old.categories[old.categories.length - 1]];
     ['rating', 'started', 'finishedOn', 'review'].forEach(k => { if(old[k] != null && b[k] == null) b[k] = old[k]; });
     RDEL = RDEL.filter(x => x !== old); rSave(); renderReadings(); toast('Your notes for “' + b.title + '” are back'); }, 12000); }
 /* right-click a paper in Papers, or a book in Readings, to delete it */
@@ -1543,4 +1545,61 @@ RB.addEventListener('contextmenu', e => { const g = e.target.closest('#rSecs .rb
 
 /* a small window onto the shelves, for checking them */
 window.__desk = {get R(){ return R; }, get RDEL(){ return RDEL; }, addBook(b){ R.unshift(b); rSave(); renderReadings(); }};
+
+setTimeout(paintDrink, 60);
+
+/* ===================== writing by hand with the Pencil =====================
+   ✎ in the reading page turns the Pencil into ink: on the PDF of a paper and on the notes of a paper or a book (never on a
+   book's pages). Fingers still scroll and turn pages; only the Pencil (or, on a Mac, the mouse) draws. With ✎ off, the
+   Pencil writes into the notes as text, by iPad's own Scribble. Strokes are kept as lines, in the page's own measure. */
+const INK = {on: false, tool: 'pen', color: '#1F1B18', layers: [], undo: [], mouse: !('ontouchstart' in window)};
+function inkData(){ if(!SP.kind) return null;
+  if(SP.kind === 'paper'){ if(!SP.ink || SP.inkFor !== SP.id){ SP.ink = (P.paperInk && P.paperInk(SP.id)) || {pdf: {}, notes: []}; SP.inkFor = SP.id; } return SP.ink; }
+  const b = spBook(); if(!b) return null; b.ink = b.ink || {notes: []}; return b.ink; }
+function inkSave(){ clearTimeout(INK.t); INK.t = setTimeout(() => { const dd = inkData(); if(!dd) return; if(SP.kind === 'paper'){ if(P.setPaperInk) P.setPaperInk(SP.id, dd); } else rSave(); }, 400); }
+function inkStroke(g, s, w){ const p = s.p; if(!p || p.length < 6) return; g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = s.c; g.globalAlpha = s.h ? 0.38 : 1;
+  let px = p[0] * w, py = p[1] * w, mx = px, my = py;
+  for(let i = 3; i < p.length; i += 3){ const x = p[i] * w, y = p[i + 1] * w, nx = (px + x) / 2, ny = (py + y) / 2, pr = p[i + 2];
+    g.lineWidth = s.h ? s.w : s.w * (0.45 + 1.15 * pr); g.beginPath(); g.moveTo(mx, my); g.quadraticCurveTo(px, py, nx, ny); g.stroke(); mx = nx; my = ny; px = x; py = y; }
+  g.restore(); }
+function inkLayer(host, get, set){
+  const cv = document.createElement('canvas'); cv.className = 'ink-cv'; host.classList.add('ink-host'); host.appendChild(cv);
+  const L = {cv, host, get, set, draw(){ const w = host.clientWidth, h = Math.max(host.scrollHeight, host.clientHeight), dpr = devicePixelRatio || 1;
+      if(cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)){ cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); cv.style.width = w + 'px'; cv.style.height = h + 'px'; }
+      const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h); (get() || []).forEach(s => inkStroke(g, s, w)); }};
+  let cur = null;
+  const pt = e => { const r = cv.getBoundingClientRect(), w = host.clientWidth || 1; return [+((e.clientX - r.left) / w).toFixed(4), +((e.clientY - r.top) / w).toFixed(4), +((e.pointerType === 'pen' ? e.pressure : 0.5) || 0.5).toFixed(2)]; };
+  cv.addEventListener('pointerdown', e => { if(!INK.on || !(e.pointerType === 'pen' || (INK.mouse && e.pointerType === 'mouse'))) return; e.preventDefault(); e.stopPropagation(); try{ cv.setPointerCapture(e.pointerId); }catch(err){}
+    if(INK.tool === 'eraser'){ cur = {erase: true}; inkErase(L, pt(e)); return; }
+    cur = {c: INK.tool === 'hl' ? '#F2CF57' : INK.color, w: INK.tool === 'hl' ? 14 : 2.1, h: INK.tool === 'hl' ? 1 : 0, p: pt(e)}; });
+  cv.addEventListener('pointermove', e => { if(!cur) return; e.preventDefault();
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+    if(cur.erase){ evs.forEach(ev => inkErase(L, pt(ev))); return; }
+    evs.forEach(ev => cur.p.push(...pt(ev))); L.draw(); inkStroke(cv.getContext('2d'), cur, host.clientWidth); });
+  const end = () => { if(!cur) return; if(!cur.erase && cur.p.length >= 6){ const a = (get() || []).slice(); a.push(cur); set(a); INK.undo.push({L, s: cur}); inkSave(); } cur = null; L.draw(); };
+  cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+  cv.addEventListener('touchstart', e => { if(INK.on && [...e.touches].some(t => t.touchType === 'stylus')) e.preventDefault(); }, {passive: false});
+  INK.layers.push(L); L.draw(); return L; }
+function inkErase(L, q){ const a = L.get() || [], r = 0.012; const keep = a.filter(s => { for(let i = 0; i < s.p.length; i += 3) if(Math.hypot(s.p[i] - q[0], s.p[i + 1] - q[1]) < r) return false; return true; });
+  if(keep.length !== a.length){ INK.undo.push({L, erased: a.filter(s => !keep.includes(s))}); L.set(keep); inkSave(); L.draw(); } }
+function inkMount(){ document.querySelectorAll('.ink-cv').forEach(c => c.remove()); INK.layers = []; INK.undo = []; const dd = inkData(); if(!dd) return;
+  dd.notes = dd.notes || []; inkLayer($('spSheet'), () => inkData().notes, a => { inkData().notes = a; });
+  if(SP.kind === 'paper') document.querySelectorAll('#spDoc .sp-pg').forEach(pg => { const n = pg.dataset.page; inkLayer(pg, () => (inkData().pdf || {})[n] || [], a => { const x = inkData(); x.pdf = x.pdf || {}; x.pdf[n] = a; }); }); }
+const _openSpread = openSpread; openSpread = async function(...args){ const r = await _openSpread.apply(this, args); setTimeout(inkMount, 900); return r; };
+const _spOpenPdf = spOpenPdf; spOpenPdf = async function(...args){ const r = await _spOpenPdf.apply(this, args); setTimeout(inkMount, 300); return r; };
+addEventListener('resize', () => INK.layers.forEach(L => L.draw()));
+$('spInk').addEventListener('click', e => { e.stopPropagation(); INK.on = !INK.on; document.body.classList.toggle('ink-on', INK.on); $('spInk').classList.toggle('on', INK.on); $('inkTools').hidden = !INK.on; if(INK.on && !INK.layers.length) inkMount(); });
+$('inkTools').addEventListener('click', e => { const t = e.target.closest('[data-ink]'); if(!t) return; e.stopPropagation(); const k = t.dataset.ink;
+  if(k === 'undo'){ const op = INK.undo.pop(); if(!op) return; const a = (op.L.get() || []).slice(); op.L.set(op.s ? a.filter(x => x !== op.s) : a.concat(op.erased)); inkSave(); op.L.draw(); return; }
+  INK.tool = k; if(t.dataset.c) INK.color = t.dataset.c; document.querySelectorAll('#inkTools [data-ink]').forEach(b => b.classList.toggle('on', b === t)); });
+
+/* one category per book: a book already in several keeps the one it was put in last */
+(function(){ let n = 0; R.forEach(b => { if((b.categories || []).length > 1){ b.categories = [b.categories[b.categories.length - 1]]; n++; } }); if(n) rSave(); })();
+
+addEventListener('dragstart', e => { if(e.target && e.target.closest && e.target.closest('#rSecs, #pbGrid, #rcats, #pbMaps')) e.preventDefault(); }, true);
+
+/* choosing where this Mac keeps book files */
+async function bookPlaceMenu(){ const pl = P.bookPlaces ? await P.bookPlaces() : null; const cur = P.bookPlace();
+  const opts = [['', 'With your library', 'On GitHub, so every device can open them']].concat(pl && pl.icloud ? [['icloud', 'iCloud Drive', 'In iCloud Drive › Paper Map Books: your Macs, and GitHub stays small']] : []).concat(pl && pl.documents ? [['documents', 'Documents on this Mac', 'In Documents › Paper Map Books, on this Mac only']] : []);
+  rMenu(opts.map(o => [(o[0] === cur ? '✓ ' : '') + o[1], o[2], () => { P.setBookPlace(o[0]); toast('Book files you add from now on: ' + o[1]); }]), $('rMoreBtn')); }
 })();

@@ -481,4 +481,14 @@ function ghForget(){
   setGh('off');
 }
 
-
+/* ===================== big files as attachments of a release in the data repository =====================
+   GitHub keeps files up to 100 MB in a repository, and keeps them in its history for good. A release's attachments may be
+   up to 2 GB each and stay outside the history, so Paper Map keeps big books there, in one release named "Book files". */
+async function ghFilesRelease(c){ const base = 'https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo);
+  let r = await fetch(base + '/releases/tags/paper-map-files', {headers: ghHeaders(c)}); if(r.ok) return await r.json();
+  r = await fetch(base + '/releases', {method: 'POST', headers: ghHeaders(c, {'Content-Type': 'application/json'}), body: JSON.stringify({tag_name: 'paper-map-files', name: 'Book files', body: 'Files Paper Map keeps for your books. Not a version.', prerelease: true})});
+  if(!r.ok) throw new Error('Could not make the place for big files on GitHub (' + r.status + ')'); return await r.json(); }
+async function ghAssetPut(c, name, file){ const rel = await ghFilesRelease(c); const safe = String(name).replace(/[^A-Za-z0-9._-]+/g, '-').slice(-120);
+  const r = await fetch('https://uploads.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + '/releases/' + rel.id + '/assets?name=' + encodeURIComponent(safe), {method: 'POST', headers: ghHeaders(c, {'Content-Type': 'application/octet-stream'}), body: file});
+  if(!r.ok) throw new Error('GitHub did not take the file (' + r.status + ')'); const j = await r.json(); return {id: j.id, name: j.name, size: j.size}; }
+async function ghAssetGet(c, id){ try{ const r = await fetch('https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + '/releases/assets/' + id, {headers: ghHeaders(c, {'Accept': 'application/octet-stream'})}); return r.ok ? await r.blob() : null; }catch(e){ return null; } }

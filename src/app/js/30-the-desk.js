@@ -27,12 +27,23 @@ window.pmDesk = {
   mindFor(kind, id){ DK.mindFrom = 'desk'; setTimeout(() => { try{ mindFor(kind, id); }catch(e){} }, 40); },
   async bookFileSave(bookId, file){ const c = ghCfg(), name = String(file.name || 'book').replace(/[\\/:*?"<>|#%]+/g, ' ').trim().slice(-90), path = 'books/' + bookId + '/' + name;
     const meta = {name: file.name, path, size: file.size, type: file.type || '', added: new Date().toISOString()};
+    /* on a Mac, book files can be kept in iCloud Drive or in Documents instead of GitHub, so GitHub stays small */
+    const place = '';
+    if(place && window.__TAURI__){ const root = await bookRoot(place); if(root){ const rel = 'Paper Map Books/' + bookId + '-' + name; const inv = window.__TAURI__.core.invoke;
+        await inv('fs_write', {path: root + '/' + rel, data: await fileToBase64(file)}); meta.where = 'mac'; meta.root = place; meta.rel = rel; return meta; } }
+    if(c && c.kind !== 'folder'){
+      /* a big book goes to the data repository's Releases as an attachment (up to 2 GB, outside its history), with a copy kept here */
+      const as = await ghAssetPut(c, bookId + '-' + name.replace(/\s+/g, '-'), file); meta.where = 'asset'; meta.asset = as; try{ await PMDB.set('file:' + path, file); }catch(e){} return meta; }
     if(c){ if(c.kind !== 'folder' && file.size > 95 * 1048576) throw new Error('That file is ' + fmtSize(file.size) + ': GitHub takes files up to 100 MB. Keep it in iCloud Drive or a folder instead.');
       const content = await fileToBase64(file);
       await ghSerial(async () => { let r = await ghPutPath(c, path, content, 'Book file: ' + name, null); if(r.status === 409 || r.status === 422){ const known = await ghPathSha(c, path); r = await ghPutPath(c, path, content, 'Book file: ' + name, known); } if(!r.ok) throw new Error('Could not keep the file (' + r.status + ')'); });
       meta.where = c.kind === 'folder' ? 'folder' : 'github'; return meta; }
     const ok = await PMDB.set('file:' + path, file); if(!ok) throw new Error('This browser could not keep the file'); meta.where = 'local'; return meta; },
   async bookFileBlob(f){ if(!f) return null; if(f.where === 'local') return await PMDB.get('file:' + f.path) || null;
+    if(f.where === 'mac'){ if(!window.__TAURI__) return null; const root = await bookRoot(f.root); if(!root) return null;
+      try{ const b64 = await window.__TAURI__.core.invoke('fs_read', {path: root + '/' + f.rel}); const bin = atob(b64), u = new Uint8Array(bin.length); for(let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], {type: f.type || ''}); }catch(e){ return null; } }
+    if(f.where === 'asset'){ const here = await PMDB.get('file:' + f.path); if(here) return here; const c = ghCfg(); if(!c || !f.asset) return null;
+      const b = await ghAssetGet(c, f.asset.id); if(b){ try{ await PMDB.set('file:' + f.path, b); }catch(e){} } return b; }
     if(f.where === 'example'){ try{ const r = await fetch('example/' + f.path); return r.ok ? await r.blob() : null; }catch(e){ return null; } }
     if(f.where === 'zotero'){ const zc = ztCfg(); return zc ? await ztFileBlob(zc, f.zotero) : null; }
     const c = ghCfg(); if(!c) return null;
@@ -111,6 +122,10 @@ window.pmDesk = {
     return {id, t: e.t, pdf: !!(lib.entries[id] && lib.entries[id].pdf)}; },
   deletePaper(id, after){ if(PREVIEW){ toast('This is the example: nothing in it can be deleted'); return; } deleteEntry(id, after, true); },
   confirmDanger(title, text, yes){ confirmSimple(title, text, 'Delete', yes); },
+  paperInk(id){ const e = lib.entries[id]; return e && e.ink ? clone(e.ink) : null; },
+  setPaperInk(id, d){ const e = lib.entries[id]; if(!e || PREVIEW) return; e.ink = clone(d); touchLib(); },
+  async bookFileDrop(f){ if(f && f.where === 'asset' && f.asset){ const c = ghCfg(); if(c) try{ await fetch('https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + '/releases/assets/' + f.asset.id, {method: 'DELETE', headers: ghHeaders(c)}); }catch(e){} } if(f && f.path) try{ await PMDB.del && PMDB.del('file:' + f.path); }catch(e){} },
+  bookPlace(){ return bookPlace(); }, setBookPlace(v){ try{ v ? localStorage.setItem('pm:bookPlace', v) : localStorage.removeItem('pm:bookPlace'); }catch(e){} }, async bookPlaces(){ if(!window.__TAURI__) return null; try{ return await window.__TAURI__.core.invoke('storage_places'); }catch(e){ return null; } },
   paperLinks(id){ const seen = new Set(); return (lib.links || []).filter(l => l[0] === id || l[1] === id).map(l => l[0] === id ? l[1] : l[0]).filter(x => lib.entries[x] && !seen.has(x) && seen.add(x)).map(x => lib.entries[x].t || ''); },
   paperRead(id){ const e = lib.entries[id]; if(!e) return null; return {n: e.n || '', marks: clone(e.marks || []), quotes: clone(e.quotes || []), stickies: clone(e.stickies || []), at: e.readAt || 0}; },
   setPaperStickies(id, arr){ const e = lib.entries[id]; if(!e || PREVIEW) return; e.stickies = arr; touchLib(); },
@@ -655,3 +670,8 @@ function openRenameMap(tid){ const tp = lib.topics.find(t => t.id === tid); if(!
   openModal({title: 'Rename the map', body: '<input id="rnIn" class="rn-in" type="text" maxlength="80" value="' + esc(tp.name) + '">', actions: [{label: 'Cancel'}, {label: 'Rename', primary: true, onClick: () => { const v = (document.getElementById('rnIn').value || '').trim(); if(!v) return false;
     tp.name = v; const root = (tp.subs || []).find(x => x.hidden); if(root) root.name = v; if(!PREVIEW) touchLib(); try{ renderAll(); }catch(e){} }}]});
   setTimeout(() => { const i = document.getElementById('rnIn'); if(!i) return; i.focus(); i.select(); i.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); document.querySelector('#modalRoot .btn.primary').click(); } }); }, 30); }
+
+
+/* where this Mac keeps book files: '' (with the library, on GitHub), 'icloud' or 'documents' */
+function bookPlace(){ try{ return localStorage.getItem('pm:bookPlace') || ''; }catch(e){ return ''; } }
+async function bookRoot(place){ if(!window.__TAURI__) return null; try{ const p = await window.__TAURI__.core.invoke('storage_places'); return place === 'icloud' ? p.icloud : place === 'documents' ? p.documents : null; }catch(e){ return null; } }
