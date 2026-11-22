@@ -28,6 +28,9 @@ window.pmDesk = {
   openPaper(id, from){ const e = lib.entries[id]; if(!e) return; deskTouchRecent(e.topic); DK.fromTopic = e.topic; DK.from = from === 'paper' ? 'paper:' + id : 'papers'; deskHide(); setTimeout(() => { goTo(id); try{ select(id, true); }catch(err){} }, 90); },
   newMap(){ setTimeout(() => openTopicForm(), 140); },
   pdfThumb(id){ return pdfFirstPage(id); },
+  notebooks(){ try{ return nbkAll().map(j => ({id: j.id, title: j.title, color: j.color, pages: j.pages.length})); }catch(e){ return []; } },
+  openNotebook(id){ try{ nbkOpen(id, 0, false); }catch(e){} },
+  newNotebook(t){ try{ const j = nbkNew(String(t || '').trim() || 'Notebook'); nbkOpen(j.id, 0, false); return j.id; }catch(e){ return null; } },
   openMind(id){ DK.mindFrom = 'maps'; setTimeout(() => { try{ openMind(id); }catch(e){} }, 40); },
   mindFor(kind, id){ DK.mindFrom = 'desk'; setTimeout(() => { try{ mindFor(kind, id); }catch(e){} }, 40); },
   async bookFileSave(bookId, file){ const c = ghCfg(), name = String(file.name || 'book').replace(/[\\/:*?"<>|#%]+/g, ' ').trim().slice(-90), path = 'books/' + bookId + '/' + name;
@@ -40,7 +43,7 @@ window.pmDesk = {
       /* a big book goes to the data repository's Releases as an attachment (up to 2 GB, outside its history), with a copy kept here */
       const bytes = await bytesOf(file); try{ await PMDB.set('file:' + path, bytes); }catch(e){}
       meta.where = 'asset'; meta.aname = bookId + '-' + name.replace(/\s+/g, '-');
-      try{ meta.asset = await ghAssetPut(c, meta.aname, bytes); }catch(err){ meta.pending = true; } return meta; }
+      try{ meta.asset = await ghAssetPut(c, meta.aname, bytes); meta.asset.repo = c.repo; }catch(err){ meta.pending = true; } return meta; }
     if(c){ if(c.kind !== 'folder' && file.size > 95 * 1048576) throw new Error('That file is ' + fmtSize(file.size) + ': GitHub takes files up to 100 MB. Keep it in iCloud Drive or a folder instead.');
       const content = await fileToBase64(file);
       await ghSerial(async () => { let r = await ghPutPath(c, path, content, 'Book file: ' + name, null); if(r.status === 409 || r.status === 422){ const known = await ghPathSha(c, path); r = await ghPutPath(c, path, content, 'Book file: ' + name, known); } if(!r.ok) throw new Error('Could not keep the file (' + r.status + ')'); });
@@ -53,7 +56,13 @@ window.pmDesk = {
     if(f.where === 'mac'){ if(!window.__TAURI__) return null; const root = await bookRoot(f.root); if(!root) return null;
       try{ const b64 = await window.__TAURI__.core.invoke('fs_read', {path: root + '/' + f.rel}); const bin = atob(b64), u = new Uint8Array(bin.length); for(let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], {type: f.type || ''}); }catch(e){ return null; } }
     if(f.where === 'asset'){ const here = await hereCopy(f.path); if(here) return here; const c = ghCfg(); if(!c || !f.asset) return null;
-      const b = await ghAssetGet(c, f.asset.id); if(b){ try{ await PMDB.set('file:' + f.path, await bytesOf(b)); }catch(e){} } return b; }
+      /* where it was put; else the library's repository now; else the ones your library was kept in before (after a switch) */
+      const tries = [...new Set([f.asset.repo, c.repo].concat((lsGet(GH_KEY) || {}).prevRepos || []).filter(Boolean))];
+      for(const r of tries){ const b = await ghAssetGet(ghRepo(c, r), f.asset.id); if(!b) continue;
+        try{ await PMDB.set('file:' + f.path, await bytesOf(b)); }catch(e){}
+        if(f.asset.repo !== r){ f.asset.repo = r; (lib.readings || []).forEach(bk => (bk.files || []).forEach(x => { if(x.path === f.path && x.asset && x.asset.id === f.asset.id) x.asset.repo = r; })); touchLib(); }
+        return b; }
+      return null; }
     if(f.where === 'example'){ try{ const r = await fetch('example/' + f.path); return r.ok ? await r.blob() : null; }catch(e){ return null; } }
     if(f.where === 'zotero'){ const zc = typeof ztCfg === 'function' ? ztCfg() : null; return zc ? await ztFileBlob(zc, f.zotero, f.name, f.zpath) : null; }
     const c = ghCfg(); if(!c) return null;
@@ -65,7 +74,7 @@ window.pmDesk = {
   pdfPage(id, n){ return pdfPageAt(id, n || 0); },
   async paperPdfBlob(id){ const e = lib.entries[id]; PDF_WHY = ''; if(typeof ZT_LOG !== 'undefined') ZT_LOG = []; if(!e || !e.pdf) return null; try{ const u = await pdfUrl(e); const r = await fetch(u); if(!r.ok){ PDF_WHY = 'read back: ' + r.status; return null; } const b = await r.blob(); if(!b || !b.size){ PDF_WHY = 'the file came back empty'; return null; } return b; }
     catch(err){ const st = err && err.status, fromZ = (e.pdf.zotero || /^zotero:/.test(e.pdf.path || '')) && !(e.pdf.path || '').startsWith('pdfs/');
-      PDF_WHY = st === 'nozotero' ? 'Zotero is not connected on this device; connect it in the Mac app' : fromZ && !window.__TAURI__ ? 'Zotero keeps this PDF; it opens in the Mac app' : st === 'nogh' ? 'no library is set up on this device' : st === 404 ? 'the file is not in your library' : String(st || (err && err.message) || 'unknown').slice(0, 80);
+      PDF_WHY = st === 'nozotero' ? 'Zotero is not connected on this device; connect it in the Mac app' : fromZ && !window.__TAURI__ ? 'Zotero keeps this PDF; it opens in the Mac app' : st === 'nogh' ? 'no library is set up on this device' : st === 404 ? 'it is not in ' + ((ghCfg() || {}).repo || 'your library') + ((lsGet(GH_KEY) || {}).prevRepos && (lsGet(GH_KEY) || {}).prevRepos.length ? ' nor in ' + (lsGet(GH_KEY) || {}).prevRepos.join(', ') : '') + '; if you moved your library, bring its files along from the cloud › GitHub' : String(st || (err && err.message) || 'unknown').slice(0, 80);
       return null; } },
   mindDock(kind, id, r){ try{ return mindDock(kind, id, r); }catch(e){ return null; } },
   mindDockMove(r){ try{ mindDockMove(r); }catch(e){} },
@@ -77,7 +86,8 @@ window.pmDesk = {
   async pickFolder(){ try{ return await window.__TAURI__.core.invoke('pick_folder', {prompt: 'Choose the folder for a copy of your files'}); }catch(e){ return null; } },
   isMac(){ return !!window.__TAURI__; },
   pdfWhy(){ const w = (typeof ZT_WHY === 'string' && ZT_WHY) || PDF_WHY, l = typeof ZT_LOG !== 'undefined' && ZT_LOG.length ? ' — ' + ZT_LOG.join(' › ') : ''; return (w || (lib.entries && '')) + l + (w || l ? '' : 'path ' + ''); },
-  over(kind, r){ if(kind === 'notebooks'){ nbkShelf(); return; } const fake = {getBoundingClientRect: () => ({left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.right - r.left, height: r.bottom - r.top, x: r.left, y: r.top}), classList: {add(){}, remove(){}, toggle(){}, contains(){ return false; }}, closest: () => null};
+  deletedCount(){ return Object.keys(lib.deletedPapers || {}).length; },
+  over(kind, r){ if(kind === 'notebooks'){ nbkShelf(); return; } if(kind === 'deleted'){ deletedPapersOpen(); return; } const fake = {getBoundingClientRect: () => ({left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.right - r.left, height: r.bottom - r.top, x: r.left, y: r.top}), classList: {add(){}, remove(){}, toggle(){}, contains(){ return false; }}, closest: () => null};
     document.documentElement.classList.add('pm-overdesk'); if(kind === 'note') atlasNote(fake); else if(kind === 'sync') atlasSync(fake); },
   closeOver(){ try{ atlasNoteClose(); }catch(e){} const s2 = document.getElementById('atlSync'); if(s2) s2.hidden = true; },
   /* folders and topics in the Papers list: make them, rename them, nest them by dragging, and move papers into them */

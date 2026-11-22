@@ -179,8 +179,14 @@ async function pdfUrl(e){
   if(c.kind === 'dropbox' || c.kind === 'folder'){ bytes = await remoteBytes(c, e.pdf.path); if(!bytes) throw {status: 404}; }
   else{
     const cR = pdfRepoOf(c, e); let r = await fetch(ghPathUrl(cR, e.pdf.path) + (cR === c ? ghRef(c) : '?_=' + Date.now()), {headers: ghHeaders(cR, {'Accept':'application/vnd.github.raw+json'})});
-    if(r.status === 404){ const alts = [c.repo].concat((lib.pdfStore && lib.pdfStore.repos) || []).filter((x, i, a) => x !== cR.repo && a.indexOf(x) === i);
-      for(const repo of alts){ const cA = ghRepo(c, repo), r2 = await fetch(ghPathUrl(cA, e.pdf.path) + '?_=' + Date.now(), {headers: ghHeaders(cA, {'Accept':'application/vnd.github.raw+json'})}); if(r2.ok){ r = r2; break; } } }
+    if(r.status === 404){ const g = lsGet(GH_KEY) || {}; const alts = [c.repo].concat((lib.pdfStore && lib.pdfStore.repos) || [], g.prevRepos || []).filter((x, i, a) => x && x !== cR.repo && a.indexOf(x) === i);
+      let found = null;
+      for(const repo of alts){ const cA = ghRepo(c, repo), r2 = await fetch(ghPathUrl(cA, e.pdf.path) + '?_=' + Date.now(), {headers: ghHeaders(cA, {'Accept':'application/vnd.github.raw+json'})}); if(r2.ok){ r = r2; found = repo; break; } }
+      /* not where it should be, nor in any repository Paper Map knows: look through your private repositories once for it
+         (a library moved before Paper Map remembered where it came from) */
+      if(!found){ const more = await pdfLookAround(c, e.pdf.path, alts.concat([cR.repo])); if(more){ r = more.r; found = more.repo; } }
+      if(found){ e.pdf.repo = found === c.repo ? undefined : found; if(e.pdf.repo === undefined) delete e.pdf.repo; touchLib();
+        if(found !== c.repo && !(lib.pdfStore && (lib.pdfStore.repos || []).includes(found))){ const g2 = lsGet(GH_KEY) || {}; g2.prevRepos = [...new Set([found].concat(g2.prevRepos || []))].slice(0, 6); if(!g2.broughtFrom || g2.broughtFrom !== found) g2.bringFrom = found; lsSet(GH_KEY, g2); } } }
     if(!r.ok) throw {status: r.status};
     bytes = await r.arrayBuffer();
   }
@@ -554,3 +560,11 @@ function openTopicLinkNote(key){
     }
   });
 }
+
+/* once a session at most: which of your private repositories holds this file? (the newest first, a dozen at most) */
+let PDF_LOOKED = null;
+async function pdfLookAround(c, path, skip){ try{ if(PDF_LOOKED === false) return null;
+    if(!PDF_LOOKED){ const r = await fetch('https://api.github.com/user/repos?per_page=100&sort=pushed&affiliation=owner', {headers: ghHeaders(c)}); if(!r.ok){ PDF_LOOKED = false; return null; }
+      PDF_LOOKED = (await r.json()).filter(x => x && x.private && x.owner && String(x.owner.login).toLowerCase() === String(c.owner).toLowerCase()).map(x => x.name); }
+    for(const repo of PDF_LOOKED.filter(n => !skip.includes(n)).slice(0, 12)){ const cA = ghRepo(c, repo), r2 = await fetch(ghPathUrl(cA, path) + '?_=' + Date.now(), {headers: ghHeaders(cA, {'Accept':'application/vnd.github.raw+json'})}); if(r2.ok) return {r: r2, repo}; }
+  }catch(e){} return null; }

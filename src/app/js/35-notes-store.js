@@ -83,4 +83,4 @@ async function nsTidy(){ const c = ghCfg(), repo = await nsRepo(); if(!repo) ret
   await fetch(base + '/git/refs/heads/' + encodeURIComponent(br), {method: 'PATCH', headers: ghHeaders(c, {'Content-Type': 'application/json'}), body: JSON.stringify({sha: j.sha, force: true})}); }
 Object.assign(window, {nsPut, nsUpload, nsHydrate, libSlim, nsPack, nsUnpack, nsCanon, nsSig, nsUnion, NS});
 /* tests reach the save path through this, and only under ?pmtest */
-if(/[?&]pmtest/.test(location.search)) window.__sec = {ghCfg, ghSaveNow, snapshot, ghIsPrivate, pdfTarget, ghPutPath, ghSectionHTML, wireGhSection, gh: () => gh};
+if(/[?&]pmtest/.test(location.search)) window.__sec = {ghCfg, ghSaveNow, snapshot, ghIsPrivate, pdfTarget, ghPutPath, ghSectionHTML, wireGhSection, deleteEntry, gh: () => gh};

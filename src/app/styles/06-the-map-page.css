@@ -541,3 +541,12 @@ html.atlas .atl-side .cl-form .btn.primary:hover{background:#3A322B}
 .gh-alt{margin:6px 0 10px}
 .gh-alt summary{cursor:pointer;font:500 12.5px var(--sans);color:var(--muted)}
 .gh-alt[open] summary{margin-bottom:4px}
+
+/* deleted papers: what you wrote, kept */
+.del-list{display:flex;flex-direction:column;gap:12px;max-height:60vh;overflow:auto}
+.del-row{padding:12px 14px;border-radius:12px;background:rgba(35,30,26,.04)}
+.del-t b{font:600 15px var(--serif)}.del-t span{color:var(--muted);font-size:13px}
+.del-n{margin:6px 0 4px;font:400 13.5px/1.5 var(--serif);color:#3A322B}
+.del-k{margin:0 0 8px;font:500 11.5px var(--sans);color:var(--muted)}
+.del-a{display:flex;gap:8px;flex-wrap:wrap}
+.btn.danger{color:#B4432E}

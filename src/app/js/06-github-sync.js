@@ -252,11 +252,12 @@ function mergeLibs(base, here, there){
     notebooks: mergeMaps(byKey(B.notebooks, idk), byKey(Lh.notebooks, idk), byKey(Rt.notebooks, idk), 'notebook', x => 'Research log' + (x && x.pages ? ' (' + x.pages.filter(p => p && p.text).length + ' pages)' : ''), out),
     journals: mergeMaps(byKey(B.journals || [], idk), byKey(Lh.journals || [], idk), byKey(Rt.journals || [], idk), 'journal', x => 'Notebook: ' + (x ? x.title : ''), out),
     jpages: mergeMaps(B.jpages || {}, Lh.jpages || {}, Rt.jpages || {}, 'jpage', () => 'A notebook page', out),
+    deletedPapers: mergeMaps(B.deletedPapers || {}, Lh.deletedPapers || {}, Rt.deletedPapers || {}, 'deletedPaper', x => 'A deleted paper' + (x && x.t ? ': ' + x.t : ''), out),
     status: mergeMaps(base.status || {}, here.status || {}, there.status || {}, 'status', (v, k) => 'Read mark', {conflicts: [], fromHere: 0, fromThere: 0})
   };
   const build = () => {
     const L = Object.assign({}, Lh);
-    Object.keys(Rt || {}).forEach(k => { if(['entries', 'links', 'topics', 'tags', 'readings', 'readingCats', 'notebooks', 'status', 'minds', 'branches', 'title', 'journals', 'jpages'].includes(k)) return; if(stableJSON(Lh[k]) === stableJSON(B[k])) L[k] = Rt[k]; });
+    Object.keys(Rt || {}).forEach(k => { if(['entries', 'links', 'topics', 'tags', 'readings', 'readingCats', 'notebooks', 'status', 'minds', 'branches', 'title', 'journals', 'jpages', 'deletedPapers'].includes(k)) return; if(stableJSON(Lh[k]) === stableJSON(B[k])) L[k] = Rt[k]; });
     L.entries = maps.entries;
     L.links = orderLike(maps.links, Lh.links, Rt.links, lk);
     L.topics = orderLike(maps.topics, Lh.topics, Rt.topics, idk);
@@ -264,11 +265,11 @@ function mergeLibs(base, here, there){
     L.branches = orderLike(maps.branches, Lh.branches, Rt.branches, idk);
     L.lineBranch = maps.lineBranch; L.tlinks = orderLike(maps.tlinks, Lh.tlinks, Rt.tlinks, tk); L.tlinkColor = maps.tlinkColor;
     L.readings = orderLike(maps.readings, Lh.readings, Rt.readings, idk); L.readingCats = orderLike(maps.readingCats, (Lh.readingCats || []).map(c => ({id: c})), (Rt.readingCats || []).map(c => ({id: c})), idk).map(x => x.id); L.notebooks = orderLike(maps.notebooks, Lh.notebooks, Rt.notebooks, idk); L.minds = orderLike(maps.minds, Lh.minds || [], Rt.minds || [], idk);
-    L.journals = orderLike(maps.journals, Lh.journals || [], Rt.journals || [], idk); L.jpages = maps.jpages;
+    L.journals = orderLike(maps.journals, Lh.journals || [], Rt.journals || [], idk); L.jpages = maps.jpages; L.deletedPapers = maps.deletedPapers;
     if(stableJSON(Lh.title) === stableJSON(B.title)) L.title = Rt.title;
     return L;
   };
-  const mapOf = {journal: 'journals', jpage: 'jpages', mind: 'minds', entry: 'entries', link: 'links', topic: 'topics', tag: 'tags', branch: 'branches', lineBranch: 'lineBranch', tlink: 'tlinks', tlinkColor: 'tlinkColor', reading: 'readings', readingCat: 'readingCats', notebook: 'notebooks'};
+  const mapOf = {deletedPaper: 'deletedPapers', journal: 'journals', jpage: 'jpages', mind: 'minds', entry: 'entries', link: 'links', topic: 'topics', tag: 'tags', branch: 'branches', lineBranch: 'lineBranch', tlink: 'tlinks', tlinkColor: 'tlinkColor', reading: 'readings', readingCat: 'readingCats', notebook: 'notebooks'};
   const choose = (cf, side) => { const m = maps[mapOf[cf.kind]], v = side === 'there' ? cf.there : cf.here; if(v === undefined) delete m[cf.id]; else m[cf.id] = v; };
   { const ents = maps.entries || {}; out.dropped = Object.values(maps.links || {}).filter(l => Array.isArray(l) && (!ents[l[0]] || !ents[l[1]])).length; }
   return {conflicts: out.conflicts, fromHere: out.fromHere, fromThere: out.fromThere, merged: out.merged || 0, dropped: out.dropped || 0, build, choose, status: maps.status};

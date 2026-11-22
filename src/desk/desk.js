@@ -157,6 +157,9 @@ $('rowNext').addEventListener('click', () => strip.scrollBy({left: ROW_DX * 3, b
 /* drag the strip with the mouse; a drag is not a click */
 { let x0 = null, s0 = 0;
   strip.addEventListener('pointerdown', e => { if(e.pointerType !== 'mouse' || state !== 'maps') return; x0 = e.clientX; s0 = strip.scrollLeft; strip._dragged = false; });
+  /* while the row moves, nothing of the desk's stack may stay behind on it */
+  const sheetsAway = () => { if(state !== 'maps' || stripIn.classList.contains('landing')) return; sheets.forEach(el => { if(el.style.opacity !== '0' || el.getAnimations().length){ el.getAnimations().forEach(a => a.cancel()); el.style.opacity = '0'; el.style.pointerEvents = 'none'; } }); };
+  strip.addEventListener('scroll', sheetsAway, {passive: true}); strip.addEventListener('pointerdown', sheetsAway);
   addEventListener('pointermove', e => { if(x0 == null) return; const dx = (e.clientX - x0) / FIT.s; if(Math.abs(dx) > 5){ strip._dragged = true; strip.classList.add('dragging'); } if(strip._dragged) strip.scrollLeft = s0 - dx; });
   addEventListener('pointerup', () => { x0 = null; strip.classList.remove('dragging'); setTimeout(() => { strip._dragged = false; }, 0); }); }
 /* ============ folding ============ */
@@ -195,7 +198,7 @@ async function toMaps(){
     if(k > 0){ moves.push(anim(el, [{opacity: 1}, {opacity: 0}], {duration: 220, easing: 'ease-out'}).then(() => { el.style.opacity = '0'; setPose(el, p, 1); return fold(el, 0, 1); })); return; }
     const pt = topSlot(); p[0] = pt[0]; p[1] = pt[1]; p[2] = pt[2];
     moves.push(Promise.all([move(el, [p[0], p[1] - 26, p[2]], 1.0, 520, 0, 'cubic-bezier(.3,0,.3,1)').then(() => move(el, p, 1.0, 420, 0, 'cubic-bezier(.2,.7,.2,1)')), fold(el, 160, 560)])); });
-  await Promise.all(moves);
+  await Promise.allSettled(moves);
   /* the strip takes over: its covers sit exactly where the sheets landed */
   stripIn.classList.remove('landing'); sheets.forEach(el => { el.style.opacity = '0'; el.style.pointerEvents = 'none'; });
   busy = false;
@@ -2097,18 +2100,18 @@ function sakePaint(){ sakeEls(); const on = DRINKS[prefs.cup || ''] === 'sake', 
    below it, so the bottle's shadow falls on the cup as it passes. */
 const POUR = {"box": [1140.0, 50.0, 300.0], "rest": [1248.0, 146.0], "cup": [1331.0, 243.0], "at": {"rest": [1248.0, 146.0], "lift": [1280.5, 188.1], "t18": [1311.0, 221.2], "t36": [1296.6, 205.6], "t52": [1286.3, 194.4], "t64": [1280.5, 188.1], "s1": [1280.5, 188.1], "s2": [1280.5, 188.1]}, "frames": ["rest", "lift", "t18", "t36", "t52", "t64", "s1", "s2"]};
 const POUR_IMG = {};
-function pourEls(){ if($('potT')) return; const S = $('stage');
-  ['potT', 'potE'].forEach(id => { const im = document.createElement('img'); im.id = id; im.alt = ''; im.className = 'pot'; S.appendChild(im); });
-  POUR.frames.forEach(f => ['t', 'e'].forEach(l => { const im = new Image(); im.src = AS + 'sake/pour/' + f + '-' + l + '.webp'; POUR_IMG[f + l] = im; })); }
-function pourFrame(f){ $('potT').src = AS + 'sake/pour/' + f + '-t.webp'; $('potE').src = AS + 'sake/pour/' + f + '-e.webp'; }
-function pourMove(dx, dy, ms, k){ ['potT', 'potE'].forEach(id => { const el = $(id); el.style.transition = ms ? 'transform ' + ms + 'ms cubic-bezier(.45,.05,.35,1), opacity .2s ease' : 'none'; el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(' + (k || 1) + ')'; }); }
+function pourEls(){ if(document.querySelector('.pot')) return Promise.resolve(); const S = $('stage'), b = POUR.box, waits = [];
+  POUR.frames.filter(f => f !== 'rest').forEach(f => ['t', 'e'].forEach(l => { const im = document.createElement('img'); im.alt = ''; im.className = 'pot pot-' + l; im.dataset.f = f; im.decoding = 'sync';
+    Object.assign(im.style, {left: b[0] + 'px', top: b[1] + 'px', width: b[2] + 'px', height: b[2] + 'px', transformOrigin: (POUR.at.lift[0] - b[0]) + 'px ' + (POUR.at.lift[1] - b[1]) + 'px'});
+    im.src = AS + 'sake/pour/' + f + '-' + l + '.webp'; S.appendChild(im); waits.push(im.decode ? im.decode().catch(() => {}) : Promise.resolve()); }));
+  return Promise.all(waits); }
+function pourFrame(f){ document.querySelectorAll('.pot').forEach(im => im.classList.toggle('on', im.dataset.f === f)); }
+function pourMove(dx, dy, ms, k){ document.querySelectorAll('.pot').forEach(el => { el.style.transition = ms ? 'transform ' + ms + 'ms cubic-bezier(.45,.05,.35,1)' : 'none'; el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(' + (k || 1) + ')'; }); }
 /* the pour, step by step: lifted straight up (it comes a little nearer, its shadow slips away and softens); carried over to
    the cup; tilted toward it; poured while the cup fills and its surface ripples; tilted back; carried home; set down. */
-function sakePour(){ if(prefs.sakeFull || document.body.classList.contains('pouring')) return; pourEls(); const b = POUR.box, T = $('potT'), E = $('potE');
-  const o = [POUR.at.lift[0] - b[0], POUR.at.lift[1] - b[1]];
-  [T, E].forEach(el => Object.assign(el.style, {left: b[0] + 'px', top: b[1] + 'px', width: b[2] + 'px', height: b[2] + 'px', transformOrigin: o[0] + 'px ' + o[1] + 'px'}));
+async function sakePour(){ if(prefs.sakeFull || document.body.classList.contains('pouring')) return; document.body.classList.add('pouring'); await pourEls(); const b = POUR.box;
   const dx = POUR.rest[0] - POUR.at.lift[0], dy = POUR.rest[1] - POUR.at.lift[1], at = (ms, fn) => setTimeout(fn, ms), K = 1.06;
-  document.body.classList.add('pouring'); pourFrame('lift'); pourMove(dx, dy, 0, 1); T.classList.add('on'); E.classList.add('on');
+  pourMove(dx, dy, 0, 1); pourFrame('lift');
   at(30, () => { $('drinkT').classList.add('lifted'); $('drinkE').classList.add('lifted'); pourMove(dx, dy, 380, K); });
   at(430, () => pourMove(0, 0, 820, K));
   ['t18', 't36', 't52', 't64'].forEach((f, n) => at(1290 + n * 105, () => pourFrame(f)));
@@ -2119,7 +2122,7 @@ function sakePour(){ if(prefs.sakeFull || document.body.classList.contains('pour
   at(3800, () => pourMove(dx, dy, 820, K));
   at(4640, () => pourMove(dx, dy, 360, 1));
   at(4980, () => { $('drinkT').classList.remove('lifted'); $('drinkE').classList.remove('lifted'); });
-  at(5180, () => { T.classList.remove('on'); E.classList.remove('on'); document.body.classList.remove('pouring'); }); }
+  at(5180, () => { pourFrame(''); document.body.classList.remove('pouring'); }); }
 /* where the stream meets the sake, small rings spread over the cup's surface */
 function sakeRipple(on){ let r = $('sakeRipple'); if(!r){ r = document.createElement('div'); r.id = 'sakeRipple'; r.innerHTML = '<i></i><i></i><i></i>'; $('stage').appendChild(r); }
   Object.assign(r.style, {left: POUR.cup[0] + 'px', top: POUR.cup[1] + 'px'}); r.classList.toggle('on', !!on); }
@@ -2192,18 +2195,18 @@ const ART = {
   'woman-with-hat': {name: 'Woman with a Hat', year: '1905', who: 'Henri Matisse', how: 'Oil on canvas · 80.7 × 59.7 cm', folio: '64'},
   'udnie': {name: 'Udnie', year: '1913', who: 'Francis Picabia', how: 'Oil on canvas · 290 × 300 cm', folio: '71'}};
 const ART_KEYS = Object.keys(ART);
-function galleryEls(){ if($('galCard')) return; const S = $('stage');
-  const card = document.createElement('div'); card.id = 'galCard'; card.innerHTML = '<img alt="">'; S.appendChild(card);
-  const page = document.createElement('div'); page.id = 'galPage'; page.innerHTML = '<div class="gp-plate"><img alt=""><i class="gp-gloss"></i></div><p class="gp-who"></p><p class="gp-what"></p><p class="gp-how"></p><p class="gp-folio"></p>'; S.appendChild(page);
+function galleryEls(){ if($('galCard')) return; const S = $('stage'), DL = $('deskLayer') || S;
+  const card = document.createElement('div'); card.id = 'galCard'; card.innerHTML = '<img alt="">'; DL.appendChild(card);
+  const page = document.createElement('div'); page.id = 'galPage'; page.innerHTML = '<div class="gp-plate"><img alt=""><i class="gp-gloss"></i></div><p class="gp-who"></p><p class="gp-what"></p><p class="gp-how"></p><p class="gp-folio"></p>'; const pen = $('pen'); if(pen && pen.parentNode === DL) DL.insertBefore(page, pen); else DL.appendChild(page);
   const wr = document.createElement('img'); wr.id = 'wreath'; wr.alt = ''; ($('maps') || S).appendChild(wr); }
 function wreathLayer(){ const wr = $('wreath'), M = $('maps'); if(!wr || !M || wr.parentNode !== M) return; const zs = [...M.children].filter(e => e !== wr && e.style.zIndex !== '').map(e => +e.style.zIndex).sort((a, b) => b - a);
   const z = zs.length > 1 ? zs[1] : (zs[0] || 11) - 1; if(wr.style.zIndex !== String(z)) wr.style.zIndex = z; if(M.lastElementChild !== wr) M.appendChild(wr); }
 function galleryPaint(){ galleryEls(); const g = prefs.gal || {}, art = ART[prefs.art] ? prefs.art : 'starry-night', other = ART_KEYS[(ART_KEYS.indexOf(art) + 1) % ART_KEYS.length], A = ART[art];
   let own = null; try{ own = g.photo ? localStorage.getItem('pm:galPhoto') : null; }catch(e){}
-  const ci = $('galCard').querySelector('img'), cs = own || AS + 'art/' + other + '-card.jpg'; if(ci.getAttribute('src') !== cs) ci.src = cs; $('galCard').classList.toggle('own', !!own); $('galCard').classList.toggle('on', !!g.card);
+  const ci = $('galCard').querySelector('img'), cs = own || AS + 'art/' + art + '-card.jpg'; if(ci.getAttribute('src') !== cs) ci.src = cs; $('galCard').classList.toggle('own', !!own); $('galCard').classList.toggle('on', !!g.card);
   const pi = $('galPage').querySelector('img'), ps = AS + 'art/' + art + '.jpg'; if(pi.getAttribute('src') !== ps) pi.src = ps; const P_ = $('galPage'); P_.querySelector('.gp-who').textContent = A.who; P_.querySelector('.gp-what').textContent = A.name + ', ' + A.year; P_.querySelector('.gp-how').textContent = A.how; P_.querySelector('.gp-folio').textContent = A.folio; $('galPage').classList.toggle('on', !!g.page);
   document.body.classList.toggle('gal-page', !!g.page);
-  const wr = $('wreath'), ws = AS + 'season/wreath.webp?v=4'; if(prefs.season === 'christmas'){ if(wr.getAttribute('src') !== ws) wr.src = ws; wr.classList.add('on'); wreathLayer(); if(!FL.wreathT) FL.wreathT = setInterval(wreathLayer, 1500); } else { wr.classList.remove('on'); clearInterval(FL.wreathT); FL.wreathT = 0; }
+  const wr = $('wreath'), ws = AS + 'season/wreath.webp?v=5'; if(prefs.season === 'christmas'){ if(wr.getAttribute('src') !== ws) wr.src = ws; wr.classList.add('on'); wreathLayer(); if(!FL.wreathT) FL.wreathT = setInterval(wreathLayer, 1500); } else { wr.classList.remove('on'); clearInterval(FL.wreathT); FL.wreathT = 0; }
   document.querySelectorAll('.lk[data-gal]').forEach(b => b.classList.toggle('on', !!g[b.dataset.gal])); document.querySelectorAll('.lk[data-art]').forEach(b => b.classList.toggle('on', b.dataset.art === art));
   document.querySelectorAll('.lk[data-season]').forEach(b => b.classList.toggle('on', prefs.season === b.dataset.season)); }
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('.lk[data-gal], .lk[data-art], .lk[data-season]'); if(!b) return; e.stopPropagation();
@@ -2242,4 +2245,15 @@ async function galTurn(d, n, swap){ const P = $('galPage'), base = 'rotate(-2.5d
   if(d > 0) setTimeout(swap, dur * .8); else swap();
   await an.finished.catch(() => {}); if(d < 0) galFill(P, artFor(n)); L.remove(); galleryPaint(); }
 { const _gp = galleryPaint; galleryPaint = function(){ const r = _gp.apply(this, arguments); try{ const P = $('galPage'); if(P) galFill(P, artFor(NB.cur)); }catch(e){} return r; }; }
+
+/* My notebooks, in the Readings column: each notebook a row (its cover's colour, its name, how many pages); a tap opens it */
+function rNbksDraw(){ const el = $('rNbks'); if(!el) return; const js = (P && P.notebooks) ? P.notebooks() : [];
+  el.innerHTML = js.map(j => '<button class="tp nbk-row" data-nbk="' + esc(j.id) + '"><span><i class="nbk-dot" style="background:' + esc(j.color) + '"></i>' + esc(j.title) + '</span><em>' + j.pages + '</em></button>').join(''); }
+document.addEventListener('click', e => { const r = e.target.closest && e.target.closest('#rNbks [data-nbk]'); if(!r) return; e.stopPropagation(); if(P && P.openNotebook) P.openNotebook(r.dataset.nbk); });
+$('rNewNbk').addEventListener('click', e => { e.stopPropagation(); askInline({before: $('rNewNbk'), placeholder: 'Name the notebook'}).then(n => { if(!n || !P || !P.newNotebook) return; P.newNotebook(n); rNbksDraw(); }); });
+{ const _rr = renderReadings; renderReadings = function(){ const r = _rr.apply(this, arguments); try{ rNbksDraw(); }catch(e){} return r; }; }
+window.__pmNbksRefresh = () => { try{ rNbksDraw(); }catch(e){} };
+
+/* how many deleted papers keep your notes, shown beside Deleted papers on the Papers board */
+{ const _rp = renderPapers; renderPapers = function(){ const r = _rp.apply(this, arguments); try{ const n = P && P.deletedCount ? P.deletedCount() : 0; $('pbDelN').textContent = n || ''; }catch(e){} return r; }; }
 })();

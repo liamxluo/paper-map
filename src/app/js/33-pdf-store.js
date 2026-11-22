@@ -5,7 +5,7 @@
    Paper Map does so quietly when deleted PDFs have made it much bigger than what it holds. When it nears 1 GB, the next
    one (paper-map-pdfs-2, …) is used once you have made it; PDFs already kept stay where they are. */
 const PDF_REPO = 'paper-map-pdfs', PDF_FULL_KB = 900 * 1024;
-let PDF_PROBE_AT = 0, PDF_ROLL_AT = 0, PDF_ASKED = 0;
+let PDF_PROBE_AT = 0, PDF_ROLL_AT = 0, PDF_ASKED = 0, PDF_PROBING = null;
 function ghRepo(c, repo){ return repo && repo !== c.repo ? Object.assign({}, c, {repo}) : c; }
 function pdfRepoOf(c, e){ return ghRepo(c, e && e.pdf && e.pdf.repo); }
 async function ghRepoInfo(c, repo){ const pv = await ghIsPrivate(c, repo); if(pv === false){ ghSayPublic(repo); return null; } try{ const r = await fetch('https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(repo), {headers: ghHeaders(c)}); if(!r.ok) return null; const j = await r.json(); return j && j.permissions && j.permissions.push === false ? null : j; }catch(e){ return null; } }
@@ -23,9 +23,11 @@ async function ghEnsureRepo(c, name, about){ const have = await ghRepoInfo(c, na
 async function pdfTarget(c){ if(!c || c.kind === 'folder' || c.kind === 'dropbox') return c && c.repo;
   const st = lib.pdfStore;
   if(st && st.current){ if(Date.now() - PDF_ROLL_AT > 3600e3){ PDF_ROLL_AT = Date.now(); try{ await pdfRoll(c); }catch(e){} } return lib.pdfStore.current; }
+  if(PDF_PROBING) return PDF_PROBING;
   if(Date.now() - PDF_PROBE_AT < 600e3) return c.repo; PDF_PROBE_AT = Date.now();
-  let info = await ghRepoInfo(c, PDF_REPO); if(!info && await ghEnsureRepo(c, PDF_REPO, 'PDFs kept by Paper Map')) info = await ghRepoInfo(c, PDF_REPO); if(!info) return c.repo;
-  lib.pdfStore = {repos: [PDF_REPO], current: PDF_REPO}; touchLib(); setTimeout(() => { pdfMove().catch(() => {}); }, 4000); return PDF_REPO; }
+  PDF_PROBING = (async () => { let info = await ghRepoInfo(c, PDF_REPO); if(!info && await ghEnsureRepo(c, PDF_REPO, 'PDFs kept by Paper Map')) info = await ghRepoInfo(c, PDF_REPO); if(!info){ pdfSayWhy(c); return c.repo; }
+    lib.pdfStore = {repos: [PDF_REPO], current: PDF_REPO}; touchLib(); setTimeout(() => { pdfMove().catch(() => {}); }, 4000); return PDF_REPO; })();
+  try{ return await PDF_PROBING; } finally { PDF_PROBING = null; } }
 /* nearly full: the next one, if you have made it; if not, one short word a day */
 async function pdfRoll(c){ const st = lib.pdfStore, info = await ghRepoInfo(c, st.current); if(!info || (info.size || 0) < PDF_FULL_KB) return;
   const n = st.repos.length + 1, next = PDF_REPO + '-' + n, ok = (await ghRepoInfo(c, next)) || (await ghEnsureRepo(c, next, 'PDFs kept by Paper Map (' + n + ')'));
@@ -57,3 +59,11 @@ async function pdfTidy(){ const c = ghCfg(), st = lib.pdfStore; if(!c || !st) re
 if(!PREVIEW){ setTimeout(async () => { try{ const c = ghCfg(); if(c){ await pdfTarget(c); if(lib.pdfStore){ await pdfMove(); await pdfTidy(); } } }catch(e){} }, 25000); }
 /* the PDF reader and the upload, written before the start-up, reach these by name */
 Object.assign(window, {pdfTarget, ghRepo, pdfRepoOf, pdfMove, ghEnsureRepo, ghRepoInfo});
+
+/* PDFs that cannot go to a repository of their own go into the library's; you are told why, and what to do, once a day */
+function pdfSayWhy(c){ try{ const last = +(localStorage.getItem('pm:pdfWhy') || 0); if(Date.now() - last < 864e5) return; localStorage.setItem('pm:pdfWhy', String(Date.now()));
+    openModal({title: 'Your PDFs need a repository of their own', body: '<p>Paper Map keeps PDFs apart from your library, in a private repository named <b>' + PDF_REPO + '</b>, so the library stays small. Your token may not make that repository, so for now PDFs go into <b>' + esc(c.repo) + '</b>.</p><p>Either <a href="https://github.com/new?name=' + PDF_REPO + '&visibility=private" target="_blank" rel="noopener">make ' + PDF_REPO + ' (private)</a> and give your token access to it, or use a token for all repositories with Administration and Contents set to read and write. Paper Map then moves the PDFs already in ' + esc(c.repo) + ' over by itself.</p>', actions: [{label: 'OK', primary: true}]}); }catch(e){} }
+/* where each kind of thing is kept now, for the GitHub section of the cloud */
+function ghWhereKept(){ const c = ghCfg(); if(!c || c.kind === 'folder' || c.kind === 'dropbox') return ''; const pdf = (lib.pdfStore && lib.pdfStore.current) || null, notes = (lib.notesStore && lib.notesStore.current) || null;
+  return '<p class="hint gh-where">Library: <b>' + esc(c.repo) + '</b> · PDFs: <b>' + esc(pdf || c.repo) + '</b>' + (pdf ? '' : ' (no ' + PDF_REPO + ' yet)') + ' · Handwriting: <b>' + esc(notes || c.repo) + '</b>' + (notes ? '' : ' (no ' + NOTES_REPO + ' yet)') + '</p>'; }
+window.ghWhereKept = ghWhereKept;

@@ -1157,7 +1157,7 @@ body.lights-off #roomDark{opacity:1}
   background:linear-gradient(90deg,rgba(0,0,0,.16),rgba(0,0,0,.05) 7px,rgba(0,0,0,0) 22px),linear-gradient(115deg,rgba(255,255,255,0) 40%,rgba(255,255,255,.18) 52%,rgba(255,255,255,0) 64%),#F5F2EB;box-shadow:inset -1px 0 0 rgba(0,0,0,.06)}#galPage.on,#galLeaf.on{opacity:1}#galPage .gp-plate,#galLeaf .gp-plate{position:absolute;left:20px;right:14px;top:34px;overflow:hidden;box-shadow:0 0 0 .5px rgba(0,0,0,.25)}#galPage .gp-plate img,#galLeaf .gp-plate img{display:block;width:100%;filter:saturate(1.04) contrast(1.02)}#galPage .gp-gloss,#galLeaf .gp-gloss{position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.16) 46%,rgba(255,255,255,0) 60%);mix-blend-mode:screen}#galPage .gp-who,#galPage .gp-what,#galPage .gp-how,#galLeaf .gp-who,#galLeaf .gp-what,#galLeaf .gp-how{position:absolute;left:20px;right:14px;margin:0;color:#2B2623;font-family:var(--serif,'PMap Serif',Georgia,serif)}#galPage .gp-who,#galLeaf .gp-who{top:150px;font-size:6.2px;letter-spacing:.14em;text-transform:uppercase;color:#6B6259}#galPage .gp-what,#galLeaf .gp-what{top:159px;font-size:8.4px;font-style:italic}#galPage .gp-how,#galLeaf .gp-how{top:171px;font-size:5.8px;color:#7A7067}#galPage .gp-folio,#galLeaf .gp-folio{position:absolute;right:14px;bottom:14px;margin:0;font:400 6px var(--serif,'PMap Serif',Georgia,serif);color:#8A7F72}
 body.gal-page #pen{z-index:3}
 /* the season: the wreath at the top-left corner, its centre at the corner, so a quarter of it shows */
-#wreath{position:absolute;left:-312px;top:-444px;width:1000px;height:1000px;z-index:11;pointer-events:none;opacity:0;transition:opacity .6s ease}
+#wreath{position:absolute;left:0;top:0;width:600px;height:600px;z-index:11;pointer-events:none;opacity:0;transition:opacity .6s ease}
 #wreath.on{opacity:1}
 .lk.sm{padding:7px 11px;font-size:12.5px}
 .gal-pick{margin-top:-2px}
@@ -1165,9 +1165,9 @@ body.gal-page #pen{z-index:3}
 #galCard.own{width:190px}
 
 /* the pour: the lifted bottle above the cup; the standing one gives way while it is in the air */
-.pot{position:absolute;pointer-events:none;opacity:0;z-index:7;transition:opacity .18s ease}
-#potT{mix-blend-mode:multiply}
-#potE{mix-blend-mode:plus-lighter}
+.pot{position:absolute;pointer-events:none;opacity:0;z-index:7}
+.pot-t{mix-blend-mode:multiply}
+.pot-e{mix-blend-mode:plus-lighter}
 .pot.on{opacity:1}
 #drinkT.lifted,#drinkE.lifted{opacity:0 !important;transition:opacity .18s ease}
 body.pouring #pourSvg{display:none}
@@ -1201,3 +1201,8 @@ body.gal-page #memoNext,body.gal-page #memoPrev,body.gal-page .note-pager{z-inde
 .lk.art{padding:3px;border-radius:8px;aspect-ratio:1}
 .lk.art img{width:100%;height:100%;object-fit:cover;border-radius:5px;display:block}
 .lk.art.on{box-shadow:0 0 0 2px #231E1A}
+
+#panel{max-height:calc(100vh - 116px);max-height:calc(100dvh - 116px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+
+/* a notebook's row: a small spine in its cover's colour before its name */
+.nbk-row .nbk-dot{display:inline-block;width:9px;height:13px;margin-right:11px;border-radius:1.5px 3px 3px 1.5px;vertical-align:-1px;box-shadow:inset 2px 0 0 rgba(0,0,0,.28),0 1px 2px rgba(0,0,0,.25)}

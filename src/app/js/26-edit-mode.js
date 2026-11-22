@@ -560,15 +560,17 @@ function deleteEntry(id, after, quick){
   if(!e) return;
   const kids = e.kind === 'concept' ? (IDX.children[id] || []) : [];
   const name = e.kind === 'concept' ? 'concept “' + e.t + '”' : '“' + e.t + '”';
-  (quick && e.kind !== 'concept' ? confirmSimple : confirmDanger)('Delete ' + (e.kind === 'concept' ? 'concept' : 'paper'), 'Delete ' + name + '? Its lines are deleted too' + (kids.length ? ', along with its ' + kids.length + ' readings' : '') + '.' + (e.pdf ? ' Its PDF stays in your GitHub repository.' : ''), 'Delete', () => {
+  (quick && e.kind !== 'concept' ? confirmSimple : confirmDanger)('Delete ' + (e.kind === 'concept' ? 'concept' : 'paper'), 'Delete ' + name + '? Its lines are deleted too' + (kids.length ? ', along with its ' + kids.length + ' readings' : '') + '.' + ' ' + (e.pdf && !e.pdf.zotero && /^pdfs\//.test(e.pdf.path || '') ? 'Its PDF is removed from GitHub. ' : '') + 'Your notes, highlights, quotes and handwriting on it are kept in Deleted papers, on the Papers board, where you can bring it back.', 'Delete', () => {
     const before = clone(lib), stBefore = clone(status);
+    lib.deletedPapers = lib.deletedPapers || {}; [id].concat(kids).forEach(k => { const x = lib.entries[k]; if(x && x.kind !== 'concept') lib.deletedPapers[k] = Object.assign(clone(x), {deletedAt: Date.now(), st: status[keyOf(x)] || null}); });
     [id].concat(kids).forEach(k => { const x = lib.entries[k]; if(x) delete status[keyOf(x)]; delete lib.entries[k]; });
     statusTime = Date.now(); persistStatus();
     Object.values(lib.entries).forEach(x => { if(x.needs) x.needs = x.needs.filter(c => c !== id); });
     lib.links = lib.links.filter(l => l[0] !== id && l[1] !== id && !kids.includes(l[0]) && !kids.includes(l[1]));
     if(ui.selected === id) ui.selected = null;
     reindex(); touchAllTopics(); renderAll(); if(after) try{ after(); }catch(err){}
-    toast('Deleted ' + name, () => { lib = before; status = stBefore; statusTime = Date.now(); persistStatus(); reindex(); touchAllTopics(); renderAll(); toast('Undone'); });
+    toast('Deleted ' + name + ' · your notes on it are kept', () => { lib = before; status = stBefore; statusTime = Date.now(); persistStatus(); reindex(); touchAllTopics(); renderAll(); toast('Undone'); });
+    const gone = [id].concat(kids); setTimeout(() => { try{ papersDropPdfs(gone); }catch(err){} }, 15000);
   }, deletionWarning([id].concat(kids)));
 }
 function deleteSub(sid){
@@ -926,8 +928,10 @@ function ghSectionHTML(){
     '<button type="button" class="btn" id="ghPull"' + (has ? '' : ' disabled') + '>Load from GitHub</button>' +
     '<button type="button" class="btn" id="ghSaveNow"' + (has ? '' : ' disabled') + '>Save to GitHub now</button>' +
     (has ? '<button type="button" class="btn" id="ghMove">Move to a new repository…</button>' : '') +
+    (has ? '<button type="button" class="btn" id="ghBring">Bring files from another repository…</button>' : '') +
     '<button type="button" class="btn" id="ghHistoryBtn"' + (has ? '' : ' disabled') + '>Earlier versions</button>' +
     '<button type="button" class="btn" id="ghForgetBtn"' + (has ? '' : ' disabled') + '>Disconnect</button></div>' +
+    (has && typeof ghWhereKept === 'function' ? ghWhereKept() : '') +
     '<p class="hint">Status: <span data-save-state>' + esc(has ? saveStateText() : 'Not connected') + '</span>' + (has ? ' · ' + esc(g.owner + '/' + g.repo) : '') + '</p>' + (has ? tokenLineHTML(Object.assign({}, g)) : '') + '<p class="form-error" id="ghFormErr" hidden></p></div>';
 }
 let ghTokenExpHeader = null;
@@ -942,6 +946,7 @@ function wireGhSection(b){
   if(!b.querySelector('#ghConnect')) return;   /* the preview has no sync form */
   const err = msg => { const el = b.querySelector('#ghFormErr'); el.hidden = !msg; el.textContent = msg || ''; };
   { const mv = b.querySelector('#ghMove'); if(mv) mv.addEventListener('click', () => { closeModal(); ghMoveAsk(); }); }
+  { const br = b.querySelector('#ghBring'); if(br) br.addEventListener('click', () => { closeModal(); ghBringAsk(); }); }
   const go = b.querySelector('#ghConnect');
   go.addEventListener('click', async () => {
     const repo = b.querySelector('#ghRepo').value.trim();
@@ -972,7 +977,8 @@ function wireGhSection(b){
     const tokenSame = old.token === token;
     const tokenExp = !tokenSame ? (ghTokenExpHeader || Date.now() + 366 * 864e5) : (old.tokenExp || ghTokenExpHeader || Date.now() + 366 * 864e5);
     const tokenExpKnown = !tokenSame ? !!ghTokenExpHeader : (old.tokenExpKnown || !!ghTokenExpHeader);
-    ghStore({owner, repo, branch, path, token, tokenExp, tokenExpKnown, sha: same ? old.sha || null : null, dirty: same ? !!old.dirty : false, lastSyncedAt: same ? old.lastSyncedAt || 0 : 0});
+    const moved = !!(old.repo && old.repo !== repo && (old.owner || owner) === owner), prevRepos = [...new Set((moved ? [old.repo] : []).concat(old.prevRepos || []))].slice(0, 6);
+    ghStore({owner, repo, branch, path, token, tokenExp, tokenExpKnown, sha: same ? old.sha || null : null, dirty: same ? !!old.dirty : false, lastSyncedAt: same ? old.lastSyncedAt || 0 : 0, prevRepos, bringFrom: moved ? old.repo : (old.bringFrom || null), broughtFrom: moved ? null : (old.broughtFrom || null)});
     b.querySelector('#ghSaveNow').disabled = false; b.querySelector('#ghForgetBtn').disabled = false; b.querySelector('#ghPull').disabled = false; b.querySelector('#ghHistoryBtn').disabled = false;
     if(!tokenSame && !ghTokenExpHeader) askTokenExpiry(() => ghLoad()); else ghLoad();
   });
@@ -1054,3 +1060,28 @@ function resetBuiltin(){
   });
 }
 
+
+/* ===================== deleted papers: what you wrote is kept =====================
+   A paper you delete leaves your maps, but everything you wrote on it stays: notes, highlights, quotes, stickers,
+   handwriting. Its PDF (one Paper Map keeps on GitHub, not one from Zotero) is removed fifteen seconds later, once the
+   chance to undo has passed, unless another paper uses the same file. Bring a paper back from here, copy its notes, or
+   delete it for good, which is the only way its notes go. */
+async function papersDropPdfs(ids){ const c = ghCfg(); if(!c || c.kind === 'folder' || c.kind === 'dropbox') return; let changed = false;
+  for(const k of ids){ if(lib.entries[k]) continue; const d = (lib.deletedPapers || {})[k]; if(!d || !d.pdf || d.pdfGone) continue; const p = d.pdf.path || '';
+    if(d.pdf.zotero || !/^pdfs\//.test(p) || Object.values(lib.entries).some(e => e.pdf && e.pdf.path === p)) continue;
+    try{ const cR = pdfRepoOf(c, d), sha = await ghPathSha(cR, p); if(sha){ const r = await ghDeletePath(cR, p, sha, 'The PDF of a deleted paper'); if(!r.ok) continue; } d.pdfGone = true; changed = true; }catch(e){} }
+  if(changed) touchLib(); }
+function deletedPapersOpen(){ const D = lib.deletedPapers || {}, list = Object.values(D).sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+  const txt = x => String(x || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const row = d => { const notes = txt(d.n), parts = []; if((d.marks || []).length) parts.push(d.marks.length + ' highlights'); if((d.quotes || []).length) parts.push(d.quotes.length + ' quotes'); if((d.stickies || []).length) parts.push(d.stickies.length + ' stickers'); if(d.ink || d.inkRef) parts.push('handwriting');
+    return '<div class="del-row" data-del="' + esc(d.id) + '"><div class="del-t"><b>' + esc(d.t || 'Untitled') + '</b>' + (d.y ? ' <span>' + esc(String(d.y)) + '</span>' : '') + '</div>' +
+      '<p class="del-n">' + (notes ? esc(notes.slice(0, 160)) + (notes.length > 160 ? '…' : '') : '<i>No notes</i>') + '</p><p class="del-k">' + esc(['Deleted ' + new Date(d.deletedAt || Date.now()).toLocaleDateString()].concat(parts).join(' · ')) + (d.pdfGone ? ' · its PDF was removed' : '') + '</p>' +
+      '<div class="del-a"><button type="button" class="btn" data-dela="back">Bring back</button><button type="button" class="btn" data-dela="copy">Copy notes</button><button type="button" class="btn danger" data-dela="forget">Delete for good</button></div></div>'; };
+  openModal({title: 'Deleted papers', body: list.length ? '<div class="del-list">' + list.map(row).join('') + '</div>' : '<p>Nothing here. When you delete a paper, what you wrote on it is kept here.</p>', actions: [{label: 'Done', primary: true}]});
+  const m = document.querySelector('.del-list'); if(!m) return;
+  m.addEventListener('click', ev => { const b = ev.target.closest('[data-dela]'); if(!b) return; const id = b.closest('[data-del]').dataset.del, d = (lib.deletedPapers || {})[id]; if(!d) return; const k = b.dataset.dela;
+    if(k === 'back'){ const e = clone(d); const st = e.st; delete e.deletedAt; delete e.st; if(e.pdfGone){ delete e.pdf; } delete e.pdfGone; lib.entries[e.id] = e; if(st){ status[keyOf(e)] = st; statusTime = Date.now(); persistStatus(); } delete lib.deletedPapers[id];
+      reindex(); touchAllTopics(); renderAll(); touchLib(); closeModal(); toast('Brought back “' + (e.t || 'the paper') + '”' + (d.pdfGone ? '; attach its PDF again if you need it' : '')); }
+    else if(k === 'copy'){ const t = [d.t, txt(d.n)].concat((d.quotes || []).map(q => '“' + txt(q.text || q.t || q) + '”')).filter(Boolean).join('\n\n'); try{ navigator.clipboard.writeText(t); toast('Notes copied'); }catch(e){ toast('Could not copy'); } }
+    else if(k === 'forget'){ if(!confirm('Delete “' + (d.t || 'this paper') + '” for good, with its notes?')) return; delete lib.deletedPapers[id]; touchLib(); closeModal(); deletedPapersOpen(); } }); }
+Object.assign(window, {deletedPapersOpen, papersDropPdfs});
