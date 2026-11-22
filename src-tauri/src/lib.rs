@@ -281,6 +281,18 @@ fn upload_bytes(request: tauri::ipc::Request<'_>) -> Result<String, String> {
     Ok(body)
 }
 
+/// Lets you choose a folder with the Mac's own window; returns its path, or nothing if you cancel.
+#[tauri::command]
+fn pick_folder(prompt: Option<String>) -> Result<Option<String>, String> {
+    let p = prompt.unwrap_or_else(|| "Choose a folder".into()).replace('"', "'");
+    let out = std::process::Command::new("/usr/bin/osascript")
+        .arg("-e").arg(format!("POSIX path of (choose folder with prompt \"{}\")", p))
+        .output().map_err(|e| e.to_string())?;
+    if !out.status.success() { return Ok(None); }
+    let s = String::from_utf8_lossy(&out.stdout).trim().trim_end_matches('/').to_string();
+    Ok(if s.is_empty() { None } else { Some(s) })
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -288,6 +300,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             fetch_bytes,
             upload_bytes,
+            pick_folder,
             fs_stat,
             fs_read,
             fs_write,

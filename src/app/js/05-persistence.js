@@ -1,5 +1,5 @@
 /* ===================== persistence ===================== */
-function touchLib(){
+function touchLib(){ try{ if(window.copySoon && window.copyPlace && window.copyPlace()) window.copySoon(30000); }catch(e){}
   if(undoSlot && !undoSlot.fresh && !undoing) clearUndo();
   lib.updatedAt = Date.now();
   const okLs = lsSet(LS.lib, lib); idbSaveSoon();
@@ -9,6 +9,8 @@ function touchLib(){
 /* the browser keeps the library in IndexedDB as well, with no 5 MB limit; localStorage stays a quick copy while it fits */
 let idbT = null;
 function idbSaveSoon(){ if(PREVIEW || !window.__pmdb) return; clearTimeout(idbT); idbT = setTimeout(() => { try{ window.__pmdb.set('rl:lib', {updatedAt: lib.updatedAt || Date.now(), lib}); }catch(e){} }, 400); }
+function idbFlush(){ if(PREVIEW || !window.__pmdb || !idbT) return; clearTimeout(idbT); idbT = null; try{ window.__pmdb.set('rl:lib', {updatedAt: lib.updatedAt || Date.now(), lib}); }catch(e){} }
+addEventListener('pagehide', idbFlush); document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') idbFlush(); });
 function touchAllTopics(){ touchLib(); }
 function persistStatus(){ lsSet(LS.status, {map:status, updatedAt:statusTime}); ghMark(); }
 /* opts.remote === false: view state only (zoom, sidebar), not committed to GitHub */

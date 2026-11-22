@@ -13,3 +13,4 @@ Third-party parts keep their own licences:
 This product includes foliate-js (https://github.com/johnfactotum/foliate-js), Copyright (c) 2022 John Factotum, MIT License (assets/vendor/foliate/LICENSE), with zip.js (BSD 3-Clause) and fflate (MIT).
 It includes pdf.js (https://mozilla.github.io/pdf.js/), Apache License 2.0 (assets/vendor/pdfjs/LICENSE).
 - pdf-lib, which writes your marks into a copy of a PDF: MIT License, Copyright (c) 2019 Andrew Dillon.
+- perfect-freehand, which shapes handwritten strokes: MIT License, Copyright (c) 2021 Stephen Ruiz Ltd.

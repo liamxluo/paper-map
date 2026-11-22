@@ -230,6 +230,7 @@ function mergeLibs(base, here, there){
   };
   const build = () => {
     const L = Object.assign({}, Lh);
+    Object.keys(Rt || {}).forEach(k => { if(['entries', 'links', 'topics', 'tags', 'readings', 'readingCats', 'notebooks', 'status', 'minds', 'branches', 'title'].includes(k)) return; if(stableJSON(Lh[k]) === stableJSON(B[k])) L[k] = Rt[k]; });
     L.entries = maps.entries;
     L.links = orderLike(maps.links, Lh.links, Rt.links, lk);
     L.topics = orderLike(maps.topics, Lh.topics, Rt.topics, idk);
@@ -472,9 +473,12 @@ async function ghSaveNow(){
   const c3 = ghCfg();
   if(ok && (gh.again || (c3 && c3.dirty))){ gh.again = false; clearTimeout(gh.timer); gh.timer = setTimeout(ghSave, 1200); }
   else gh.again = false;
+  if(ok) gh.backoff = 0;
+  else if(!asked){ const c4 = ghCfg(); if(c4 && c4.dirty){ gh.backoff = Math.min((gh.backoff || 30000) * 2, 600000); clearTimeout(gh.timer); gh.timer = setTimeout(ghSave, gh.backoff); } }
   if(ok) ghNotesSoon();
   if(ok && c.kind === 'folder') fsCheckCopiesSoon();
 }
+addEventListener('online', () => { const c = ghCfg(); if(c && c.dirty && !gh.busy){ gh.backoff = 0; ghSave(); } });
 function ghForget(){
   clearTimeout(gh.timer);
   try{ localStorage.removeItem(GH_KEY); }catch(e){}
@@ -484,10 +488,15 @@ function ghForget(){
 /* ===================== big files as attachments of a release in the data repository =====================
    GitHub keeps files up to 100 MB in a repository, and keeps them in its history for good. A release's attachments may be
    up to 2 GB each and stay outside the history, so Paper Map keeps big books there, in one release named "Book files". */
+/* the books' files live as attachments of releases in the data repository. GitHub takes up to 1000 files in one release
+   (each under 2 GB, with no limit on the total), so when one is nearly full the next is opened: Book files, Book files 2, … */
 async function ghFilesRelease(c){ const base = 'https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo);
-  let r = await fetch(base + '/releases/tags/paper-map-files', {headers: ghHeaders(c)}); if(r.ok) return await r.json();
-  r = await fetch(base + '/releases', {method: 'POST', headers: ghHeaders(c, {'Content-Type': 'application/json'}), body: JSON.stringify({tag_name: 'paper-map-files', name: 'Book files', body: 'Files Paper Map keeps for your books. Not a version.', prerelease: true})});
-  if(!r.ok) throw new Error('Could not make the place for big files on GitHub (' + r.status + ')'); return await r.json(); }
+  for(let n = 1; n < 100; n++){ const tag = n === 1 ? 'paper-map-files' : 'paper-map-files-' + n;
+    const r = await fetch(base + '/releases/tags/' + tag, {headers: ghHeaders(c)});
+    if(r.ok){ const rel = await r.json(); if((rel.assets || []).length < 990) return rel; continue; }
+    const m = await fetch(base + '/releases', {method: 'POST', headers: ghHeaders(c, {'Content-Type': 'application/json'}), body: JSON.stringify({tag_name: tag, name: n === 1 ? 'Book files' : 'Book files ' + n, body: 'Files Paper Map keeps for your books. Not a version.', prerelease: true})});
+    if(!m.ok) throw new Error('Could not make the place for book files on GitHub (' + m.status + ')'); return await m.json(); }
+  throw new Error('No room for more book files'); }
 async function ghAssetPut(c, name, file){ const rel = await ghFilesRelease(c); const safe = String(name).replace(/[^A-Za-z0-9._-]+/g, '-').slice(-120);
   /* GitHub's upload address and its file storage do not let a page reach them across sites: in the Mac app the system sends and fetches */
   if(window.__TAURI__ && window.__TAURI__.core){ const up = 'https://uploads.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + '/releases/' + rel.id + '/assets?name=' + encodeURIComponent(safe);

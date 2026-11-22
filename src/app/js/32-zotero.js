@@ -216,7 +216,9 @@ let ZT_COPYING = false;
 async function ztKeepPdfs(){ if(ZT_COPYING || !(window.__TAURI__ && window.__TAURI__.core)) return; const c = ghCfg(), zc = ztCfg(); if(!c || !zc) return; ZT_COPYING = true;
   try{ const todo = Object.values(lib.entries).filter(e => e.kind === 'paper' && e.pdf && (e.pdf.zotero || /^zotero:/.test(e.pdf.path || '')) && !(e.pdf.path || '').startsWith('pdfs/'));
     for(const e of todo){ try{ const zk = e.pdf.zotero || e.pdf.path.slice(7); const blob = await ztFileBlob(zc, zk, e.pdf.name, e.pdf.zpath); if(!blob || blob.size > 95 * 1048576) continue;
-        const path = 'pdfs/' + e.id + '.pdf', content = await fileToBase64(blob);
-        const sha = await ghSerial(async () => { let r = await ghPutPath(c, path, content, 'PDF: ' + (e.t || e.id), null); if(r.status === 409 || r.status === 422){ const known = await ghPathSha(c, path); r = await ghPutPath(c, path, content, 'PDF: ' + (e.t || e.id), known); } if(!r.ok) throw {status: r.status}; const j = await r.json(); return j && j.content && j.content.sha; });
-        e.pdf = {path, name: e.pdf.name || (e.t + '.pdf'), size: blob.size, sha: sha || null, zotero: zk}; touchLib([e.topic]); await new Promise(r => setTimeout(r, 400)); }catch(err){} } }
+        const path = 'pdfs/' + e.id + '.pdf', content = await fileToBase64(blob), to = await pdfTarget(c), cT = ghRepo(c, to);
+        const sha = await ghSerial(async () => { let r = await ghPutPath(cT, path, content, 'PDF: ' + (e.t || e.id), null); if(r.status === 409 || r.status === 422){ const known = await ghPathSha(cT, path); r = await ghPutPath(cT, path, content, 'PDF: ' + (e.t || e.id), known); } if(!r.ok) throw {status: r.status}; const j = await r.json(); return j && j.content && j.content.sha; });
+        e.pdf = {path, name: e.pdf.name || (e.t + '.pdf'), size: blob.size, sha: sha || null, zotero: zk}; if(to !== c.repo) e.pdf.repo = to; touchLib([e.topic]); await new Promise(r => setTimeout(r, 400)); }catch(err){} } }
   finally{ ZT_COPYING = false; } }
+/* the code before the start-up (the PDF reader among it) reaches these by name: they are put where it can see them */
+window.ztCfg = ztCfg; window.ztFileBlob = ztFileBlob;

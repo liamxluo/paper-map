@@ -175,7 +175,9 @@ async function pdfUrl(e){
   let bytes;
   if(c.kind === 'dropbox' || c.kind === 'folder'){ bytes = await remoteBytes(c, e.pdf.path); if(!bytes) throw {status: 404}; }
   else{
-    const r = await fetch(ghPathUrl(c, e.pdf.path) + ghRef(c), {headers: ghHeaders(c, {'Accept':'application/vnd.github.raw+json'})});
+    const cR = pdfRepoOf(c, e); let r = await fetch(ghPathUrl(cR, e.pdf.path) + (cR === c ? ghRef(c) : '?_=' + Date.now()), {headers: ghHeaders(cR, {'Accept':'application/vnd.github.raw+json'})});
+    if(r.status === 404){ const alts = [c.repo].concat((lib.pdfStore && lib.pdfStore.repos) || []).filter((x, i, a) => x !== cR.repo && a.indexOf(x) === i);
+      for(const repo of alts){ const cA = ghRepo(c, repo), r2 = await fetch(ghPathUrl(cA, e.pdf.path) + '?_=' + Date.now(), {headers: ghHeaders(cA, {'Accept':'application/vnd.github.raw+json'})}); if(r2.ok){ r = r2; break; } } }
     if(!r.ok) throw {status: r.status};
     bytes = await r.arrayBuffer();
   }
@@ -193,16 +195,16 @@ async function attachPdf(id, file){
   const pane = document.getElementById('readerPdf');
   if(reader.id === id) pane.innerHTML = '<p class="pdf-msg">Uploading the PDF to your repository…</p>';
   try{
-    const content = await fileToBase64(file);
+    const content = await fileToBase64(file), to = await pdfTarget(c), cT = ghRepo(c, to);
     const sha = await ghSerial(async () => {
-      let known = e.pdf && e.pdf.path === path ? e.pdf.sha : null;
-      let r = await ghPutPath(c, path, content, 'PDF: ' + (e.t || id), known);
-      if(r.status === 409 || r.status === 422){ known = await ghPathSha(c, path); r = await ghPutPath(c, path, content, 'PDF: ' + (e.t || id), known); }
+      let known = e.pdf && e.pdf.path === path && (e.pdf.repo || c.repo) === to ? e.pdf.sha : null;
+      let r = await ghPutPath(cT, path, content, 'PDF: ' + (e.t || id), known);
+      if(r.status === 409 || r.status === 422){ known = await ghPathSha(cT, path); r = await ghPutPath(cT, path, content, 'PDF: ' + (e.t || id), known); }
       if(!r.ok) throw {status: r.status};
       const j = await r.json();
       return j && j.content && j.content.sha;
     });
-    e.pdf = {path, name: file.name, size: file.size, sha: sha || null};
+    e.pdf = {path, name: file.name, size: file.size, sha: sha || null}; if(to !== c.repo) e.pdf.repo = to;
     touchLib([e.topic]);
     toast('PDF attached');
   }catch(err){ toast(err && err.status === 413 ? 'This PDF is too large for GitHub' : ghErr(err)); }
@@ -212,7 +214,7 @@ function removePdf(id){
   const e = lib.entries[id];
   if(!e || !e.pdf) return;
   confirmDanger('Remove PDF', 'Remove the PDF from “' + e.t + '”? It is deleted from your GitHub repository; earlier versions stay in its history.', 'Remove', async () => {
-    const c = ghCfg(), pdf = e.pdf;
+    const c0 = ghCfg(), pdf = e.pdf, c = c0 ? pdfRepoOf(c0, e) : null;
     if(c){
       try{
         await ghSerial(async () => {

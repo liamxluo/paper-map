@@ -67,6 +67,10 @@ window.pmDesk = {
     catch(err){ const st = err && err.status, fromZ = (e.pdf.zotero || /^zotero:/.test(e.pdf.path || '')) && !(e.pdf.path || '').startsWith('pdfs/');
       PDF_WHY = st === 'nozotero' ? 'Zotero is not connected on this device; connect it in the Mac app' : fromZ && !window.__TAURI__ ? 'Zotero keeps this PDF; it opens in the Mac app' : st === 'nogh' ? 'no library is set up on this device' : st === 404 ? 'the file is not in your library' : String(st || (err && err.message) || 'unknown').slice(0, 80);
       return null; } },
+  copyCfg(){ return copyCfg(); },
+  setCopyCfg(p){ return copySetCfg(p); },
+  async pickFolder(){ try{ return await window.__TAURI__.core.invoke('pick_folder', {prompt: 'Choose the folder for a copy of your files'}); }catch(e){ return null; } },
+  isMac(){ return !!window.__TAURI__; },
   pdfWhy(){ const w = (typeof ZT_WHY === 'string' && ZT_WHY) || PDF_WHY, l = typeof ZT_LOG !== 'undefined' && ZT_LOG.length ? ' — ' + ZT_LOG.join(' › ') : ''; return (w || (lib.entries && '')) + l + (w || l ? '' : 'path ' + ''); },
   over(kind, r){ const fake = {getBoundingClientRect: () => ({left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.right - r.left, height: r.bottom - r.top, x: r.left, y: r.top}), classList: {add(){}, remove(){}, toggle(){}, contains(){ return false; }}, closest: () => null};
     document.documentElement.classList.add('pm-overdesk'); if(kind === 'note') atlasNote(fake); else if(kind === 'sync') atlasSync(fake); },
@@ -142,11 +146,11 @@ window.pmDesk = {
   bookPlace(){ return bookPlace(); }, setBookPlace(v){ try{ v ? localStorage.setItem('pm:bookPlace', v) : localStorage.removeItem('pm:bookPlace'); }catch(e){} }, async bookPlaces(){ if(!window.__TAURI__) return null; try{ return await window.__TAURI__.core.invoke('storage_places'); }catch(e){ return null; } },
   paperLinks(id){ const seen = new Set(); return (lib.links || []).filter(l => l[0] === id || l[1] === id).map(l => l[0] === id ? l[1] : l[0]).filter(x => lib.entries[x] && !seen.has(x) && seen.add(x)).map(x => lib.entries[x].t || ''); },
   paperRead(id){ const e = lib.entries[id]; if(!e) return null; return {n: e.n || '', marks: clone(e.marks || []), quotes: clone(e.quotes || []), stickies: clone(e.stickies || []), at: e.readAt || 0}; },
-  setPaperStickies(id, arr){ const e = lib.entries[id]; if(!e || PREVIEW) return; e.stickies = arr; touchLib(); },
+  setPaperStickies(id, arr){ const e = lib.entries[id]; if(!e || PREVIEW) return; e.stickies = clone(arr || []); touchLib(); },
   setPaperNotes(id, md){ const e = lib.entries[id]; if(!e || PREVIEW) return; if((e.n || '') === md) return; e.n = md; touchLib(); },
-  setPaperMarks(id, marks){ const e = lib.entries[id]; if(!e || PREVIEW) return; e.marks = marks; touchLib(); },
+  setPaperMarks(id, marks){ const e = lib.entries[id]; if(!e || PREVIEW) return; e.marks = clone(marks || []); touchLib(); },
   addPaperQuote(id, q){ const e = lib.entries[id]; if(!e || PREVIEW) return; e.quotes = (e.quotes || []).concat([q]); touchLib(); },
-  setPaperAt(id, page){ const e = lib.entries[id]; if(!e || PREVIEW || e.readAt === page) return; e.readAt = page; clearTimeout(DK.atT); DK.atT = setTimeout(touchLib, 1500); },
+  setPaperAt(id, page){ const e = lib.entries[id]; if(!e || PREVIEW || e.readAt === page) return; e.readAt = page; clearTimeout(DK.atT); DK.atT = setTimeout(() => { DK.atT = null; touchLib(); }, 1500); },
   async attachPaperPdf(id, file){ await attachPdf(id, file); return !!(lib.entries[id] && lib.entries[id].pdf); },
   setPdfPage(id, n){ const e = lib.entries[id]; if(!e || PREVIEW) return; if(n) e.pdfPage = n; else delete e.pdfPage; touchLib(); },
   paper(id){ const e = lib.entries[id]; if(!e || e.kind !== 'paper') return null;
@@ -340,7 +344,7 @@ async function atlasPdfCheck(box){
   const res = box.querySelector('#atlPdfRes'), c = ghCfg(); if(!res || !c) return; res.textContent = 'Checking…';
   let files; try{ files = await atlasPdfList(c); }catch(e){ res.textContent = 'Could not look just now. Try again in a moment.'; return; }
   const have = new Map(files.map(f => [f.path, f])), refd = new Set();
-  const missing = Object.values(lib.entries).filter(e => e.pdf && e.pdf.path && (refd.add(e.pdf.path), !have.has(e.pdf.path)));
+  const missing = Object.values(lib.entries).filter(e => e.pdf && e.pdf.path && !e.pdf.repo && !/^zotero:/.test(e.pdf.path) && (refd.add(e.pdf.path), !have.has(e.pdf.path)));
   const loose = files.filter(f => !refd.has(f.path));
   /* Paper Map names a paper's PDF after the paper; such a file with no paper was left by a deleted paper. Any other file is yours: it stays. */
   const orphan = loose.filter(f => /^[A-Za-z0-9_-]+\.pdf$/.test(f.name) && !lib.entries[f.name.replace(/\.pdf$/, '')]), unlinked = loose.filter(f => !orphan.includes(f));
@@ -574,7 +578,7 @@ function atlasCardHTML(e){
 
 window.__pmAtlasCard = atlasCardHTML;
 /* for the automated tests only: ?pmtest in the address opens a door to the library */
-if(/[?&]pmtest\b/.test(location.search)) window.__pm = {lib: () => lib, touchLib, ghLoad, ghSaveNow, ui: () => ui, open: {entry: id => openEntryForm(id || null), topic: () => openTopicForm(), settings: () => openSettings(), tags: () => openTagManager(), reader: id => openReader(id), select: id => select(id), big: id => openBigCard(id, document.getElementById('info')), exportD: () => openExport(), importD: () => openImport(), lens: id => openLens(id), branch: () => openBranchForm(null)}};
+if(/[?&]pmtest\b/.test(location.search)) window.__pm = {lib: () => lib, touchLib, render: () => renderAll(), pdf: {attach: attachPdf, url: pdfUrl, target: pdfTarget, move: pdfMove, cfg: () => ghCfg(), reprobe: () => { PDF_PROBE_AT = 0; }}, ghLoad, ghSaveNow, ui: () => ui, open: {entry: id => openEntryForm(id || null), topic: () => openTopicForm(), settings: () => openSettings(), tags: () => openTagManager(), reader: id => openReader(id), select: id => select(id), big: id => openBigCard(id, document.getElementById('info')), exportD: () => openExport(), importD: () => openImport(), lens: id => openLens(id), branch: () => openBranchForm(null)}};
 const PDF_JS = 'assets/vendor/pdfjs/';
 let pdfJsLoading = null, thumbQueue = Promise.resolve();
 function loadPdfJs(){
@@ -672,6 +676,8 @@ document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'hidden'){ if(c.dirty && !gh.busy) ghSave(); }
   else if(!c.dirty && !gh.busy && modal.root.hidden) ghLoad();
 });
+const atFlush = () => { if(DK.atT){ clearTimeout(DK.atT); DK.atT = null; touchLib(); } };
+addEventListener('pagehide', atFlush); document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') atFlush(); });
 window.addEventListener('beforeunload', ev => {
   const c = ghCfg();
   if(c && (c.dirty || gh.busy)){ ev.preventDefault(); ev.returnValue = ''; }
