@@ -1144,32 +1144,60 @@ body.lights-off #roomDark{opacity:1}
 @keyframes smoke{0%{stroke-dashoffset:180;opacity:.9}35%{opacity:.7}100%{stroke-dashoffset:0;opacity:0;transform:translate(6px,-18px)}}
 /* the light switches in the Look panel */
 .lt-opts{display:flex;gap:8px;margin-bottom:6px}
-.lt{all:unset;display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:12px;font:600 13.5px var(--sans);color:var(--ink,#231E1A);background:rgba(35,30,26,.06);cursor:pointer;transition:background .15s ease,transform .12s ease}
-.lt:hover{background:rgba(35,30,26,.10)}
-.lt:active{transform:scale(.95)}
-.lt i{width:9px;height:9px;border-radius:50%;background:#B9B0A4;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
-.lt.on i{background:#F0B24A;box-shadow:0 0 8px rgba(240,178,74,.8)}
+.lk{all:unset;display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:12px;font:600 13.5px var(--sans);color:var(--ink,#231E1A);background:rgba(35,30,26,.06);cursor:pointer;transition:background .15s ease,transform .12s ease}
+.lk:hover{background:rgba(35,30,26,.10)}
+.lk:active{transform:scale(.95)}
+.lk i{width:9px;height:9px;border-radius:50%;background:#B9B0A4;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.lk.on i{background:#F0B24A;box-shadow:0 0 8px rgba(240,178,74,.8)}
 
 /* the gallery: the postcard by the notebook, the print taped on the research log's right page */
 #galCard{position:absolute;left:318px;top:30px;width:206px;z-index:1;transform:rotate(-6deg);opacity:0;pointer-events:none;transition:opacity .5s ease;box-shadow:0 1px 1px rgba(0,0,0,.35),6px 9px 12px rgba(10,4,2,.45)}
 #galCard img{display:block;width:100%}
-#galCard.on{opacity:1}
-#galPage{position:absolute;left:923.9px;top:21.6px;width:183px;height:289px;transform:rotate(-2.5deg);z-index:2;pointer-events:none;opacity:0;transition:opacity .5s ease;border-radius:0 2px 2px 0;
-  background:linear-gradient(90deg,rgba(0,0,0,.16),rgba(0,0,0,.05) 7px,rgba(0,0,0,0) 22px),linear-gradient(115deg,rgba(255,255,255,0) 40%,rgba(255,255,255,.18) 52%,rgba(255,255,255,0) 64%),#F5F2EB;box-shadow:inset -1px 0 0 rgba(0,0,0,.06)}
-#galPage.on{opacity:1}
-#galPage .gp-plate{position:absolute;left:20px;right:14px;top:34px;overflow:hidden;box-shadow:0 0 0 .5px rgba(0,0,0,.25)}
-#galPage .gp-plate img{display:block;width:100%;filter:saturate(1.04) contrast(1.02)}
-#galPage .gp-gloss{position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.16) 46%,rgba(255,255,255,0) 60%);mix-blend-mode:screen}
-#galPage .gp-who,#galPage .gp-what,#galPage .gp-how{position:absolute;left:20px;right:14px;margin:0;color:#2B2623;font-family:var(--serif,'PMap Serif',Georgia,serif)}
-#galPage .gp-who{top:150px;font-size:6.2px;letter-spacing:.14em;text-transform:uppercase;color:#6B6259}
-#galPage .gp-what{top:159px;font-size:8.4px;font-style:italic}
-#galPage .gp-how{top:171px;font-size:5.8px;color:#7A7067}
-#galPage .gp-folio{position:absolute;right:14px;bottom:14px;margin:0;font:400 6px var(--serif,'PMap Serif',Georgia,serif);color:#8A7F72}
+#galCard.on{opacity:1}#galPage,#galLeaf{position:absolute;left:923.9px;top:21.6px;width:183px;height:289px;transform:rotate(-2.5deg);z-index:2;pointer-events:none;opacity:0;transition:opacity .5s ease;border-radius:0 2px 2px 0;
+  background:linear-gradient(90deg,rgba(0,0,0,.16),rgba(0,0,0,.05) 7px,rgba(0,0,0,0) 22px),linear-gradient(115deg,rgba(255,255,255,0) 40%,rgba(255,255,255,.18) 52%,rgba(255,255,255,0) 64%),#F5F2EB;box-shadow:inset -1px 0 0 rgba(0,0,0,.06)}#galPage.on,#galLeaf.on{opacity:1}#galPage .gp-plate,#galLeaf .gp-plate{position:absolute;left:20px;right:14px;top:34px;overflow:hidden;box-shadow:0 0 0 .5px rgba(0,0,0,.25)}#galPage .gp-plate img,#galLeaf .gp-plate img{display:block;width:100%;filter:saturate(1.04) contrast(1.02)}#galPage .gp-gloss,#galLeaf .gp-gloss{position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.16) 46%,rgba(255,255,255,0) 60%);mix-blend-mode:screen}#galPage .gp-who,#galPage .gp-what,#galPage .gp-how,#galLeaf .gp-who,#galLeaf .gp-what,#galLeaf .gp-how{position:absolute;left:20px;right:14px;margin:0;color:#2B2623;font-family:var(--serif,'PMap Serif',Georgia,serif)}#galPage .gp-who,#galLeaf .gp-who{top:150px;font-size:6.2px;letter-spacing:.14em;text-transform:uppercase;color:#6B6259}#galPage .gp-what,#galLeaf .gp-what{top:159px;font-size:8.4px;font-style:italic}#galPage .gp-how,#galLeaf .gp-how{top:171px;font-size:5.8px;color:#7A7067}#galPage .gp-folio,#galLeaf .gp-folio{position:absolute;right:14px;bottom:14px;margin:0;font:400 6px var(--serif,'PMap Serif',Georgia,serif);color:#8A7F72}
 body.gal-page #pen{z-index:3}
 /* the season: the wreath at the top-left corner, its centre at the corner, so a quarter of it shows */
-#wreath{position:absolute;left:-300px;top:-300px;width:600px;height:600px;z-index:1;pointer-events:none;opacity:0;transition:opacity .6s ease}
+#wreath{position:absolute;left:-312px;top:-444px;width:1000px;height:1000px;z-index:11;pointer-events:none;opacity:0;transition:opacity .6s ease}
 #wreath.on{opacity:1}
-.lt.sm{padding:7px 11px;font-size:12.5px}
+.lk.sm{padding:7px 11px;font-size:12.5px}
 .gal-pick{margin-top:-2px}
 
 #galCard.own{width:190px}
+
+/* the pour: the lifted bottle above the cup; the standing one gives way while it is in the air */
+.pot{position:absolute;pointer-events:none;opacity:0;z-index:7;transition:opacity .18s ease}
+#potT{mix-blend-mode:multiply}
+#potE{mix-blend-mode:plus-lighter}
+.pot.on{opacity:1}
+#drinkT.lifted,#drinkE.lifted{opacity:0 !important;transition:opacity .18s ease}
+body.pouring #pourSvg{display:none}
+
+/* while pouring, the cup fills slowly rather than at once */
+body.pouring .sake-i.full{transition:opacity 1.5s ease-in-out}
+#sakeRipple{position:absolute;width:0;height:0;z-index:6;pointer-events:none}
+#sakeRipple i{position:absolute;left:-15px;top:-15px;width:30px;height:30px;border-radius:50%;box-shadow:0 0 0 .8px rgba(255,250,235,.55),inset 0 0 0 .6px rgba(255,250,235,.25);mix-blend-mode:screen;opacity:0;transform:scale(.15)}
+#sakeRipple.on i{animation:sakeRing 1.1s ease-out infinite}
+#sakeRipple.on i:nth-child(2){animation-delay:.37s}
+#sakeRipple.on i:nth-child(3){animation-delay:.74s}
+@keyframes sakeRing{0%{opacity:.75;transform:scale(.15)}100%{opacity:0;transform:scale(1)}}
+
+/* a candle put away fades from the desk; Candlelight has nothing to light when both are away */
+.cdl-i{transition:opacity .6s ease}
+.cdl-i.away{opacity:0 !important}
+.lk.off{opacity:.38;pointer-events:none}
+
+body:not(.st-desk):not(.st-note) .flame{opacity:0 !important;transition:opacity .3s ease}
+body:not(.st-desk):not(.st-note) #wreath{opacity:0 !important}
+
+/* the turning leaf of the art book: hinged at the gutter, one face, shading as it lifts */
+#galLeaf{transform-origin:0% 50%;transform-style:flat;z-index:3;box-shadow:-2px 4px 12px rgba(20,10,4,.22)}
+#galLeaf .leaf-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(20,12,6,.55),rgba(20,12,6,.18) 60%,rgba(20,12,6,.05));opacity:0;pointer-events:none}
+#galLeaf::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.16),rgba(0,0,0,0) 30%,rgba(255,255,255,.06) 70%,rgba(0,0,0,.08));pointer-events:none}
+/* the research log's page arrows stay above the art-book page */
+body.gal-page #memoNext,body.gal-page #memoPrev,body.gal-page .note-pager{z-index:6;position:relative}
+
+/* the paintings to choose from: small plates in a row */
+.art-pick{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:2px 0 8px}
+.lk.art{padding:3px;border-radius:8px;aspect-ratio:1}
+.lk.art img{width:100%;height:100%;object-fit:cover;border-radius:5px;display:block}
+.lk.art.on{box-shadow:0 0 0 2px #231E1A}

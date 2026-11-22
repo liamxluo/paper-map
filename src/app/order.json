@@ -46,6 +46,8 @@
     "33-pdf-store.js",
     "34-copy-folder.js",
     "35-notes-store.js",
+    "36-notebooks.js",
+    "37-move-repo.js",
     "30-the-desk.js"
   ]
 }

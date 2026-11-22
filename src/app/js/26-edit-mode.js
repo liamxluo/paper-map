@@ -925,6 +925,7 @@ function ghSectionHTML(){
     '<div class="set-actions"><button type="button" class="btn primary" id="ghConnect">' + (has ? 'Save and reload' : 'Connect') + '</button>' +
     '<button type="button" class="btn" id="ghPull"' + (has ? '' : ' disabled') + '>Load from GitHub</button>' +
     '<button type="button" class="btn" id="ghSaveNow"' + (has ? '' : ' disabled') + '>Save to GitHub now</button>' +
+    (has ? '<button type="button" class="btn" id="ghMove">Move to a new repository…</button>' : '') +
     '<button type="button" class="btn" id="ghHistoryBtn"' + (has ? '' : ' disabled') + '>Earlier versions</button>' +
     '<button type="button" class="btn" id="ghForgetBtn"' + (has ? '' : ' disabled') + '>Disconnect</button></div>' +
     '<p class="hint">Status: <span data-save-state>' + esc(has ? saveStateText() : 'Not connected') + '</span>' + (has ? ' · ' + esc(g.owner + '/' + g.repo) : '') + '</p>' + (has ? tokenLineHTML(Object.assign({}, g)) : '') + '<p class="form-error" id="ghFormErr" hidden></p></div>';
@@ -940,6 +941,7 @@ async function ghWhoAmI(token){
 function wireGhSection(b){
   if(!b.querySelector('#ghConnect')) return;   /* the preview has no sync form */
   const err = msg => { const el = b.querySelector('#ghFormErr'); el.hidden = !msg; el.textContent = msg || ''; };
+  { const mv = b.querySelector('#ghMove'); if(mv) mv.addEventListener('click', () => { closeModal(); ghMoveAsk(); }); }
   const go = b.querySelector('#ghConnect');
   go.addEventListener('click', async () => {
     const repo = b.querySelector('#ghRepo').value.trim();
@@ -966,6 +968,7 @@ function wireGhSection(b){
       if(pv === false) return err('The repository ' + repo + ' is public. Paper Map saves only to private repositories: make it private on GitHub (Settings › General › Change visibility), then Connect.'); }
     go.textContent = 'Save and reload';
     const same = old.owner === owner && old.repo === repo && old.branch === branch && old.path === path;
+    if(!same && old.repoId){ const o2 = Object.assign({}, old); delete o2.repoId; lsSet(GH_KEY, o2); }
     const tokenSame = old.token === token;
     const tokenExp = !tokenSame ? (ghTokenExpHeader || Date.now() + 366 * 864e5) : (old.tokenExp || ghTokenExpHeader || Date.now() + 366 * 864e5);
     const tokenExpKnown = !tokenSame ? !!ghTokenExpHeader : (old.tokenExpKnown || !!ghTokenExpHeader);
@@ -984,7 +987,8 @@ function wireGhSection(b){
   });
 }
 async function exportBackup(){
-  const payload = JSON.stringify(snapshot(), null, 1);
+  try{ await nsHydrate(); }catch(e){}
+  const payload = JSON.stringify(Object.assign(snapshot(), {lib}), null, 1);
   const fname = 'paper-map-' + new Date().toISOString().slice(0, 10) + '.json';
   {
     try{

@@ -296,12 +296,12 @@ let bgFront = 'A';
    So a drink looks right on any desk, and the ice or the leaves move the same on all of them. */
 const VESSELS = {};
 const DRINKS = {'': 'espresso', espresso: 'espresso', heart: 'espresso', tea: 'espresso', greentea: 'espresso', osmanthus: 'osmanthus', longjing: 'longjing', whisky: 'whisky', teaglass: 'teaglass', flowerice: 'flowerice', bluegin: 'bluegin', sakurahigh: 'sakurahigh', oldfashioned: 'oldfashioned', yuzusour: 'yuzusour', matcha: 'matcha', mulled: 'mulled', sake: 'sake'};
-const DRINK_BOX = {espresso: [1080, 0, 360], osmanthus: [1080, 0, 360], longjing: [1080, 0, 360], whisky: [1160, 0, 280], teaglass: [1160, 0, 280], flowerice: [1125, -35, 350], bluegin: [1125, -35, 350], sakurahigh: [1125, -35, 350], oldfashioned: [1125, -35, 350], yuzusour: [1125, -35, 350], matcha: [1125, -35, 350], mulled: [1125, -35, 350], sake: [1145, 50, 240]};
+const DRINK_BOX = {espresso: [1080, 0, 360], osmanthus: [1080, 0, 360], longjing: [1080, 0, 360], whisky: [1160, 0, 280], teaglass: [1160, 0, 280], flowerice: [1125, -35, 350], bluegin: [1125, -35, 350], sakurahigh: [1125, -35, 350], oldfashioned: [1125, -35, 350], yuzusour: [1125, -35, 350], matcha: [1125, -35, 350], mulled: [1125, -35, 350], sake: [1140, 50, 300]};
 const drinkOn = () => true;
 function paintDrink(){ const k = DRINKS[prefs.cup || ''] || 'espresso', bx = DRINK_BOX[k], T = $('drinkT'), E = $('drinkE'); if(!T || !E) return;
   const Lf = $('drinkL'); if(Lf){ Object.assign(Lf.style, {left: bx[0] + 'px', top: bx[1] + 'px', width: bx[2] + 'px', height: bx[2] + 'px'}); if(k === 'teaglass'){ const s2 = AS + 'drink-teaglass-l.webp'; if(Lf.getAttribute('src') !== s2){ Lf.onload = () => Lf.classList.add('on'); Lf.src = s2; } else Lf.classList.add('on'); } else Lf.classList.remove('on'); }
   [T, E].forEach((el, n) => { Object.assign(el.style, {left: bx[0] + 'px', top: bx[1] + 'px', width: bx[2] + 'px', height: bx[2] + 'px'});
-    const src = k === 'sake' ? AS + 'sake/tokkuri' + (n ? '-e' : '-t') + '.webp' : AS + 'drink-' + k + (n ? '-e' : '-t') + '.webp'; el.onerror = () => el.classList.remove('on');
+    const src = k === 'sake' ? AS + 'sake/pour/rest' + (n ? '-e' : '-t') + '.webp' : AS + 'drink-' + k + (n ? '-e' : '-t') + '.webp'; el.onerror = () => el.classList.remove('on');
     if(el.getAttribute('src') !== src){ el.classList.remove('on'); el.onload = () => el.classList.add('on'); el.src = src; } else el.classList.add('on'); }); }
 const paintDrinkAnim = paintDrink;
 function setWood(v, instant){ prefs.wood = v; document.querySelectorAll('.wd').forEach(w => w.classList.toggle('on', w.dataset.wood === v));
@@ -701,6 +701,7 @@ async function memoTurn(d){ const n = NB.cur + d; if(n < 0 || n > NB_MAX - 1 || 
   while(NB.pages.length <= n) NB.pages.push({text: '', date: null, edited: null});
   if(reduce){ NB.cur = n; memoShow(); nbSave(); if(state === 'note') caretEnd(); return; }
   turning = true; memoText.blur();
+  if(document.body.classList.contains('gal-page')){ await galTurn(d, n, () => { NB.cur = n; memoShow(); }); nbSave(); turning = false; if(state === 'note') caretEnd(); return; }
   const cv = $('curl'); await curlImgs();
   const box = cv.getBoundingClientRect(), k = Math.max(1, (box.width || 1) / (2 * CW + 2 * CM)) * (window.devicePixelRatio || 1);
   cv.width = Math.round((2 * CW + 2 * CM) * k); cv.height = Math.round((CH + 2 * CM) * k);
@@ -2091,13 +2092,37 @@ function sakePaint(){ sakeEls(); const on = DRINKS[prefs.cup || ''] === 'sake', 
   [['sakeT', '-t'], ['sakeE', '-e'], ['sakeFT', '-full-t'], ['sakeFE', '-full-e']].forEach(([id, suf]) => { const im = $(id), src = base + suf + '.webp'; Object.assign(im.style, {left: SAKE.x - SAKE.off + 'px', top: SAKE.y - SAKE.off + 'px', width: SAKE.box + 'px', height: SAKE.box + 'px'}); if(im.getAttribute('src') !== src) im.src = src; im.classList.toggle('on', on); });
   document.body.classList.toggle('sake-full', !!prefs.sakeFull); $('sakeHit').style.display = on ? '' : 'none';
   const box = $('sakeCups'); if(box){ box.hidden = !on; if(on){ box.querySelectorAll('img[data-src]').forEach(im => { im.src = im.dataset.src; im.removeAttribute('data-src'); }); box.querySelectorAll('[data-sakecup]').forEach(b => b.classList.toggle('on', b.dataset.sakecup === key)); const sel = box.querySelector('[data-sakecup="' + key + '"]'); $('sakeCupName').textContent = sel ? '· ' + sel.title : ''; } } }
-function sakePour(){ if(prefs.sakeFull) return; const svg = $('pourSvg'), bx = 1218, by = 112, cx = SAKE.x - 4, cy = SAKE.y - 2;
-  const d = 'M' + bx + ' ' + by + ' Q ' + ((bx + cx) / 2 + 26) + ' ' + ((by + cy) / 2 - 30) + ' ' + cx + ' ' + cy;
-  svg.innerHTML = '<path class="pour-glow" d="' + d + '"/><path class="pour" d="' + d + '"/><circle class="ripple" cx="' + cx + '" cy="' + cy + '" r="3"/><circle class="ripple r2" cx="' + cx + '" cy="' + cy + '" r="3"/>';
-  document.body.classList.add('pouring'); $('drinkT').classList.add('tilt'); $('drinkE').classList.add('tilt');
-  setTimeout(() => { prefs.sakeFull = true; savePrefs(); document.body.classList.add('sake-full'); }, 420);
-  setTimeout(() => { document.body.classList.remove('pouring'); $('drinkT').classList.remove('tilt'); $('drinkE').classList.remove('tilt'); }, 1500);
-  setTimeout(() => { if(!document.body.classList.contains('pouring')) svg.innerHTML = ''; }, 2600); }
+/* the pour: the tokkuri is lifted off the desk and carried over the cup, tilts toward it, pours (a thin stream into the cup,
+   which fills), tilts back and is set down where it stood. Each moment is a rendered frame of the bottle alone; the cup is
+   below it, so the bottle's shadow falls on the cup as it passes. */
+const POUR = {"box": [1140.0, 50.0, 300.0], "rest": [1248.0, 146.0], "cup": [1331.0, 243.0], "at": {"rest": [1248.0, 146.0], "lift": [1280.5, 188.1], "t18": [1311.0, 221.2], "t36": [1296.6, 205.6], "t52": [1286.3, 194.4], "t64": [1280.5, 188.1], "s1": [1280.5, 188.1], "s2": [1280.5, 188.1]}, "frames": ["rest", "lift", "t18", "t36", "t52", "t64", "s1", "s2"]};
+const POUR_IMG = {};
+function pourEls(){ if($('potT')) return; const S = $('stage');
+  ['potT', 'potE'].forEach(id => { const im = document.createElement('img'); im.id = id; im.alt = ''; im.className = 'pot'; S.appendChild(im); });
+  POUR.frames.forEach(f => ['t', 'e'].forEach(l => { const im = new Image(); im.src = AS + 'sake/pour/' + f + '-' + l + '.webp'; POUR_IMG[f + l] = im; })); }
+function pourFrame(f){ $('potT').src = AS + 'sake/pour/' + f + '-t.webp'; $('potE').src = AS + 'sake/pour/' + f + '-e.webp'; }
+function pourMove(dx, dy, ms, k){ ['potT', 'potE'].forEach(id => { const el = $(id); el.style.transition = ms ? 'transform ' + ms + 'ms cubic-bezier(.45,.05,.35,1), opacity .2s ease' : 'none'; el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(' + (k || 1) + ')'; }); }
+/* the pour, step by step: lifted straight up (it comes a little nearer, its shadow slips away and softens); carried over to
+   the cup; tilted toward it; poured while the cup fills and its surface ripples; tilted back; carried home; set down. */
+function sakePour(){ if(prefs.sakeFull || document.body.classList.contains('pouring')) return; pourEls(); const b = POUR.box, T = $('potT'), E = $('potE');
+  const o = [POUR.at.lift[0] - b[0], POUR.at.lift[1] - b[1]];
+  [T, E].forEach(el => Object.assign(el.style, {left: b[0] + 'px', top: b[1] + 'px', width: b[2] + 'px', height: b[2] + 'px', transformOrigin: o[0] + 'px ' + o[1] + 'px'}));
+  const dx = POUR.rest[0] - POUR.at.lift[0], dy = POUR.rest[1] - POUR.at.lift[1], at = (ms, fn) => setTimeout(fn, ms), K = 1.06;
+  document.body.classList.add('pouring'); pourFrame('lift'); pourMove(dx, dy, 0, 1); T.classList.add('on'); E.classList.add('on');
+  at(30, () => { $('drinkT').classList.add('lifted'); $('drinkE').classList.add('lifted'); pourMove(dx, dy, 380, K); });
+  at(430, () => pourMove(0, 0, 820, K));
+  ['t18', 't36', 't52', 't64'].forEach((f, n) => at(1290 + n * 105, () => pourFrame(f)));
+  for(let n = 0; n < 14; n++) at(1720 + n * 110, () => pourFrame(n % 2 ? 's2' : 's1'));
+  at(1760, () => { sakeRipple(true); prefs.sakeFull = true; savePrefs(); document.body.classList.add('sake-full'); });
+  at(3260, () => sakeRipple(false));
+  ['t64', 't52', 't36', 't18', 'lift'].forEach((f, n) => at(3280 + n * 100, () => pourFrame(f)));
+  at(3800, () => pourMove(dx, dy, 820, K));
+  at(4640, () => pourMove(dx, dy, 360, 1));
+  at(4980, () => { $('drinkT').classList.remove('lifted'); $('drinkE').classList.remove('lifted'); });
+  at(5180, () => { T.classList.remove('on'); E.classList.remove('on'); document.body.classList.remove('pouring'); }); }
+/* where the stream meets the sake, small rings spread over the cup's surface */
+function sakeRipple(on){ let r = $('sakeRipple'); if(!r){ r = document.createElement('div'); r.id = 'sakeRipple'; r.innerHTML = '<i></i><i></i><i></i>'; $('stage').appendChild(r); }
+  Object.assign(r.style, {left: POUR.cup[0] + 'px', top: POUR.cup[1] + 'px'}); r.classList.toggle('on', !!on); }
 function sakeSip(){ prefs.sakeFull = false; savePrefs(); document.body.classList.remove('sake-full'); }
 { const _pd = paintDrink; paintDrink = function(){ const r = _pd.apply(this, arguments); try{ sakePaint(); }catch(e){} return r; }; }
 document.addEventListener('click', e => { const c = e.target.closest && e.target.closest('[data-sakecup]'); if(c){ e.stopPropagation(); prefs.sakeCup = c.dataset.sakecup; prefs.sakeFull = false; savePrefs(); sakePaint(); return; }
@@ -2107,21 +2132,25 @@ document.addEventListener('click', e => { const c = e.target.closest && e.target
    A tortoiseshell glass jar with two wicks, and a lustre glass votive. Their flames live: they breathe and flicker as real
    flames do, never in a loop you could see; a candle you tap goes out with a curl of smoke, and lights again when tapped.
    Room light off: the desk falls into the dark and only the candles light it, the jar's light dappled by its spots. */
-const CANDLES = [{"id": "A", "kind": "tortoise", "x": 1253.8, "y": 369.9, "box": 150, "off": 75.0, "wicks": [[72.2, 73.3], [95.0, 74.7]], "tex": 940, "light": "tortoise", "hit": 46}, {"id": "B", "kind": "ribbed", "x": 596.8, "y": 103.0, "box": 124, "off": 62.0, "wicks": [[61.9, 61.6]], "tex": 760, "light": "plain", "hit": 34}];
+const CANDLES = [{"id": "A", "kind": "tortoise", "x": 1280, "y": 402, "box": 360, "off": 180.0, "wicks": [[129.3, 149.5], [151.2, 150.9]], "tex": 940, "light": "tortoise", "hit": 46}, {"id": "B", "kind": "ribbed", "x": 640, "y": 142, "box": 300, "off": 150.0, "wicks": [[110.0, 120.0]], "tex": 760, "light": "plain", "hit": 34}];
 const FL = {raf: 0, t0: performance.now(), flames: [], tex: {}};
 function candleEls(){ if($('candleA_T')) return; const L = $('deskLayer'), S = $('stage');
   CANDLES.forEach(c => { ['T', 'E'].forEach(k => { const im = document.createElement('img'); im.id = 'candle' + c.id + '_' + k; im.alt = ''; im.className = 'cdl-i ' + (k === 'T' ? 'm' : 'p'); Object.assign(im.style, {left: c.x - c.off + 'px', top: c.y - c.off + 'px', width: c.box + 'px', height: c.box + 'px'}); L.appendChild(im); });
     const hit = document.createElement('div'); hit.className = 'cdl-hit'; hit.dataset.candle = c.id; const hw = c.wicks.reduce((a, w) => [a[0] + w[0] / c.wicks.length, a[1] + w[1] / c.wicks.length], [0, 0]), hr = c.hit || 46; Object.assign(hit.style, {left: c.x - c.off + hw[0] - hr + 'px', top: c.y - c.off + hw[1] - hr + 'px', width: hr * 2 + 'px', height: hr * 2 + 'px'}); hit.title = 'Light, or blow out'; S.appendChild(hit);
-    c.wicks.forEach((w, i) => { const f = document.createElement('div'); f.className = 'flame'; f.innerHTML = '<i class="glow"></i><i class="halo"></i><i class="core"></i>'; const fx = c.x - c.off + w[0], fy = c.y - c.off + w[1]; Object.assign(f.style, {left: fx + 'px', top: fy + 'px'}); f.style.setProperty('--ang', (Math.atan2(fy - 450, fx - 720) * 180 / Math.PI - 90).toFixed(1) + 'deg'); f.style.setProperty('--el', (1 + Math.hypot(fx - 720, fy - 450) / 900).toFixed(2)); S.appendChild(f);
+    c.wicks.forEach((w, i) => { const f = document.createElement('div'); f.className = 'flame'; f.innerHTML = '<i class="glow"></i><i class="halo"></i><i class="core"></i>'; const fx = c.x - c.off + w[0], fy = c.y - c.off + w[1]; Object.assign(f.style, {left: fx + 'px', top: fy + 'px'}); S.appendChild(f);
       FL.flames.push({el: f, c, ph: Math.random() * 100, ph2: Math.random() * 100, walk: 0, gust: 0}); });
     const tx = new Image(); tx.src = AS + 'candle-' + (c.light === 'plain' ? 'plain' : c.kind) + '-light.webp'; FL.tex[c.id] = tx; });
   const cv = document.createElement('canvas'); cv.id = 'roomDark'; cv.width = 720; cv.height = 450; S.appendChild(cv);
   S.addEventListener('click', e => { const h = e.target.closest && e.target.closest('.cdl-hit'); if(!h) return; e.stopPropagation(); const c = CANDLES.find(x => x.id === h.dataset.candle); const st = candleState(); st[c.id] = !st[c.id]; prefs.cdl = st; savePrefs(); if(!st[c.id]) candleSmoke(c); candlePaint(); }); }
-function candleState(){ const s = Object.assign({A: true, B: true}, prefs.cdl || {}); return s; }
+function candleState(){ const s = Object.assign({A: true, B: true}, prefs.cdl || {}), away = prefs.cdlAway || {}; CANDLES.forEach(c => { if(away[c.id]) s[c.id] = false; }); return s; }
+function candleHere(c){ return !(prefs.cdlAway || {})[c.id]; }
 function candlePaint(){ candleEls(); const st = candleState(), dark = prefs.lights === 'off';
   CANDLES.forEach(c => { const lit = !!st[c.id], base = AS + 'candle-' + c.kind + (lit ? '-lit' : ''); ['T', 'E'].forEach(k => { const im = $('candle' + c.id + '_' + k), src = base + (k === 'T' ? '-t' : '-e') + '.webp'; if(im.getAttribute('src') !== src){ im.onload = () => im.classList.add('on'); im.src = src; } else im.classList.add('on'); }); });
   FL.flames.forEach(f => f.el.classList.toggle('lit', !!st[f.c.id]));
-  document.body.classList.toggle('lights-off', dark); document.querySelectorAll('.lt').forEach(b => b.classList.toggle('on', b.dataset.light === 'room' ? !dark : CANDLES.some(c => st[c.id])));
+  CANDLES.forEach(c => { const here = candleHere(c); ['T', 'E'].forEach(k => $('candle' + c.id + '_' + k).classList.toggle('away', !here)); const h = document.querySelector('.cdl-hit[data-candle="' + c.id + '"]'); if(h) h.style.display = here ? '' : 'none'; });
+  document.querySelectorAll('.lk[data-cdlaway]').forEach(b => b.classList.toggle('on', candleHere(CANDLES.find(c => c.id === b.dataset.cdlaway) || {})));
+  const none = CANDLES.every(c => !candleHere(c)); document.querySelectorAll('.lk[data-light="candles"]').forEach(b => b.classList.toggle('off', none));
+  document.body.classList.toggle('lights-off', dark); document.querySelectorAll('.lk[data-light]').forEach(b => b.classList.toggle('on', b.dataset.light === 'room' ? !dark : CANDLES.some(c => st[c.id])));
   const any = CANDLES.some(c => st[c.id]); if(any || dark){ if(!FL.raf) FL.raf = requestAnimationFrame(flicker); } }
 /* a flame's life: a slow breath, a quicker tremble, a random walk, and now and then a gust that bends and dims it */
 function flicker(now){ FL.raf = 0; const st = candleState(), dark = prefs.lights === 'off', vis = typeof state === 'undefined' || state === 'desk' || state === 'maps' || state === 'note';
@@ -2138,9 +2167,12 @@ function flicker(now){ FL.raf = 0; const st = candleState(), dark = prefs.lights
   if((anyLit || dark) && vis) FL.raf = requestAnimationFrame(flicker); else if(anyLit || dark) setTimeout(() => { if(!FL.raf) FL.raf = requestAnimationFrame(flicker); }, 600); }
 function candleSmoke(c){ const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'smoke'); svg.setAttribute('viewBox', '0 0 80 140'); Object.assign(svg.style, {left: c.x - c.off + c.wicks[0][0] - 40 + 'px', top: c.y - c.off + c.wicks[0][1] - 128 + 'px'});
   svg.innerHTML = c.wicks.map((w, i) => '<path d="M' + (40 + (w[0] - c.wicks[0][0])) + ' 128 C ' + (30 + i * 8) + ' 100, ' + (52 - i * 6) + ' 80, ' + (38 + i * 4) + ' 50 S ' + (46 + i * 3) + ' 18, ' + (36 + i * 6) + ' 2"/>').join(''); $('stage').appendChild(svg); setTimeout(() => svg.remove(), 2600); }
-document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('.lt'); if(!b) return; e.stopPropagation();
+document.addEventListener('click', e => { const p = e.target.closest && e.target.closest('.lk[data-cdlaway]'); if(!p) return; e.stopPropagation();
+  const id = p.dataset.cdlaway, c = CANDLES.find(x => x.id === id), away = Object.assign({}, prefs.cdlAway || {}), st = candleState();
+  if(!away[id] && st[id]) candleSmoke(c); away[id] = !away[id]; prefs.cdlAway = away; if(!away[id]){ const s2 = Object.assign({}, prefs.cdl || {}); s2[id] = true; prefs.cdl = s2; } savePrefs(); candlePaint(); });
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('.lk[data-light]'); if(!b) return; e.stopPropagation();
   if(b.dataset.light === 'room'){ prefs.lights = prefs.lights === 'off' ? 'on' : 'off'; }
-  else { const st = candleState(), any = CANDLES.some(c => st[c.id]); CANDLES.forEach(c => { if(any && st[c.id]) candleSmoke(c); st[c.id] = !any; }); prefs.cdl = st; }
+  else { const st = candleState(), here = CANDLES.filter(candleHere), any = here.some(c => st[c.id]); if(!here.length) return; here.forEach(c => { if(any && st[c.id]) candleSmoke(c); st[c.id] = !any; }); prefs.cdl = Object.assign({}, prefs.cdl || {}, st); }
   savePrefs(); candlePaint(); });
 try{ candlePaint(); sakePaint(); }catch(e){}
 try{ if(/[?&]pmtest\b/.test(location.search + (parent && parent.location ? parent.location.search : ''))) window.__candles = {CANDLES, FL, candlePaint, sakePour, sakeSip, sakePaint, prefs}; }catch(e){}
@@ -2150,20 +2182,31 @@ try{ if(/[?&]pmtest\b/.test(location.search + (parent && parent.location ? paren
    research log's right page in place of the sketch, with a line of the painting's name in your hand. Both can be on or off,
    and the painting chosen (Van Gogh: The Starry Night, Wheat Field with Cypresses; both 1889, public domain).
    Christmas: a large wreath at the top-left corner, only its quarter showing, lying over the back map. */
-const ART = {'starry-night': {name: 'The Starry Night', by: 'Van Gogh, 1889', who: 'Vincent van Gogh', how: 'Oil on canvas · 73.7 × 92.1 cm', folio: '43'}, 'wheat-field': {name: 'Wheat Field with Cypresses', by: 'Van Gogh, 1889', who: 'Vincent van Gogh', how: 'Oil on canvas · 73 × 93.4 cm', folio: '51'}};
+const ART = {
+  'starry-night': {name: 'The Starry Night', year: '1889', who: 'Vincent van Gogh', how: 'Oil on canvas · 73.7 × 92.1 cm', folio: '43'},
+  'wheat-field': {name: 'Wheat Field with Cypresses', year: '1889', who: 'Vincent van Gogh', how: 'Oil on canvas · 73 × 93.4 cm', folio: '51'},
+  'night-cafe': {name: 'The Night Café', year: '1888', who: 'Vincent van Gogh', how: 'Oil on canvas · 72.4 × 92.1 cm', folio: '39'},
+  'great-wave': {name: 'The Great Wave off Kanagawa', year: 'c. 1831', who: 'Katsushika Hokusai', how: 'Colour woodblock print · 25.7 × 37.9 cm', folio: '12'},
+  'shipwreck': {name: 'The Shipwreck', year: '1805', who: 'J. M. W. Turner', how: 'Oil on canvas · 170.5 × 241.6 cm', folio: '27'},
+  'the-scream': {name: 'The Scream', year: '1893', who: 'Edvard Munch', how: 'Tempera and crayon on cardboard · 91 × 73.5 cm', folio: '58'},
+  'woman-with-hat': {name: 'Woman with a Hat', year: '1905', who: 'Henri Matisse', how: 'Oil on canvas · 80.7 × 59.7 cm', folio: '64'},
+  'udnie': {name: 'Udnie', year: '1913', who: 'Francis Picabia', how: 'Oil on canvas · 290 × 300 cm', folio: '71'}};
+const ART_KEYS = Object.keys(ART);
 function galleryEls(){ if($('galCard')) return; const S = $('stage');
   const card = document.createElement('div'); card.id = 'galCard'; card.innerHTML = '<img alt="">'; S.appendChild(card);
   const page = document.createElement('div'); page.id = 'galPage'; page.innerHTML = '<div class="gp-plate"><img alt=""><i class="gp-gloss"></i></div><p class="gp-who"></p><p class="gp-what"></p><p class="gp-how"></p><p class="gp-folio"></p>'; S.appendChild(page);
-  const wr = document.createElement('img'); wr.id = 'wreath'; wr.alt = ''; S.appendChild(wr); }
-function galleryPaint(){ galleryEls(); const g = prefs.gal || {}, art = prefs.art || 'starry-night', other = art === 'starry-night' ? 'wheat-field' : 'starry-night', A = ART[art];
+  const wr = document.createElement('img'); wr.id = 'wreath'; wr.alt = ''; ($('maps') || S).appendChild(wr); }
+function wreathLayer(){ const wr = $('wreath'), M = $('maps'); if(!wr || !M || wr.parentNode !== M) return; const zs = [...M.children].filter(e => e !== wr && e.style.zIndex !== '').map(e => +e.style.zIndex).sort((a, b) => b - a);
+  const z = zs.length > 1 ? zs[1] : (zs[0] || 11) - 1; if(wr.style.zIndex !== String(z)) wr.style.zIndex = z; if(M.lastElementChild !== wr) M.appendChild(wr); }
+function galleryPaint(){ galleryEls(); const g = prefs.gal || {}, art = ART[prefs.art] ? prefs.art : 'starry-night', other = ART_KEYS[(ART_KEYS.indexOf(art) + 1) % ART_KEYS.length], A = ART[art];
   let own = null; try{ own = g.photo ? localStorage.getItem('pm:galPhoto') : null; }catch(e){}
   const ci = $('galCard').querySelector('img'), cs = own || AS + 'art/' + other + '-card.jpg'; if(ci.getAttribute('src') !== cs) ci.src = cs; $('galCard').classList.toggle('own', !!own); $('galCard').classList.toggle('on', !!g.card);
-  const pi = $('galPage').querySelector('img'), ps = AS + 'art/' + art + '.jpg'; if(pi.getAttribute('src') !== ps) pi.src = ps; const P_ = $('galPage'); P_.querySelector('.gp-who').textContent = A.who; P_.querySelector('.gp-what').textContent = A.name + ', 1889'; P_.querySelector('.gp-how').textContent = A.how; P_.querySelector('.gp-folio').textContent = A.folio; $('galPage').classList.toggle('on', !!g.page);
+  const pi = $('galPage').querySelector('img'), ps = AS + 'art/' + art + '.jpg'; if(pi.getAttribute('src') !== ps) pi.src = ps; const P_ = $('galPage'); P_.querySelector('.gp-who').textContent = A.who; P_.querySelector('.gp-what').textContent = A.name + ', ' + A.year; P_.querySelector('.gp-how').textContent = A.how; P_.querySelector('.gp-folio').textContent = A.folio; $('galPage').classList.toggle('on', !!g.page);
   document.body.classList.toggle('gal-page', !!g.page);
-  const wr = $('wreath'), ws = AS + 'season/wreath.webp'; if(prefs.season === 'christmas'){ if(wr.getAttribute('src') !== ws) wr.src = ws; wr.classList.add('on'); } else wr.classList.remove('on');
-  document.querySelectorAll('.lt[data-gal]').forEach(b => b.classList.toggle('on', !!g[b.dataset.gal])); document.querySelectorAll('.lt[data-art]').forEach(b => b.classList.toggle('on', b.dataset.art === art));
-  document.querySelectorAll('.lt[data-season]').forEach(b => b.classList.toggle('on', prefs.season === b.dataset.season)); }
-document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('.lt[data-gal], .lt[data-art], .lt[data-season]'); if(!b) return; e.stopPropagation();
+  const wr = $('wreath'), ws = AS + 'season/wreath.webp?v=4'; if(prefs.season === 'christmas'){ if(wr.getAttribute('src') !== ws) wr.src = ws; wr.classList.add('on'); wreathLayer(); if(!FL.wreathT) FL.wreathT = setInterval(wreathLayer, 1500); } else { wr.classList.remove('on'); clearInterval(FL.wreathT); FL.wreathT = 0; }
+  document.querySelectorAll('.lk[data-gal]').forEach(b => b.classList.toggle('on', !!g[b.dataset.gal])); document.querySelectorAll('.lk[data-art]').forEach(b => b.classList.toggle('on', b.dataset.art === art));
+  document.querySelectorAll('.lk[data-season]').forEach(b => b.classList.toggle('on', prefs.season === b.dataset.season)); }
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('.lk[data-gal], .lk[data-art], .lk[data-season]'); if(!b) return; e.stopPropagation();
   if(b.dataset.gal === 'photo'){ galPhotoPick(); return; }
   if(b.dataset.gal === 'nophoto'){ const g = Object.assign({}, prefs.gal || {}); g.photo = false; prefs.gal = g; savePrefs(); galleryPaint(); return; }
   if(b.dataset.gal){ const g = Object.assign({}, prefs.gal || {}); g[b.dataset.gal] = !g[b.dataset.gal]; prefs.gal = g; }
@@ -2182,4 +2225,21 @@ try{ galleryPaint(); }catch(e){}
 
 /* a paper's handwriting that arrives after the reader opened (from this device's store or from GitHub) is drawn when it comes */
 window.__pmInkReady = (kind, id) => { try{ if(SP.kind === kind && SP.id === id){ SP.ink = null; SP.inkFor = null; inkMount(true); } }catch(e){} };
+
+/* a spread of the art book: each page of the research log faces its own plate, the paintings taking turns */
+function artFor(p){ const i0 = Math.max(0, ART_KEYS.indexOf(prefs.art || 'starry-night')); return ART_KEYS[(i0 + (p || 0)) % ART_KEYS.length]; }
+function galFill(el, art){ const A = ART[art], im = el.querySelector('.gp-plate img'), src = AS + 'art/' + art + '.jpg'; if(im.getAttribute('src') !== src) im.src = src;
+  el.querySelector('.gp-who').textContent = A.who; el.querySelector('.gp-what').textContent = A.name + ', ' + A.year; el.querySelector('.gp-how').textContent = A.how; el.querySelector('.gp-folio').textContent = String(+A.folio + 2 * Math.floor((NB.cur || 0) / ART_KEYS.length) * ART_KEYS.length); }
+async function galTurn(d, n, swap){ const P = $('galPage'), base = 'rotate(-2.5deg)';
+  /* seen from above, a turning page narrows toward the spine as its far edge lifts, darkening as it goes; it is drawn flat,
+     so it cannot be caught up in the desk's own perspective */
+  const L = P.cloneNode(true); L.id = 'galLeaf'; L.classList.add('leaf'); const sh = document.createElement('i'); sh.className = 'leaf-shade'; L.appendChild(sh); P.parentNode.insertBefore(L, P.nextSibling);
+  if(d > 0) galFill(P, artFor(n)); else { const keep = NB.cur; NB.cur = n; galFill(L, artFor(n)); NB.cur = keep; }
+  const open = [{transform: base + ' scaleX(1) scaleY(1)'}, {transform: base + ' scaleX(.55) scaleY(1.025)', offset: .55}, {transform: base + ' scaleX(.02) scaleY(1.04)'}];
+  const dur = 720, ease = 'cubic-bezier(.4,.1,.6,1)';
+  const an = L.animate(d > 0 ? open : open.slice().reverse().map((k, q, a) => Object.assign({}, k, {offset: q === 1 ? .45 : undefined})), {duration: dur, easing: ease, fill: 'forwards'});
+  sh.animate(d > 0 ? [{opacity: 0}, {opacity: .55}] : [{opacity: .55}, {opacity: 0}], {duration: dur, easing: ease, fill: 'forwards'});
+  if(d > 0) setTimeout(swap, dur * .8); else swap();
+  await an.finished.catch(() => {}); if(d < 0) galFill(P, artFor(n)); L.remove(); galleryPaint(); }
+{ const _gp = galleryPaint; galleryPaint = function(){ const r = _gp.apply(this, arguments); try{ const P = $('galPage'); if(P) galFill(P, artFor(NB.cur)); }catch(e){} return r; }; }
 })();

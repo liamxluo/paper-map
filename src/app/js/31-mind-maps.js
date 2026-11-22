@@ -205,7 +205,7 @@ function mmWire(){
     const hu = ev.target.closest('[data-mm="undo"],[data-mm="redo"],[data-mm="versions"]'); if(hu){ const k = hu.dataset.mm; if(k === 'undo') mmUndo(); else if(k === 'redo') mmRedo(); else mmVersions(hu); return; }
     const it = ev.target.closest('#mmInkTools [data-mi]'); if(it){ mmInkTool(it); return; }
     const bx = ev.target.closest('[data-mm="export"],[data-mm="note"],[data-mm="sync"],[data-mm="look"]');
-    if(bx){ const k = bx.dataset.mm; if(k === 'export') mmExportMenu(bx); else if(k === 'note') atlasNote(bx); else if(k === 'sync') atlasSync(bx); else atlasLook(bx); return; }
+    if(bx){ const k = bx.dataset.mm; if(k === 'export') mmExportMenu(bx); else if(k === 'note') nbkPicker(bx); else if(k === 'sync') atlasSync(bx); else atlasLook(bx); return; }
     const b = ev.target.closest('[data-mm]'), pick = ev.target.closest('[data-pick]'), menu = ev.target.closest('#mmMenu button');
     if(pick){ const kind = mm$('mmPick').dataset.kind; mm$('mmPick').hidden = true; mmAdd(kind, pick.dataset.pick); return; }
     if(menu){ mm$('mmMenu').hidden = true;
@@ -843,14 +843,34 @@ function mmHandFrom(s, m){ const pts = s.p, hit = (x, y) => { let best = null, b
 const AX_FOLDW = 46;
 function mmAxis(m){ return m && m.axis && m.axis.on ? m.axis : null; }
 function mmAxisToggle(){ const m = mindOf(MM.id); if(!m) return; m.axis = m.axis || {ppy: 6, folds: []}; m.axis.on = !m.axis.on; if(m.axis.on && !m.axis.ppy) m.axis.ppy = 6;
-  if(m.axis.on){ const ds = m.nodes.map(mmDate).filter(Boolean).map(d => d.y); if(ds.length > 1){ const span = Math.max(...ds) - Math.min(...ds); m.axis.ppy = Math.max(0.6, Math.min(40, 1400 / Math.max(span, 10))); } }
+  if(m.axis.on){ MM._axv = (MM._axv || 0) + 1; axF(m.axis); if(m.axis.y0 == null) m.axis.y0 = AXF.y0; MM._axv++; }
   mmRender(); mmSave(); if(m.axis.on) mmFit(); const b = MM.el.querySelector('[data-mm="axis"]'); if(b) b.classList.toggle('on', m.axis.on); }
 function mmDate(n){ if(!n) return null; if(n.date && n.date.y != null) return n.date;
   if(n.type === 'paper'){ const e = lib.entries[n.ref]; const y = e && +e.y; return y ? {y, auto: 1} : null; }
   if(n.type === 'book'){ const b = mmBook(n.ref); const y = b && +(b.year || b.y); return y ? {y, auto: 1} : null; } return null; }
-function axX(ax, y){ let x = y * ax.ppy; (ax.folds || []).forEach(f => { if(y >= f.b){ x += -(f.b - f.a) * ax.ppy + AX_FOLDW; } else if(y > f.a){ x += -(y - f.a) * ax.ppy + (y - f.a) / (f.b - f.a) * AX_FOLDW; } }); return x; }
+/* stretches of time with nothing in them are folded by default: wherever the gap between two dated things is far wider
+   than the gaps between the rest (four times the usual gap, and at least fifteen years), the axis closes over it, leaving a
+   little room either side. Tap a fold to open it (it stays open); folds you make yourself are kept as they are. The scale
+   then fits what is left, so a few far-off dates no longer squeeze everything else into a line. */
+const AXF = {ax: null, v: -1, f: [], ppy: 0};
+function axF(ax){ if(AXF.ax === ax && AXF.v === (MM._axv || 0)) return AXF.f; AXF.ax = ax; AXF.v = MM._axv || 0; AXF.f = axCompute(ax); return AXF.f; }
+function axCompute(ax){ const m = (lib.minds || []).find(x => x.axis === ax); const manualAll = (ax.folds || []).map((f, i) => ({a: f.a, b: f.b, mi: i, open: !!f.open})), manual = manualAll.filter(f => !f.open);
+  AXF.marks = manualAll.filter(f => f.open).map(f => Object.assign({}, f)); let out = manual.slice(); if(m && ax.auto !== false){ const ds = [...new Set(m.nodes.map(mmDate).filter(Boolean).flatMap(d => d.y2 != null ? [d.y, d.y2] : [d.y]))].sort((p, q) => p - q);
+    if(ds.length >= 3){ const gaps = ds.slice(1).map((v, i) => v - ds[i]), sorted = gaps.slice().sort((p, q) => p - q), med = sorted[Math.floor(sorted.length / 2)] || 1, T = Math.max(15, 4 * med);
+      gaps.forEach((g, i) => { if(g <= T) return; const pad = Math.max(1, Math.min(g * 0.06, 25)), a = Math.round(ds[i] + pad), b = Math.round(ds[i + 1] - pad); if(b - a < 8) return;
+        if(manualAll.some(f => f.a < b && f.b > a)) return; if((ax.open || []).some(o => o.a < b && o.b > a)){ AXF.marks.push({a, b, auto: true, open: true}); return; } out.push({a, b, auto: true}); }); }
+    if(ax.fit !== false && ds.length >= 2){ const span = ds[ds.length - 1] - ds[0], folded = out.concat(AXF.marks || []).reduce((s, f) => s + Math.max(0, Math.min(f.b, ds[ds.length - 1]) - Math.max(f.a, ds[0])), 0); ax.ppy = Math.max(0.6, Math.min(40, 1400 / Math.max(span - folded, 10))); } }
+  if(m){ const ys = m.nodes.map(mmDate).filter(Boolean).map(d => d.y).sort((p, q) => p - q); AXF.y0 = ys.length ? ys[Math.floor(ys.length / 2)] : 0; }
+  const an = MM.foldAnim; if(an && an.ax === ax){ const t = Math.min(1, (performance.now() - an.t0) / an.dur), e = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2, pOpen = an.from + (an.to - an.from) * e;
+    AXF.marks = (AXF.marks || []).filter(f => !(f.a === an.a && f.b === an.b)); out = out.filter(f => !(f.a === an.a && f.b === an.b)); out.push({a: an.a, b: an.b, auto: an.auto, mi: an.mi, p: pOpen}); }
+  return out.sort((p, q) => p.a - q.a); }
+function axFoldW(ax, f){ const full = (f.b - f.a) * ax.ppy; return AX_FOLDW + (full - AX_FOLDW) * (f.p || 0); }
+function axRaw(ax, y){ let x = y * ax.ppy; axF(ax).forEach(f => { const w = axFoldW(ax, f); if(y >= f.b){ x += -(f.b - f.a) * ax.ppy + w; } else if(y > f.a){ x += -(y - f.a) * ax.ppy + (y - f.a) / (f.b - f.a) * w; } }); return x; }
+/* the dates sit around the map's middle: the year nearest the middle of your dates is at the centre, so dated and undated
+   things share one neighbourhood */
+function axX(ax, y){ const f = axF(ax); const y0 = ax.y0 != null ? ax.y0 : AXF.y0; return axRaw(ax, y) - axRaw(ax, y0 || 0); }
 function axYear(ax, x){ let lo = -10000, hi = 10000; for(let i = 0; i < 50; i++){ const mid = (lo + hi) / 2; if(axX(ax, mid) < x) lo = mid; else hi = mid; } return (lo + hi) / 2; }
-function axFolded(ax, y){ return (ax.folds || []).find(f => y > f.a && y < f.b); }
+function axFolded(ax, y){ return axF(ax).find(f => y > f.a && y < f.b && !(f.p > 0)); }
 function mmDateText(d){ if(!d) return ''; const Y = y => y < 0 ? (-y) + ' BC' : String(Math.round(y)); return (d.approx ? 'c. ' : '') + Y(d.y) + (d.y2 != null ? '–' + Y(d.y2) : ''); }
 function mmParseDate(s){ s = String(s || '').trim().replace(/[公元前]/g, m0 => m0 === '前' ? ' BC' : '').replace(/\s+/g, ' '); if(!s) return null;
   const approx = /^(c\.?|ca\.?|circa|~|约)\s*/i.test(s); s = s.replace(/^(c\.?|ca\.?|circa|~|约)\s*/i, '');
@@ -861,7 +881,7 @@ function mmParseDate(s){ s = String(s || '').trim().replace(/[公元前]/g, m0 =
   if(a == null) return undefined; const d = {y: a}; if(b != null && b !== a){ d.y = Math.min(a, b); d.y2 = Math.max(a, b); } if(approx) d.approx = true; return d; }
 /* where the dated nodes sit, and which nodes are hidden (by a folded branch or a folded stretch of time) */
 function mmHiddenSet(m){ const hid = new Set(); const ax = mmAxis(m);
-  if(ax && (ax.folds || []).length) m.nodes.forEach(n => { const d = mmDate(n); if(d && axFolded(ax, d.y) && (d.y2 == null || axFolded(ax, d.y2))) hid.add(n.id); });
+  if(ax && axF(ax).length) m.nodes.forEach(n => { const d = mmDate(n); if(d && axFolded(ax, d.y) && (d.y2 == null || axFolded(ax, d.y2))) hid.add(n.id); });
   if(m.nodes.some(n => n.fold)){ const kids = mmKids(m); const hide = id => (kids[id] || []).forEach(k => { if(!hid.has(k)){ hid.add(k); hide(k); } }); m.nodes.filter(n => n.fold).forEach(n => hide(n.id)); }
   return hid; }
 function mmKids(m){ const adj = {}; m.nodes.forEach(n => adj[n.id] = []); m.edges.forEach(e => { if(adj[e.a] && adj[e.b]){ adj[e.a].push(e.b); adj[e.b].push(e.a); } });
@@ -869,7 +889,7 @@ function mmKids(m){ const adj = {}; m.nodes.forEach(n => adj[n.id] = []); m.edge
   const seen = new Set(), kids = {}; order.forEach(r => { if(seen.has(r.id)) return; seen.add(r.id); const q = [r.id]; while(q.length){ const id = q.shift(); kids[id] = []; adj[id].forEach(k => { if(!seen.has(k)){ seen.add(k); kids[id].push(k); q.push(k); } }); } }); return kids; }
 function mmAxisSnap(m){ const ax = mmAxis(m); if(!ax) return; m.nodes.forEach(n => { const d = mmDate(n); if(!d) return; const x = Math.round(d.y2 != null ? (axX(ax, d.y) + axX(ax, d.y2)) / 2 : axX(ax, d.y)); if(n.x !== x){ n.x = x; const el = document.querySelector('#mmNodes [data-n="' + n.id + '"]'); if(el) el.style.left = x + 'px'; } }); }
 { const _e = mmEdgesOnly; mmEdgesOnly = function(){ try{ mmAxisSnap(mindOf(MM.id)); }catch(e){} return _e.apply(this, arguments); }; }
-{ const _r5 = mmRender; mmRender = function(){ const m = mindOf(MM.id); try{ mmAxisSnap(m); }catch(e){} const r = _r5.apply(this, arguments); try{ mmAfterRender(m); }catch(e){} return r; }; }
+{ const _r5 = mmRender; mmRender = function(){ const m = mindOf(MM.id); MM._axv = (MM._axv || 0) + 1; try{ mmAxisSnap(m); }catch(e){} const r = _r5.apply(this, arguments); try{ mmAfterRender(m); }catch(e){} return r; }; }
 /* after drawing: hide what is folded, put the fold buttons and the date chips on, draw the span lines and the fold bands */
 function mmAfterRender(m){ if(!m) return; const hid = mmHiddenSet(m), ax = mmAxis(m), kids = mmKids(m);
   document.querySelectorAll('#mmNodes .mm-node').forEach(el => { const id = el.dataset.n, n = m.nodes.find(x => x.id === id); el.classList.toggle('mm-hidden', hid.has(id)); el.querySelectorAll('.mm-foldbtn,.mm-datechip').forEach(x => x.remove());
@@ -881,7 +901,7 @@ function mmAfterRender(m){ if(!m) return; const hid = mmHiddenSet(m), ax = mmAxi
   if(ax) m.nodes.forEach(n => { const d = mmDate(n); if(!d || d.y2 == null || hid.has(n.id)) return; const x1 = axX(ax, d.y), x2 = axX(ax, d.y2), sz = MM.sz[n.id] || [150, 46], y = n.y + sz[1] / 2 + 10;
     G.insertAdjacentHTML('beforeend', '<path class="mm-span" d="M' + x1.toFixed(1) + ' ' + (y - 4) + ' V' + (y + 4) + ' M' + x1.toFixed(1) + ' ' + y + ' H' + x2.toFixed(1) + ' M' + x2.toFixed(1) + ' ' + (y - 4) + ' V' + (y + 4) + '"></path>'); });
   let bands = document.getElementById('mmBands'); if(!bands){ bands = document.createElement('div'); bands.id = 'mmBands'; mm$('mmWorld').insertBefore(bands, mm$('mmWorld').firstChild); }
-  bands.innerHTML = ax ? (ax.folds || []).map(f => '<i style="left:' + axX(ax, f.a).toFixed(1) + 'px;width:' + AX_FOLDW + 'px"></i>').join('') : '';
+  bands.innerHTML = ax ? axF(ax).map(f => '<i class="pleat" style="left:' + axX(ax, f.a).toFixed(1) + 'px;width:' + axFoldW(ax, f).toFixed(1) + 'px;--o:' + (f.p || 0).toFixed(3) + '"></i>').join('') + (AXF.marks || []).map(f => '<b style="left:' + axX(ax, f.a).toFixed(1) + 'px"></b><b style="left:' + axX(ax, f.b).toFixed(1) + 'px"></b>').join('') : '';
   MM.el.classList.toggle('has-axis', !!ax); const ab = MM.el.querySelector('[data-mm="axis"]'); if(ab) ab.classList.toggle('on', !!ax); mmRuler(); }
 document.addEventListener('click', ev => { const f = ev.target.closest && ev.target.closest('#mmNodes [data-fold]'); if(!f) return; ev.stopPropagation(); const m = mindOf(MM.id), n = m && m.nodes.find(x => x.id === f.dataset.fold); if(!n) return; n.fold = !n.fold || undefined; mmRender(); mmSave(); }, true);
 /* a dated node moves only up and down */
@@ -894,17 +914,25 @@ function mmRuler(){ const m = mindOf(MM.id), ax = mmAxis(m); let r = document.ge
   const yA = axYear(ax, (0 - vx) / k), yB = axYear(ax, (W - vx) / k), need = 80 / (ax.ppy * k); const steps = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000]; const st = steps.find(s => s >= need) || 5000;
   let h = ''; for(let y = Math.ceil(yA / st) * st; y <= yB; y += st){ if(axFolded(ax, y)) continue; const sx = axX(ax, y) * k + vx; h += '<path d="M' + sx.toFixed(1) + ' 20 V28"/><text x="' + sx.toFixed(1) + '" y="15" text-anchor="middle">' + (y < 0 ? (-y) + ' BC' : y === 0 ? '1' : y) + '</text>'; }
   for(let y = Math.ceil(yA / (st / 5)) * (st / 5); y <= yB && st >= 5; y += st / 5){ if(axFolded(ax, y) || y % st === 0) continue; const sx = axX(ax, y) * k + vx; h += '<path class="minor" d="M' + sx.toFixed(1) + ' 24 V28"/>'; }
-  const hid = mmHiddenSet(m); (ax.folds || []).forEach((f, i) => { const sx = axX(ax, f.a) * k + vx, w = AX_FOLDW * k, n = m.nodes.filter(z => hid.has(z.id) && mmDate(z) && axFolded(ax, mmDate(z).y) === f).length;
-    h += '<g class="fold" data-fi="' + i + '"><rect x="' + sx.toFixed(1) + '" y="2" width="' + Math.max(16, w).toFixed(1) + '" height="26" rx="6"/><path d="M' + (sx + 3).toFixed(1) + ' 22 l4 -6 l4 6 l4 -6 l4 6"/><text x="' + (sx + Math.max(16, w) / 2).toFixed(1) + '" y="12" text-anchor="middle">' + (f.a < 0 ? (-f.a) + ' BC' : f.a) + '–' + (f.b < 0 ? (-f.b) + ' BC' : f.b) + (n ? ' · ' + n : '') + '</text></g>'; });
+  const hid = mmHiddenSet(m); axF(ax).forEach((f, i) => { const sx = axX(ax, f.a) * k + vx, w = axFoldW(ax, f) * k, n = m.nodes.filter(z => hid.has(z.id) && mmDate(z) && axFolded(ax, mmDate(z).y) === f).length;
+    h += '<g class="fold" data-fi="' + i + '" data-auto="' + (f.auto ? 1 : 0) + '"><rect x="' + sx.toFixed(1) + '" y="2" width="' + Math.max(16, w).toFixed(1) + '" height="26" rx="6"/><path d="M' + (sx + 3).toFixed(1) + ' 22 l4 -6 l4 6 l4 -6 l4 6"/><text x="' + (sx + Math.max(16, w) / 2).toFixed(1) + '" y="12" text-anchor="middle">' + (f.a < 0 ? (-f.a) + ' BC' : f.a) + '–' + (f.b < 0 ? (-f.b) + ' BC' : f.b) + (n ? ' · ' + n : '') + '</text></g>'; });
+  (AXF.marks || []).forEach((f, i) => { const x1 = axX(ax, f.a) * k + vx, x2 = axX(ax, f.b) * k + vx, lab = (f.a < 0 ? (-f.a) + ' BC' : f.a) + '–' + (f.b < 0 ? (-f.b) + ' BC' : f.b);
+    h += '<g class="fold-open" data-oi="' + i + '"><path class="rib" d="M' + x1.toFixed(1) + ' 27.5 H' + x2.toFixed(1) + '"/><path class="rib-end" d="M' + x1.toFixed(1) + ' 24 V30 M' + x2.toFixed(1) + ' 24 V30"/>' +
+      '<g class="tab"><path d="M' + (x1 + 2).toFixed(1) + ' 2 h' + (lab.length * 5.6 + 22).toFixed(1) + ' v15 h-' + (lab.length * 5.6 + 22).toFixed(1) + ' z"/><path class="mark" d="M' + (x1 + 7).toFixed(1) + ' 4 v10 l3 -3 l3 3 v-10 z"/><text x="' + (x1 + 18).toFixed(1) + '" y="13">' + lab + '</text></g>' +
+      (f.auto ? '' : '<g class="fold-x" data-mi="' + f.mi + '"><circle cx="' + (x1 + lab.length * 5.6 + 30).toFixed(1) + '" cy="9.5" r="6"/><path d="M' + (x1 + lab.length * 5.6 + 27.5).toFixed(1) + ' 7 l5 5 M' + (x1 + lab.length * 5.6 + 32.5).toFixed(1) + ' 7 l-5 5"/></g>') + '</g>'; });
   svg.setAttribute('width', W); svg.setAttribute('height', 30); svg.innerHTML = h; }
 { const _ap = mmApply; mmApply = function(){ const r = _ap.apply(this, arguments); try{ mmRuler(); }catch(e){} return r; }; }
 function mmRulerWire(r){ let s = null;
-  r.addEventListener('pointerdown', ev => { const g = ev.target.closest('.fold'); if(g){ ev.stopPropagation(); const m = mindOf(MM.id); m.axis.folds.splice(+g.dataset.fi, 1); mmRender(); mmSave(); return; }
+  r.addEventListener('pointerdown', ev => { const g = ev.target.closest('.fold, .fold-open, .fold-x'); if(g){ ev.stopPropagation(); const m = mindOf(MM.id), ax = m.axis;
+      if(g.classList.contains('fold-x')){ ax.folds = (ax.folds || []).filter((x, i) => i !== +g.dataset.mi); }
+      else if(g.classList.contains('fold')){ const f = axF(ax)[+g.dataset.fi]; if(!f || MM.foldAnim) return; axFoldMove(ax, f, 0, 1, () => { if(f.auto) ax.open = (ax.open || []).concat([{a: f.a, b: f.b}]); else ax.folds[f.mi].open = true; }); return; }
+      else { const f = (AXF.marks || [])[+g.dataset.oi]; if(!f || MM.foldAnim) return; axFoldMove(ax, f, 1, 0, () => { if(f.auto) ax.open = (ax.open || []).filter(o => !(o.a < f.b && o.b > f.a)); else ax.folds[f.mi].open = false; }); return; }
+      MM._axv = (MM._axv || 0) + 1; mmRender(); mmSave(); return; }
     ev.stopPropagation(); s = {x0: ev.clientX}; r.setPointerCapture(ev.pointerId); const sel = r.querySelector('.mr-sel'); sel.hidden = false; sel.style.left = (ev.clientX - r.getBoundingClientRect().left) + 'px'; sel.style.width = '0px'; });
   r.addEventListener('pointermove', ev => { if(!s) return; const R = r.getBoundingClientRect(), sel = r.querySelector('.mr-sel'), a = Math.min(s.x0, ev.clientX), b = Math.max(s.x0, ev.clientX); sel.style.left = (a - R.left) + 'px'; sel.style.width = (b - a) + 'px'; s.x1 = ev.clientX; });
   r.addEventListener('pointerup', ev => { if(!s) return; const R = r.getBoundingClientRect(), sel = r.querySelector('.mr-sel'), a = Math.min(s.x0, s.x1 || s.x0), b2 = Math.max(s.x0, s.x1 || s.x0); s = null; sel.hidden = true;
     if(b2 - a < 12) return; const m = mindOf(MM.id), ax = mmAxis(m), bx = mmBox(), k = MM.view.k, vx = MM.view.x - bx.l; const ya = Math.round(axYear(ax, (a - R.left - vx) / k)), yb = Math.round(axYear(ax, (b2 - R.left - vx) / k));
-    openFloatMenu(b2, R.bottom + 6, [{label: 'Fold ' + (ya < 0 ? (-ya) + ' BC' : ya) + ' – ' + (yb < 0 ? (-yb) + ' BC' : yb), fn: () => { ax.folds = (ax.folds || []).filter(f => f.b <= ya || f.a >= yb).concat([{a: ya, b: yb}]).sort((p, q) => p.a - q.a); mmRender(); mmSave(); }}]); }); }
+    openFloatMenu(b2, R.bottom + 6, [{label: 'Fold ' + (ya < 0 ? (-ya) + ' BC' : ya) + ' – ' + (yb < 0 ? (-yb) + ' BC' : yb), fn: () => { ax.folds = (ax.folds || []).filter(f => f.b <= ya || f.a >= yb).concat([{a: ya, b: yb}]).sort((p, q) => p.a - q.a); MM._axv = (MM._axv || 0) + 1; mmRender(); mmSave(); }}]); }); }
 /* the date of a node, set from its bar: 1889, c. 1503, 1503–1519, 200 BC, 15th century */
 { const _nb = mmNodeBar; mmNodeBar = function(){ const r = _nb.apply(this, arguments); const bar = document.getElementById('mmNodeBar'), m = mindOf(MM.id); if(!bar || bar.hidden || !m || !mmAxis(m)) return r;
     const n = MM.sel && m.nodes.find(x => x.id === MM.sel); if(!n || bar.querySelector('[data-ns="date"]')) return r; const d = mmDate(n);
@@ -912,3 +940,10 @@ function mmRulerWire(r){ let s = null;
 document.addEventListener('click', ev => { const b = ev.target.closest && ev.target.closest('#mmNodeBar [data-ns="date"]'); if(!b) return; ev.stopPropagation(); const m = mindOf(MM.id), n = m && m.nodes.find(x => x.id === MM.sel); if(!n) return;
   const cur = n.date ? mmDateText(n.date) : ''; const v = prompt('Date: 1889, c. 1503, 1503–1519, 200 BC or 15th century (empty: none, or the paper’s own year)', cur); if(v == null) return;
   const d = mmParseDate(v); if(d === undefined){ toast('That date could not be read'); return; } if(d) n.date = d; else delete n.date; mmRender(); mmSave(); }, true);
+
+/* the movement of a fold: frame by frame the stretch widens or narrows, the dated things in it sliding out or tucking in */
+function axFoldMove(ax, f, from, to, done){ const bx = mmBox(), Xc = bx.l + bx.w / 2, anchor = axYear(ax, (Xc - MM.view.x) / MM.view.k), keep = () => { MM.view.x = Xc - axX(ax, anchor) * MM.view.k; try{ mmApply(); }catch(e){} };
+  MM.foldAnim = {ax, a: f.a, b: f.b, auto: !!f.auto, mi: f.mi, from, to, t0: performance.now(), dur: 520}; const m = mindOf(MM.id); mmRender(); keep();
+  const step = () => { const an = MM.foldAnim; if(!an) return; MM._axv = (MM._axv || 0) + 1; try{ mmAxisSnap(m); keep(); mmEdgesOnly(); mmAfterRender(m); }catch(e){}
+    if(performance.now() - an.t0 < an.dur) requestAnimationFrame(step); else { MM.foldAnim = null; done(); MM._axv = (MM._axv || 0) + 1; mmRender(); keep(); mmSave(); } };
+  requestAnimationFrame(step); }

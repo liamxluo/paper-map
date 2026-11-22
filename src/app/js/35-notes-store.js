@@ -28,12 +28,12 @@ function nsUnpack(data){ if(Array.isArray(data)) return data.map(nsUnpack); if(d
 function nsUnion(a, b, q){ if(Array.isArray(a) && Array.isArray(b)){ const seen = new Set(), out = []; a.concat(b).forEach(s => { const k = JSON.stringify(nsCanon(s, q)); if(!seen.has(k)){ seen.add(k); out.push(s); } }); return out; }
   if(a && b && typeof a === 'object' && typeof b === 'object' && !Array.isArray(a) && !Array.isArray(b)){ const o = Object.assign({}, a); Object.keys(b).forEach(k => { o[k] = k in a ? nsUnion(a[k], b[k], q) : b[k]; }); return o; } return a != null ? a : b; }
 /* the handwriting of each item, as the library holds it in memory */
-function nsItems(L){ const out = []; Object.values(L.entries || {}).forEach(e => { if(e.ink || e.inkRef) out.push(['paper', e.id, e]); }); (L.readings || []).forEach(b => { if(b.ink || b.inkRef) out.push(['book', b.id, b]); }); (L.minds || []).forEach(m => { if(m.ink || m.inkRef) out.push(['mind', m.id, m]); }); return out; }
+function nsItems(L){ const out = []; Object.values(L.entries || {}).forEach(e => { if(e.ink || e.inkRef) out.push(['paper', e.id, e]); }); (L.readings || []).forEach(b => { if(b.ink || b.inkRef) out.push(['book', b.id, b]); }); (L.minds || []).forEach(m => { if(m.ink || m.inkRef) out.push(['mind', m.id, m]); }); Object.values(L.jpages || {}).forEach(p => { if(p.ink || p.inkRef) out.push(['page', p.id, p]); }); return out; }
 /* what is saved (on this device and to GitHub): handwriting the notes repository has confirmed stays out of it */
 function libSlim(L){ if(!L || !Object.keys(NS.conf).length) return L; let changed = false; const out = Object.assign({}, L);
   const slim = (kind, x) => { if(!x.ink) return x; const p = nsPath(kind, x.id), sig = nsSig(x.ink, kind); if(NS.conf[p] !== sig) return x; changed = true; const y = Object.assign({}, x); delete y.ink; y.inkRef = {sig, at: Date.now(), repo: (NS.repoOf && NS.repoOf[p]) || (x.inkRef && x.inkRef.repo) || NS.repo || NOTES_REPO}; return y; };
   out.entries = {}; Object.keys(L.entries || {}).forEach(k => out.entries[k] = slim('paper', L.entries[k]));
-  out.readings = (L.readings || []).map(b => slim('book', b)); out.minds = (L.minds || []).map(m => slim('mind', m)); return changed ? out : L; }
+  out.readings = (L.readings || []).map(b => slim('book', b)); out.minds = (L.minds || []).map(m => slim('mind', m)); if(L.jpages){ out.jpages = {}; Object.keys(L.jpages).forEach(k => out.jpages[k] = slim('page', L.jpages[k])); } return changed ? out : L; }
 const NOTES_FULL_KB = 900 * 1024;
 async function nsRepo(){ const c = ghCfg(); if(!c || c.kind === 'folder' || c.kind === 'dropbox' || PREVIEW) return null; if(Date.now() - NS.probedAt < 600e3) return NS.repo; NS.probedAt = Date.now();
   const st = lib.notesStore || null;
@@ -60,14 +60,14 @@ async function nsUpload(kind, id){ const p = nsPath(kind, id), repo = await nsRe
     try{ const cf = (await window.__pmdb.get('ink:conf')) || {}; cf[p] = sig; await window.__pmdb.set('ink:conf', cf); }catch(e){}
     touchLib(); return true; }); }
 /* put handwriting back into the library in memory, where the reader and the maps look for it */
-function nsApply(kind, id, data){ if(kind === 'paper'){ const e = lib.entries[id]; if(e) e.ink = data; } else if(kind === 'book'){ const b = (lib.readings || []).find(x => x.id === id); if(b) b.ink = data; } else { const m = (lib.minds || []).find(x => x.id === id); if(m) m.ink = data; } }
+function nsApply(kind, id, data){ if(kind === 'page'){ const p = (lib.jpages || {})[id]; if(p) p.ink = data; return; } if(kind === 'paper'){ const e = lib.entries[id]; if(e) e.ink = data; } else if(kind === 'book'){ const b = (lib.readings || []).find(x => x.id === id); if(b) b.ink = data; } else { const m = (lib.minds || []).find(x => x.id === id); if(m) m.ink = data; } }
 async function nsHydrate(){ if(PREVIEW) return; const todo = nsItems(lib).filter(([k, id, x]) => !x.ink && x.inkRef); for(const [kind, id, x] of todo){ const p = nsPath(kind, id); if(NS.loading[p]) continue; NS.loading[p] = true;
     try{ let got = NS.mem[p];
       if(got == null){ const v = window.__pmdb && await window.__pmdb.get('ink:' + p); if(v && v.data && (!x.inkRef.sig || v.sig === x.inkRef.sig)) got = v.data; }
       if(got == null){ const r = await nsRemoteGet(p, x.inkRef.repo); if(r && r.data){ got = r.data; try{ window.__pmdb.set('ink:' + p, {data: got, sig: nsSig(got, kind), at: Date.now()}); }catch(e){} } }
       if(got != null){ NS.mem[p] = got; NS.cur[p] = nsSig(got, kind); NS.conf[p] = NS.conf[p] || x.inkRef.sig || NS.cur[p]; nsApply(kind, id, got); nsShown(kind, id); } }
     catch(e){} finally{ NS.loading[p] = false; } } }
-function nsShown(kind, id){ try{ if(kind === 'mind' && typeof MM !== 'undefined' && MM.id === id) mmRender(); else { const w = DK.frame && DK.frame.contentWindow; if(w && w.__pmInkReady) w.__pmInkReady(kind, id); } }catch(e){} }
+function nsShown(kind, id){ try{ if(kind === 'page'){ if(typeof NBK !== 'undefined' && NBK.id) nbkDraw(); return; } if(kind === 'mind' && typeof MM !== 'undefined' && MM.id === id) mmRender(); else { const w = DK.frame && DK.frame.contentWindow; if(w && w.__pmInkReady) w.__pmInkReady(kind, id); } }catch(e){} }
 /* the reader asks for a paper's handwriting; a book's comes with the book */
 function nsReady(kind, id){ const p = nsPath(kind, id); return NS.mem[p] != null; }
 /* start: what GitHub has confirmed before, and the handwriting kept on this device */

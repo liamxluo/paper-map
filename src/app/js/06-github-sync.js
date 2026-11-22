@@ -30,7 +30,19 @@ function ghApi(c){ return 'https://api.github.com/repos/' + encodeURIComponent(c
 const GH_PRIV = {};
 async function ghIsPrivate(c, repo){ const k = (c.owner + '/' + repo).toLowerCase(), hit = GH_PRIV[k]; if(hit && Date.now() - hit.at < 600e3) return hit.v;
   try{ const r = await fetch('https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(repo) + '?_=' + Date.now(), {headers: ghHeaders(c)}); if(r.status === 404){ GH_PRIV[k] = {v: null, at: Date.now()}; return null; } if(!r.ok) return undefined;
-    const j = await r.json(); const v = (j.private === true || j.visibility === 'private' || j.visibility === 'internal') && j.visibility !== 'public'; GH_PRIV[k] = {v, at: Date.now()}; return v; }catch(e){ return undefined; } }
+    const j = await r.json(); const v = (j.private === true || j.visibility === 'private' || j.visibility === 'internal') && j.visibility !== 'public'; GH_PRIV[k] = {v, at: Date.now()};
+    try{ ghFollow(c, repo, j); }catch(e){} return GH_PRIV[k] ? GH_PRIV[k].v : v; }catch(e){ return undefined; } }
+/* Paper Map knows its repositories by GitHub's own number for each, which never changes, as well as by name. If you rename
+   one on GitHub, GitHub sends the old name on to it, and Paper Map takes up the new name everywhere it keeps it. If a
+   different repository ever turns up under the old name, it is not used. */
+function ghFollow(c, asked, j){ if(!j || !j.name) return; const cfg = lsGet(GH_KEY) || {}, isLib = String(asked).toLowerCase() === String(cfg.repo || '').toLowerCase();
+  if(isLib && j.id){ if(!cfg.repoId){ cfg.repoId = j.id; lsSet(GH_KEY, cfg); } else if(cfg.repoId !== j.id && j.name.toLowerCase() === String(asked).toLowerCase()){ GH_PRIV[(c.owner + '/' + asked).toLowerCase()] = {v: false, at: Date.now()}; try{ toast('The repository named ' + asked + ' is not the one your library was kept in, so Paper Map will not save to it.'); }catch(e){} return; } }
+  if(j.name.toLowerCase() === String(asked).toLowerCase()) return;
+  const was = asked, now = j.name;
+  if(isLib){ cfg.repo = now; lsSet(GH_KEY, cfg); }
+  const walk = o => { if(!o || typeof o !== 'object') return; if(Array.isArray(o)){ o.forEach(walk); return; } Object.keys(o).forEach(k2 => { if(k2 === 'repo' && o[k2] === was) o[k2] = now; else if(k2 === 'repos' && Array.isArray(o[k2])) o[k2] = o[k2].map(x => x === was ? now : x); else if(k2 === 'current' && o[k2] === was) o[k2] = now; else walk(o[k2]); }); };
+  walk(lib); GH_PRIV[(c.owner + '/' + now).toLowerCase()] = GH_PRIV[(c.owner + '/' + was).toLowerCase()]; touchLib();
+  try{ toast('Your repository ' + was + ' is now called ' + now + ' on GitHub; Paper Map follows it.'); }catch(e){} }
 let GH_PUBLIC_SAID = {};
 function ghSayPublic(repo){ if(GH_PUBLIC_SAID[repo] && Date.now() - GH_PUBLIC_SAID[repo] < 3600e3) return; GH_PUBLIC_SAID[repo] = Date.now();
   try{ toast('The repository ' + repo + ' on GitHub is public, so Paper Map will not save anything to it. Make it private (on GitHub: Settings › General › Change visibility), then saving resumes.'); }catch(e){} }
@@ -238,11 +250,13 @@ function mergeLibs(base, here, there){
     minds: mergeMaps(byKey(B.minds || [], idk), byKey(Lh.minds || [], idk), byKey(Rt.minds || [], idk), 'mind', x => 'Mind map: ' + (x ? x.name : ''), out),
     readingCats: mergeMaps(byKey((B.readingCats || []).map(c => ({id: c})), idk), byKey((Lh.readingCats || []).map(c => ({id: c})), idk), byKey((Rt.readingCats || []).map(c => ({id: c})), idk), 'readingCat', x => 'Reading category: ' + (x ? x.id : ''), out),
     notebooks: mergeMaps(byKey(B.notebooks, idk), byKey(Lh.notebooks, idk), byKey(Rt.notebooks, idk), 'notebook', x => 'Research log' + (x && x.pages ? ' (' + x.pages.filter(p => p && p.text).length + ' pages)' : ''), out),
+    journals: mergeMaps(byKey(B.journals || [], idk), byKey(Lh.journals || [], idk), byKey(Rt.journals || [], idk), 'journal', x => 'Notebook: ' + (x ? x.title : ''), out),
+    jpages: mergeMaps(B.jpages || {}, Lh.jpages || {}, Rt.jpages || {}, 'jpage', () => 'A notebook page', out),
     status: mergeMaps(base.status || {}, here.status || {}, there.status || {}, 'status', (v, k) => 'Read mark', {conflicts: [], fromHere: 0, fromThere: 0})
   };
   const build = () => {
     const L = Object.assign({}, Lh);
-    Object.keys(Rt || {}).forEach(k => { if(['entries', 'links', 'topics', 'tags', 'readings', 'readingCats', 'notebooks', 'status', 'minds', 'branches', 'title'].includes(k)) return; if(stableJSON(Lh[k]) === stableJSON(B[k])) L[k] = Rt[k]; });
+    Object.keys(Rt || {}).forEach(k => { if(['entries', 'links', 'topics', 'tags', 'readings', 'readingCats', 'notebooks', 'status', 'minds', 'branches', 'title', 'journals', 'jpages'].includes(k)) return; if(stableJSON(Lh[k]) === stableJSON(B[k])) L[k] = Rt[k]; });
     L.entries = maps.entries;
     L.links = orderLike(maps.links, Lh.links, Rt.links, lk);
     L.topics = orderLike(maps.topics, Lh.topics, Rt.topics, idk);
@@ -250,10 +264,11 @@ function mergeLibs(base, here, there){
     L.branches = orderLike(maps.branches, Lh.branches, Rt.branches, idk);
     L.lineBranch = maps.lineBranch; L.tlinks = orderLike(maps.tlinks, Lh.tlinks, Rt.tlinks, tk); L.tlinkColor = maps.tlinkColor;
     L.readings = orderLike(maps.readings, Lh.readings, Rt.readings, idk); L.readingCats = orderLike(maps.readingCats, (Lh.readingCats || []).map(c => ({id: c})), (Rt.readingCats || []).map(c => ({id: c})), idk).map(x => x.id); L.notebooks = orderLike(maps.notebooks, Lh.notebooks, Rt.notebooks, idk); L.minds = orderLike(maps.minds, Lh.minds || [], Rt.minds || [], idk);
+    L.journals = orderLike(maps.journals, Lh.journals || [], Rt.journals || [], idk); L.jpages = maps.jpages;
     if(stableJSON(Lh.title) === stableJSON(B.title)) L.title = Rt.title;
     return L;
   };
-  const mapOf = {mind: 'minds', entry: 'entries', link: 'links', topic: 'topics', tag: 'tags', branch: 'branches', lineBranch: 'lineBranch', tlink: 'tlinks', tlinkColor: 'tlinkColor', reading: 'readings', readingCat: 'readingCats', notebook: 'notebooks'};
+  const mapOf = {journal: 'journals', jpage: 'jpages', mind: 'minds', entry: 'entries', link: 'links', topic: 'topics', tag: 'tags', branch: 'branches', lineBranch: 'lineBranch', tlink: 'tlinks', tlinkColor: 'tlinkColor', reading: 'readings', readingCat: 'readingCats', notebook: 'notebooks'};
   const choose = (cf, side) => { const m = maps[mapOf[cf.kind]], v = side === 'there' ? cf.there : cf.here; if(v === undefined) delete m[cf.id]; else m[cf.id] = v; };
   { const ents = maps.entries || {}; out.dropped = Object.values(maps.links || {}).filter(l => Array.isArray(l) && (!ents[l[0]] || !ents[l[1]])).length; }
   return {conflicts: out.conflicts, fromHere: out.fromHere, fromThere: out.fromThere, merged: out.merged || 0, dropped: out.dropped || 0, build, choose, status: maps.status};

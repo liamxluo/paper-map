@@ -77,7 +77,7 @@ window.pmDesk = {
   async pickFolder(){ try{ return await window.__TAURI__.core.invoke('pick_folder', {prompt: 'Choose the folder for a copy of your files'}); }catch(e){ return null; } },
   isMac(){ return !!window.__TAURI__; },
   pdfWhy(){ const w = (typeof ZT_WHY === 'string' && ZT_WHY) || PDF_WHY, l = typeof ZT_LOG !== 'undefined' && ZT_LOG.length ? ' — ' + ZT_LOG.join(' › ') : ''; return (w || (lib.entries && '')) + l + (w || l ? '' : 'path ' + ''); },
-  over(kind, r){ const fake = {getBoundingClientRect: () => ({left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.right - r.left, height: r.bottom - r.top, x: r.left, y: r.top}), classList: {add(){}, remove(){}, toggle(){}, contains(){ return false; }}, closest: () => null};
+  over(kind, r){ if(kind === 'notebooks'){ nbkShelf(); return; } const fake = {getBoundingClientRect: () => ({left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.right - r.left, height: r.bottom - r.top, x: r.left, y: r.top}), classList: {add(){}, remove(){}, toggle(){}, contains(){ return false; }}, closest: () => null};
     document.documentElement.classList.add('pm-overdesk'); if(kind === 'note') atlasNote(fake); else if(kind === 'sync') atlasSync(fake); },
   closeOver(){ try{ atlasNoteClose(); }catch(e){} const s2 = document.getElementById('atlSync'); if(s2) s2.hidden = true; },
   /* folders and topics in the Papers list: make them, rename them, nest them by dragging, and move papers into them */
