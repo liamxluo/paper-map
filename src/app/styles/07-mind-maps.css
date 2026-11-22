@@ -124,3 +124,200 @@ html.mind-on .float-menu{z-index:2147482750}
 /* the research log, the cloud and settings open over a mind map, and over the desk's own screens */
 #atlNote,#atlSync,#atlLook{z-index:2147482600}
 html.desk-on #atlNote,html.desk-on #atlSync,html.desk-on #atlLook{z-index:2147483300 !important}
+
+/* the mind map docked in the notes' place of the reading page: the same map, on its own paper, with its tools; no way back
+   to the desk from here (the reading page's own button turns it back into the notes) */
+#mind.docked{inset:auto;background:transparent;border-radius:6px;z-index:2147483100}
+html.mind-docked .mm-label-in,html.mind-docked #mmPal{z-index:2147483130}
+#mind.docked .mm-sheet,#mind.docked .mm-stage{inset:0;border-radius:4px}
+#mind.docked .mm-head,#mind.docked .mm-bar.mm-l,#mind.docked .mm-hint{display:none}
+#mind.docked .mm-bar.mm-r{top:10px;right:10px}
+#mind:not(.docked) .mm-dock-only{display:none}
+/* docked, the map keeps only its own tools (the reading page already has the notebook, the cloud and the settings) */
+#mind.docked .mm-bar.mm-r [data-mm="note"],#mind.docked .mm-bar.mm-r [data-mm="sync"],#mind.docked .mm-bar.mm-r [data-mm="look"]{display:none}
+#mind.docked .mm-bar.mm-r i:last-of-type{display:none}
+#mind.docked .mm-pin{display:none}
+
+/* handwriting on the map: above the nodes, never catching the pointer itself (the pen is caught by the map) */
+#mind .mm-ink{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+#mind .mm-ink #mmEraser{fill:none;stroke:rgba(35,30,26,.45);stroke-width:1}
+#mind.inking .mm-stage{cursor:crosshair}
+#mind [data-mm="ink"].on{background:rgba(35,30,26,.12)}
+#mind .mm-inktools{position:absolute;right:22px;top:76px;z-index:6;display:flex;align-items:center;gap:4px;padding:5px;border-radius:13px;background:rgba(251,247,238,.82);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:inset 0 0 0 1px rgba(35,30,26,.08),0 6px 18px rgba(60,40,20,.16)}
+#mind .mm-inktools[hidden]{display:none}
+#mind .mm-inktools button{all:unset;box-sizing:border-box;width:34px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#3A322B;transition:background .15s ease,scale .12s ease}
+#mind .mm-inktools button:hover{background:rgba(35,30,26,.07)}
+#mind .mm-inktools button:active{scale:.92}
+#mind .mm-inktools button.on{background:rgba(35,30,26,.13)}
+#mind .mm-inktools i{display:block;width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+#mind .mm-inktools i.hl{width:16px;height:9px;border-radius:3px}
+#mind.docked .mm-inktools{right:10px;top:62px}
+
+/* arrows take the line's colour */
+#mind .mm-edge .hd{fill:#3B332C;opacity:.82}
+#mind .mm-edge.sel .hd{fill:#B4432E;opacity:1}
+#mind .mm-edge .ln{stroke-linejoin:round}
+/* the bar for a line's look */
+#mind .mm-edgebar{position:absolute;z-index:8;display:flex;align-items:center;gap:2px;padding:5px;border-radius:13px;background:rgba(251,247,238,.92);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:inset 0 0 0 1px rgba(35,30,26,.08),0 8px 22px rgba(60,40,20,.18)}
+#mind .mm-edgebar[hidden]{display:none}
+#mind .mm-edgebar button{all:unset;box-sizing:border-box;min-width:32px;height:30px;padding:0 4px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#3A322B;cursor:pointer;transition:background .15s ease,scale .12s ease}
+#mind .mm-edgebar button:hover{background:rgba(35,30,26,.07)}
+#mind .mm-edgebar button:active{scale:.92}
+#mind .mm-edgebar button.on{background:rgba(35,30,26,.14)}
+#mind .mm-edgebar > i{width:1px;height:18px;margin:0 3px;background:rgba(35,30,26,.14)}
+#mind .mm-edgebar .es-c{display:block;width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
+/* the navigator: the whole map, and where you are */
+#mind .mm-nav{position:absolute;right:34px;bottom:34px;z-index:7;padding:6px;border-radius:13px;background:rgba(251,247,238,.86);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:inset 0 0 0 1px rgba(35,30,26,.08),0 6px 18px rgba(60,40,20,.16)}
+#mind .mm-nav svg{display:block;border-radius:8px;background:rgba(243,237,225,.9);cursor:pointer}
+#mind .mm-nav svg .n{fill:#8A7F72;opacity:.55}
+#mind .mm-nav svg .v{fill:rgba(180,67,46,.06);stroke:#B4432E;stroke-width:1.2}
+#mind .mm-nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:5px}
+#mind .mm-nav-row button{all:unset;cursor:pointer;min-width:30px;height:26px;border-radius:8px;text-align:center;font:600 13px var(--atl-sans,system-ui);color:#3A322B;transition:background .15s ease,scale .12s ease}
+#mind .mm-nav-row button:hover{background:rgba(35,30,26,.07)}
+#mind .mm-nav-row button:active{scale:.92}
+#mind .mm-nav-row #mmNavPct{min-width:58px;font-size:12px}
+#mind.docked .mm-nav{right:10px;bottom:10px}
+#mind.docked .mm-nav svg{width:128px;height:86px}
+/* the ink row: brushes, pens, eraser, undo; highlighter colours and the size */
+#mind .mm-inktools{flex-direction:column;align-items:stretch;gap:4px}
+#mind .mm-inktools .mi-row{display:flex;align-items:center;gap:3px}
+#mind .mm-inktools .mi-sep{width:1px;height:20px;margin:0 3px;background:rgba(35,30,26,.14)}
+#mind .mm-inktools .mi-size{display:flex;align-items:center;gap:6px;padding:0 4px;font:600 11.5px var(--atl-sans,system-ui);color:#5E544A}
+#mind .mm-inktools .mi-size input{width:96px;accent-color:#231E1A}
+#mind .mm-inktools .mi-size b{min-width:26px;text-align:right}
+/* the save dot sits on the map's own cloud (the toolbar's buttons reset their position, which sent it to the middle) */
+html #mind .mm-bar [data-mm="sync"]{position:relative !important}
+
+/* pictures on a map */
+#mind .mm-node.t-image{padding:6px;border-radius:6px;background:#FFFDF8;box-shadow:0 1px 2px rgba(60,40,20,.14),0 8px 20px rgba(60,40,20,.12)}
+#mind .mm-node.t-image .mm-pic{display:block;width:100%;border-radius:3px;overflow:hidden;background:#EFE8DB}
+#mind .mm-node.t-image .mm-pic img{display:block;width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;user-select:none;pointer-events:none}
+#mind .mm-node.t-image .mm-cite{display:block;margin-top:5px;text-align:center;font:italic 400 12px var(--atl-serif,Georgia,serif);color:#5E544A}
+#mind .mm-node.t-image.sel{box-shadow:0 0 0 2px #B4432E,0 8px 20px rgba(60,40,20,.16)}
+
+/* many chosen; the box that chooses them */
+#mind .mm-marquee{position:absolute;z-index:9;pointer-events:none;border-radius:4px;background:rgba(180,67,46,.07);box-shadow:inset 0 0 0 1.5px rgba(180,67,46,.75)}
+#mind .mm-node.multi{box-shadow:0 0 0 2px #B4432E,0 6px 16px rgba(60,40,20,.14) !important}
+#mind.selmode .mm-stage{cursor:crosshair}
+#mind [data-mm="select"].on,#mind [data-mm="outline"].on{background:rgba(35,30,26,.12)}
+/* a node's own shape, fill, text size and weight */
+#mind .mm-node.sh-rect{border-radius:2px !important}
+#mind .mm-node.sh-pill{border-radius:999px !important;padding-left:18px;padding-right:18px}
+#mind .mm-node.sh-ellipse{border-radius:50% !important;padding:16px 26px}
+#mind .mm-node.sh-none{background:transparent !important;box-shadow:none !important}
+#mind .mm-node.sh-none.sel{box-shadow:0 0 0 1.5px rgba(180,67,46,.6) !important}
+#mind .mm-node.filled{background:var(--fill) !important}
+#mind .mm-node.filled .mm-txt,#mind .mm-node.filled b,#mind .mm-node.filled em{color:var(--tink,inherit)}
+#mind .mm-node.ts-s .mm-txt{font-size:12.5px}
+#mind .mm-node.ts-l .mm-txt{font-size:20px;line-height:1.25}
+#mind .mm-node.bold .mm-txt{font-weight:700}
+#mind .mm-nodebar{flex-wrap:wrap;max-width:calc(100% - 20px);justify-content:center}
+
+/* a node that leads to another map */
+#mind .mm-linkchip{all:unset;display:block;margin-top:6px;font:600 11.5px var(--atl-sans,system-ui);color:#7A3E2B;cursor:pointer;opacity:.85;transition:opacity .15s ease}
+#mind .mm-linkchip:hover{opacity:1;text-decoration:underline}
+/* the outline and its search */
+#mind .mm-outline{position:absolute;left:22px;top:84px;bottom:22px;width:min(320px,calc(100% - 44px));z-index:7;display:flex;flex-direction:column;border-radius:14px;background:rgba(251,247,238,.9);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px rgba(35,30,26,.08),0 10px 30px rgba(60,40,20,.18);overflow:hidden}
+#mind .mm-outline[hidden]{display:none}
+#mind.docked .mm-outline{left:8px;top:60px;bottom:8px}
+#mind .mm-outline .ol-head{display:flex;gap:6px;padding:10px 10px 6px}
+#mind .mm-outline input{flex:1;min-width:0;height:34px;padding:0 12px;border:0;border-radius:10px;background:rgba(35,30,26,.06);font:500 14px var(--atl-sans,system-ui);color:#231E1A;outline:none}
+#mind .mm-outline .ol-head button{all:unset;height:34px;padding:0 11px;border-radius:10px;font:600 13px var(--atl-sans,system-ui);color:#3A322B;cursor:pointer;transition:background .15s ease,scale .12s ease}
+#mind .mm-outline .ol-head button:hover{background:rgba(35,30,26,.07)}
+#mind .mm-outline .ol-head button:active{scale:.94}
+#mind .mm-outline .ol-back{padding:0 12px}
+#mind .mm-outline .ol-back p,#mind .mm-outline .ol-n{margin:6px 0 4px;font:700 10.5px var(--atl-sans,system-ui);letter-spacing:.08em;text-transform:uppercase;color:#8A7F72}
+#mind .mm-outline .ol-n{padding:0 12px;text-transform:none;letter-spacing:0;font-weight:600}
+#mind .mm-outline .ol-back button{all:unset;display:block;padding:4px 0;font:600 13px var(--atl-sans,system-ui);color:#7A3E2B;cursor:pointer}
+#mind .mm-outline .ol-list{flex:1;overflow-y:auto;padding:4px 6px 12px}
+#mind .mm-outline .ol-list button{all:unset;box-sizing:border-box;display:block;width:100%;padding:6px 10px;border-radius:8px;font:400 14px/1.35 var(--atl-serif,Georgia,serif);color:#231E1A;cursor:pointer;position:relative;transition:background .12s ease}
+#mind .mm-outline .ol-list button:hover{background:rgba(35,30,26,.06)}
+#mind .mm-outline .ol-list button i{position:absolute;margin-left:-11px;top:14px;width:6px;height:1px;background:#8A7F72}
+#mind .mm-outline .ol-list button.t-paper,#mind .mm-outline .ol-list button.t-book{font-weight:700}
+#mind .mm-outline .ol-list button.hit{background:rgba(242,207,87,.38)}
+#mind .mm-outline .ol-list button.dim{opacity:.4}
+#mind .mm-outline .ol-list em{font-style:normal;color:#7A3E2B}
+#mind .mm-node.found{box-shadow:0 0 0 3px rgba(242,190,60,.9),0 6px 16px rgba(60,40,20,.14) !important}
+#mind .mm-node.found-cur{box-shadow:0 0 0 3px #B4432E,0 6px 16px rgba(60,40,20,.2) !important}
+/* strokes chosen with the lasso */
+#mind .mm-ink #mmInkSelBox{fill:rgba(180,67,46,.04);stroke:#B4432E}
+#mind .mm-ink path.sel{filter:drop-shadow(0 0 1.5px rgba(180,67,46,.9))}
+
+/* a map inside a map */
+#mind .mm-node.t-map{width:256px;padding:8px;border-radius:10px;background:#FFFDF8;box-shadow:0 1px 2px rgba(60,40,20,.14),0 8px 22px rgba(60,40,20,.12)}
+#mind .mm-node.t-map .mm-mini{display:block;height:132px;border-radius:6px;background:#F3EDE1;overflow:hidden}
+#mind .mm-node.t-map .mm-mini svg{display:block;width:100%;height:100%}
+#mind .mm-node.t-map .mm-mapt{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:8px 4px 0}
+#mind .mm-node.t-map .mm-mapt b{font:700 14px/1.25 var(--atl-serif,Georgia,serif);color:#231E1A}
+#mind .mm-node.t-map .mm-mapt em{flex:none;font:italic 400 12px var(--atl-serif,Georgia,serif);color:#8A7F72}
+#mind .mm-node.t-map .mm-linkchip{padding:2px 4px 0}
+/* links across maps under an idea */
+#mind .mm-linkchip.xl,#mind .mm-linkchip.back{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#mind .mm-linkchip.back{color:#5E7A55}
+#mind .mm-node.flash{animation:mmFlash 1.3s ease}
+@keyframes mmFlash{0%,100%{box-shadow:0 0 0 0 rgba(180,67,46,0)}25%,60%{box-shadow:0 0 0 6px rgba(180,67,46,.35)}}
+/* the switcher beside a paper, and the way back */
+#mind .mm-dockswitch,#mind .mm-trail{all:unset;position:absolute;left:10px;top:10px;z-index:4;box-sizing:border-box;display:inline-flex;align-items:center;gap:7px;max-width:calc(100% - 20px);height:42px;padding:0 14px;border-radius:13px;font:700 14px 'PMap Serif',Georgia,serif;color:#231E1A;cursor:pointer;transition:background-color .12s ease,transform .12s ease}
+#mind .mm-dockswitch span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}
+#mind .mm-trail{top:auto;bottom:34px;left:34px;height:36px;font:600 13px 'PMap Sans',sans-serif}
+#mind.docked .mm-trail{top:60px;bottom:auto;left:10px}
+#mind .mm-trail[hidden]{display:none}
+#mind .mm-dockswitch:active,#mind .mm-trail:active{transform:scale(.96)}
+/* the link chooser */
+#mind .mm-picker{position:absolute;left:50%;top:84px;transform:translateX(-50%);z-index:12;width:min(420px,calc(100% - 24px));max-height:min(520px,calc(100% - 110px));display:flex;flex-direction:column;border-radius:14px;overflow:hidden}
+#mind.docked .mm-picker{top:60px}
+#mind .mm-picker[hidden]{display:none}
+#mind .mm-picker .pk-head{display:flex;align-items:center;gap:6px;padding:10px 10px 4px}
+#mind .mm-picker .pk-head b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 14px 'PMap Serif',Georgia,serif;color:#231E1A;padding-left:4px}
+#mind .mm-picker .pk-head button{all:unset;width:32px;height:32px;border-radius:9px;text-align:center;line-height:30px;font:400 20px 'PMap Sans',sans-serif;color:#3A322B;cursor:pointer;transition:background-color .12s ease,transform .12s ease}
+#mind .mm-picker .pk-head button:hover{background:rgba(35,30,26,.07)}
+#mind .mm-picker .pk-head button:active{transform:scale(.92)}
+#mind .mm-picker input{margin:6px 10px;height:36px;padding:0 12px;border:0;border-radius:10px;background:rgba(35,30,26,.06);font:500 14px 'PMap Sans',sans-serif;color:#231E1A;outline:none}
+#mind .mm-picker .pk-list{flex:1;overflow-y:auto;padding:2px 6px 10px}
+#mind .mm-picker .pk-list button{all:unset;box-sizing:border-box;display:flex;align-items:baseline;justify-content:space-between;gap:10px;width:100%;padding:8px 10px;border-radius:9px;cursor:pointer;transition:background-color .12s ease}
+#mind .mm-picker .pk-list button:hover{background:rgba(35,30,26,.06)}
+#mind .mm-picker .pk-list button span{font:400 14.5px/1.3 'PMap Serif',Georgia,serif;color:#231E1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#mind .mm-picker .pk-list button em{flex:none;font:italic 400 12px 'PMap Serif',Georgia,serif;color:#8A7F72}
+#mind .mm-picker .pk-list button.add span{font-weight:700}
+#mind .mm-picker .pk-list button.rm span{color:#B4432E}
+#mind .mm-picker .pk-list p{margin:14px;font:italic 400 13px 'PMap Serif',Georgia,serif;color:#8A7F72}
+/* one look for every floating part of the map: the same glass as its toolbar */
+#mind .mm-edgebar,#mind .mm-nodebar,#mind .mm-inktools,#mind .mm-nav,#mind .mm-outline,#mind .mm-picker,#mind .mm-dockswitch,#mind .mm-trail{background:rgba(255,253,248,.62) !important;-webkit-backdrop-filter:blur(12px) saturate(1.1) !important;backdrop-filter:blur(12px) saturate(1.1) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 0 0 1px rgba(35,30,26,.05),0 4px 14px rgba(30,15,8,.16) !important}
+#mind .mm-edgebar button,#mind .mm-nodebar button,#mind .mm-inktools button,#mind .mm-nav-row button{min-width:32px;height:32px;border-radius:9px}
+#mind .mm-dockswitch:hover,#mind .mm-trail:hover{background:rgba(255,253,248,.8) !important}
+
+/* beside a paper: one toolbar row holding the switcher, ‹ Back and the tools; it wraps when the space is narrow */
+#mind.docked .mm-bar.mm-r{left:10px;right:10px;flex-wrap:wrap;justify-content:flex-end;row-gap:2px}
+#mind.docked .mm-bar .mm-dockswitch,#mind.docked .mm-bar .mm-trail{position:static;height:32px;padding:0 10px;margin-right:auto;border-radius:9px;background:none !important;box-shadow:none !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important}
+#mind.docked .mm-bar .mm-trail{margin-right:0;font:600 13px 'PMap Sans',sans-serif}
+#mind.docked .mm-bar .mm-trail + .mm-dockswitch{margin-right:auto}
+#mind.docked .mm-bar .mm-dockswitch:hover,#mind.docked .mm-bar .mm-trail:hover{background:rgba(35,30,26,.07) !important}
+#mind.docked .mm-bar .mm-dockswitch span{max-width:150px}
+/* beside a paper, a bar at the foot takes the navigator's corner while it is open */
+#mind.docked:has(.mm-edgebar:not([hidden])) .mm-nav,#mind.docked:has(.mm-nodebar:not([hidden])) .mm-nav{display:none}
+#mind.docked .mm-outline,#mind.docked .mm-picker{top:100px}
+
+/* the timeline mind map: the ruler, date chips, spans, folded stretches; folded branches */
+#mind .mm-ruler{position:absolute;left:0;right:0;top:0;height:30px;z-index:5;cursor:col-resize;background:rgba(255,253,248,.62);-webkit-backdrop-filter:blur(12px) saturate(1.1);backdrop-filter:blur(12px) saturate(1.1);box-shadow:inset 0 -1px 0 rgba(35,30,26,.08)}
+#mind .mm-ruler[hidden]{display:none}
+#mind.has-axis .mm-bar,#mind.has-axis .mm-dockswitch{top:40px}
+#mind .mm-ruler svg{display:block;overflow:visible}
+#mind .mm-ruler path{stroke:#5E544A;stroke-width:1}
+#mind .mm-ruler path.minor{stroke:#A79D90}
+#mind .mm-ruler text{font:600 10.5px 'PMap Sans',sans-serif;fill:#3A322B}
+#mind .mm-ruler .fold rect{fill:rgba(180,67,46,.12);stroke:#B4432E;stroke-width:1;cursor:pointer}
+#mind .mm-ruler .fold path{fill:none;stroke:#B4432E;stroke-width:1.2}
+#mind .mm-ruler .fold text{font-size:9px;fill:#7A2E1F}
+#mind .mm-ruler .mr-sel{position:absolute;top:2px;height:26px;border-radius:6px;background:rgba(180,67,46,.14);box-shadow:inset 0 0 0 1px rgba(180,67,46,.6);pointer-events:none}
+#mind .mm-ruler .mr-sel[hidden]{display:none}
+#mmBands{position:absolute;left:0;top:0;width:1px;height:1px;pointer-events:none}
+#mmBands i{position:absolute;top:-100000px;height:200000px;background:repeating-linear-gradient(135deg,rgba(180,67,46,.07) 0 6px,rgba(180,67,46,0) 6px 12px);box-shadow:inset 1px 0 0 rgba(180,67,46,.25),inset -1px 0 0 rgba(180,67,46,.25)}
+#mind .mm-node .mm-datechip{position:absolute;left:50%;top:-18px;transform:translateX(-50%);padding:1px 7px;border-radius:999px;font:600 10px/1.5 'PMap Sans',sans-serif;color:#3A322B;background:rgba(255,253,248,.85);box-shadow:inset 0 0 0 1px rgba(35,30,26,.10);white-space:nowrap;pointer-events:none}
+#mind .mm-node .mm-datechip.auto{color:#6B6259}
+#mind .mm-span{fill:none;stroke:#8A6A52;stroke-width:1.4;stroke-linecap:round}
+#mind .mm-node.mm-hidden{display:none !important}
+#mind .mm-node .mm-foldbtn{all:unset;position:absolute;right:-11px;top:50%;transform:translateY(-50%);min-width:20px;height:20px;padding:0 4px;box-sizing:border-box;border-radius:999px;text-align:center;font:700 11px/20px 'PMap Sans',sans-serif;color:#3A322B;background:rgba(255,253,248,.95);box-shadow:0 0 0 1px rgba(35,30,26,.14),0 2px 6px rgba(60,40,20,.16);cursor:pointer;opacity:0;transition:opacity .15s ease,transform .12s ease}
+#mind .mm-node:hover .mm-foldbtn,#mind .mm-node.sel .mm-foldbtn,#mind .mm-node .mm-foldbtn.folded{opacity:1}
+#mind .mm-node .mm-foldbtn.folded{background:#231E1A;color:#FBF8F2}
+#mind .mm-node .mm-foldbtn:active{transform:translateY(-50%) scale(.92)}
+#mind .nb-date{font:600 12px 'PMap Sans',sans-serif;padding:0 6px}

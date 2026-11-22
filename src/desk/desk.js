@@ -295,13 +295,13 @@ let bgFront = 'A';
    colour of the whisky or the tea) and the light it gives itself (added: the porcelain, reflections, ice, peel, leaves).
    So a drink looks right on any desk, and the ice or the leaves move the same on all of them. */
 const VESSELS = {};
-const DRINKS = {'': 'espresso', espresso: 'espresso', heart: 'espresso', tea: 'espresso', greentea: 'espresso', osmanthus: 'osmanthus', longjing: 'longjing', whisky: 'whisky', teaglass: 'teaglass'};
-const DRINK_BOX = {espresso: [1080, 0, 360], osmanthus: [1080, 0, 360], longjing: [1080, 0, 360], whisky: [1160, 0, 280], teaglass: [1160, 0, 280]};
+const DRINKS = {'': 'espresso', espresso: 'espresso', heart: 'espresso', tea: 'espresso', greentea: 'espresso', osmanthus: 'osmanthus', longjing: 'longjing', whisky: 'whisky', teaglass: 'teaglass', flowerice: 'flowerice', bluegin: 'bluegin', sakurahigh: 'sakurahigh', oldfashioned: 'oldfashioned', yuzusour: 'yuzusour', matcha: 'matcha', mulled: 'mulled', sake: 'sake'};
+const DRINK_BOX = {espresso: [1080, 0, 360], osmanthus: [1080, 0, 360], longjing: [1080, 0, 360], whisky: [1160, 0, 280], teaglass: [1160, 0, 280], flowerice: [1125, -35, 350], bluegin: [1125, -35, 350], sakurahigh: [1125, -35, 350], oldfashioned: [1125, -35, 350], yuzusour: [1125, -35, 350], matcha: [1125, -35, 350], mulled: [1125, -35, 350], sake: [1145, 50, 240]};
 const drinkOn = () => true;
 function paintDrink(){ const k = DRINKS[prefs.cup || ''] || 'espresso', bx = DRINK_BOX[k], T = $('drinkT'), E = $('drinkE'); if(!T || !E) return;
   const Lf = $('drinkL'); if(Lf){ Object.assign(Lf.style, {left: bx[0] + 'px', top: bx[1] + 'px', width: bx[2] + 'px', height: bx[2] + 'px'}); if(k === 'teaglass'){ const s2 = AS + 'drink-teaglass-l.webp'; if(Lf.getAttribute('src') !== s2){ Lf.onload = () => Lf.classList.add('on'); Lf.src = s2; } else Lf.classList.add('on'); } else Lf.classList.remove('on'); }
   [T, E].forEach((el, n) => { Object.assign(el.style, {left: bx[0] + 'px', top: bx[1] + 'px', width: bx[2] + 'px', height: bx[2] + 'px'});
-    const src = AS + 'drink-' + k + (n ? '-e' : '-t') + '.webp'; el.onerror = () => el.classList.remove('on');
+    const src = k === 'sake' ? AS + 'sake/tokkuri' + (n ? '-e' : '-t') + '.webp' : AS + 'drink-' + k + (n ? '-e' : '-t') + '.webp'; el.onerror = () => el.classList.remove('on');
     if(el.getAttribute('src') !== src){ el.classList.remove('on'); el.onload = () => el.classList.add('on'); el.src = src; } else el.classList.add('on'); }); }
 const paintDrinkAnim = paintDrink;
 function setWood(v, instant){ prefs.wood = v; document.querySelectorAll('.wd').forEach(w => w.classList.toggle('on', w.dataset.wood === v));
@@ -422,7 +422,7 @@ function fillPaper(id){ const p = P && P.paper(id); if(!p) return false; ppId = 
   $('ppPdf').hidden = !p.pdf; $('ppPdfImg').removeAttribute('src'); $('ppPg').hidden = true; $('ppPdfMsg').textContent = p.pdf ? 'Drawing a page of its PDF…' : '';
   if(p.pdf && P && P.pdfPage) ppShowPage(id, 0); else if(p.pdf && P && P.pdfThumb) P.pdfThumb(id).then(u => { if(u && ppId === id){ $('ppPdfImg').src = u; $('ppPdfMsg').textContent = ''; } }).catch(() => {});
   document.querySelectorAll('#ppSt button').forEach(b => b.classList.toggle('on', b.dataset.st === (p.st || '')));
-  $('ppNotes').innerHTML = p.n ? md(p.n) : '<p class="empty">No notes yet. Notes &amp; PDF opens them beside the paper.</p>';
+  $('ppNotes').innerHTML = p.n ? md(String(p.n).replace(/^\s*<!-- page -->\s*$/gm, '')) : '<p class="empty">No notes yet. Notes &amp; PDF opens them beside the paper.</p>';
   $('ppLink').hidden = !p.url; $('ppLink').dataset.url = p.url || '';
   $('ppWhere').textContent = p.where || '';
   const sec = (title, arr) => arr && arr.length ? '<div class="pp-ln"><h4>' + title + '</h4>' + arr.map(x => '<button data-pid="' + esc(x.id) + '"><b>' + esc(x.t) + '</b><span>' + esc([x.au, x.y].filter(Boolean).join(' · ')) + '</span></button>').join('') + '</div>' : '';
@@ -753,7 +753,7 @@ function zoomTo(on){ stage.classList.add('zooming');
     stage.style.transform = 'translate(' + (innerWidth / 2 - cx * s2) + 'px,' + (innerHeight / 2 - cy * s2) + 'px) scale(' + s2 + ')'; }
   else fit();
   clearTimeout(zoomTo._t); zoomTo._t = setTimeout(() => stage.classList.remove('zooming'), 820); }
-async function openNote(){ if(busy || state !== 'desk') return; busy = true; closeMenus(); nbSave(true); D = load(); loadNotebooks(true); NB.cur = lastWritten(NB); nbFont(); memoShow();
+async function openNote(){ if(busy || state !== 'desk') return; busy = true; closeMenus(); if(nbT) nbSave(true); D = load(); loadNotebooks(true); NB.cur = lastWritten(NB); nbFont(); memoShow();
   setState('note', 'Your research log · up to sixty pages · the right page stays as it is'); zoomTo(true); await sleep(reduce ? 20 : 780);
   memoText.contentEditable = 'true'; caretEnd(); busy = false; }
 async function closeNote(){ if(busy || state !== 'note') return; busy = true; fontMenu.classList.remove('on'); pastMenu.classList.remove('on'); nbSave(true); memoText.contentEditable = 'false'; memoText.blur(); nbSave(true);
@@ -985,13 +985,15 @@ const spPaper = () => (P && P.paper ? P.paper(SP.id) : null) || (D.papers || [])
 /* notes: kept as plain Markdown, shown as a page you write on */
 function notesToHTML(md){ const L = String(md || '').replace(/\r/g, '').split('\n'); let h = '', list = false;
   const inl = t => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*(?!\s)(.+?)\*/g, '$1<i>$2</i>');
-  L.forEach(l => { if(/^\s*[-*] /.test(l)){ if(!list){ h += '<ul>'; list = true; } h += '<li>' + inl(l.replace(/^\s*[-*] /, '')) + '</li>'; return; } if(list){ h += '</ul>'; list = false; }
+  L.forEach(l => { if(/^\s*<!-- page -->\s*$/.test(l)){ if(list){ h += '</ul>'; list = false; } h += '<div class="sp-pgbrk" contenteditable="false"></div>'; return; }
+    if(/^\s*[-*] /.test(l)){ if(!list){ h += '<ul>'; list = true; } h += '<li>' + inl(l.replace(/^\s*[-*] /, '')) + '</li>'; return; } if(list){ h += '</ul>'; list = false; }
     if(/^>\s?/.test(l)){ const t = l.replace(/^>\s?/, ''), m = t.match(/^(.*?)\s+—\s+((?:p\.|loc\.|ch\.|§)\s?[^—]*|[^—]*\d+%)$/i); h += '<blockquote>' + inl(m ? m[1] : t) + (m ? '<cite contenteditable="false">' + esc(m[2]) + '</cite>' : '') + '</blockquote>'; return; }
     if(/^#{1,3} /.test(l)){ h += '<h3>' + inl(l.replace(/^#{1,3} /, '')) + '</h3>'; return; }
     h += '<p>' + (l.trim() ? inl(l) : '<br>') + '</p>'; });
   if(list) h += '</ul>'; return h || '<p><br></p>'; }
 function notesToMD(el){ const out = [];
   el.childNodes.forEach(n => { if(n.nodeType === 3){ if(n.textContent.trim()) out.push(n.textContent.trim()); return; } if(n.nodeType !== 1) return;
+    if(n.classList && n.classList.contains('sp-pgbrk')){ out.push('<!-- page -->'); return; }
     if(n.tagName === 'BLOCKQUOTE'){ const c = n.querySelector('cite'), t = [...n.childNodes].filter(x => !(x.nodeType === 1 && x.tagName === 'CITE')).map(x => x.textContent).join('').trim(); out.push('> ' + t + (c ? ' — ' + c.textContent.trim() : '')); }
     else if(/^H[1-6]$/.test(n.tagName)) out.push('### ' + n.textContent.trim());
     else if(n.tagName === 'UL' || n.tagName === 'OL') n.querySelectorAll('li').forEach(li => out.push('- ' + li.textContent.trim()));
@@ -1011,7 +1013,7 @@ function spQuote(text, loc){ const ed = $('spNotes'), bq = document.createElemen
   SP.caret = p; bq.classList.add('fresh'); setTimeout(() => bq.classList.remove('fresh'), 1400); bq.scrollIntoView({block: 'nearest', behavior: 'smooth'}); spSaveNotes(true); }
 /* ---- opening and closing ---- */
 async function openSpread(kind, id, fromEl){
-  if(busy) return; if(SP.kind && !$('spread').hidden){ spSaveNotes(true); try{ inkFlush(); }catch(e){} } SP.kind = kind; SP.id = id; SP.mode = null; SP.pending = null; SP.caret = null;
+  if(busy) return; if(SP.kind && !$('spread').hidden){ if(SP.mindOn) spMindOn(false); spSaveNotes(true); try{ inkFlush(); }catch(e){} } SP.kind = kind; SP.id = id; SP.mode = null; SP.pending = null; SP.caret = null;
   let title = '', who = '', md = '';
   if(kind === 'paper'){ const p = spPaper(); if(!p) return; title = p.t; who = [p.au, p.y].filter(Boolean).join(' · '); const rd = P && P.paperRead ? P.paperRead(id) : null; md = rd ? rd.n : (p.n || ''); SP.marks = rd ? rd.marks : []; SP.at = rd ? rd.at : 0; SP.stickies = rd ? rd.stickies || [] : []; }
   else { const b = spBook(); if(!b) return; title = b.title; who = [(b.authors || []).join(', '), b.year].filter(Boolean).join(' · '); md = b.notes || ''; SP.marks = (b.marks || []).slice(); SP.at = b.at || 0; SP.stickies = (b.stickies || []).slice(); }
@@ -1072,7 +1074,7 @@ $('spFile').addEventListener('change', async e => { const f = e.target.files && 
   try{ if(SP.kind === 'book'){ const b = spBook(); const meta = await P.bookFileSave(b.id, f); b.files = (b.files || []).filter(x => x.path !== meta.path).concat([meta]); rSave(); }
     else { const ok = await P.attachPaperPdf(SP.id, f); D = load(); if(!ok) throw new Error('not kept'); }
     spLoadDoc(); }catch(err){ spMsg(String((err && err.message) || 'The file could not be kept.')); } });
-function closeSpread(){ const sp = $('spread'); if(sp.hidden) return; spSaveNotes(true); try{ inkFlush(); }catch(e){} $('spSel').hidden = true; $('spPop').hidden = true;
+function closeSpread(){ const sp = $('spread'); if(sp.hidden) return; if(SP.mindOn) spMindOn(false); spSaveNotes(true); try{ inkFlush(); }catch(e){} $('spSel').hidden = true; $('spPop').hidden = true;
   /* the way out: the pages go back into what they came from */
   const from = SP.from && SP.from.isConnected ? SP.from : null;
   if(from && !reduce){ const fr = spRect(from), L = spRect(document.querySelector('#spread .sp-left'));
@@ -1092,39 +1094,50 @@ $('spBack').addEventListener('click', closeSpread); $('spVeil').addEventListener
 let deskPdf = null;
 function deskPdfJs(){ if(window.pdfjsLib) return Promise.resolve(window.pdfjsLib); return deskPdf || (deskPdf = new Promise((res, rej) => { const s = document.createElement('script'); s.src = VEND + 'pdfjs/pdf.min.js';
   s.onload = () => { try{ window.pdfjsLib.GlobalWorkerOptions.workerSrc = VEND + 'pdfjs/pdf.worker.min.js'; res(window.pdfjsLib); }catch(e){ rej(e); } }; s.onerror = () => { deskPdf = null; rej(new Error('pdf.js')); }; document.head.appendChild(s); })); }
-async function spOpenPdf(blob){ SP.pdfBlob = blob; SP.userMoved = false; const lib2 = await deskPdfJs(), doc = await lib2.getDocument({data: new Uint8Array(await blob.arrayBuffer())}).promise; SP.pdf = doc; SP.mode = 'pdf';
-  const box = $('spDoc'), side = spFlow().doc === 'side'; if(SP.onScroll){ box.removeEventListener('scroll', SP.onScroll); SP.onScroll = null; } box.className = 'sp-doc pdf' + (side ? ' side' : ''); box.innerHTML = ''; const p1 = await doc.getPage(1), v1 = p1.getViewport({scale: 1});
+async function spOpenPdf(blob){ SP.pdfBlob = blob; SP.userMoved = false; const lib2 = await deskPdfJs(), doc = await lib2.getDocument({data: new Uint8Array(await blob.arrayBuffer())}).promise; SP.pdf = doc; SP.mode = 'pdf'; spZoomShow(); setTimeout(spPNavShow, 0);
+  const box = $('spDoc'), side = spFlow().doc === 'side'; if(SP.onScroll){ box.removeEventListener('scroll', SP.onScroll); SP.onScroll = null; } box.className = 'sp-doc pdf' + (side ? ' side paged' : ''); box.innerHTML = ''; const p1 = await doc.getPage(1), v1 = p1.getViewport({scale: 1});
   const {sc, two} = spPdfScale(box, v1, side), W = Math.round(v1.width * sc); SP.two = two; SP.v1 = v1; box.classList.toggle('two', two); SP.scale = sc; SP.side = side; box.style.setProperty('--pw', W + 'px'); box.style.setProperty('--vw', box.clientWidth + 'px');
   for(let i = 1; i <= doc.numPages; i++){ const pg = document.createElement('div'); pg.className = 'sp-pg'; pg.dataset.page = i; pg.style.width = W + 'px'; pg.style.height = Math.round(v1.height * sc) + 'px'; box.appendChild(pg); }
-  SP.io = new IntersectionObserver(es => es.forEach(en => { if(en.isIntersecting) spRenderPage(+en.target.dataset.page); else spUnrenderPage(+en.target.dataset.page); }), {root: box, rootMargin: side ? '0px 1800px' : '1600px 0px'});
+  SP.io = new IntersectionObserver(es => es.forEach(en => { if(en.isIntersecting) spRenderPage(+en.target.dataset.page); else spUnrenderPage(+en.target.dataset.page); }), {root: box, rootMargin: PM_TOUCH ? (side ? '0px 700px' : '700px 0px') : (side ? '0px 1800px' : '1600px 0px')});
   box.querySelectorAll('.sp-pg').forEach(p => SP.io.observe(p));
-  const onScroll = () => { if(SP.restoring) return; const pgs = box.querySelectorAll('.sp-pg'), mid = side ? box.scrollLeft + box.clientWidth * .5 : box.scrollTop + box.clientHeight * .4; let cur = 1; pgs.forEach(p => { if((side ? p.offsetLeft : p.offsetTop) <= mid) cur = +p.dataset.page; });
+  const onScroll = () => { if(SP.restoring) return; const pgs = box.querySelectorAll('.sp-pg'), mid = side ? box.scrollLeft + box.clientWidth * .5 : box.scrollTop + box.clientHeight * .4; let cur = 1; pgs.forEach(p => { if((side ? p.offsetLeft : p.offsetTop) <= mid) cur = +p.dataset.page; }); SP_LOG && cur !== SP.cur && SP_LOG.push(['scroll', 'cur ' + cur, 'scroll ' + Math.round(box.scrollLeft), 'w ' + (pgs[0] && pgs[0].offsetWidth)]);
     $('spLoc').textContent = 'p. ' + cur + ' / ' + doc.numPages; if(cur !== SP.cur){ SP.cur = cur; if(cur === 1 && !SP.userMoved) return; if(SP.kind === 'paper'){ if(P.setPaperAt) P.setPaperAt(SP.id, cur); } else { const b = spBook(); if(b && b.pdfAt !== cur){ b.pdfAt = cur; clearTimeout(SP.atT); SP.atT = setTimeout(rSave, 1500); } } } };
   if(SP.onScroll) box.removeEventListener('scroll', SP.onScroll); SP.onScroll = onScroll; box.addEventListener('scroll', onScroll, {passive: true});
   const back = SP.kind === 'paper' ? SP.at : ((spBook() || {}).pdfAt || 0);
-  if(back > 1){ SP.restoring = true; let tries = 0; const put = () => { const want = spPdfGo(back, true), at = side ? box.scrollLeft : box.scrollTop;
+  if(back > 1){ SP.restoring = true; box.style.scrollSnapType = 'none'; let tries = 0; const put = () => { const want = spPdfGo(back, true), at = side ? box.scrollLeft : box.scrollTop;
       const ready = box.clientWidth > 0 && (side ? box.scrollWidth > box.clientWidth : box.scrollHeight > box.clientHeight);
       if((!ready || Math.abs(at - want) > 4) && tries++ < 360) requestAnimationFrame(put);
-      else { const ok = ready && Math.abs(at - want) <= 4; setTimeout(() => { SP.restoring = false; if(ok) onScroll(); else $('spLoc').textContent = 'p. ' + back + ' / ' + doc.numPages; }, 120); } }; requestAnimationFrame(put); }
+      else { const ok = ready && Math.abs(at - want) <= 4; setTimeout(() => { SP.restoring = false; box.style.scrollSnapType = ''; if(ok) onScroll(); else $('spLoc').textContent = 'p. ' + back + ' / ' + doc.numPages; }, 120); } }; requestAnimationFrame(put); }
   else onScroll();
   /* a PDF book without a cover takes its first page as one */
   if(SP.kind !== 'paper'){ const b = spBook(); if(b && !b.cover){ try{ const vp = p1.getViewport({scale: 360 / v1.width}), cv = document.createElement('canvas'); cv.width = Math.round(vp.width); cv.height = Math.round(vp.height); await p1.render({canvasContext: cv.getContext('2d'), viewport: vp}).promise; b.cover = cv.toDataURL('image/jpeg', 0.86); rSave(); }catch(e){} } } }
 /* how big a page is drawn: to the height of the view when read page by page (two pages when the notes are away and the
    view is wide), to its width when read as a scroll */
-function spPdfScale(box, v1, side){ const two = side && document.body.classList.contains('sp-notes-off') && box.clientWidth > box.clientHeight * 1.2;
-  const sc = side ? Math.min((box.clientHeight - 28) / v1.height, (two ? box.clientWidth / 2 - 30 : box.clientWidth - 24) / v1.width) : Math.max(280, box.clientWidth - 44) / v1.width;
-  return {sc, two}; }
+const PM_TOUCH = (() => { try{ return matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 1; }catch(e){ return false; } })();
+const SP_ZOOMS = [.5, .67, .8, .9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3];
+function spPdfZoom(){ let z = 1; try{ z = +(localStorage.getItem('pm:pdfZoom') || 1); }catch(e){} return z >= .5 && z <= 3 ? z : 1; }
+function spPdfScale(box, v1, side){ const fit = Math.min((box.clientHeight - 36) / v1.height, (box.clientWidth - 56) / v1.width); return {sc: Math.max(.15, fit) * spPdfZoom(), two: false}; }
 /* the window changed size: once it has stopped changing, the pages are measured again, drawn again at the new size, and you
    stay on the page you were reading; marks, notes and handwriting keep their places, being kept in the page's own measure */
-function spRelayout(){ if(SP.mode !== 'pdf' || !SP.pdf || !SP.v1 || !SP.kind) return; const box = $('spDoc'); if(!box.clientWidth) return; const cur = SP.cur || 1;
-  const {sc, two} = spPdfScale(box, SP.v1, SP.side); if(Math.abs(sc - SP.scale) / SP.scale < 0.02 && two === !!SP.two) return;
-  SP.restoring = true; SP.scale = sc; SP.two = two; box.classList.toggle('two', two); const W = Math.round(SP.v1.width * sc), H = Math.round(SP.v1.height * sc);
+let SP_RELAY = false, SP_RELAY_AGAIN = false;
+const SP_LOG = (() => { try{ return /[?&]pmtest\b/.test(parent.location.search) ? (window.__rl = []) : null; }catch(e){ return null; } })();
+function spHold(){ if(SP.mode !== 'pdf' || !SP.pdf) return; if(SP.keepAt == null) SP.keepAt = SP.cur || 1; SP.restoring = true; }
+function spRelayout(){ if(SP.mode !== 'pdf' || !SP.pdf || !SP.v1 || !SP.kind){ SP.keepAt = null; return; } if(SP_RELAY){ SP_RELAY_AGAIN = true; SP_LOG && SP_LOG.push(['queued']); return; } const box = $('spDoc'); if(!box.clientWidth) return; const cur = SP.keepAt != null ? SP.keepAt : (SP.cur || 1); SP.keepAt = null;
+  const {sc, two} = spPdfScale(box, SP.v1, SP.side); SP_LOG && SP_LOG.push(['check', 'cur ' + cur, 'want two ' + two, 'has ' + SP.two, 'r ' + (box.clientWidth / box.clientHeight).toFixed(2), 'off ' + document.body.classList.contains('sp-notes-off'), 'busy ' + SP_RELAY]); if(Math.abs(sc - SP.scale) / SP.scale < 0.02 && two === !!SP.two){ spPdfGo(cur, true); setTimeout(() => { if(!SP_RELAY) SP.restoring = false; }, 120); return; }
+  try{ spZoomShow(); }catch(e){}
+  SP_LOG && SP_LOG.push(['relayout', 'cur ' + cur, 'two ' + SP.two + '>' + two, 'scroll ' + Math.round(box.scrollLeft)]);
+  let goTo = cur; if(two && !SP.two) SP.pairFrom = cur; else if(!two && SP.two && SP.pairFrom && Math.abs(SP.pairFrom - cur) <= 1) goTo = SP.pairFrom;
+  SP_RELAY = true; SP.restoring = true; box.style.scrollSnapType = 'none'; SP.scale = sc; SP.two = two; box.classList.toggle('two', two); const W = Math.round(SP.v1.width * sc), H = Math.round(SP.v1.height * sc);
   box.style.setProperty('--pw', W + 'px'); box.style.setProperty('--vw', box.clientWidth + 'px');
   box.querySelectorAll('.sp-pg').forEach(pg => { spUnrenderPage(+pg.dataset.page); pg.style.width = W + 'px'; pg.style.height = H + 'px'; });
-  requestAnimationFrame(() => { spPdfGo(cur, true); const b = box.getBoundingClientRect();
+  requestAnimationFrame(() => { spPdfGo(goTo, true); const b = box.getBoundingClientRect();
     box.querySelectorAll('.sp-pg').forEach(pg => { const r = pg.getBoundingClientRect(); if(r.right > b.left - 1800 && r.left < b.right + 1800 && r.bottom > b.top - 1600 && r.top < b.bottom + 1600) spRenderPage(+pg.dataset.page); });
-    try{ INK.layers.forEach(L => L.draw()); }catch(e){} setTimeout(() => { SP.restoring = false; }, 160); }); }
-let SP_RS_T = 0; addEventListener('resize', () => { clearTimeout(SP_RS_T); SP_RS_T = setTimeout(spRelayout, 300); });
+    try{ INK.layers.forEach(L => L.draw()); }catch(e){}
+    setTimeout(() => { spPdfGo(goTo, true); SP.cur = goTo; $('spLoc').textContent = 'p. ' + goTo + ' / ' + SP.pdf.numPages; SP_LOG && SP_LOG.push(['placed', 'page ' + goTo]);
+      requestAnimationFrame(() => setTimeout(() => { box.style.scrollSnapType = ''; SP_RELAY = false;
+        const now = spPdfScale(box, SP.v1, SP.side), differs = Math.abs(now.sc - SP.scale) / SP.scale >= .02 || now.two !== !!SP.two; SP_RELAY_AGAIN = false;
+        if(differs || SP.keepAt != null){ if(SP.keepAt == null) SP.keepAt = goTo; spRelayout(); } else SP.restoring = false; }, 160)); }, 220); }); }
+let SP_RS_T = 0; addEventListener('resize', () => { spHold(); clearTimeout(SP_RS_T); SP_RS_T = setTimeout(spRelayout, 300); });
 /* to a page of the PDF */
 function spPdfGo(n, quiet){ const box = $('spDoc'); if(!SP.pdf) return 0; n = Math.max(1, Math.min(SP.pdf.numPages, Math.round(n))); const t = box.querySelector('.sp-pg[data-page="' + n + '"]'); if(!t) return 0;
   /* measured against the view itself, so the page (or the pair) lands centred whatever surrounds the view */
@@ -1135,7 +1148,7 @@ function spPdfGo(n, quiet){ const box = $('spDoc'); if(!SP.pdf) return 0; n = Ma
   if(!quiet) spRenderPage(n); return want; }
 async function spRenderPage(i){ const box = $('spDoc'), pg = box.querySelector('.sp-pg[data-page="' + i + '"]'); if(!pg || pg.dataset.done || !SP.pdf) return; pg.dataset.done = '1';
   const rk = pg.dataset.rk = Math.random().toString(36).slice(2), stale = () => pg.dataset.rk !== rk;
-  try{ const page = await SP.pdf.getPage(i), vp = page.getViewport({scale: SP.scale}), dpr = Math.min(2, window.devicePixelRatio || 1); if(stale()) return;
+  try{ const page = await SP.pdf.getPage(i), vp = page.getViewport({scale: SP.scale}), dpr = Math.min(PM_TOUCH ? 1.5 : 2, window.devicePixelRatio || 1); if(stale()) return;
     SP.dims = SP.dims || {}; SP.dims[i] = [page.view[2] - page.view[0], page.view[3] - page.view[1]]; spFromZotero(i);
     const cv = document.createElement('canvas'); cv.width = Math.floor(vp.width * dpr); cv.height = Math.floor(vp.height * dpr); cv.style.width = vp.width + 'px'; cv.style.height = vp.height + 'px'; pg.style.height = vp.height + 'px'; pg.appendChild(cv);
     await page.render({canvasContext: cv.getContext('2d'), viewport: vp, transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null}).promise;
@@ -1143,6 +1156,7 @@ async function spRenderPage(i){ const box = $('spDoc'), pg = box.querySelector('
     const tl = document.createElement('div'); tl.className = 'textLayer'; tl.style.setProperty('--scale-factor', SP.scale); pg.appendChild(tl);
     try{ await window.pdfjsLib.renderTextLayer({textContentSource: page.streamTextContent(), container: tl, viewport: vp, textDivs: []}).promise; }catch(e){}
     if(stale()){ tl.remove(); return; }
+    { const eoc = document.createElement('div'); eoc.className = 'endOfContent'; tl.appendChild(eoc); }
     const ml = document.createElement('div'); ml.className = 'sp-marks'; pg.appendChild(ml); const sl = document.createElement('div'); sl.className = 'sp-pgstk'; pg.appendChild(sl); spDrawMarks(i); }catch(e){ if(!stale()) pg.dataset.done = ''; } }
 function spUnrenderPage(i){ const pg = $('spDoc').querySelector('.sp-pg[data-page="' + i + '"]'); if(!pg || pg.dataset.done !== '1') return;
   pg.querySelectorAll('canvas:not(.ink-cv)').forEach(c => { c.width = 0; c.height = 0; c.remove(); }); pg.querySelectorAll('.textLayer, .sp-marks, .sp-pgstk').forEach(x => x.remove()); pg.dataset.done = ''; pg.dataset.rk = ''; }
@@ -1164,7 +1178,7 @@ async function drmOf(blob){ try{ const base = new URL(VEND, document.baseURI).hr
 async function spOpenEbook(blob, name){ const box = $('spDoc'); box.className = 'sp-doc ebook'; box.innerHTML = '';
   if(/\.epub$/i.test(name || '')){ const who = await drmOf(blob); if(who){ spMsg('This book is locked by ' + who + ' (copy protection), so only that store\u2019s own app can open it. Books without copy protection open here.'); return; } }
   const base = new URL(VEND, document.baseURI).href; await import(base + 'foliate/view.js'); const {Overlayer} = await import(base + 'foliate/overlayer.js');
-  const view = document.createElement('foliate-view'); box.appendChild(view); SP.view = view; SP.mode = 'ebook'; const b = spBook();
+  const view = document.createElement('foliate-view'); box.appendChild(view); SP.view = view; SP.mode = 'ebook'; try{ spZoomShow(); setTimeout(spPNavShow, 0); }catch(e){} const b = spBook();
   view.addEventListener('load', e => { const {doc, index} = e.detail; doc.addEventListener('pointerup', () => setTimeout(() => spEbookSel(doc, index), 0)); doc.addEventListener('keydown', ev => spKeys(ev));
     /* right-click a word in the book for a sticky note there */
     doc.addEventListener('contextmenu', ev => { ev.preventDefault(); const r0 = doc.caretRangeFromPoint ? doc.caretRangeFromPoint(ev.clientX, ev.clientY) : null; if(!r0 || r0.startContainer.nodeType !== 3) return;
@@ -1205,6 +1219,7 @@ document.addEventListener('pointerup', () => { if(!SP.kind || SP.mode !== 'pdf')
 /* on a touch screen words are chosen with the system's handles, which send no pointer events: the bar follows the selection itself */
 let SP_SEL_T = 0; document.addEventListener('selectionchange', () => { if(!SP.kind || SP.mode !== 'pdf') return; clearTimeout(SP_SEL_T); SP_SEL_T = setTimeout(spPdfSel, 280); });
 function spShowSel(r){ const s = $('spSel'); $('spSelLoc').textContent = SP.pending && SP.pending.loc ? ' · ' + SP.pending.loc : ''; s.hidden = false; const w = s.offsetWidth || 160;
+  if(PM_TOUCH){ s.style.left = Math.round((innerWidth - w) / 2) + 'px'; s.style.top = Math.round(innerHeight - 64 - (s.offsetHeight || 40)) + 'px'; s.classList.add('touch'); return; }
   s.style.left = Math.max(12, Math.min(innerWidth - w - 12, r.left + (r.width || 0) / 2 - w / 2)) + 'px'; s.style.top = Math.max(12, r.top - 46) + 'px'; }
 function spKeep(asQuote, colour){ const p = SP.pending; if(!p) return; const mark = {id: 'm-' + Date.now().toString(36), text: p.text, color: colour || (asQuote ? 'rgba(180,67,46,.22)' : 'rgba(242,207,87,.45)'), date: today()};
   if(p.cfi) mark.cfi = p.cfi; else { mark.page = p.page; mark.rects = p.rects; }
@@ -1215,7 +1230,7 @@ function spKeep(asQuote, colour){ const p = SP.pending; if(!p) return; const mar
   if(asQuote) spQuote(p.text, p.loc);
   try{ (p.doc ? p.doc.getSelection() : getSelection()).removeAllRanges(); }catch(e){} $('spSel').hidden = true; SP.pending = null; }
 $('spSel').addEventListener('pointerdown', e => e.preventDefault());
-$('spSel').addEventListener('click', e => { const b = e.target.closest('[data-sel]'); if(!b) return; if(b.dataset.sel === 'note'){ spNoteOnSel(); return; } spKeep(b.dataset.sel === 'quote', b.dataset.hc); });
+$('spSel').addEventListener('click', e => { const mq = e.target.closest('[data-sel="mind"]'); if(mq){ e.stopPropagation(); const p = SP.pending; if(!p || !p.text) return; const go = () => { if(P.mindQuote(p.text, p.loc || '')) toast('On the mind map'); }; if(SP.mindOn) go(); else { spMindOn(true); setTimeout(go, 450); } $('spSel').hidden = true; try{ getSelection().removeAllRanges(); }catch(x){} return; } const b = e.target.closest('[data-sel]'); if(!b) return; if(b.dataset.sel === 'note'){ spNoteOnSel(); return; } spKeep(b.dataset.sel === 'quote', b.dataset.hc); });
 /* ---- turning pages ---- */
 function spTurn(d){ if(SP.mode === 'ebook' && SP.view){ d > 0 ? SP.view.next() : SP.view.prev(); } else if(SP.mode === 'pdf'){ const box = $('spDoc'); if(SP.side){ box.scrollBy({left: d * box.clientWidth, behavior: 'smooth'}); } else box.scrollBy({top: d * box.clientHeight * .9, behavior: 'smooth'}); } }
 $('spPrev').addEventListener('click', () => spTurn(-1)); $('spNext').addEventListener('click', () => spTurn(1));
@@ -1306,6 +1321,12 @@ function spNFollow(){ const sh = $('spSheet'); if(!sh.classList.contains('side')
   const ed = $('spNotes'), step = spNStep(), page = Math.floor((r.left - box.left + ed.scrollLeft) / step), cur = Math.round(ed.scrollLeft / step);
   if(page !== cur && page >= 0){ ed.scrollTo({left: page * step, behavior: reduce ? 'auto' : 'smooth'}); setTimeout(spNPages, 380); } else spNPages(); }
 $('spNPrev').addEventListener('click', () => spNTurn(-1)); $('spNNext').addEventListener('click', () => spNTurn(1));
+function spNNewPage(){ const ed = $('spNotes'); if(!$('spSheet').classList.contains('side')) return; const br = document.createElement('div'); br.className = 'sp-pgbrk'; br.contentEditable = 'false';
+  const p = document.createElement('p'); p.appendChild(document.createElement('br')); ed.appendChild(br); ed.appendChild(p);
+  requestAnimationFrame(() => { const step = spNStep(), last = Math.max(0, Math.round(ed.scrollWidth / step) - 1); ed.scrollLeft = last * step;
+    try{ const r = document.createRange(); r.setStart(p, 0); r.collapse(true); const s = getSelection(); s.removeAllRanges(); s.addRange(r); ed.focus({preventScroll: true}); }catch(e){}
+    spNPages(); spNotesInkPage(); spSaveNotes(true); }); }
+$('spNNew').addEventListener('click', e => { e.stopPropagation(); spNNewPage(); });
 ['input', 'keyup', 'pointerup'].forEach(ev => $('spNotes').addEventListener(ev, () => requestAnimationFrame(spNFollow)));
 $('spNotes').addEventListener('wheel', e => { if($('spSheet').classList.contains('side') && Math.abs(e.deltaX) > Math.abs(e.deltaY)) e.preventDefault(); }, {passive: false});
 { const _ap = spApplyStyle; spApplyStyle = function(){ _ap(); requestAnimationFrame(() => requestAnimationFrame(() => { const ed = $('spNotes'); if(!$('spSheet').classList.contains('side')) ed.scrollLeft = 0; spNPages(); })); }; }
@@ -1635,6 +1656,7 @@ setTimeout(paintDrink, 60);
 /* perfect-freehand 1.2.2 (MIT, (c) 2021 Stephen Ruiz Ltd): pen points into the outline of a stroke, shaped by pressure */
 const PF = (() => { const exports = {}; var pe=Object.defineProperty;var ge=e=>pe(e,"__esModule",{value:!0});var de=(e,t)=>{ge(e);for(var s in t)pe(e,s,{get:t[s],enumerable:!0})};de(exports,{default:()=>ve,getStroke:()=>ne,getStrokeOutlinePoints:()=>te,getStrokePoints:()=>re});function $(e,t,s,x=h=>h){return e*x(.5-t*(.5-s))}function ce(e){return[-e[0],-e[1]]}function l(e,t){return[e[0]+t[0],e[1]+t[1]]}function a(e,t){return[e[0]-t[0],e[1]-t[1]]}function b(e,t){return[e[0]*t,e[1]*t]}function xe(e,t){return[e[0]/t,e[1]/t]}function R(e){return[e[1],-e[0]]}function B(e,t){return e[0]*t[0]+e[1]*t[1]}function me(e,t){return e[0]===t[0]&&e[1]===t[1]}function Se(e){return Math.hypot(e[0],e[1])}function Pe(e){return e[0]*e[0]+e[1]*e[1]}function A(e,t){return Pe(a(e,t))}function G(e){return xe(e,Se(e))}function ae(e,t){return Math.hypot(e[1]-t[1],e[0]-t[0])}function L(e,t,s){let x=Math.sin(s),h=Math.cos(s),y=e[0]-t[0],n=e[1]-t[1],f=y*h-n*x,d=y*x+n*h;return[f+t[0],d+t[1]]}function K(e,t,s){return l(e,b(a(t,e),s))}function ee(e,t,s){return l(e,b(t,s))}var{min:C,PI:ke}=Math,le=.275,V=ke+1e-4;function te(e,t={}){let{size:s=16,smoothing:x=.5,thinning:h=.5,simulatePressure:y=!0,easing:n=r=>r,start:f={},end:d={},last:D=!1}=t,{cap:S=!0,easing:j=r=>r*(2-r)}=f,{cap:q=!0,easing:c=r=>--r*r*r+1}=d;if(e.length===0||s<=0)return[];let p=e[e.length-1].runningLength,g=f.taper===!1?0:f.taper===!0?Math.max(s,p):f.taper,T=d.taper===!1?0:d.taper===!0?Math.max(s,p):d.taper,oe=Math.pow(s*x,2),_=[],M=[],H=e.slice(0,10).reduce((r,i)=>{let o=i.pressure;if(y){let u=C(1,i.distance/s),W=C(1,1-u);o=C(1,r+(W-r)*(u*le))}return(r+o)/2},e[0].pressure),m=$(s,h,e[e.length-1].pressure,n),U,X=e[0].vector,z=e[0].point,F=z,O=z,E=F,J=!1;for(let r=0;r<e.length;r++){let{pressure:i}=e[r],{point:o,vector:u,distance:W,runningLength:I}=e[r];if(r<e.length-1&&p-I<3)continue;if(h){if(y){let v=C(1,W/s),Z=C(1,1-v);i=C(1,H+(Z-H)*(v*le))}m=$(s,h,i,n)}else m=s/2;U===void 0&&(U=m);let fe=I<g?j(I/g):1,be=p-I<T?c((p-I)/T):1;m=Math.max(.01,m*Math.min(fe,be));let se=(r<e.length-1?e[r+1]:e[r]).vector,Y=r<e.length-1?B(u,se):1,he=B(u,X)<0&&!J,ue=Y!==null&&Y<0;if(he||ue){let v=b(R(X),m);for(let Z=1/13,w=0;w<=1;w+=Z)O=L(a(o,v),o,V*w),_.push(O),E=L(l(o,v),o,V*-w),M.push(E);z=O,F=E,ue&&(J=!0);continue}if(J=!1,r===e.length-1){let v=b(R(u),m);_.push(a(o,v)),M.push(l(o,v));continue}let ie=b(R(K(se,u,Y)),m);O=a(o,ie),(r<=1||A(z,O)>oe)&&(_.push(O),z=O),E=l(o,ie),(r<=1||A(F,E)>oe)&&(M.push(E),F=E),H=i,X=u}let P=e[0].point.slice(0,2),k=e.length>1?e[e.length-1].point.slice(0,2):l(e[0].point,[1,1]),Q=[],N=[];if(e.length===1){if(!(g||T)||D){let r=ee(P,G(R(a(P,k))),-(U||m)),i=[];for(let o=1/13,u=o;u<=1;u+=o)i.push(L(r,P,V*2*u));return i}}else{if(!(g||T&&e.length===1))if(S)for(let i=1/13,o=i;o<=1;o+=i){let u=L(M[0],P,V*o);Q.push(u)}else{let i=a(_[0],M[0]),o=b(i,.5),u=b(i,.51);Q.push(a(P,o),a(P,u),l(P,u),l(P,o))}let r=R(ce(e[e.length-1].vector));if(T||g&&e.length===1)N.push(k);else if(q){let i=ee(k,r,m);for(let o=1/29,u=o;u<1;u+=o)N.push(L(i,k,V*3*u))}else N.push(l(k,b(r,m)),l(k,b(r,m*.99)),a(k,b(r,m*.99)),a(k,b(r,m)))}return _.concat(N,M.reverse(),Q)}function re(e,t={}){var q;let{streamline:s=.5,size:x=16,last:h=!1}=t;if(e.length===0)return[];let y=.15+(1-s)*.85,n=Array.isArray(e[0])?e:e.map(({x:c,y:p,pressure:g=.5})=>[c,p,g]);if(n.length===2){let c=n[1];n=n.slice(0,-1);for(let p=1;p<5;p++)n.push(K(n[0],c,p/4))}n.length===1&&(n=[...n,[...l(n[0],[1,1]),...n[0].slice(2)]]);let f=[{point:[n[0][0],n[0][1]],pressure:n[0][2]>=0?n[0][2]:.25,vector:[1,1],distance:0,runningLength:0}],d=!1,D=0,S=f[0],j=n.length-1;for(let c=1;c<n.length;c++){let p=h&&c===j?n[c].slice(0,2):K(S.point,n[c],y);if(me(S.point,p))continue;let g=ae(p,S.point);if(D+=g,c<j&&!d){if(D<x)continue;d=!0}S={point:p,pressure:n[c][2]>=0?n[c][2]:.5,vector:G(a(S.point,p)),distance:g,runningLength:D},f.push(S)}return f[0].vector=((q=f[1])==null?void 0:q.vector)||[0,0],f}function ne(e,t={}){return te(re(e,t),t)}var ve=ne;
 ; return exports; })();
+try{ window.__pmPF = PF; }catch(e){}
 const INK = {on: false, tool: 'pen', color: '#1F1B18', hl: '#F2CF57', layers: [], undo: [], redo: [], sel: null, mouse: !('ontouchstart' in window)};
 const INK_ER = 0.016;
 function inkData(){ if(!SP.kind) return null;
@@ -1642,45 +1664,51 @@ function inkData(){ if(!SP.kind) return null;
   const b = spBook(); if(!b) return null; b.ink = b.ink || {notes: []}; return b.ink; }
 function inkSave(){ clearTimeout(INK.t); const kind = SP.kind, id = SP.id, dd = inkData(); if(!dd) return;
   INK.pend = () => { INK.pend = null; if(kind === 'paper'){ if(P.setPaperInk) P.setPaperInk(id, dd); } else { const b = R.find(x => x.id === id); if(b) b.ink = dd; rSave(); } }; INK.t = setTimeout(() => { if(INK.pend) INK.pend(); }, 400); }
-function inkFlush(){ clearTimeout(INK.t); if(INK.pend) INK.pend(); }
+function inkFlush(){ try{ INK.layers.forEach(L => L.commit && L.commit()); }catch(e){} clearTimeout(INK.t); if(INK.pend) INK.pend(); }
 function inkPath(s, w){ const p = s.p, pts = []; for(let i = 0; i < p.length; i += 3) pts.push([p[i] * w, p[i + 1] * w, p[i + 2]]); if(!pts.length) return null;
   const real = pts.some(q => Math.abs(q[2] - .5) > .02);
-  const o = s.h ? PF.getStroke(pts, {size: (s.w || 14) * 1.2, thinning: 0, smoothing: .55, streamline: .6, simulatePressure: false, start: {cap: false, taper: 0}, end: {cap: false, taper: 0}, last: true})
-    : PF.getStroke(pts, {size: (s.w || 2.1) * 1.55, thinning: .6, smoothing: .62, streamline: .4, simulatePressure: !real, start: {cap: true, taper: 0}, end: {cap: true, taper: real ? 0 : 4}, last: true});
+  const o = PF.getStroke(pts, inkBrush(s, real));
   if(!o || o.length < 3) return null; const path = new Path2D(); path.moveTo(o[0][0], o[0][1]);
   for(let i = 1; i <= o.length; i++){ const a = o[i % o.length], b = o[(i + 1) % o.length]; path.quadraticCurveTo(a[0], a[1], (a[0] + b[0]) / 2, (a[1] + b[1]) / 2); } path.closePath(); return path; }
+/* the three pens and the highlighter, as on the mind map */
+function inkBrush(s, real){ const w = s.w || 2.1, b = s.h ? 'hl' : (s.b || 'fountain');
+  if(b === 'hl') return {size: w * 1.2, thinning: 0, smoothing: .55, streamline: .6, simulatePressure: false, start: {cap: false, taper: 0}, end: {cap: false, taper: 0}, last: true};
+  if(b === 'ballpoint') return {size: w * 1.25, thinning: .12, smoothing: .5, streamline: .5, simulatePressure: false, start: {cap: true, taper: 0}, end: {cap: true, taper: 0}, last: true};
+  if(b === 'felt') return {size: w * 1.7, thinning: .28, smoothing: .72, streamline: .55, simulatePressure: !real, start: {cap: true, taper: 0}, end: {cap: true, taper: 0}, last: true};
+  return {size: w * 1.55, thinning: .68, smoothing: .62, streamline: .42, simulatePressure: !real, start: {cap: true, taper: real ? 0 : 3}, end: {cap: true, taper: real ? 0 : 7}, last: true}; }
 function inkPaint(g, s, w, dx, dy){ const path = inkPath(s, w); if(!path) return; g.save(); if(dx || dy) g.translate(dx, dy); g.fillStyle = s.c; if(s.h) g.globalAlpha = .34; g.fill(path); g.restore(); }
 function inkLayer(host, get, set){
   const base = document.createElement('canvas'), wet = document.createElement('canvas'); base.className = 'ink-cv ink-base'; wet.className = 'ink-cv ink-wet'; host.classList.add('ink-host'); host.append(base, wet);
   const L = {cv: wet, base, host, get, set, cur: null, lasso: null, erasing: null, eraserAt: null,
-    size(){ const w = host.clientWidth || 1, h = Math.min(Math.max(host.scrollHeight, host.clientHeight), 6000), dpr = Math.min(devicePixelRatio || 1, 2, 16000000 / Math.max(1, w * h));
-      for(const c of [base, wet]) if(c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)){ c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); c.style.width = w + 'px'; c.style.height = h + 'px'; }
+    size(withWet){ const w = host.clientWidth || 1, h = Math.min(Math.max(host.scrollHeight, host.clientHeight), PM_TOUCH ? 3600 : 6000), dpr = Math.min(devicePixelRatio || 1, PM_TOUCH ? 1.5 : 2, 12000000 / Math.max(1, w * h));
+      for(const c of withWet ? [base, wet] : [base]) if(c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)){ c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); c.style.width = w + 'px'; c.style.height = h + 'px'; }
+      if(wet.style.width !== w + 'px' || wet.style.height !== h + 'px'){ wet.style.width = w + 'px'; wet.style.height = h + 'px'; }
       return {w, h, dpr}; },
     draw(){ const {w, h, dpr} = L.size(), g = base.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
       const all = get() || [], S = INK.sel, hide = S && S.L === L && S.moving ? S.set : null;
       all.forEach(s => { if(s.h && !(hide && hide.has(s))) inkPaint(g, s, w); }); all.forEach(s => { if(!s.h && !(hide && hide.has(s))) inkPaint(g, s, w); }); L.wetDraw(); },
-    wetDraw(){ const {w, h, dpr} = L.size(), g = wet.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+    wetDraw(){ const need = L.cur || L.lasso || L.eraserAt || (INK.sel && INK.sel.L === L); if(!need){ if(wet.width){ wet.width = 0; wet.height = 0; } return; } const {w, h, dpr} = L.size(true), g = wet.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
       if(L.cur) inkPaint(g, L.cur, w);
       if(L.lasso && L.lasso.length > 1){ g.save(); g.setLineDash([5, 5]); g.lineWidth = 1.3; g.strokeStyle = 'rgba(35,70,168,.8)'; g.beginPath(); L.lasso.forEach((q, i) => i ? g.lineTo(q[0] * w, q[1] * w) : g.moveTo(q[0] * w, q[1] * w)); g.stroke(); g.restore(); }
       const S = INK.sel; if(S && S.L === L){ const dx = (S.dx || 0) * w, dy = (S.dy || 0) * w, b = S.box; if(S.moving) S.list.forEach(s => inkPaint(g, s, w, dx, dy));
         g.save(); g.setLineDash([6, 4]); g.strokeStyle = 'rgba(35,70,168,.8)'; g.lineWidth = 1.2; g.fillStyle = 'rgba(35,70,168,.05)'; const rx = b[0] * w + dx - 8, ry = b[1] * w + dy - 8, rw = (b[2] - b[0]) * w + 16, rh = (b[3] - b[1]) * w + 16; g.fillRect(rx, ry, rw, rh); g.strokeRect(rx, ry, rw, rh); g.restore(); }
       if(L.eraserAt){ g.save(); g.strokeStyle = 'rgba(35,30,26,.5)'; g.lineWidth = 1; g.beginPath(); g.arc(L.eraserAt[0] * w, L.eraserAt[1] * w, INK_ER * w, 0, Math.PI * 2); g.stroke(); g.restore(); } } };
-  const pt = e => { const r = base.getBoundingClientRect(), w = host.clientWidth || 1; return [+((e.clientX - r.left) / w).toFixed(4), +((e.clientY - r.top) / w).toFixed(4), +((e.pointerType === 'pen' ? e.pressure : 0.5) || 0.5).toFixed(3)]; };
+  const pt = e => { const r = base.getBoundingClientRect(), w = r.width || host.clientWidth || 1; return [+((e.clientX - r.left) / w).toFixed(4), +((e.clientY - r.top) / w).toFixed(4), +((e.pointerType === 'pen' ? e.pressure : 0.5) || 0.5).toFixed(3)]; };
   const ok = e => INK.on && (e.pointerType === 'pen' || (INK.mouse && e.pointerType === 'mouse'));
   let raf = 0; const frame = () => { if(!raf) raf = requestAnimationFrame(() => { raf = 0; L.wetDraw(); }); };
-  wet.addEventListener('pointerdown', e => { if(!ok(e)) return; e.preventDefault(); e.stopPropagation(); try{ wet.setPointerCapture(e.pointerId); }catch(x){}
+  wet.addEventListener('pointerdown', e => { if(!ok(e)) return; e.preventDefault(); e.stopPropagation(); if(e.pointerType === 'pen'){ INK.penDown = true; INK.penAt = Date.now(); } try{ wet.setPointerCapture(e.pointerId); }catch(x){}
     const q = pt(e), S = INK.sel;
     if(S){ const b = S.box, pad = 14 / (host.clientWidth || 1); if(S.L === L && q[0] > b[0] - pad && q[0] < b[2] + pad && q[1] > b[1] - pad && q[1] < b[3] + pad){ S.moving = true; S.from = q; S.dx = 0; S.dy = 0; $('inkSelBar').hidden = true; L.draw(); return; } inkDeselect(); if(INK.tool === 'lasso'){ L.lasso = [q]; return; } }
     if(INK.tool === 'eraser'){ L.erasing = {before: (get() || []).slice()}; inkEraseAt(L, q); return; }
     if(INK.tool === 'lasso'){ L.lasso = [q]; return; }
-    L.cur = {c: INK.tool === 'hl' ? INK.hl : INK.color, w: INK.tool === 'hl' ? 14 : 2.1, h: INK.tool === 'hl' ? 1 : 0, p: q.slice()}; frame(); });
+    L.cur = {c: INK.tool === 'hl' ? INK.hl : INK.color, w: INK.tool === 'hl' ? (INK.hlSize || 14) : (INK.size || 2.1), h: INK.tool === 'hl' ? 1 : 0, b: INK.tool === 'hl' ? 'hl' : (inkPrefs().brush || 'fountain'), p: q.slice()}; frame(); });
   wet.addEventListener('pointermove', e => { const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e], S = INK.sel; if(!evs.length) evs.push(e);
     if(S && S.L === L && S.moving){ e.preventDefault(); const q = pt(evs[evs.length - 1]); S.dx = q[0] - S.from[0]; S.dy = q[1] - S.from[1]; frame(); return; }
     if(L.erasing){ e.preventDefault(); evs.forEach(ev => inkEraseAt(L, pt(ev))); return; }
     if(L.lasso){ e.preventDefault(); evs.forEach(ev => L.lasso.push(pt(ev))); frame(); return; }
     if(!L.cur){ if(INK.tool === 'eraser' && ok(e)){ L.eraserAt = pt(e); frame(); } return; }
     e.preventDefault(); evs.forEach(ev => { const q = pt(ev), p = L.cur.p, n = p.length; if(Math.abs(q[0] - p[n - 3]) + Math.abs(q[1] - p[n - 2]) > 0.0004) p.push(q[0], q[1], q[2]); }); frame(); });
-  const end = () => { const S = INK.sel;
+  const end = e => { if(e && e.pointerType === 'pen'){ INK.penDown = false; INK.penAt = Date.now(); } const S = INK.sel;
     if(S && S.L === L && S.moving){ S.moving = false; if(Math.abs(S.dx) + Math.abs(S.dy) > 1e-4){ const before = (get() || []).map(s => S.set.has(s) ? Object.assign({}, s, {p: s.p.slice()}) : s);
         S.list.forEach(s => { for(let i = 0; i < s.p.length; i += 3){ s.p[i] = +(s.p[i] + S.dx).toFixed(4); s.p[i + 1] = +(s.p[i + 1] + S.dy).toFixed(4); } }); S.box = inkBox(S.list); inkPush(L, before); set((get() || []).slice()); inkSave(); }
       S.dx = S.dy = 0; L.draw(); inkSelBar(); return; }
@@ -1689,10 +1717,11 @@ function inkLayer(host, get, set){
     if(!L.cur) return; const s = L.cur; L.cur = null; if(s.p.length < 6) s.p.push(+(s.p[0] + .0006).toFixed(4), +(s.p[1] + .0006).toFixed(4), s.p[2]);
     const before = (get() || []).slice(); set(before.concat([s])); inkPush(L, before); inkSave();
     if(s.h) L.draw(); else { const {w, dpr} = L.size(), g = base.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); inkPaint(g, s, w); L.wetDraw(); } };
+  L.commit = () => { if(L.cur) end(); };
   wet.addEventListener('pointerup', end); wet.addEventListener('pointercancel', end);
   wet.addEventListener('pointerleave', () => { if(L.eraserAt && !L.erasing){ L.eraserAt = null; frame(); } });
   /* the Pencil never scrolls the page (its touches are kept from the browser, so a stroke is never cut short); fingers still do */
-  const stopPencil = e => { if(INK.on && [...e.changedTouches].some(t => t.touchType === 'stylus')) e.preventDefault(); };
+  const stopPencil = e => { if(!INK.on) return; const pen = [...e.changedTouches].some(t => t.touchType === 'stylus'); if(pen || INK.penDown || Date.now() - (INK.penAt || 0) < 1200) e.preventDefault(); };
   host.addEventListener('touchstart', stopPencil, {passive: false}); host.addEventListener('touchmove', stopPencil, {passive: false});
   INK.layers.push(L); L.draw(); return L; }
 function inkEraseAt(L, q){ L.eraserAt = q; const a = L.get() || [], out = []; let changed = false;
@@ -1719,16 +1748,19 @@ function inkSelDo(k){ const S = INK.sel; if(!S) return; const L = S.L, before = 
   if(k === 'delete'){ L.set(before.filter(s => !S.set.has(s))); inkPush(L, before); inkSave(); inkDeselect(); return; }
   if(k === 'colour'){ const was = before.map(s => S.set.has(s) ? Object.assign({}, s) : s); S.list.forEach(s => { if(!s.h) s.c = INK.color; }); inkPush(L, was); L.set(before.slice()); inkSave(); L.draw(); } }
 let INK_IO = null;
-function inkMount(){ document.querySelectorAll('.ink-cv').forEach(c => c.remove()); INK.layers = []; INK.undo = []; if(INK_IO){ INK_IO.disconnect(); INK_IO = null; } const dd = inkData(); if(!dd) return;
+function inkMount(force){ const key = SP.kind + ':' + SP.id + ':' + INK.on + ':' + (SP.mode || ''); if(!force && INK.mountKey === key && INK.layers.length && INK.layers.every(L => L.host.isConnected)){ INK.layers.forEach(L => { if(!L.cur) L.draw(); }); return; } INK.mountKey = key;
+  try{ INK.layers.forEach(L => L.commit && L.commit()); }catch(e){}
+  document.querySelectorAll('.ink-cv').forEach(c => { c.width = 0; c.height = 0; c.remove(); }); INK.layers = []; INK.undo = []; if(INK_IO){ INK_IO.disconnect(); INK_IO = null; } const dd = inkData(); if(!dd) return;
   dd.notes = dd.notes || [];
   /* the notes get their layer only when there is ink on them or ✎ is on */
-  if(INK.on || dd.notes.length) inkLayer($('spSheet'), () => inkData().notes, a => { inkData().notes = a; });
+  if(INK.on || dd.notes.length) inkLayer($('spSheet'), () => { const all = inkData().notes || [], p = spNotesPage(); return p == null ? all : all.filter(s => (s.pg || 0) === p); },
+    a => { const x = inkData(), p = spNotesPage(); if(p == null){ x.notes = a; return; } a.forEach(s => { if(p) s.pg = p; else delete s.pg; }); x.notes = (x.notes || []).filter(s => (s.pg || 0) !== p).concat(a); });
   if(SP.kind !== 'paper') return;
   /* a PDF page gets its layer only while it is on screen, and only if it has ink or ✎ is on; it lets it go when it leaves */
   INK_IO = new IntersectionObserver(es => es.forEach(en => { const pg = en.target, n = pg.dataset.page, has = ((inkData() || {}).pdf || {})[n];
       const cur = INK.layers.find(L => L.host === pg);
       if(en.isIntersecting && !cur && (INK.on || (has && has.length))) inkLayer(pg, () => (inkData().pdf || {})[n] || [], a => { const x = inkData(); x.pdf = x.pdf || {}; x.pdf[n] = a; });
-      if(!en.isIntersecting && cur){ cur.cv.remove(); cur.base.remove(); INK.layers = INK.layers.filter(L => L !== cur); } }), {rootMargin: '400px 0px'});
+      if(!en.isIntersecting && cur){ [cur.cv, cur.base].forEach(c => { c.width = 0; c.height = 0; c.remove(); }); INK.layers = INK.layers.filter(L => L !== cur); } }), {rootMargin: PM_TOUCH ? '150px 0px' : '400px 0px'});
   document.querySelectorAll('#spDoc .sp-pg').forEach(pg => INK_IO.observe(pg)); }
 const _openSpread = openSpread; openSpread = async function(...args){ const r = await _openSpread.apply(this, args); setTimeout(inkMount, 900); return r; };
 const _spOpenPdf = spOpenPdf; spOpenPdf = async function(...args){ const r = await _spOpenPdf.apply(this, args); setTimeout(inkMount, 300); return r; };
@@ -1799,8 +1831,8 @@ setTimeout(rSendPending, 20000); setInterval(rSendPending, 30 * 60000);
 /* on a phone: the page and its notes take turns */
 $('spNotesT').addEventListener('click', e => { e.stopPropagation();
   if(innerWidth <= 700){ document.body.classList.toggle('sp-phone-notes'); return; }
-  const off = !document.body.classList.contains('sp-notes-off'); document.body.classList.toggle('sp-notes-off', off); try{ localStorage.setItem('pm:notesOff', off ? '1' : ''); }catch(x){}
-  setTimeout(() => { if(SP.mode === 'pdf' && SP.pdfBlob) spOpenPdf(SP.pdfBlob); }, 60); });
+  spHold(); const off = !document.body.classList.contains('sp-notes-off'); document.body.classList.toggle('sp-notes-off', off); try{ localStorage.setItem('pm:notesOff', off ? '1' : ''); }catch(x){}
+  requestAnimationFrame(() => requestAnimationFrame(() => { if(SP.mode === 'pdf') spRelayout(); })); });
 try{ if(localStorage.getItem('pm:notesOff')) document.body.classList.add('sp-notes-off'); }catch(e){}
 
 /* a finger moves along the desk on a phone; a tap still opens what it lands on */
@@ -1815,17 +1847,19 @@ try{ if(localStorage.getItem('pm:notesOff')) document.body.classList.add('sp-not
    highlighter when it is in hand); the three pens keep the colours you give them. */
 const INKS = [['Black', '#1F1B18'], ['Blue-black', '#24324F'], ['Royal blue', '#2346A8'], ['Sky', '#3D7CC9'], ['Turquoise', '#1E8C93'], ['Teal', '#1F6F5C'], ['Green', '#2F7D3A'], ['Olive', '#6B6B2A'],
   ['Sepia', '#6B4A2E'], ['Burgundy', '#7A2232'], ['Red', '#C23A2B'], ['Orange', '#D4702A'], ['Amber', '#C9952B'], ['Violet', '#5B3A8C'], ['Plum', '#7C3A6E'], ['Grey', '#6E6A66']];
-const HLS = [['Yellow', '#F2CF57'], ['Green', '#9FD67A'], ['Pink', '#F59CB5'], ['Blue', '#8CC8F0'], ['Orange', '#F7B267'], ['Lilac', '#C7A8F0']];
+const HLS = [['Yellow', '#F7D93D'], ['Pink', '#FF6FB5'], ['Blue', '#4FC3F7'], ['Green', '#7CE07C'], ['Orange', '#FFA94D'], ['Lilac', '#B794F6']];
 function inkPrefs(){ try{ return JSON.parse(localStorage.getItem('pm:ink') || '{}'); }catch(e){ return {}; } }
 function inkPrefsSave(p){ try{ localStorage.setItem('pm:ink', JSON.stringify(p)); }catch(e){} }
-function inkApplyPrefs(){ const p = inkPrefs(), pens = [...document.querySelectorAll('#inkTools [data-ink="pen"]')];
+function inkApplyPrefs(){ const p = inkPrefs(), pens = [...document.querySelectorAll('#inkTools [data-ink="pen"]')]; INK.size = p.size || 2.1; INK.hlSize = p.hlSize || 14;
   (p.pens || []).forEach((c, i) => { if(pens[i] && c){ pens[i].dataset.c = c; pens[i].querySelector('i').style.background = c; } }); if(p.hl) INK.hl = p.hl;
   const on = document.querySelector('#inkTools [data-ink="pen"].on'); if(on) INK.color = on.dataset.c;
   const hb = document.querySelector('#inkTools [data-ink="hl"] i'); if(hb) hb.style.background = INK.hl; }
 function inkPalette(){ const box = $('inkPal'); if(!box.hidden){ box.hidden = true; return; } const p = inkPrefs(), mine = p.mine || [], hlNow = INK.tool === 'hl';
   const sw = (name, c, on) => '<button type="button" class="ip-sw' + (on ? ' on' : '') + '" data-col="' + c + '" title="' + esc(name) + '" style="--c:' + c + '"></button>';
   const cur = hlNow ? INK.hl : INK.color;
-  box.innerHTML = (hlNow ? '' : '<div class="ip-row">' + INKS.map(([n, c]) => sw(n, c, c.toLowerCase() === cur.toLowerCase())).join('') + '</div>') +
+  const now = hlNow ? (INK.hlSize || 14) : (INK.size || 2.1), br = inkPrefs().brush || 'fountain';
+  const bb = (k, label, path) => '<button type="button" class="ip-br' + (!hlNow && br === k ? ' on' : '') + '" data-brush="' + k + '" title="' + label + '"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg></button>';
+  box.innerHTML = '<div class="ip-row ip-sizes">' + (hlNow ? '' : bb('fountain', 'Fountain pen', '<path d="M12 3l4 7-4 11-4-11 4-7z"/><path d="M12 10v5"/>') + bb('ballpoint', 'Ballpoint', '<path d="M6 18l9.5-9.5 2 2L8 20H6v-2z"/><path d="M15.5 8.5l2-2"/>') + bb('felt', 'Felt-tip', '<path d="M5 19l3-1 9-9-2-2-9 9-1 3z"/><path d="M13 7l4 4" stroke-width="3"/>')) + '<label class="ip-slider"><input type="range" data-isize="1" min="' + (hlNow ? 4 : .3) + '" max="' + (hlNow ? 40 : 12) + '" step="' + (hlNow ? 1 : .1) + '" value="' + now + '"><b>' + (hlNow ? Math.round(now) : (+now).toFixed(1)) + '</b></label></div>' + (hlNow ? '' : '<div class="ip-row">' + INKS.map(([n, c]) => sw(n, c, c.toLowerCase() === cur.toLowerCase())).join('') + '</div>') +
     '<div class="ip-row">' + HLS.map(([n, c]) => sw('Highlighter: ' + n, c, hlNow && c.toLowerCase() === cur.toLowerCase())).join('') + '</div>' +
     '<div class="ip-row">' + mine.map(c => sw('Yours', c, c.toLowerCase() === cur.toLowerCase())).join('') + '<label class="ip-sw ip-add" title="A colour of your own"><input type="color" value="' + cur + '"></label></div>';
   const r = $('inkTools').getBoundingClientRect(); box.style.top = Math.round(r.bottom + 8) + 'px'; box.style.left = Math.max(8, Math.min(innerWidth - 300, Math.round(r.left))) + 'px'; box.hidden = false; }
@@ -1834,7 +1868,10 @@ function inkUse(c, own){ const p = inkPrefs(); const hlColour = HLS.some(([, x])
   else { const pen = document.querySelector('#inkTools [data-ink="pen"].on') || document.querySelector('#inkTools [data-ink="pen"]'); if(pen){ pen.dataset.c = c; pen.querySelector('i').style.background = c; const all = [...document.querySelectorAll('#inkTools [data-ink="pen"]')]; p.pens = all.map(b => b.dataset.c); }
     INK.color = c; if(INK.tool !== 'pen'){ INK.tool = 'pen'; document.querySelectorAll('#inkTools [data-ink]').forEach(b => b.classList.toggle('on', b === pen)); } }
   if(own){ p.mine = [c].concat((p.mine || []).filter(x => x !== c)).slice(0, 8); } inkPrefsSave(p); inkApplyPrefs(); }
-$('inkPal').addEventListener('click', e => { const s = e.target.closest('[data-col]'); if(!s) return; e.stopPropagation(); inkUse(s.dataset.col, false); $('inkPal').hidden = true; });
+$('inkPal').addEventListener('input', e => { const r = e.target.closest('[data-isize]'); if(!r) return; const p = inkPrefs(), v = +r.value; if(INK.tool === 'hl'){ INK.hlSize = v; p.hlSize = v; } else { INK.size = v; p.size = v; } inkPrefsSave(p); const b = r.parentNode.querySelector('b'); if(b) b.textContent = INK.tool === 'hl' ? Math.round(v) : v.toFixed(1); });
+$('inkPal').addEventListener('click', e => { const bru = e.target.closest('[data-brush]'); if(bru){ e.stopPropagation(); const p = inkPrefs(); p.brush = bru.dataset.brush; inkPrefsSave(p); $('inkPal').querySelectorAll('.ip-br').forEach(x => x.classList.toggle('on', x === bru)); return; }
+  const z = e.target.closest('[data-size]'); if(z){ e.stopPropagation(); const p = inkPrefs(), v = +z.dataset.size; if(INK.tool === 'hl'){ INK.hlSize = v; p.hlSize = v; } else { INK.size = v; p.size = v; } inkPrefsSave(p); $('inkPal').querySelectorAll('.ip-sz').forEach(b => b.classList.toggle('on', b === z)); return; }
+  const s = e.target.closest('[data-col]'); if(!s) return; e.stopPropagation(); inkUse(s.dataset.col, false); $('inkPal').hidden = true; });
 $('inkPal').addEventListener('change', e => { if(e.target.type === 'color'){ inkUse(e.target.value, true); $('inkPal').hidden = true; } });
 document.addEventListener('pointerdown', e => { const b = $('inkPal'); if(!b.hidden && !b.contains(e.target) && !e.target.closest('[data-ink="palette"]')) b.hidden = true; }, true);
 inkApplyPrefs();
@@ -1871,11 +1908,11 @@ async function spShareText(text, title){ try{ if(navigator.share){ await navigat
 (() => { const row = $('copyRow'); if(!row || !P || !P.isMac || !P.isMac() || !P.copyCfg) return; row.hidden = false;
   const paint = () => { const c = P.copyCfg(); row.querySelectorAll('[data-copy]').forEach(b => b.classList.toggle('on', b.dataset.copy === (c.place || '')));
     const fb = $('copyFolderBtn'); fb.textContent = c.place === 'folder' && c.path ? c.path.split('/').pop() || c.path : 'Choose a folder…'; fb.title = c.path || '';
-    row.querySelectorAll('[data-cw]').forEach(b => b.classList.toggle('on', !!c[b.dataset.cw])); row.querySelector('.copy-what').classList.toggle('dim', !c.place); };
+    row.querySelectorAll('[data-cw]').forEach(b => b.classList.toggle('on', !!c[b.dataset.cw])); row.querySelectorAll('.copy-what').forEach(x => x.classList.toggle('dim', !c.place)); };
   row.addEventListener('click', async e => { const b = e.target.closest('[data-copy],[data-cw]'); if(!b) return; e.stopPropagation();
     if(b.dataset.cw){ const c = P.copyCfg(); P.setCopyCfg({[b.dataset.cw]: !c[b.dataset.cw]}); paint(); return; }
-    if(b.dataset.copy === 'folder'){ const p = await P.pickFolder(); if(!p) return; P.setCopyCfg({place: 'folder', path: p}); paint(); toast('Your files are being copied into ' + p.split('/').pop()); return; }
-    P.setCopyCfg({place: b.dataset.copy}); paint(); if(b.dataset.copy) toast('Your files are being copied into ' + b.textContent + ' › Paper Map'); }); paint(); })();
+    if(b.dataset.copy === 'folder'){ const p = await P.pickFolder(); if(!p) return; P.setCopyCfg({place: 'folder', path: p}); paint(); toast('Copying into ' + p.split('/').pop() + '…'); return; }
+    P.setCopyCfg({place: b.dataset.copy}); paint(); if(b.dataset.copy) toast('Copying into ' + b.textContent + ' › Paper Map…'); else toast('The copy is off: the files already there stay'); }); paint(); })();
 
 /* what counts as you moving in a PDF: scrolling with a wheel or a finger, a key, the turn buttons, typing a page */
 ['wheel', 'touchmove', 'keydown'].forEach(t => addEventListener(t, () => { if(SP.mode === 'pdf') SP.userMoved = true; }, {passive: true, capture: true}));
@@ -1884,4 +1921,265 @@ async function spShareText(text, title){ try{ if(navigator.share){ await navigat
 /* leaving the app (closing it, switching away, the iPad going to sleep): what you typed or drew a moment ago is saved first */
 const spFlushAll = () => { try{ if(nbT) nbSave(true); }catch(e){} if(!SP.kind) return; try{ if(SP.notesT) spSaveNotes(true); }catch(e){} try{ inkFlush(); }catch(e){} };
 addEventListener('pagehide', spFlushAll); document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') spFlushAll(); });
+
+/* which page of the notes is in front (A4 pages only; one long sheet has no pages), and showing that page's handwriting */
+function spNotesPage(){ const sh = $('spSheet'); if(!sh || !sh.classList.contains('side')) return null; const ed = $('spNotes'), step = spNStep(); return step ? Math.max(0, Math.round(ed.scrollLeft / step)) : 0; }
+let SP_NPG = null;
+function spNotesInkPage(){ const p = spNotesPage(); if(p === SP_NPG) return; SP_NPG = p; const L = INK.layers.find(x => x.host === $('spSheet')); if(!L) return;
+  INK.undo = INK.undo.filter(op => op.L !== L); INK.redo = INK.redo.filter(op => op.L !== L); try{ inkDeselect(); }catch(e){} L.draw(); }
+$('spNotes').addEventListener('scroll', () => requestAnimationFrame(() => { spNotesInkPage(); spNPages(); }), {passive: true});
+
+/* the PDF's size, yours to choose: − and + step through 50%–300% of the whole page, the number brings it back to the whole
+   page; ⌘ with + − 0, or pinching on the trackpad, do the same */
+function spZoomShow(){ const z = $('spZoom'); if(!z) return; z.hidden = SP.mode !== 'pdf'; $('spZPct').textContent = Math.round(spPdfZoom() * 100) + '%'; const box = $('spDoc'); if(box) box.classList.toggle('zoomed', spPdfZoom() > 1.01); }
+function spZoomTo(z){ z = Math.max(.5, Math.min(3, Math.round(z * 100) / 100)); try{ localStorage.setItem('pm:pdfZoom', String(z)); }catch(e){} spZoomShow(); if(SP.mode === 'pdf'){ spHold(); clearTimeout(SP.zT); SP.zT = setTimeout(spRelayout, 120); } }
+function spZoomStep(d){ const z = spPdfZoom(); const next = d > 0 ? SP_ZOOMS.find(x => x > z + .001) : [...SP_ZOOMS].reverse().find(x => x < z - .001); spZoomTo(next || z); }
+$('spZOut').addEventListener('click', e => { e.stopPropagation(); spZoomStep(-1); });
+$('spZIn').addEventListener('click', e => { e.stopPropagation(); spZoomStep(1); });
+$('spZPct').addEventListener('click', e => { e.stopPropagation(); spZoomTo(1); });
+addEventListener('keydown', e => { if(SP.mode !== 'pdf' || !SP.kind || !(e.metaKey || e.ctrlKey)) return; if(e.key === '=' || e.key === '+'){ e.preventDefault(); spZoomStep(1); } else if(e.key === '-'){ e.preventDefault(); spZoomStep(-1); } else if(e.key === '0'){ e.preventDefault(); spZoomTo(1); } });
+$('spDoc').addEventListener('wheel', e => { if(SP.mode !== 'pdf' || !e.ctrlKey) return; e.preventDefault(); spZoomTo(spPdfZoom() * Math.exp(-e.deltaY * .01)); }, {passive: false});
+
+/* turning pages: one glass control below the page (PDF read page by page, or a book in pages), the same as the notes' own:
+   ‹ the page number ›; the arrows rest at the first and last page */
+function spPNavShow(){ const nav = $('spPNav'); if(!nav) return; const box = $('spDoc'), paged = (SP.mode === 'pdf' && SP.side) || (SP.mode === 'ebook' && spFlow().doc === 'side');
+  nav.hidden = !paged || !SP.kind; box.classList.toggle('paged', !!paged); nav.classList.toggle('light', SP.mode === 'ebook');
+  $('spPNNum').textContent = $('spLoc').textContent || '';
+  if(SP.mode === 'pdf' && SP.pdf){ const c = SP.cur || 1; $('spPNPrev').disabled = c <= 1; $('spPNNext').disabled = c >= SP.pdf.numPages; }
+  else { $('spPNPrev').disabled = false; $('spPNNext').disabled = false; } }
+$('spPNPrev').addEventListener('click', e => { e.stopPropagation(); SP.userMoved = true; spTurn(-1); });
+$('spPNNext').addEventListener('click', e => { e.stopPropagation(); SP.userMoved = true; spTurn(1); });
+new MutationObserver(() => spPNavShow()).observe($('spLoc'), {childList: true, characterData: true, subtree: true});
+
+/* ---- 4) choosing words on a PDF by touch: a long press chooses words (not the whole page), a tap elsewhere lets them go, the
+   bar for them sits at the foot of the screen where the iPad's own menu never covers it; while ✎ is on, fingers do not choose
+   words at all ---- */
+document.addEventListener('pointerdown', e => { if(!SP.kind || SP.mode !== 'pdf') return; const s = getSelection(); if(!s || s.isCollapsed) return;
+  if(e.target.closest && (e.target.closest('#spSel') || e.target.closest('.textLayer'))) return; s.removeAllRanges(); $('spSel').hidden = true; }, true);
+/* choosing words on a PDF page, done the way pdf.js itself does it (from its version 4): while words are being chosen, the
+   page's end-of-text guard follows the end of the selection, so a selection can never run on through the gaps between lines
+   and take the whole page. Before, the guard was dropped as soon as the finger lifted or the iPad took the touch over for its
+   own selection handles (pointercancel), and the selection then jumped to the whole page. */
+(() => { let prevRange = null; const layers = () => document.querySelectorAll('#spDoc .textLayer');
+  const endOf = tl => tl.querySelector('.endOfContent');
+  const reset = tl => { const end = endOf(tl); if(end){ end.style.width = ''; end.style.height = ''; if(end.parentNode !== tl) tl.appendChild(end); } tl.classList.remove('selecting'); };
+  document.addEventListener('pointerdown', e => { const tl = e.target.closest && e.target.closest('#spDoc .textLayer'); if(tl) tl.classList.add('selecting'); }, true);
+  document.addEventListener('pointerup', () => { setTimeout(() => { const s = getSelection(); if(!s || s.isCollapsed){ layers().forEach(reset); prevRange = null; } }, 0); }, true);
+  document.addEventListener('selectionchange', () => { const s = getSelection(); if(!s || !s.rangeCount || s.isCollapsed){ if(!document.querySelector('#spDoc .textLayer.selecting:active')) layers().forEach(tl => { if(!s || s.isCollapsed) reset(tl); }); prevRange = null; return; }
+    const act = new Set(); for(let i = 0; i < s.rangeCount; i++){ const r = s.getRangeAt(i); layers().forEach(tl => { try{ if(r.intersectsNode(tl)) act.add(tl); }catch(e){} }); }
+    layers().forEach(tl => { if(act.has(tl)) tl.classList.add('selecting'); else reset(tl); });
+    if(!act.size){ prevRange = null; return; }
+    const range = s.getRangeAt(0); let modifyStart = false; try{ modifyStart = !!prevRange && (range.compareBoundaryPoints(Range.END_TO_END, prevRange) === 0 || range.compareBoundaryPoints(Range.START_TO_END, prevRange) === 0); }catch(e){}
+    let anchor = modifyStart ? range.startContainer : range.endContainer; if(anchor && anchor.nodeType === 3) anchor = anchor.parentNode;
+    const host = anchor && anchor.parentElement, ptl = host && host.closest('.textLayer'), end = ptl && endOf(ptl);
+    if(end && host && ptl.contains(anchor) && anchor !== end){ end.style.width = ptl.style.width; end.style.height = ptl.style.height; try{ host.insertBefore(end, modifyStart ? anchor : anchor.nextSibling); }catch(e){} }
+    prevRange = range.cloneRange(); });
+})();
+/* ---- 5) the notes zoom: pinch with two fingers on the notes (or ⌘ + wheel); the paper and what is on it grow together ---- */
+let SP_NZ = 1;
+function spNotesZoom(z){ SP_NZ = Math.max(1, Math.min(2.5, z)); const sh = $('spSheet'); sh.style.zoom = SP_NZ === 1 ? '' : String(SP_NZ); sh.closest('.sp-right').classList.toggle('nzoom', SP_NZ > 1.01); try{ INK.layers.forEach(L => { if(L.host === sh) L.draw(); }); }catch(e){} }
+(() => { let d0 = 0, z0 = 1; const dist = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  const right = document.querySelector('#spread .sp-right'); if(!right) return;
+  right.addEventListener('touchstart', e => { const f = [...e.touches].filter(t => t.touchType !== 'stylus'); if(f.length === 2){ d0 = dist(f); z0 = SP_NZ; } }, {passive: true});
+  right.addEventListener('touchmove', e => { const f = [...e.touches].filter(t => t.touchType !== 'stylus'); if(f.length === 2 && d0){ e.preventDefault(); spNotesZoom(z0 * dist(f) / d0); } }, {passive: false});
+  right.addEventListener('touchend', e => { if(e.touches.length < 2) d0 = 0; }, {passive: true});
+  right.addEventListener('wheel', e => { if(!e.ctrlKey) return; e.preventDefault(); spNotesZoom(SP_NZ * Math.exp(-e.deltaY * .01)); }, {passive: false});
+})();
+
+/* ===================== the mind map in the notes' place =====================
+   The button beside the notes turns the notes' place into this paper's (or book's) own mind map, edited right there;
+   “To the mind map” on chosen words puts them on it as a quote, hanging from the paper. The button again brings the notes back. */
+function spMindRect(){ const r = document.querySelector('#spread .sp-right').getBoundingClientRect(); let ox = 0, oy = 0; try{ const fr = window.frameElement && window.frameElement.getBoundingClientRect(); if(fr){ ox = fr.left; oy = fr.top; } }catch(e){} return {l: Math.round(r.left + ox), t: Math.round(r.top + oy), w: Math.round(r.width), h: Math.round(r.height)}; }
+function spMindOn(on){ if(!P || !P.mindDock) return; if(on && !SP.kind) return;
+  if(on){ if(document.body.classList.contains('sp-notes-off')){ document.body.classList.remove('sp-notes-off'); try{ localStorage.setItem('pm:notesOff', ''); }catch(e){} spHold(); requestAnimationFrame(() => requestAnimationFrame(() => { if(SP.mode === 'pdf') spRelayout(); })); }
+    requestAnimationFrame(() => requestAnimationFrame(() => { const id = P.mindDock(SP.kind, SP.id, spMindRect()); SP.mindOn = !!id; $('spMindT').classList.toggle('on', SP.mindOn); document.body.classList.toggle('sp-mind-on', SP.mindOn); })); }
+  else { P.mindUndock(); SP.mindOn = false; $('spMindT').classList.remove('on'); document.body.classList.remove('sp-mind-on'); } }
+$('spMindT').addEventListener('click', e => { e.stopPropagation(); spMindOn(!SP.mindOn); });
+/* the map follows the notes' place when the window changes; putting the notes away turns the map off too */
+addEventListener('resize', () => { if(SP.mindOn){ clearTimeout(SP.mrT); SP.mrT = setTimeout(() => { if(innerWidth <= 700) spMindOn(false); else P.mindDockMove(spMindRect()); }, 120); } });
+$('spNotesT').addEventListener('click', () => { if(SP.mindOn) setTimeout(() => { if(document.body.classList.contains('sp-notes-off') || innerWidth <= 700) spMindOn(false); else P.mindDockMove(spMindRect()); }, 80); });
+if(window.pmDeskPage) window.pmDeskPage.mindClosed = () => { SP.mindOn = false; $('spMindT').classList.remove('on'); document.body.classList.remove('sp-mind-on'); };
+
+/* ===================== on a phone: the folders in a drawer =====================
+   Papers' and Readings' lists (your folders, Zotero's tree, the marks; the shelves and categories) slide in from the left on
+   a phone and slide away again, instead of filling the page above the papers. The button at the head shows where you are. */
+const sideOpen = on => { document.body.classList.toggle('side-open', on); };
+function sideName(){ ['pboard', 'rboard'].forEach(id => { const b = document.getElementById(id); if(!b) return; const on = b.querySelector('.rb-side .on'), t = b.querySelector('.side-toggle .st-name');
+  if(t) t.textContent = on ? (on.querySelector('span, b') || on).textContent.replace(/\s*\d+\s*$/, '').trim() || (id === 'pboard' ? 'All papers' : 'All books') : (id === 'pboard' ? 'All papers' : 'All books'); }); }
+document.addEventListener('click', e => { const t = e.target.closest && e.target.closest('[data-side-toggle]'); if(t){ e.stopPropagation(); sideName(); sideOpen(!document.body.classList.contains('side-open')); return; }
+  if(e.target.closest && e.target.closest('[data-side-close]')){ sideOpen(false); return; }
+  /* choosing a folder, a shelf or a mark closes the drawer and names where you are */
+  const pick = e.target.closest && e.target.closest('.rb-side .tp, .rb-side [data-f], .rb-side [data-zc], .rb-side [data-filter]');
+  if(pick && innerWidth <= 700 && document.body.classList.contains('side-open') && !pick.closest('.sec-h, [data-sec]')) setTimeout(() => { sideName(); sideOpen(false); }, 160); });
+/* leaving Papers or Readings closes it */
+new MutationObserver(() => { if(!document.body.classList.contains('st-papers') && !document.body.classList.contains('st-books')) sideOpen(false); else sideName(); }).observe(document.body, {attributes: true, attributeFilter: ['class']});
+
+/* ===================== Your maps, on a phone =====================
+   The row of maps lives on the desk, which a phone shows only a part of, so maps were cut off at both sides. On a phone,
+   Your maps is a list of its own instead: every map and mind map whole, two to a row, in the order you last opened them. */
+function phoneMapsDraw(){ let box = document.getElementById('phoneMaps');
+  if(!box){ box = document.createElement('div'); box.id = 'phoneMaps'; document.body.appendChild(box);
+    box.addEventListener('click', e => { const c = e.target.closest('.pmc'); if(!c || state !== 'maps' || busy) return; e.stopPropagation();
+      if(c.dataset.topic) openTopic(c.dataset.topic); else if(c.dataset.mind && P && P.openMind) P.openMind(c.dataset.mind); else if(c.dataset.new && P) P.newMap(); }); }
+  const MMs = D.minds || [], rt = D.recentTimes || {}, n = order.length;
+  const items = order.map((t, i) => ({t, at: rt[t.id] || 0, i})).concat(MMs.map((m, i) => ({m, at: rt['mind:' + m.id] || 0, i: n + i}))).sort((a, b) => (b.at - a.at) || (a.i - b.i));
+  const count = t => { const k = (D.papers || []).filter(p => p.topic === t.id).length; return k + (k === 1 ? ' paper' : ' papers'); };
+  box.innerHTML = '<div class="pm-grid">' + items.map(x => x.t
+      ? '<button type="button" class="pmc" data-topic="' + esc(x.t.id) + '"><span class="pmc-cov" style="background-image:' + esc(svgURL(coverSVG(x.t))) + ',url(' + AS + 'cover-paper.webp)"></span><b>' + esc(x.t.name) + '</b><em>' + count(x.t) + '</em></button>'
+      : '<button type="button" class="pmc mind" data-mind="' + esc(x.m.id) + '"><span class="pmc-cov mind"><svg viewBox="0 0 160 120" aria-hidden="true"><g fill="none" stroke="#3B332C" stroke-width="1.4" opacity=".75"><path d="M80 60Q58 40 34 30"/><path d="M80 60Q104 38 128 28"/><path d="M80 60Q60 82 36 92"/><path d="M80 60Q102 84 126 94"/></g><rect x="60" y="50" width="40" height="20" rx="5" fill="#231E1A"/><g fill="#FBF8F2" stroke="#3B332C" stroke-width="1.2"><rect x="16" y="22" width="32" height="15" rx="3"/><rect x="112" y="20" width="32" height="15" rx="3"/><rect x="18" y="86" width="32" height="15" rx="3"/><rect x="110" y="88" width="32" height="15" rx="3"/></g></svg></span><b>' + esc(x.m.name) + '</b><em>Mind map</em></button>').join('') +
+    '<button type="button" class="pmc new" data-new="1"><span class="pmc-cov new">+</span><b>New map</b><em>Timeline or mind map</em></button></div>'; }
+new MutationObserver(() => { if(document.body.classList.contains('st-maps') && document.body.classList.contains('phone')) phoneMapsDraw(); }).observe(document.body, {attributes: true, attributeFilter: ['class']});
+
+/* the research log's pages on a phone: ‹ page › + at the foot of the screen (the buttons beside the notebook fall outside it) */
+function notePagerShow(){ const p = document.getElementById('notePager'); if(!p || !NB) return; const n = NB.pages.length, c = (NB.cur || 0) + 1; $('notePgNum').textContent = c + ' / ' + n;
+  p.querySelector('[data-np="-1"]').disabled = c <= 1; p.querySelector('[data-np="1"]').disabled = c >= NB_MAX; }
+document.getElementById('notePager').addEventListener('click', e => { const b = e.target.closest('[data-np]'); if(!b || b.disabled) return; e.stopPropagation(); const k = b.dataset.np;
+  if(k === '-1') memoTurn(-1); else if(k === '1') memoTurn(1); else { const last = NB.pages.length - 1; if(String((NB.pages[last] || {}).text || '').trim()){ NB.cur = last; memoTurn(1); } else if(NB.cur !== last){ memoTurn(last - NB.cur); } }
+  setTimeout(notePagerShow, 1600); });
+new MutationObserver(() => { if(document.body.classList.contains('st-note')) notePagerShow(); }).observe(document.body, {attributes: true, attributeFilter: ['class']});
+{ const _ms = memoShow; memoShow = function(){ const r = _ms.apply(this, arguments); try{ notePagerShow(); }catch(e){} return r; }; }
+
+/* ===================== Clip: a part of a PDF page, onto the mind map =====================
+   When words cannot be chosen (a scanned page, a figure, a table, an equation), drag a box over the page: that part is drawn
+   again from the PDF itself at high resolution, with your highlights and handwriting on it, and placed on the mind map beside
+   the paper as a picture, with its page. */
+const CLIP = {on: false, at: null, box: null};
+function spClipMode(on){ CLIP.on = on; document.body.classList.toggle('sp-clipping', on); $('spClipT').classList.toggle('on', on); if(on){ if(INK.on) try{ $('spInk').click(); }catch(e){} toast('Drag over the part of the page to clip'); } else if(CLIP.box){ CLIP.box.remove(); CLIP.box = null; } }
+$('spClipT').addEventListener('click', e => { e.stopPropagation(); if(SP.mode !== 'pdf'){ toast('Clipping works on PDF pages'); return; } spClipMode(!CLIP.on); });
+async function spClipCapture(no, r){ const page = await SP.pdf.getPage(no), v1 = page.getViewport({scale: 1});
+  const x = r[0] * v1.width, y = r[1] * v1.height, w = r[2] * v1.width, h = r[3] * v1.height;
+  const s = Math.min(6, Math.max(2.4, 1800 / Math.max(1, w)), 3200 / Math.max(1, w), 3200 / Math.max(1, h)), W = Math.max(1, Math.round(w * s)), H = Math.max(1, Math.round(h * s));
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+  await page.render({canvasContext: g, viewport: page.getViewport({scale: s}), transform: [1, 0, 0, 1, -x * s, -y * s]}).promise;
+  /* your highlights on it */
+  g.save(); g.globalCompositeOperation = 'multiply'; g.globalAlpha = .42;
+  (SP.marks || []).filter(m => m.page === no && m.kind !== 'note').forEach(m => (m.rects || []).forEach(q => { g.fillStyle = m.color || '#F2CF57'; g.fillRect((q[0] * v1.width - x) * s, (q[1] * v1.height - y) * s, q[2] * v1.width * s, q[3] * v1.height * s); })); g.restore();
+  /* and your handwriting */
+  try{ const strokes = ((inkData().pdf || {})[no] || []), el = $('spDoc').querySelector('.sp-pg[data-page="' + no + '"]'), cw = el ? el.clientWidth : 0;
+    if(strokes.length && cw){ const k = s * v1.width / cw; g.save(); g.scale(k, k); g.translate(-r[0] * cw, -r[1] * cw * v1.height / v1.width); strokes.forEach(st => inkPaint(g, st, cw)); g.restore(); } }catch(e){}
+  const data = cv.toDataURL('image/jpeg', .9); cv.width = 0; cv.height = 0; return {data, w: W, h: H}; }
+(() => { const pgAt = e => e.target.closest && e.target.closest('#spDoc .sp-pg');
+  document.addEventListener('pointerdown', e => { if(!CLIP.on || !SP.kind) return; const pg = pgAt(e); if(!pg) return; e.preventDefault(); e.stopPropagation();
+    const r = pg.getBoundingClientRect(); CLIP.at = {pg, r, x0: e.clientX, y0: e.clientY, id: e.pointerId}; try{ pg.setPointerCapture(e.pointerId); }catch(x){}
+    CLIP.box = document.createElement('div'); CLIP.box.className = 'sp-clipbox'; pg.appendChild(CLIP.box); }, true);
+  document.addEventListener('pointermove', e => { const c = CLIP.at; if(!CLIP.on || !c || e.pointerId !== c.id) return; e.preventDefault(); e.stopPropagation();
+    const x1 = Math.max(c.r.left, Math.min(c.r.right, e.clientX)), y1 = Math.max(c.r.top, Math.min(c.r.bottom, e.clientY)), L = Math.min(c.x0, x1) - c.r.left, T = Math.min(c.y0, y1) - c.r.top;
+    Object.assign(CLIP.box.style, {left: L + 'px', top: T + 'px', width: Math.abs(x1 - c.x0) + 'px', height: Math.abs(y1 - c.y0) + 'px'}); c.x1 = x1; c.y1 = y1; }, true);
+  const end = async e => { const c = CLIP.at; if(!c || e.pointerId !== c.id) return; CLIP.at = null; e.stopPropagation();
+    const x1 = c.x1 == null ? c.x0 : c.x1, y1 = c.y1 == null ? c.y0 : c.y1, w = Math.abs(x1 - c.x0), h = Math.abs(y1 - c.y0);
+    if(w < 14 || h < 14){ if(CLIP.box){ CLIP.box.remove(); CLIP.box = null; } return; }
+    const no = +c.pg.dataset.page, rect = [(Math.min(c.x0, x1) - c.r.left) / c.r.width, (Math.min(c.y0, y1) - c.r.top) / c.r.height, w / c.r.width, h / c.r.height];
+    CLIP.box.classList.add('taken');
+    try{ const shot = await spClipCapture(no, rect), cite = 'p. ' + no;
+      const go = () => { if(P && P.mindClip && P.mindClip(shot.data, shot.w, shot.h, cite)) toast('On the mind map'); else toast('The mind map could not take the clip'); };
+      if(SP.mindOn) go(); else { spMindOn(true); setTimeout(go, 500); } }
+    catch(x){ toast('That part of the page could not be clipped'); }
+    setTimeout(() => spClipMode(false), 260); };
+  document.addEventListener('pointerup', end, true); document.addEventListener('pointercancel', end, true);
+  addEventListener('keydown', e => { if(e.key === 'Escape' && CLIP.on) spClipMode(false); });
+})();
+
+/* ===================== the sake set =====================
+   A celadon tokkuri, and below it the cup you choose of thirty (from Japan, China and Korea). Tap the cup, or Pour, and
+   sake runs from the bottle into it; tap a full cup to drink it. */
+const SAKE = {x: 1335, y: 245, box: 140, off: 56};
+function sakeEls(){ if($('sakeT')) return; const L = $('deskLayer'); ['sakeT', 'sakeE', 'sakeFT', 'sakeFE'].forEach(id => { const im = document.createElement('img'); im.id = id; im.alt = ''; im.className = 'sake-i ' + (/T$/.test(id) ? 'm' : 'p') + (/F/.test(id) ? ' full' : ''); L.appendChild(im); });
+  const hit = document.createElement('div'); hit.id = 'sakeHit'; hit.title = 'Pour, or drink'; $('stage').appendChild(hit);
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.id = 'pourSvg'; svg.setAttribute('viewBox', '0 0 1440 900'); $('stage').appendChild(svg);
+  hit.addEventListener('click', e => { e.stopPropagation(); if(prefs.cup !== 'sake') return; prefs.sakeFull ? sakeSip() : sakePour(); }); }
+function sakePaint(){ sakeEls(); const on = DRINKS[prefs.cup || ''] === 'sake', key = prefs.sakeCup || 'janome', base = AS + 'sake/cup-' + key;
+  [['sakeT', '-t'], ['sakeE', '-e'], ['sakeFT', '-full-t'], ['sakeFE', '-full-e']].forEach(([id, suf]) => { const im = $(id), src = base + suf + '.webp'; Object.assign(im.style, {left: SAKE.x - SAKE.off + 'px', top: SAKE.y - SAKE.off + 'px', width: SAKE.box + 'px', height: SAKE.box + 'px'}); if(im.getAttribute('src') !== src) im.src = src; im.classList.toggle('on', on); });
+  document.body.classList.toggle('sake-full', !!prefs.sakeFull); $('sakeHit').style.display = on ? '' : 'none';
+  const box = $('sakeCups'); if(box){ box.hidden = !on; if(on){ box.querySelectorAll('img[data-src]').forEach(im => { im.src = im.dataset.src; im.removeAttribute('data-src'); }); box.querySelectorAll('[data-sakecup]').forEach(b => b.classList.toggle('on', b.dataset.sakecup === key)); const sel = box.querySelector('[data-sakecup="' + key + '"]'); $('sakeCupName').textContent = sel ? '· ' + sel.title : ''; } } }
+function sakePour(){ if(prefs.sakeFull) return; const svg = $('pourSvg'), bx = 1218, by = 112, cx = SAKE.x - 4, cy = SAKE.y - 2;
+  const d = 'M' + bx + ' ' + by + ' Q ' + ((bx + cx) / 2 + 26) + ' ' + ((by + cy) / 2 - 30) + ' ' + cx + ' ' + cy;
+  svg.innerHTML = '<path class="pour-glow" d="' + d + '"/><path class="pour" d="' + d + '"/><circle class="ripple" cx="' + cx + '" cy="' + cy + '" r="3"/><circle class="ripple r2" cx="' + cx + '" cy="' + cy + '" r="3"/>';
+  document.body.classList.add('pouring'); $('drinkT').classList.add('tilt'); $('drinkE').classList.add('tilt');
+  setTimeout(() => { prefs.sakeFull = true; savePrefs(); document.body.classList.add('sake-full'); }, 420);
+  setTimeout(() => { document.body.classList.remove('pouring'); $('drinkT').classList.remove('tilt'); $('drinkE').classList.remove('tilt'); }, 1500);
+  setTimeout(() => { if(!document.body.classList.contains('pouring')) svg.innerHTML = ''; }, 2600); }
+function sakeSip(){ prefs.sakeFull = false; savePrefs(); document.body.classList.remove('sake-full'); }
+{ const _pd = paintDrink; paintDrink = function(){ const r = _pd.apply(this, arguments); try{ sakePaint(); }catch(e){} return r; }; }
+document.addEventListener('click', e => { const c = e.target.closest && e.target.closest('[data-sakecup]'); if(c){ e.stopPropagation(); prefs.sakeCup = c.dataset.sakecup; prefs.sakeFull = false; savePrefs(); sakePaint(); return; }
+  if(e.target.closest && e.target.closest('#sakePour')){ e.stopPropagation(); if(prefs.sakeFull){ prefs.sakeFull = false; sakePaint(); setTimeout(sakePour, 350); } else sakePour(); } });
+
+/* ===================== scented candles, and the room's light =====================
+   A tortoiseshell glass jar with two wicks, and a lustre glass votive. Their flames live: they breathe and flicker as real
+   flames do, never in a loop you could see; a candle you tap goes out with a curl of smoke, and lights again when tapped.
+   Room light off: the desk falls into the dark and only the candles light it, the jar's light dappled by its spots. */
+const CANDLES = [{"id": "A", "kind": "tortoise", "x": 1253.8, "y": 369.9, "box": 150, "off": 75.0, "wicks": [[72.2, 73.3], [95.0, 74.7]], "tex": 940, "light": "tortoise", "hit": 46}, {"id": "B", "kind": "ribbed", "x": 596.8, "y": 103.0, "box": 124, "off": 62.0, "wicks": [[61.9, 61.6]], "tex": 760, "light": "plain", "hit": 34}];
+const FL = {raf: 0, t0: performance.now(), flames: [], tex: {}};
+function candleEls(){ if($('candleA_T')) return; const L = $('deskLayer'), S = $('stage');
+  CANDLES.forEach(c => { ['T', 'E'].forEach(k => { const im = document.createElement('img'); im.id = 'candle' + c.id + '_' + k; im.alt = ''; im.className = 'cdl-i ' + (k === 'T' ? 'm' : 'p'); Object.assign(im.style, {left: c.x - c.off + 'px', top: c.y - c.off + 'px', width: c.box + 'px', height: c.box + 'px'}); L.appendChild(im); });
+    const hit = document.createElement('div'); hit.className = 'cdl-hit'; hit.dataset.candle = c.id; const hw = c.wicks.reduce((a, w) => [a[0] + w[0] / c.wicks.length, a[1] + w[1] / c.wicks.length], [0, 0]), hr = c.hit || 46; Object.assign(hit.style, {left: c.x - c.off + hw[0] - hr + 'px', top: c.y - c.off + hw[1] - hr + 'px', width: hr * 2 + 'px', height: hr * 2 + 'px'}); hit.title = 'Light, or blow out'; S.appendChild(hit);
+    c.wicks.forEach((w, i) => { const f = document.createElement('div'); f.className = 'flame'; f.innerHTML = '<i class="glow"></i><i class="halo"></i><i class="core"></i>'; const fx = c.x - c.off + w[0], fy = c.y - c.off + w[1]; Object.assign(f.style, {left: fx + 'px', top: fy + 'px'}); f.style.setProperty('--ang', (Math.atan2(fy - 450, fx - 720) * 180 / Math.PI - 90).toFixed(1) + 'deg'); f.style.setProperty('--el', (1 + Math.hypot(fx - 720, fy - 450) / 900).toFixed(2)); S.appendChild(f);
+      FL.flames.push({el: f, c, ph: Math.random() * 100, ph2: Math.random() * 100, walk: 0, gust: 0}); });
+    const tx = new Image(); tx.src = AS + 'candle-' + (c.light === 'plain' ? 'plain' : c.kind) + '-light.webp'; FL.tex[c.id] = tx; });
+  const cv = document.createElement('canvas'); cv.id = 'roomDark'; cv.width = 720; cv.height = 450; S.appendChild(cv);
+  S.addEventListener('click', e => { const h = e.target.closest && e.target.closest('.cdl-hit'); if(!h) return; e.stopPropagation(); const c = CANDLES.find(x => x.id === h.dataset.candle); const st = candleState(); st[c.id] = !st[c.id]; prefs.cdl = st; savePrefs(); if(!st[c.id]) candleSmoke(c); candlePaint(); }); }
+function candleState(){ const s = Object.assign({A: true, B: true}, prefs.cdl || {}); return s; }
+function candlePaint(){ candleEls(); const st = candleState(), dark = prefs.lights === 'off';
+  CANDLES.forEach(c => { const lit = !!st[c.id], base = AS + 'candle-' + c.kind + (lit ? '-lit' : ''); ['T', 'E'].forEach(k => { const im = $('candle' + c.id + '_' + k), src = base + (k === 'T' ? '-t' : '-e') + '.webp'; if(im.getAttribute('src') !== src){ im.onload = () => im.classList.add('on'); im.src = src; } else im.classList.add('on'); }); });
+  FL.flames.forEach(f => f.el.classList.toggle('lit', !!st[f.c.id]));
+  document.body.classList.toggle('lights-off', dark); document.querySelectorAll('.lt').forEach(b => b.classList.toggle('on', b.dataset.light === 'room' ? !dark : CANDLES.some(c => st[c.id])));
+  const any = CANDLES.some(c => st[c.id]); if(any || dark){ if(!FL.raf) FL.raf = requestAnimationFrame(flicker); } }
+/* a flame's life: a slow breath, a quicker tremble, a random walk, and now and then a gust that bends and dims it */
+function flicker(now){ FL.raf = 0; const st = candleState(), dark = prefs.lights === 'off', vis = typeof state === 'undefined' || state === 'desk' || state === 'maps' || state === 'note';
+  const t = (now - FL.t0) / 1000; let anyLit = false; const lev = {};
+  FL.flames.forEach(f => { const lit = !!st[f.c.id]; if(!lit) return; anyLit = true;
+    f.walk += (Math.random() - 0.5) * 0.10; f.walk *= 0.94; if(Math.random() < 0.004) f.gust = 1; f.gust *= 0.93;
+    const breath = Math.sin(t * 1.3 + f.ph) * 0.035 + Math.sin(t * 2.9 + f.ph2) * 0.025, trem = Math.sin(t * 11.7 + f.ph * 3) * 0.018 + Math.sin(t * 17.3 + f.ph2 * 2) * 0.012;
+    const k = Math.max(0.55, 1 + breath + trem + f.walk * 0.6 - f.gust * 0.35), dx = Math.sin(t * 3.1 + f.ph) * 0.6 + f.walk * 4 + f.gust * 2.5, dy = Math.cos(t * 2.3 + f.ph2) * 0.5 + f.gust * 1.5;
+    f.el.style.setProperty('--k', k.toFixed(3)); f.el.style.setProperty('--dx', dx.toFixed(2) + 'px'); f.el.style.setProperty('--dy', dy.toFixed(2) + 'px');
+    lev[f.c.id] = (lev[f.c.id] || 0) + k / f.c.wicks.length; });
+  const cv = $('roomDark'); if(cv && dark && vis){ const g = cv.getContext('2d'), sx = cv.width / 1440, sy = cv.height / 900; g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.fillStyle = anyLit ? 'rgb(30,24,30)' : 'rgb(44,40,52)'; g.fillRect(0, 0, cv.width, cv.height);
+    g.globalCompositeOperation = 'lighter'; CANDLES.forEach(c => { if(!st[c.id]) return; const tx = FL.tex[c.id]; const a = Math.min(1, 0.95 * (lev[c.id] || 1)); if(tx && tx.complete){ g.globalAlpha = a; const S = c.tex * (0.96 + 0.06 * (lev[c.id] || 1)); g.drawImage(tx, (c.x - S / 2) * sx, (c.y - S / 2) * sy, S * sx, S * sy); }
+      const rg = g.createRadialGradient(c.x * sx, c.y * sy, 0, c.x * sx, c.y * sy, 130 * sx); rg.addColorStop(0, 'rgba(255,190,120,' + (0.55 * a).toFixed(3) + ')'); rg.addColorStop(1, 'rgba(255,150,80,0)'); g.globalAlpha = 1; g.fillStyle = rg; g.fillRect((c.x - 140) * sx, (c.y - 140) * sy, 280 * sx, 280 * sy); }); }
+  if((anyLit || dark) && vis) FL.raf = requestAnimationFrame(flicker); else if(anyLit || dark) setTimeout(() => { if(!FL.raf) FL.raf = requestAnimationFrame(flicker); }, 600); }
+function candleSmoke(c){ const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'smoke'); svg.setAttribute('viewBox', '0 0 80 140'); Object.assign(svg.style, {left: c.x - c.off + c.wicks[0][0] - 40 + 'px', top: c.y - c.off + c.wicks[0][1] - 128 + 'px'});
+  svg.innerHTML = c.wicks.map((w, i) => '<path d="M' + (40 + (w[0] - c.wicks[0][0])) + ' 128 C ' + (30 + i * 8) + ' 100, ' + (52 - i * 6) + ' 80, ' + (38 + i * 4) + ' 50 S ' + (46 + i * 3) + ' 18, ' + (36 + i * 6) + ' 2"/>').join(''); $('stage').appendChild(svg); setTimeout(() => svg.remove(), 2600); }
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('.lt'); if(!b) return; e.stopPropagation();
+  if(b.dataset.light === 'room'){ prefs.lights = prefs.lights === 'off' ? 'on' : 'off'; }
+  else { const st = candleState(), any = CANDLES.some(c => st[c.id]); CANDLES.forEach(c => { if(any && st[c.id]) candleSmoke(c); st[c.id] = !any; }); prefs.cdl = st; }
+  savePrefs(); candlePaint(); });
+try{ candlePaint(); sakePaint(); }catch(e){}
+try{ if(/[?&]pmtest\b/.test(location.search + (parent && parent.location ? parent.location.search : ''))) window.__candles = {CANDLES, FL, candlePaint, sakePour, sakeSip, sakePaint, prefs}; }catch(e){}
+
+/* ===================== the gallery and the season =====================
+   Gallery: a museum postcard by the notebook, its corner under the notebook's edge, and a print of a painting taped onto the
+   research log's right page in place of the sketch, with a line of the painting's name in your hand. Both can be on or off,
+   and the painting chosen (Van Gogh: The Starry Night, Wheat Field with Cypresses; both 1889, public domain).
+   Christmas: a large wreath at the top-left corner, only its quarter showing, lying over the back map. */
+const ART = {'starry-night': {name: 'The Starry Night', by: 'Van Gogh, 1889', who: 'Vincent van Gogh', how: 'Oil on canvas · 73.7 × 92.1 cm', folio: '43'}, 'wheat-field': {name: 'Wheat Field with Cypresses', by: 'Van Gogh, 1889', who: 'Vincent van Gogh', how: 'Oil on canvas · 73 × 93.4 cm', folio: '51'}};
+function galleryEls(){ if($('galCard')) return; const S = $('stage');
+  const card = document.createElement('div'); card.id = 'galCard'; card.innerHTML = '<img alt="">'; S.appendChild(card);
+  const page = document.createElement('div'); page.id = 'galPage'; page.innerHTML = '<div class="gp-plate"><img alt=""><i class="gp-gloss"></i></div><p class="gp-who"></p><p class="gp-what"></p><p class="gp-how"></p><p class="gp-folio"></p>'; S.appendChild(page);
+  const wr = document.createElement('img'); wr.id = 'wreath'; wr.alt = ''; S.appendChild(wr); }
+function galleryPaint(){ galleryEls(); const g = prefs.gal || {}, art = prefs.art || 'starry-night', other = art === 'starry-night' ? 'wheat-field' : 'starry-night', A = ART[art];
+  let own = null; try{ own = g.photo ? localStorage.getItem('pm:galPhoto') : null; }catch(e){}
+  const ci = $('galCard').querySelector('img'), cs = own || AS + 'art/' + other + '-card.jpg'; if(ci.getAttribute('src') !== cs) ci.src = cs; $('galCard').classList.toggle('own', !!own); $('galCard').classList.toggle('on', !!g.card);
+  const pi = $('galPage').querySelector('img'), ps = AS + 'art/' + art + '.jpg'; if(pi.getAttribute('src') !== ps) pi.src = ps; const P_ = $('galPage'); P_.querySelector('.gp-who').textContent = A.who; P_.querySelector('.gp-what').textContent = A.name + ', 1889'; P_.querySelector('.gp-how').textContent = A.how; P_.querySelector('.gp-folio').textContent = A.folio; $('galPage').classList.toggle('on', !!g.page);
+  document.body.classList.toggle('gal-page', !!g.page);
+  const wr = $('wreath'), ws = AS + 'season/wreath.webp'; if(prefs.season === 'christmas'){ if(wr.getAttribute('src') !== ws) wr.src = ws; wr.classList.add('on'); } else wr.classList.remove('on');
+  document.querySelectorAll('.lt[data-gal]').forEach(b => b.classList.toggle('on', !!g[b.dataset.gal])); document.querySelectorAll('.lt[data-art]').forEach(b => b.classList.toggle('on', b.dataset.art === art));
+  document.querySelectorAll('.lt[data-season]').forEach(b => b.classList.toggle('on', prefs.season === b.dataset.season)); }
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('.lt[data-gal], .lt[data-art], .lt[data-season]'); if(!b) return; e.stopPropagation();
+  if(b.dataset.gal === 'photo'){ galPhotoPick(); return; }
+  if(b.dataset.gal === 'nophoto'){ const g = Object.assign({}, prefs.gal || {}); g.photo = false; prefs.gal = g; savePrefs(); galleryPaint(); return; }
+  if(b.dataset.gal){ const g = Object.assign({}, prefs.gal || {}); g[b.dataset.gal] = !g[b.dataset.gal]; prefs.gal = g; }
+  else if(b.dataset.art){ prefs.art = b.dataset.art; }
+  else { prefs.season = prefs.season === b.dataset.season ? '' : b.dataset.season; }
+  savePrefs(); galleryPaint(); });
+/* your own photo on the postcard: chosen from your files, kept on this device, made a postcard's size */
+function galPhotoPick(){ const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = () => { const f = inp.files && inp.files[0]; if(!f) return; const im = new Image(), u = URL.createObjectURL(f);
+    im.onload = () => { const s = Math.min(1, 1000 / Math.max(im.naturalWidth, im.naturalHeight)), w = Math.round(im.naturalWidth * s), h = Math.round(im.naturalHeight * s), bw = Math.round(Math.max(w, h) * 0.035);
+      const cv = document.createElement('canvas'); cv.width = w + bw * 2; cv.height = h + bw * 2; const c = cv.getContext('2d'); c.fillStyle = '#F7F4EE'; c.fillRect(0, 0, cv.width, cv.height); c.drawImage(im, bw, bw, w, h); URL.revokeObjectURL(u);
+      try{ localStorage.setItem('pm:galPhoto', cv.toDataURL('image/jpeg', 0.86)); }catch(e){ toast('That photo is too large to keep'); return; }
+      const g = Object.assign({}, prefs.gal || {}); g.photo = true; g.card = true; prefs.gal = g; savePrefs(); galleryPaint(); };
+    im.src = u; }; inp.click(); }
+try{ galleryPaint(); }catch(e){}
+
+/* a paper's handwriting that arrives after the reader opened (from this device's store or from GitHub) is drawn when it comes */
+window.__pmInkReady = (kind, id) => { try{ if(SP.kind === kind && SP.id === id){ SP.ink = null; SP.inkFor = null; inkMount(true); } }catch(e){} };
 })();

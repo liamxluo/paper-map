@@ -67,6 +67,11 @@ window.pmDesk = {
     catch(err){ const st = err && err.status, fromZ = (e.pdf.zotero || /^zotero:/.test(e.pdf.path || '')) && !(e.pdf.path || '').startsWith('pdfs/');
       PDF_WHY = st === 'nozotero' ? 'Zotero is not connected on this device; connect it in the Mac app' : fromZ && !window.__TAURI__ ? 'Zotero keeps this PDF; it opens in the Mac app' : st === 'nogh' ? 'no library is set up on this device' : st === 404 ? 'the file is not in your library' : String(st || (err && err.message) || 'unknown').slice(0, 80);
       return null; } },
+  mindDock(kind, id, r){ try{ return mindDock(kind, id, r); }catch(e){ return null; } },
+  mindDockMove(r){ try{ mindDockMove(r); }catch(e){} },
+  mindUndock(){ try{ mindUndock(); }catch(e){} },
+  mindQuote(text, cite){ try{ return mindQuote(text, cite); }catch(e){ return false; } },
+  mindClip(data, w, h, cite){ try{ return mindClip(data, w, h, cite); }catch(e){ return false; } },
   copyCfg(){ return copyCfg(); },
   setCopyCfg(p){ return copySetCfg(p); },
   async pickFolder(){ try{ return await window.__TAURI__.core.invoke('pick_folder', {prompt: 'Choose the folder for a copy of your files'}); }catch(e){ return null; } },
@@ -141,7 +146,7 @@ window.pmDesk = {
   deletePaper(id, after){ if(PREVIEW){ toast('This is the example: nothing in it can be deleted'); return; } deleteEntry(id, after, true); },
   confirmDanger(title, text, yes){ confirmSimple(title, text, 'Delete', yes); },
   paperInk(id){ const e = lib.entries[id]; return e && e.ink ? clone(e.ink) : null; },
-  setPaperInk(id, d){ const e = lib.entries[id]; if(!e || PREVIEW) return; e.ink = clone(d); touchLib(); },
+  setPaperInk(id, d){ const e = lib.entries[id]; if(!e || PREVIEW) return; e.ink = clone(d); try{ nsPut('paper', id, e.ink); }catch(x){} touchLib(); },
   async bookFileDrop(f){ if(f && f.where === 'asset' && f.asset){ const c = ghCfg(); if(c) try{ await fetch('https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + '/releases/assets/' + f.asset.id, {method: 'DELETE', headers: ghHeaders(c)}); }catch(e){} } if(f && f.path) try{ await PMDB.del && PMDB.del('file:' + f.path); }catch(e){} },
   bookPlace(){ return bookPlace(); }, setBookPlace(v){ try{ v ? localStorage.setItem('pm:bookPlace', v) : localStorage.removeItem('pm:bookPlace'); }catch(e){} }, async bookPlaces(){ if(!window.__TAURI__) return null; try{ return await window.__TAURI__.core.invoke('storage_places'); }catch(e){ return null; } },
   paperLinks(id){ const seen = new Set(); return (lib.links || []).filter(l => l[0] === id || l[1] === id).map(l => l[0] === id ? l[1] : l[0]).filter(x => lib.entries[x] && !seen.has(x) && seen.add(x)).map(x => lib.entries[x].t || ''); },
@@ -177,14 +182,14 @@ window.pmDesk = {
   newPaper(tid){ setTimeout(() => { if(tid && lib.topics.some(t => t.id === tid)){ DK.fromTopic = tid; openView(tid + '-all'); } openEntryForm(null); }, 140); },
   openSettings(back){ setTimeout(() => openSettings(back), 140); },
   savePrefs(p){ settings.desk = Object.assign({}, deskPrefs(), p || {}); persistSettings(); },
-  saveReadings(r, cats){ if(PREVIEW) return; lib.readings = clone(r || []); lib.readingCats = clone(cats || []); normalizeLib(lib);
+  saveReadings(r, cats){ if(PREVIEW) return; lib.readings = clone(r || []); lib.readingCats = clone(cats || []); normalizeLib(lib); try{ lib.readings.forEach(b => { if(b.ink){ const p = 'ink/book/' + b.id + '.json'; const sig = nsSig(b.ink, 'book'); if(NS.cur[p] !== sig) nsPut('book', b.id, b.ink); } }); }catch(x){}
     /* a book put on a map follows its Readings entry: title, authors and year */
     const byId = {}; lib.readings.forEach(b => { byId[b.id] = b; }); let moved = false;
     Object.values(lib.entries).forEach(e => { const b = e.book && e.reading && byId[e.reading]; if(!b) return;
       const au = deskAuthors(b.authors), y = parseInt(b.year, 10), t = String(b.title || e.t);
       if(e.t !== t || e.au !== au || (isFinite(y) && y > 0 && e.y !== y)){ e.t = t; e.au = au; if(isFinite(y) && y > 0) e.y = y; moved = true; } });
     touchLib(); if(moved) renderAll(); },
-  saveNotebooks(nbs){ if(PREVIEW) return; lib.notebooks = clone(nbs || []); normalizeLib(lib); touchLib(); },
+  saveNotebooks(nbs){ if(PREVIEW) return; lib.notebooks = nbMerge(clone(nbs || []), lib.notebooks || []); normalizeLib(lib); touchLib(); },
   addBookToMap(b, tid){
     if(PREVIEW){ toast('This is the example: open your own list to put books on a map'); return null; }
     const tp = lib.topics.find(t => t.id === tid); if(!tp || !b) return null;
@@ -203,6 +208,38 @@ function deskEnsure(){
   const f = document.createElement('iframe'); f.id = 'pmDesk'; f.title = 'Paper Map desk'; f.srcdoc = DESK_SRC; f.addEventListener('load', () => { try{ paintSyncDot(); }catch(e){} });
   document.body.appendChild(f); DK.frame = f; return f;
 }
+function nbWritten(nb){ return (nb.pages || []).filter(p => p && String(p.text || '').trim()).length; }
+function nbMerge(inc, old){ const byId = {}; inc.forEach(n => { if(n && n.id) byId[n.id] = n; });
+  const oldWritten = old.some(o => nbWritten(o) > 0);
+  old.forEach(o => { if(!o || !o.id) return; const n = byId[o.id];
+    if(!n){ if(nbWritten(o) > 0) inc.push(o); return; }
+    n.pages = n.pages || []; (o.pages || []).forEach((op, i) => { if(!op) return; const np = n.pages[i];
+      if(!np){ n.pages[i] = op; return; }
+      const oText = String(op.text || '').trim(), nText = String(np.text || '').trim();
+      if(!nText && oText && !(np.edited && op.edited && np.edited > op.edited)) n.pages[i] = op; }); });
+  /* a fresh, never-written notebook sent by a desk that had not yet seen your library does not push your notebooks aside */
+  return oldWritten ? inc.filter(n => nbWritten(n) > 0 || old.some(o => o.id === n.id)) : inc; }
+/* bringing back research log pages from your library's history on GitHub (every save is kept there): the newest version from
+   before the pages went missing is found, and its notebooks and pages are added back to what you have now (nothing of now
+   is replaced) */
+window.__nbRecover = (...a) => nbRecover(...a);
+async function nbRecover(btn){ const c = ghCfg(); if(!c || c.kind === 'folder' || c.kind === 'dropbox'){ toast('This needs your library on GitHub'); return; }
+  const label = btn ? btn.textContent : ''; if(btn){ btn.disabled = true; btn.textContent = 'Looking through earlier versions…'; }
+  try{ const base = 'https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo), path = String(c.path || 'data/paper-map.json');
+    let commits = []; for(let page = 1; page <= 5; page++){ const r = await fetch(base + '/commits?path=' + encodeURIComponent(path) + '&sha=' + encodeURIComponent(c.branch || 'main') + '&per_page=100&page=' + page, {headers: ghHeaders(c)}); if(!r.ok) break; const j = await r.json(); commits = commits.concat(j); if(j.length < 100) break; }
+    if(!commits.length){ toast('No earlier versions found on GitHub'); return; }
+    const score = nbs => (nbs || []).reduce((n, nb) => n + nbWritten(nb), 0), now = score(lib.notebooks), cache = {};
+    const at = async i => { if(cache[i] !== undefined) return cache[i]; const cm = commits[i]; if(!cm){ cache[i] = null; return null; }
+      try{ const r = await fetch(base + '/contents/' + path.split('/').map(encodeURIComponent).join('/') + '?ref=' + cm.sha, {headers: ghHeaders(c, {'Accept': 'application/vnd.github.raw+json'})}); if(!r.ok){ cache[i] = null; return null; } const j = await r.json(); const nbs = (j.lib || j).notebooks || []; cache[i] = {nbs, s: score(nbs), date: cm.commit && cm.commit.author && cm.commit.author.date}; return cache[i]; }catch(e){ cache[i] = null; return null; } };
+    /* back in widening steps until a version holds more written pages than now, then narrow to the newest such version */
+    let lo = 0, hi = -1, i = 1; while(i < commits.length){ if(btn) btn.textContent = 'Looking through earlier versions… (' + i + ')'; const v = await at(i); if(v && v.s > now){ hi = i; break; } lo = i; i *= 2; }
+    if(hi < 0){ const v = await at(commits.length - 1); if(v && v.s > now) hi = commits.length - 1; }
+    if(hi < 0){ toast('No earlier version on GitHub holds research log pages that are missing now'); return; }
+    while(hi - lo > 1){ const mid = (lo + hi) >> 1; const v = await at(mid); if(v && v.s > now) hi = mid; else lo = mid; }
+    const found = cache[hi], before = now; lib.notebooks = nbMerge(clone(lib.notebooks || []), clone(found.nbs)); normalizeLib(lib); touchLib(); try{ renderAll(); }catch(e){}
+    const back = score(lib.notebooks) - before; toast(back > 0 ? 'Brought back ' + back + (back === 1 ? ' page' : ' pages') + ' of your research log, from ' + new Date(found.date).toLocaleString('en-GB', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'}) + '. Nothing you have now was replaced.' : 'Everything in that version is already in your research log');
+  }catch(e){ toast('The earlier versions could not be read just now'); }
+  finally{ if(btn){ btn.disabled = false; btn.textContent = label; } } }
 function deskPage(){ try{ return DK.frame && DK.frame.contentWindow && DK.frame.contentWindow.pmDeskPage; }catch(e){ return null; } }
 function deskShowFrame(instant){ const f = deskEnsure(); requestAnimationFrame(() => document.documentElement.classList.remove('desk-boot')); if(instant){ f.classList.add('instant'); void f.offsetWidth; }
   f.classList.add('on'); DK.shown = true; document.documentElement.classList.add('desk-on');
@@ -366,24 +403,63 @@ function atlasPanel(id){ let box = document.getElementById(id);
   if(!box){ box = document.createElement('div'); box.id = id; box.className = 'atl-menu atl-side'; box.hidden = true; document.body.appendChild(box);
     document.addEventListener('mousedown', ev => { if(!box.hidden && !ev.target.closest('#' + id + ',[data-atl]') && modal.root.hidden) box.hidden = true; }); }
   ['atlSync', 'atlLook'].forEach(x => { if(x !== id){ const o = document.getElementById(x); if(o) o.hidden = true; } }); return box; }
-/* the cloud: where the library is kept, and everything about keeping it there */
-function atlasSync(btn){
-  const box = atlasPanel('atlSync'); if(!box.hidden){ box.hidden = true; return; }
-  const c = ghCfg(), st = ((document.querySelector('.bar [data-save-state]') || {}).textContent || '').trim();
-  const where = !c ? 'Only on this ' + (window.__TAURI__ ? 'Mac' : 'browser') : c.kind === 'folder' ? (window.__TAURI__ ? 'Your folder on this Mac' : 'The folder you chose') : c.kind === 'dropbox' ? 'Dropbox' : 'GitHub' + (c.repo ? ' · ' + c.repo : '');
-  box.innerHTML = '<p class="atl-mk">YOUR LIBRARY</p><div class="atl-sy"><b>' + esc(where) + '</b><span>' + esc(st || (c ? 'Up to date' : 'Not copied anywhere else')) + '</span></div>' +
-    (c ? '<button type="button" class="atl-pbtn" data-sync-a="now">Sync now</button>' : '') + (window.__TAURI__ ? '<button type="button" class="atl-pbtn" data-sync-a="mac">Change where it is kept…</button>' : '') +
-    atlasPdfLine() + '<button type="button" class="atl-pbtn atl-zt" data-sync-a="zotero">' + (ztCfg() ? 'Zotero · connected' : 'Connect Zotero') + '</button>' + (ztCfg() ? '<button type="button" class="atl-pbtn" data-sync-a="zsync">Bring in from Zotero now</button>' : '') + '<div class="atl-syncform">' + syncSectionHTML() + '</div>';
-  try{ wireGhSection(box); }catch(e){}
-  box.onclick = ev => { const op = ev.target.closest('[data-pdf-open]'); if(op){ box.hidden = true; try{ openReader(op.dataset.pdfOpen); }catch(e){} return; }
+/* the cloud: four tabs side by side, GitHub, iCloud / Dropbox, a copy on this Mac, Zotero; the one you pick is plainly picked,
+   a small green dot marks what is in use, and below is only what belongs to that tab */
+let ATL_TAB = null;
+function atlasDotOf(id){ const c = ghCfg(), kind = syncKind(), cp = typeof copyCfg === 'function' ? copyCfg() : {}, zc = typeof ztCfg === 'function' && ztCfg();
+  if(id === 'github' || id === 'folder'){ if(!c || (id === 'github' ? kind !== 'github' : kind !== 'folder')) return 'off'; const d = syncDot(); return d === 'busy' ? 'busy' : d === 'err' ? 'err' : 'ok'; }
+  if(id === 'copy') return window.__TAURI__ && cp.place ? (PM_STATE.copy || 'ok') : 'off';
+  return zc ? (PM_STATE.zotero || 'ok') : 'off'; }
+const ATL_DOT_SAY = {ok: 'Done', busy: 'Working…', err: 'Did not work: open the tab to see why', off: 'Not in use'};
+function atlasDots(box){ (box || document).querySelectorAll('.cl-tab[data-cl]').forEach(t => { const d = t.querySelector('.cl-dot'), st = atlasDotOf(t.dataset.cl); if(d){ d.className = 'cl-dot is-' + st; d.title = ATL_DOT_SAY[st]; } }); }
+window.addEventListener('pm-state', () => { const box = document.getElementById('atlSync'); if(box && !box.hidden) atlasDots(box); });
+window.pmOpenCloud = () => { const box = atlasPanel('atlSync'); if(DK.shown) document.documentElement.classList.add('pm-overdesk'); box.hidden = true; atlasSync(null); };
+function atlasSync(btn){ const box = atlasPanel('atlSync'); if(!box.hidden){ box.hidden = true; return; } atlasSyncDraw(box); box.hidden = false; }
+function atlasSyncDraw(box){
+  const c = ghCfg(), kind = syncKind(), mac = !!window.__TAURI__, st = ((document.querySelector('.bar [data-save-state]') || {}).textContent || '').trim();
+  const cp = typeof copyCfg === 'function' ? copyCfg() : {place: ''}, zc = typeof ztCfg === 'function' && ztCfg();
+  const used = {github: kind === 'github' && !!c, folder: kind === 'folder' && !!c, copy: mac && !!cp.place, zotero: !!zc};
+  const cur = ATL_TAB || (kind === 'folder' ? 'folder' : 'github');
+  const card = (t, line) => '<div class="cl-card"><b>' + esc(t) + '</b><span>' + esc(line) + '</span></div>';
+  const btn = (label, act, pri) => '<button type="button" class="cl-btn' + (pri ? ' pri' : '') + '" data-sync-a="' + act + '">' + esc(label) + '</button>';
+  const row = list => '<div class="cl-btns">' + list.join('') + '</div>';
+  const gh = (used.github ? '<div class="cl-card"><b>' + esc('GitHub · ' + c.repo) + '</b><span data-save-state>' + esc(st || 'Up to date') + '</span></div>' + row([btn('Sync now', 'now', true), btn('Earlier versions', 'history'), btn('Bring back research log pages', 'nbback')]) + '<div class="cl-pdfs">' + atlasPdfLine() + '</div>'
+      : card('GitHub', kind === 'folder' && c ? 'Not in use: your library is kept in a folder' : 'Not connected yet')) +
+    '<details class="cl-more"' + (used.github ? '' : ' open') + '><summary>' + (used.github ? 'Repository and key' : 'Connect a repository') + '</summary><div class="cl-form">' + ghSectionHTML() + '</div></details>';
+  const canFolder = mac || (typeof FS_OK !== 'undefined' && FS_OK);
+  const fo = card('iCloud / Dropbox folder', used.folder ? (st || 'Up to date') + ((lsGet(GH_KEY) || {}).name ? ' · ' + (lsGet(GH_KEY) || {}).name : '') : 'Not in use') +
+    '<p class="cl-p">Your library as one file in a folder inside iCloud Drive or Dropbox; that app copies it to your other devices and keeps its history.' + (used.github ? ' Choosing a folder moves the library there; what is on GitHub stays.' : '') + '</p>' +
+    (canFolder ? row([mac ? btn(used.folder ? 'Choose another folder…' : 'Keep it in a folder…', 'mac', !used.folder) : '<button type="button" class="cl-btn' + (used.folder ? '' : ' pri') + '" data-fs-connect="1">' + (used.folder ? 'Choose another folder…' : 'Choose a folder…') + '</button>'])
+      : '<p class="cl-p">This works in the Mac app, or in Chrome or Edge on a computer.</p>') +
+    (used.folder ? row(['<button type="button" class="cl-btn" data-sync-pull="1">Load from the folder</button>', '<button type="button" class="cl-btn" data-sync-save="1">Save now</button>', '<button type="button" class="cl-btn" data-sync-history="1">Earlier versions</button>']) : '');
+  const where = cp.place === 'folder' ? (cp.path || '').split('/').pop() || 'your folder' : ({icloud: 'iCloud Drive › Paper Map', desktop: 'Desktop › Paper Map', documents: 'Documents › Paper Map'})[cp.place] || '';
+  const places = [['', 'Off'], ['icloud', 'iCloud Drive'], ['desktop', 'Desktop'], ['documents', 'Documents'], ['folder', cp.place === 'folder' && cp.path ? (cp.path.split('/').pop() || 'Your folder') : 'Choose a folder…']];
+  const co = !mac ? card('A copy on this Mac', 'In the Mac app: a copy of your PDFs, kept up to date in a folder of your Mac.')
+    : card('A copy on this Mac', cp.place ? 'Copying into ' + where : 'Off') +
+      '<p class="cl-k">WHERE</p><div class="cl-opts">' + places.map(([v, l]) => '<button type="button" class="cl-opt' + ((cp.place || '') === v ? ' on' : '') + '" data-cp="' + v + '">' + esc(l) + '</button>').join('') + '</div>' +
+      '<p class="cl-k">WHAT GOES THERE</p><div class="cl-opts' + (cp.place ? '' : ' dim') + '">' + [['papers', 'Papers'], ['books', 'Books'], ['marks', 'With my marks and notes']].map(([k, l]) => '<button type="button" class="cl-opt tick' + (cp[k] ? ' on' : '') + '" data-cw="' + k + '">' + l + '</button>').join('') + '</div>';
+  const zh = zc && typeof ztHere === 'function' ? ztHere() : {papers: 0};
+  const zo = card('Zotero', zc ? zh.papers + (zh.papers === 1 ? ' paper' : ' papers') + ' from Zotero here' + (zc.last ? ' · last looked ' + ztWhen(zc.last) : '') + '. New ones come in by themselves every few minutes.' : 'Not connected') + row(zc ? [btn('Look for new ones now', 'zsync', true), btn('Choose collections…', 'zotero')] : [btn('Connect Zotero…', 'zotero', true)]);
+  const tabs = [['github', 'GitHub'], ['folder', 'iCloud / Dropbox'], ['copy', 'Copy on this Mac'], ['zotero', 'Zotero']];
+  const panes = {github: gh, folder: fo, copy: co, zotero: zo};
+  box.innerHTML = '<p class="atl-mk">YOUR LIBRARY</p><div class="cl-tabs" role="tablist">' + tabs.map(([id, l]) => '<button type="button" role="tab" class="cl-tab' + (id === cur ? ' on' : '') + '" data-cl="' + id + '" aria-selected="' + (id === cur) + '">' + esc(l) + '<i class="cl-dot"></i></button>').join('') + '</div>' +
+    '<div class="cl-pane" data-pane="' + cur + '">' + panes[cur] + '</div>';
+  try{ wireGhSection(box); }catch(e){} atlasDots(box);
+  box.onclick = async ev => { const tb = ev.target.closest('[data-cl]'); if(tb){ ATL_TAB = tb.dataset.cl; atlasSyncDraw(box); return; }
+    const op = ev.target.closest('[data-pdf-open]'); if(op){ box.hidden = true; try{ openReader(op.dataset.pdfOpen); }catch(e){} return; }
     const rm = ev.target.closest('[data-pdf-rm]'); if(rm){ atlasPdfRemove(rm, box); return; }
+    const pc = ev.target.closest('[data-cp]'); if(pc){ let p = pc.dataset.cp, extra = {};
+      if(p === 'folder'){ let path = null; try{ path = await window.__TAURI__.core.invoke('pick_folder', {prompt: 'Choose the folder for a copy of your files'}); }catch(e){} if(!path) return; extra.path = path; }
+      copySetCfg(Object.assign({place: p}, extra)); if(!p) toast('The copy is off: the files already there stay'); atlasSyncDraw(box); return; }
+    const cw = ev.target.closest('[data-cw]'); if(cw){ const k = cw.dataset.cw; copySetCfg({[k]: !copyCfg()[k]}); atlasSyncDraw(box); return; }
     const a = ev.target.closest('[data-sync-a]'); if(!a) return;
     if(a.dataset.syncA === 'now'){ const k = ghCfg(); if(k){ (k.dirty ? ghSaveNow() : ghLoad()); toast('Syncing…'); } box.hidden = true; }
+    if(a.dataset.syncA === 'history'){ box.hidden = true; try{ ghHistory(); }catch(e){} }
+    if(a.dataset.syncA === 'nbback'){ nbRecover(a); }
     if(a.dataset.syncA === 'mac'){ box.hidden = true; try{ macChooseStorage(); }catch(e){} }
     if(a.dataset.syncA === 'pdfs') atlasPdfCheck(box);
     if(a.dataset.syncA === 'zotero'){ box.hidden = true; openZotero(); }
     if(a.dataset.syncA === 'zsync'){ box.hidden = true; ztSync(true); } };
-  box.hidden = false;
 }
 /* Settings, tidied the moment it opens: choices become rows of buttons, switches become pills, the two colours become buttons
    filled with their colour, and the explanations go; every control still works through its own handler */
@@ -578,7 +654,7 @@ function atlasCardHTML(e){
 
 window.__pmAtlasCard = atlasCardHTML;
 /* for the automated tests only: ?pmtest in the address opens a door to the library */
-if(/[?&]pmtest\b/.test(location.search)) window.__pm = {lib: () => lib, touchLib, render: () => renderAll(), pdf: {attach: attachPdf, url: pdfUrl, target: pdfTarget, move: pdfMove, cfg: () => ghCfg(), reprobe: () => { PDF_PROBE_AT = 0; }}, ghLoad, ghSaveNow, ui: () => ui, open: {entry: id => openEntryForm(id || null), topic: () => openTopicForm(), settings: () => openSettings(), tags: () => openTagManager(), reader: id => openReader(id), select: id => select(id), big: id => openBigCard(id, document.getElementById('info')), exportD: () => openExport(), importD: () => openImport(), lens: id => openLens(id), branch: () => openBranchForm(null)}};
+if(/[?&]pmtest\b/.test(location.search)) window.__pm = {lib: () => lib, touchLib, render: () => renderAll(), nbMerge: (a, b) => nbMerge(a, b), setState: (k, v) => pmState(k, v), setGh: st => setGh(st), pdf: {attach: attachPdf, url: pdfUrl, target: pdfTarget, move: pdfMove, cfg: () => ghCfg(), reprobe: () => { PDF_PROBE_AT = 0; }}, ghLoad, ghSaveNow, ui: () => ui, open: {entry: id => openEntryForm(id || null), topic: () => openTopicForm(), settings: () => openSettings(), tags: () => openTagManager(), reader: id => openReader(id), select: id => select(id), big: id => openBigCard(id, document.getElementById('info')), exportD: () => openExport(), importD: () => openImport(), lens: id => openLens(id), branch: () => openBranchForm(null)}};
 const PDF_JS = 'assets/vendor/pdfjs/';
 let pdfJsLoading = null, thumbQueue = Promise.resolve();
 function loadPdfJs(){

@@ -385,8 +385,8 @@ html.atlas .lk-woods button{position:relative}
 /* the blur is the signature: whatever opens over the map, the map behind it goes soft, live, never a still picture */
 .bc-scrim{-webkit-backdrop-filter:blur(9px) saturate(.92);backdrop-filter:blur(9px) saturate(.92);opacity:0;transition:opacity .38s ease,background .25s ease}
 .bc-root.on .bc-scrim{opacity:1}
-html.atlas body::after{content:'';position:fixed;inset:0;z-index:84;pointer-events:none;background:rgba(24,12,6,.14);-webkit-backdrop-filter:blur(7px) saturate(.92);backdrop-filter:blur(7px) saturate(.92);opacity:0;transition:opacity .38s ease}
-html.atlas body:has(.atl-note:not([hidden]))::after{opacity:1}
+html.atlas body::after{content:'';position:fixed;inset:0;z-index:84;pointer-events:none;background:rgba(24,12,6,.14);opacity:0;transition:opacity .38s ease}
+html.atlas body:has(.atl-note:not([hidden]))::after{opacity:1;-webkit-backdrop-filter:blur(7px) saturate(.92);backdrop-filter:blur(7px) saturate(.92)}
 
 /* ============ Settings as buttons, with almost no words ============ */
 #modalRoot.pm-settings .hint{display:none}
@@ -456,3 +456,88 @@ html.atlas .atl-pill{background:rgba(255,253,248,.55) !important;-webkit-backdro
 [data-sync="busy"] [data-over="sync"]::after,[data-sync="busy"] [data-mm="sync"]::after,[data-sync="busy"] [data-atl="sync"]::after{background:#E9BB2F}
 [data-sync="err"] [data-over="sync"]::after,[data-sync="err"] [data-mm="sync"]::after,[data-sync="err"] [data-atl="sync"]::after{background:#E0503F;animation:pmDotBlink 1.2s ease-in-out infinite}
 @keyframes pmDotBlink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* the cloud, in four tabs: the one picked is filled, the others are buttons with an edge; a green dot marks what is in use */
+html.atlas .atl-side .cl-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 6px 12px}
+html.atlas .atl-side .cl-tab{all:unset;position:relative;box-sizing:border-box;padding:10px 10px;border-radius:11px;text-align:center;font:600 13px var(--atl-sans);color:#231E1A;background:#fff;box-shadow:inset 0 0 0 1px rgba(35,30,26,.18);cursor:pointer;transition:background .15s ease,box-shadow .15s ease,transform .12s ease}
+html.atlas .atl-side .cl-tab:hover{background:#FFF5E6}
+html.atlas .atl-side .cl-tab:active{transform:scale(.97)}
+html.atlas .atl-side .cl-tab.on{background:#231E1A;color:#FBF7EE;box-shadow:0 2px 6px rgba(35,30,26,.25)}
+html.atlas .atl-side .cl-dot{position:absolute;top:7px;right:8px;width:8px;height:8px;border-radius:50%;background:#231E1A;box-shadow:0 0 0 2px #fff;transition:background .2s ease}
+html.atlas .atl-side .cl-dot.is-ok{background:#3E9B5F}
+html.atlas .atl-side .cl-dot.is-busy{background:#E9BB2F;animation:clPulse 1.1s ease-in-out infinite}
+html.atlas .atl-side .cl-dot.is-err{background:#D9483B}
+html.atlas .atl-side .cl-dot.is-off{background:#231E1A}
+html.atlas .atl-side .cl-tab.on .cl-dot{box-shadow:0 0 0 2px #FBF7EE}
+@keyframes clPulse{50%{opacity:.6}}
+html.atlas .atl-side .cl-pane{padding:0 6px 6px}
+html.atlas .atl-side .cl-card{display:flex;flex-direction:column;gap:3px;padding:12px 14px;margin-bottom:12px;border-radius:12px;background:#F2ECE1}
+html.atlas .atl-side .cl-card b{font:700 15px var(--atl-serif);color:#231E1A}
+html.atlas .atl-side .cl-card span{font:400 12.5px var(--atl-sans);color:#7A6E60}
+html.atlas .atl-side .cl-btns{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+html.atlas .atl-side .cl-btn,html.atlas .atl-side .cl-pane .atl-pbtn{all:unset;display:inline-block;box-sizing:border-box;width:auto;padding:9px 14px;border-radius:11px;font:600 13px var(--atl-sans);color:#231E1A;background:#fff;box-shadow:inset 0 0 0 1px rgba(35,30,26,.18);cursor:pointer;transition:background .15s ease,transform .12s ease}
+html.atlas .atl-side .cl-btn:hover,html.atlas .atl-side .cl-pane .atl-pbtn:hover{background:#FFF5E6}
+html.atlas .atl-side .cl-btn:active,html.atlas .atl-side .cl-pane .atl-pbtn:active{transform:scale(.97)}
+html.atlas .atl-side .cl-btn.pri{background:#231E1A;color:#FBF7EE;box-shadow:none}
+html.atlas .atl-side .cl-btn.pri:hover{background:#3A322B}
+html.atlas .atl-side .cl-pdfs{margin:0 0 12px}
+html.atlas .atl-side .cl-pdfs .atl-sy{padding:0 2px 8px}
+html.atlas .atl-side .cl-more{margin:4px 0 0;border-top:1px solid rgba(35,30,26,.1);padding-top:10px}
+html.atlas .atl-side .cl-more > summary{cursor:pointer;font:600 13px var(--atl-sans);color:#231E1A;padding:4px 2px 10px;list-style:none}
+html.atlas .atl-side .cl-more > summary::-webkit-details-marker{display:none}
+html.atlas .atl-side .cl-more > summary::before{content:'›';display:inline-block;margin-right:8px;transition:transform .15s ease}
+html.atlas .atl-side .cl-more[open] > summary::before{transform:rotate(90deg)}
+html.atlas .atl-side .cl-form h3{display:none}
+html.atlas .atl-side .cl-form .set-section{margin:0;padding:0;border:0}
+html.atlas .atl-side .cl-form #ghPull,html.atlas .atl-side .cl-form #ghSaveNow,html.atlas .atl-side .cl-form #ghHistoryBtn{display:none}
+html.atlas .atl-side .cl-form .btn{font-size:13px}
+html.atlas .atl-side .cl-k{margin:4px 2px 8px;font:700 10.5px var(--atl-sans);letter-spacing:1.6px;color:#7A6E60}
+html.atlas .atl-side .cl-opts{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+html.atlas .atl-side .cl-opts.dim{opacity:.45;pointer-events:none}
+html.atlas .atl-side .cl-opt{all:unset;box-sizing:border-box;padding:8px 12px;border-radius:11px;font:500 13px var(--atl-sans);color:#231E1A;background:#fff;box-shadow:inset 0 0 0 1px rgba(35,30,26,.18);cursor:pointer;transition:background .15s ease,transform .12s ease,box-shadow .15s ease}
+html.atlas .atl-side .cl-opt:hover{background:#FFF5E6}
+html.atlas .atl-side .cl-opt:active{transform:scale(.96)}
+html.atlas .atl-side .cl-opt.on{box-shadow:inset 0 0 0 2px #231E1A;font-weight:700}
+html.atlas .atl-side .cl-opt.tick:not(.on){color:rgba(35,30,26,.5)}
+html.atlas .atl-side .cl-opt.tick.on::before{content:'✓';margin-right:6px;font-weight:700}
+html.atlas .atl-side .cl-p{margin:0 2px 12px;font:400 13px/1.5 var(--atl-sans);color:#6E6357}
+/* the form inside a tab: fields one under the other, inside the panel; its buttons are the panel's buttons; the status line
+   is already in the card above */
+html.atlas .atl-side .cl-form .form-grid{display:grid;grid-template-columns:1fr;gap:10px;margin:10px 0}
+html.atlas .atl-side .cl-form .form-grid label{display:flex;flex-direction:column;gap:5px;font:600 12px var(--atl-sans);color:#6E6357}
+html.atlas .atl-side .cl-form input[type="text"],html.atlas .atl-side .cl-form input[type="password"]{box-sizing:border-box;width:100%;max-width:100%;padding:9px 11px;border-radius:10px;border:0;box-shadow:inset 0 0 0 1px rgba(35,30,26,.18);background:#fff;font:400 13.5px var(--atl-sans);color:#231E1A}
+html.atlas .atl-side .cl-form .set-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+html.atlas .atl-side .cl-form .btn{all:unset;display:inline-block;box-sizing:border-box;padding:9px 14px;border-radius:11px;font:600 13px var(--atl-sans);color:#231E1A;background:#fff;box-shadow:inset 0 0 0 1px rgba(35,30,26,.18);cursor:pointer;transition:background .15s ease,transform .12s ease}
+html.atlas .atl-side .cl-form .btn:hover{background:#FFF5E6}
+html.atlas .atl-side .cl-form .btn:active{transform:scale(.97)}
+html.atlas .atl-side .cl-form .btn.primary{background:#231E1A;color:#FBF7EE;box-shadow:none}
+html.atlas .atl-side .cl-form .btn[disabled]{opacity:.4;pointer-events:none}
+html.atlas .atl-side .cl-form p.hint:has([data-save-state]){display:none}
+html.atlas .atl-side .cl-form .hint{font:400 13px/1.5 var(--atl-sans);color:#6E6357;margin:0 2px 8px}
+html.atlas .atl-side .cl-form details.gh-adv > summary{cursor:pointer;font:600 13px var(--atl-sans);color:#231E1A;padding:4px 2px}
+html.atlas .atl-side .cl-form .linkbtn{all:unset;display:inline;padding:0;width:auto;font:600 13px var(--atl-sans);color:#2F5E8C;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+html.atlas .atl-side .cl-form .linkbtn:hover{color:#1F4870;background:none}
+/* every button answers a press (the same in the app as on the desk) */
+:where(button, .btn, .atl-pbtn, .cl-btn, .cl-opt, .cl-tab){transition-property:scale, background-color, box-shadow, color, opacity, filter;transition-duration:.14s;transition-timing-function:ease}
+:where(button:not([disabled])):active{scale:.95}
+/* the picked tab and the filled buttons darken a little under the pointer too */
+html.atlas .atl-side .cl-tab.on:hover{background:#3A322B}
+html.atlas .atl-side .cl-form .btn.primary:hover{background:#3A322B}
+
+/* More settings: every choice and button answers the pointer, the chosen one too */
+.pm-seg button:hover{background:rgba(255,255,255,.7)}
+.pm-seg button.on:hover{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+#modalRoot .btn:hover{filter:brightness(.97)}
+#modalRoot .btn.primary:hover{filter:brightness(1.15)}
+#modalRoot.pm-settings #cReset:hover{color:#231E1A}
+
+/* on a phone the map page stays light to draw: the wood behind does not stay fixed to the screen (a phone repaints it on every
+   frame), and the map spans the screen's width */
+@media (max-width: 700px){
+  html.atlas body{background-attachment:scroll}
+}
+
+.gh-way{margin:10px 0 2px;font:600 12.5px var(--sans);color:var(--ink)}
+.gh-alt{margin:6px 0 10px}
+.gh-alt summary{cursor:pointer;font:500 12.5px var(--sans);color:var(--muted)}
+.gh-alt[open] summary{margin-bottom:4px}

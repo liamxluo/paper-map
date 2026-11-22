@@ -11,7 +11,7 @@ function mdInline(s){
   return s.replace(/\u0000(\d+)\u0000/g, (m, i) => '<code>' + codes[+i] + '</code>');
 }
 function mdToHtml(src){
-  const lines = esc(String(src || '')).replace(/\r\n?/g, '\n').split('\n');
+  const lines = esc(String(src || '').replace(/^\s*<!-- page -->\s*$/gm, '')).replace(/\r\n?/g, '\n').split('\n');
   let out = '', para = [], list = null, quote = [], code = null;
   const flushPara = () => { if(para.length){ out += '<p>' + mdInline(para.join(' ')) + '</p>'; para = []; } };
   const flushList = () => { if(list){ out += '<' + list.tag + '>' + list.items.map(x => '<li>' + mdInline(x) + '</li>').join('') + '</' + list.tag + '>'; list = null; } };
@@ -36,7 +36,7 @@ function mdToHtml(src){
   return out;
 }
 function mdPlain(src){
-  return String(src || '').replace(/```[\s\S]*?```/g, ' ').replace(/`([^`]*)`/g, '$1').replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+  return String(src || '').replace(/^\s*<!-- page -->\s*$/gm, '').replace(/```[\s\S]*?```/g, ' ').replace(/`([^`]*)`/g, '$1').replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
     .replace(/^\s{0,3}(#{1,6}|>|[-*+]|\d+[.)])\s+/gm, '').replace(/(\*\*|__|\*|_)(\S[^*_]*?)\1/g, '$2').replace(/\s+/g, ' ').trim();
 }
 function notePreview(n){ const s = mdPlain(n); return s.length > 160 ? s.slice(0, 157).replace(/\s+\S*$/, '') + '…' : s; }
@@ -105,7 +105,10 @@ let ghChain = Promise.resolve();
 function ghSerial(fn){ const run = ghChain.then(fn, fn); ghChain = run.catch(() => {}); return run; }
 function ghPathUrl(c, path){ return 'https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + '/contents/' + String(path).split('/').filter(Boolean).map(encodeURIComponent).join('/'); }
 function ghRef(c){ return '?ref=' + encodeURIComponent(c.branch) + '&_=' + Date.now(); }
-function ghPutPath(c, path, content, message, sha){
+async function ghPutPath(c, path, content, message, sha){
+  if(c && c.kind !== 'folder' && c.kind !== 'dropbox' && typeof ghIsPrivate === 'function'){ const pv = await ghIsPrivate(c, c.repo); if(pv === false){ ghSayPublic(c.repo); return {ok: false, status: 451, json: async () => ({})}; } }
+  return ghPutPath0(c, path, content, message, sha); }
+function ghPutPath0(c, path, content, message, sha){
   if(c.kind === 'dropbox' || c.kind === 'folder') return remotePut(c, path, b64ToBytes(content), null, false);
   const body = {message, content, branch: c.branch};
   if(sha) body.sha = sha;

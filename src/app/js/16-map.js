@@ -256,7 +256,7 @@ function renderMap(force){
   }
   const me = document.getElementById('mapEmpty'); if(me) me.remove();
   const PHONE = window.matchMedia && matchMedia('(max-width: 640px)').matches;
-  const W = Math.max(PHONE ? 760 : 280, Math.floor(mapScroll.clientWidth)); lastMapW = Math.floor(mapScroll.clientWidth);
+  const W = Math.max(280, Math.floor(mapScroll.clientWidth)); lastMapW = Math.floor(mapScroll.clientWidth);
   const top = 8, left = 12, right = 14;
   const laneIndex = {};
   lanes.forEach((ln, i) => { laneIndex[ln.sub.id] = i; });

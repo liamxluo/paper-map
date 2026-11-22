@@ -24,11 +24,21 @@ function ghStore(c){
     window.__TAURI__.core.invoke('secret_set', {key: 'github-token', value: tok}).catch(() => { lsSet(GH_KEY, Object.assign({}, c, {token: tok})); }); return; }
   lsSet(GH_KEY, c); }
 function ghApi(c){ return 'https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) + '/contents/' + String(c.path).split('/').filter(Boolean).map(encodeURIComponent).join('/'); }
+/* Your data only ever goes to private repositories. Before Paper Map writes to a repository it asks GitHub whether it is
+   private; a public one is refused (nothing is written, and you are told how to make it private). The answer is kept for ten
+   minutes; if GitHub cannot be asked (offline), writing waits as it would anyway. */
+const GH_PRIV = {};
+async function ghIsPrivate(c, repo){ const k = (c.owner + '/' + repo).toLowerCase(), hit = GH_PRIV[k]; if(hit && Date.now() - hit.at < 600e3) return hit.v;
+  try{ const r = await fetch('https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(repo) + '?_=' + Date.now(), {headers: ghHeaders(c)}); if(r.status === 404){ GH_PRIV[k] = {v: null, at: Date.now()}; return null; } if(!r.ok) return undefined;
+    const j = await r.json(); const v = (j.private === true || j.visibility === 'private' || j.visibility === 'internal') && j.visibility !== 'public'; GH_PRIV[k] = {v, at: Date.now()}; return v; }catch(e){ return undefined; } }
+let GH_PUBLIC_SAID = {};
+function ghSayPublic(repo){ if(GH_PUBLIC_SAID[repo] && Date.now() - GH_PUBLIC_SAID[repo] < 3600e3) return; GH_PUBLIC_SAID[repo] = Date.now();
+  try{ toast('The repository ' + repo + ' on GitHub is public, so Paper Map will not save anything to it. Make it private (on GitHub: Settings › General › Change visibility), then saving resumes.'); }catch(e){} }
 function ghHeaders(c, extra){ return Object.assign({'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + c.token}, extra || {}); }
 function b64encode(str){ const bytes = new TextEncoder().encode(str); let bin = ''; for(let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(bin); }
 function b64decode(b64){ const bin = atob(String(b64).replace(/\s/g, '')); const bytes = new Uint8Array(bin.length); for(let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i); return new TextDecoder().decode(bytes); }
 function portableSettings(){ const s = clone(settings); delete s.toc; return s; }
-function snapshot(){ return {app: APP, v:1, savedAt: Date.now(), lib, status:{map:status, updatedAt:statusTime}, settings: portableSettings()}; }
+function snapshot(){ return {app: APP, v:1, savedAt: Date.now(), lib: typeof libSlim === 'function' ? libSlim(lib) : lib, status:{map:status, updatedAt:statusTime}, settings: portableSettings()}; }
 function hhmm(ts){ const d = new Date(ts || Date.now()); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
 function stampText(ts){ const d = new Date(ts); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + ' ' + hhmm(ts); }
 function saveStateText(){
@@ -46,7 +56,9 @@ function saveStateText(){
 }
 /* the dot on every cloud: green when saved, yellow while saving, red when not saved anywhere but here, or when saving failed */
 function syncDot(){ if(PREVIEW) return ''; if(ghCfg()){ if(gh.st === 'error') return 'err'; if(gh.st === 'pending' || gh.st === 'saving' || gh.st === 'loading') return 'busy'; return 'ok'; } return 'err'; }
-function paintSyncDot(){ const d = syncDot(); document.documentElement.dataset.sync = d; const f = document.getElementById('pmDesk'); try{ if(f && f.contentDocument && f.contentDocument.documentElement) f.contentDocument.documentElement.dataset.sync = d; }catch(e){} }
+const PM_STATE = {zotero: '', copy: ''};
+function pmState(k, v){ if(PM_STATE[k] === v) return; PM_STATE[k] = v; try{ window.dispatchEvent(new CustomEvent('pm-state')); }catch(e){} }
+function paintSyncDot(){ const d = syncDot(); document.documentElement.dataset.sync = d; try{ window.dispatchEvent(new CustomEvent('pm-state')); }catch(e){} const f = document.getElementById('pmDesk'); try{ if(f && f.contentDocument && f.contentDocument.documentElement) f.contentDocument.documentElement.dataset.sync = d; }catch(e){} }
 function updateSaveState(){ const txt = saveStateText(); document.querySelectorAll('[data-save-state]').forEach(el => { el.textContent = txt; }); paintSyncDot(); }
 function setGh(st, msg){ gh.st = st; gh.msg = msg || ''; updateSaveState(); }
 function ghErr(e){
@@ -116,7 +128,7 @@ function adoptSnapshot(obj){
   const L = obj && obj.lib;
   if(!validLib(L)) return false;
   if(obj.status && obj.status.map && typeof obj.status.map === 'object'){ status = obj.status.map; statusTime = obj.status.updatedAt || Date.now(); lsSet(LS.status, {map:status, updatedAt:statusTime}); }
-  lib = normalizeLib(L); lsSet(LS.lib, lib);
+  lib = normalizeLib(L); try{ Object.keys(NS.mem).forEach(p => { const [, kind, f] = p.split('/'); nsApply(kind, f.replace(/\.json$/, ''), NS.mem[p]); }); }catch(e){} lsSet(LS.lib, typeof libSlim === 'function' ? libSlim(lib) : lib); setTimeout(() => { try{ nsHydrate(); }catch(e){} }, 0);
   if(!undoing) clearUndo();
   if(obj.settings && typeof obj.settings === 'object'){ const keep = {toc: settings.toc, range: settings.range, theme: settings.theme}; settings = normalizeSettings(Object.assign(defaultSettings(), obj.settings)); Object.assign(settings, keep); lsSet(LS.settings, settings); }
   reindex(); applyColors();
@@ -254,7 +266,7 @@ async function ghMergeOrAsk(f, title, text){
   const c = ghCfg(); const base = c && loadBase(c);
   if(!base || !f.data || !validLib(f.data.lib)) return ghAskWhich(f, title, text);
   let res;
-  try{ res = mergeLibs(base, {lib, status}, {lib: f.data.lib, status: (f.data.status && f.data.status.map) || {}}); }catch(e){ return ghAskWhich(f, title, text); }
+  try{ res = mergeLibs(base, {lib: typeof libSlim === 'function' ? libSlim(lib) : lib, status}, {lib: f.data.lib, status: (f.data.status && f.data.status.map) || {}}); }catch(e){ return ghAskWhich(f, title, text); }
   if(!res.conflicts.length) return applyMerge(f, res);
   pickConflicts(res, 'Since the last sync, this device and another one both changed your list.', () => applyMerge(f, res));
 }
@@ -437,6 +449,7 @@ async function ghSaveNow(){
   const c = ghCfg();
   if(!c) return;
   if(gh.busy){ gh.again = true; return; }
+  if(c.kind !== 'folder' && c.kind !== 'dropbox'){ const pv = await ghIsPrivate(c, c.repo); if(pv === false){ setGh('error'); ghSayPublic(c.repo); try{ pmState && pmState('github', 'err', 'The repository is public: nothing is saved to it'); }catch(e){} return; } }
   gh.busy = true; setGh('saving');
   const rev = gh.rev;
   if(!gh.force){

@@ -8,17 +8,27 @@ const PDF_REPO = 'paper-map-pdfs', PDF_FULL_KB = 900 * 1024;
 let PDF_PROBE_AT = 0, PDF_ROLL_AT = 0, PDF_ASKED = 0;
 function ghRepo(c, repo){ return repo && repo !== c.repo ? Object.assign({}, c, {repo}) : c; }
 function pdfRepoOf(c, e){ return ghRepo(c, e && e.pdf && e.pdf.repo); }
-async function ghRepoInfo(c, repo){ try{ const r = await fetch('https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(repo), {headers: ghHeaders(c)}); if(!r.ok) return null; const j = await r.json(); return j && j.permissions && j.permissions.push === false ? null : j; }catch(e){ return null; } }
+async function ghRepoInfo(c, repo){ const pv = await ghIsPrivate(c, repo); if(pv === false){ ghSayPublic(repo); return null; } try{ const r = await fetch('https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(repo), {headers: ghHeaders(c)}); if(!r.ok) return null; const j = await r.json(); return j && j.permissions && j.permissions.push === false ? null : j; }catch(e){ return null; } }
+/* Paper Map makes its own repositories (private) when your key allows it: a classic key with the repo scope, or a
+   fine-grained key for all your repositories with Administration and Contents set to read and write. Otherwise it says
+   once what to make by hand. It tries at most once an hour per repository. */
+const GH_MADE = {};
+async function ghEnsureRepo(c, name, about){ const have = await ghRepoInfo(c, name); if(have) return true; if(Date.now() - (GH_MADE[name] || 0) < 3600e3) return false; GH_MADE[name] = Date.now();
+  try{ const me = await (await fetch('https://api.github.com/user', {headers: ghHeaders(c)})).json(); const mine = me && me.login && me.login.toLowerCase() === String(c.owner).toLowerCase();
+    const url = mine ? 'https://api.github.com/user/repos' : 'https://api.github.com/orgs/' + encodeURIComponent(c.owner) + '/repos';
+    const r = await fetch(url, {method: 'POST', headers: ghHeaders(c, {'Content-Type': 'application/json'}), body: JSON.stringify({name, private: true, auto_init: true, description: about})});
+    if(r.ok || r.status === 201){ await new Promise(z => setTimeout(z, 1500)); delete GH_PRIV[(c.owner + '/' + name).toLowerCase()]; return (await ghIsPrivate(c, name)) === true && !!(await ghRepoInfo(c, name)); } }catch(e){}
+  return false; }
 /* the repository a new PDF goes to: the PDF repository once it is there, else the library's own (as before) */
 async function pdfTarget(c){ if(!c || c.kind === 'folder' || c.kind === 'dropbox') return c && c.repo;
   const st = lib.pdfStore;
   if(st && st.current){ if(Date.now() - PDF_ROLL_AT > 3600e3){ PDF_ROLL_AT = Date.now(); try{ await pdfRoll(c); }catch(e){} } return lib.pdfStore.current; }
   if(Date.now() - PDF_PROBE_AT < 600e3) return c.repo; PDF_PROBE_AT = Date.now();
-  const info = await ghRepoInfo(c, PDF_REPO); if(!info) return c.repo;
+  let info = await ghRepoInfo(c, PDF_REPO); if(!info && await ghEnsureRepo(c, PDF_REPO, 'PDFs kept by Paper Map')) info = await ghRepoInfo(c, PDF_REPO); if(!info) return c.repo;
   lib.pdfStore = {repos: [PDF_REPO], current: PDF_REPO}; touchLib(); setTimeout(() => { pdfMove().catch(() => {}); }, 4000); return PDF_REPO; }
 /* nearly full: the next one, if you have made it; if not, one short word a day */
 async function pdfRoll(c){ const st = lib.pdfStore, info = await ghRepoInfo(c, st.current); if(!info || (info.size || 0) < PDF_FULL_KB) return;
-  const n = st.repos.length + 1, next = PDF_REPO + '-' + n, ok = await ghRepoInfo(c, next);
+  const n = st.repos.length + 1, next = PDF_REPO + '-' + n, ok = (await ghRepoInfo(c, next)) || (await ghEnsureRepo(c, next, 'PDFs kept by Paper Map (' + n + ')'));
   if(ok){ st.repos.push(next); st.current = next; touchLib(); return; }
   if(Date.now() - PDF_ASKED > 864e5){ PDF_ASKED = Date.now(); toast('Your PDFs on GitHub are nearly 1 GB. Make a private repository named ' + next + ' and give your key access to it; new PDFs will go there.'); } }
 /* once the PDF repository is there, the PDFs kept with the library move into it, quietly, one by one */
@@ -46,4 +56,4 @@ async function pdfTidy(){ const c = ghCfg(), st = lib.pdfStore; if(!c || !st) re
       await fetch(base + '/git/refs/heads/' + encodeURIComponent(br), {method: 'PATCH', headers: ghHeaders(c, {'Content-Type': 'application/json'}), body: JSON.stringify({sha: j.sha, force: true})}); }catch(e){} } }
 if(!PREVIEW){ setTimeout(async () => { try{ const c = ghCfg(); if(c){ await pdfTarget(c); if(lib.pdfStore){ await pdfMove(); await pdfTidy(); } } }catch(e){} }, 25000); }
 /* the PDF reader and the upload, written before the start-up, reach these by name */
-Object.assign(window, {pdfTarget, ghRepo, pdfRepoOf, pdfMove});
+Object.assign(window, {pdfTarget, ghRepo, pdfRepoOf, pdfMove, ghEnsureRepo, ghRepoInfo});

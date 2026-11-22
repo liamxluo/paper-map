@@ -1,3 +1,4 @@
+let PDF_IMG_N = 0;
 /* ===================== vector PDF: real text you can select and edit, and real lines ===================== */
 /* Latin text uses the PDF standard fonts (Helvetica and Times, no embedding needed); Chinese and other
    characters use the standard Chinese font STSong-Light, which PDF readers supply themselves. */
@@ -167,7 +168,12 @@ function pdfDrawSvg(page, root){
     if(cp){ const id = (cp.match(/url\(["']?#([^"')]+)["']?\)/) || [])[1], c = id && byId(id), r = c && c.querySelector('rect');
       if(r){ enter(); page.ops.push(pdfNum(+r.getAttribute('x') || 0) + ' ' + pdfNum(+r.getAttribute('y') || 0) + ' ' + pdfNum(+r.getAttribute('width') || 0) + ' ' + pdfNum(+r.getAttribute('height') || 0) + ' re W n'); } }
     const A = n => parseFloat(el.getAttribute(n)) || 0;
-    if(tag === 'rect'){ const w = A('width'), h = A('height'); if(w > 0 && h > 0) pdfPaint(page, st, pdfNum(A('x')) + ' ' + pdfNum(A('y')) + ' ' + pdfNum(w) + ' ' + pdfNum(h) + ' re'); }
+    if(tag === 'image'){ const href = el.getAttribute('href') || el.getAttribute('xlink:href') || '', w = A('width'), h = A('height');
+      if(/^data:image\/jpeg;base64,/.test(href) && w > 0 && h > 0){ try{ const bin = atob(href.split(',')[1]), bytes = new Uint8Array(bin.length); for(let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        let pw = A('data-pw'), ph = A('data-ph'); if(!pw || !ph){ for(let i = 2; i < bytes.length - 9; ){ if(bytes[i] !== 0xFF){ i++; continue; } const mk = bytes[i + 1], ln = (bytes[i + 2] << 8) | bytes[i + 3]; if(mk >= 0xC0 && mk <= 0xC2){ ph = (bytes[i + 5] << 8) | bytes[i + 6]; pw = (bytes[i + 7] << 8) | bytes[i + 8]; break; } i += 2 + ln; } }
+        page.imgs = page.imgs || []; const name = 'Im' + (PDF_IMG_N = (typeof PDF_IMG_N === 'number' ? PDF_IMG_N : 0) + 1); page.imgs.push({name, bytes, w: pw || 1, h: ph || 1});
+        page.ops.push('q ' + pdfNum(w) + ' 0 0 ' + pdfNum(-h) + ' ' + pdfNum(A('x')) + ' ' + pdfNum(A('y') + h) + ' cm /' + name + ' Do Q'); }catch(e){} } }
+    else if(tag === 'rect'){ const w = A('width'), h = A('height'); if(w > 0 && h > 0) pdfPaint(page, st, pdfNum(A('x')) + ' ' + pdfNum(A('y')) + ' ' + pdfNum(w) + ' ' + pdfNum(h) + ' re'); }
     else if(tag === 'line'){ pdfPaint(page, Object.assign({}, st, {fill: 'none'}), pdfNum(A('x1')) + ' ' + pdfNum(A('y1')) + ' m ' + pdfNum(A('x2')) + ' ' + pdfNum(A('y2')) + ' l'); }
     else if(tag === 'circle'){ const r = A('r'); if(r > 0) pdfPaint(page, st, pdfCircleOps(A('cx'), A('cy'), r)); }
     else if(tag === 'ellipse'){ const rx = A('rx'), ry = A('ry'); if(rx > 0 && ry > 0){ page.ops.push('q 1 0 0 ' + pdfNum(ry / rx) + ' 0 ' + pdfNum(A('cy') * (1 - ry / rx)) + ' cm'); pdfPaint(page, st, pdfCircleOps(A('cx'), A('cy'), rx)); page.ops.push('Q'); } }
@@ -212,6 +218,7 @@ function vectorPdf(pages, title){
   const gsAll = new Map(); pages.forEach(p => p.gs.forEach((name, k) => gsAll.set(name, k)));
   const gsIds = {}; gsAll.forEach((k, name) => { gsIds[name] = alloc(); });
   const res = alloc();
+  const imgIds = {}; pages.forEach(p => (p.imgs || []).forEach(im => { imgIds[im.name] = {id: alloc(), im}; }));
   const pageIds = pages.map(() => [alloc(), alloc()]);
   const str = s => '(' + String(s).replace(/[\\()]/g, m => '\\' + m).replace(/[^\x20-\x7E]/g, '') + ')';
   bodies[catalog] = '<< /Type /Catalog /Pages ' + pagesId + ' 0 R >>';
@@ -228,18 +235,20 @@ function vectorPdf(pages, title){
     bodies[cjkDesc] = '<< /Type /FontDescriptor /FontName /STSong-Light /Flags 6 /FontBBox [-25 -254 1000 880] /ItalicAngle 0 /Ascent 880 /Descent -120 /CapHeight 880 /StemV 93 >>';
   }
   Object.entries(gsIds).forEach(([name, id]) => { const [ca, CA] = gsAll.get(name).split('/'); bodies[id] = '<< /Type /ExtGState /ca ' + ca + ' /CA ' + CA + ' >>'; });
-  bodies[res] = '<< /ProcSet [/PDF /Text] /Font << ' + Object.entries(fontIds).map(([f, id]) => '/' + f + ' ' + id + ' 0 R').join(' ') + ' >> /ExtGState << ' + Object.entries(gsIds).map(([n, id]) => '/' + n + ' ' + id + ' 0 R').join(' ') + ' >> >>';
+  Object.values(imgIds).forEach(({id, im}) => { bodies[id] = {dict: '/Type /XObject /Subtype /Image /Width ' + im.w + ' /Height ' + im.h + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode', bytes: im.bytes}; });
+  bodies[res] = '<< /ProcSet [/PDF /Text /ImageC] ' + (Object.keys(imgIds).length ? '/XObject << ' + Object.entries(imgIds).map(([nm, o]) => '/' + nm + ' ' + o.id + ' 0 R').join(' ') + ' >> ' : '') + '/Font << ' + Object.entries(fontIds).map(([f, id]) => '/' + f + ' ' + id + ' 0 R').join(' ') + ' >> /ExtGState << ' + Object.entries(gsIds).map(([n, id]) => '/' + n + ' ' + id + ' 0 R').join(' ') + ' >> >>';
   pages.forEach((p, i) => {
     const [pg, ct] = pageIds[i];
     const content = '1 0 0 -1 0 ' + pdfNum(p.h) + ' cm\n' + (p.pre || '') + p.ops.join('\n');
-    bodies[pg] = '<< /Type /Page /Parent ' + pagesId + ' 0 R /MediaBox [0 0 ' + pdfNum(p.w) + ' ' + pdfNum(p.h) + '] /Resources ' + res + ' 0 R /Contents ' + ct + ' 0 R >>';
+    bodies[pg] = '<< /Type /Page /Parent ' + pagesId + ' 0 R /MediaBox [0 0 ' + pdfNum(p.w) + ' ' + pdfNum(p.h) + ']' + (p.userUnit ? ' /UserUnit ' + p.userUnit : '') + ' /Resources ' + res + ' 0 R /Contents ' + ct + ' 0 R >>';
     bodies[ct] = {stream: content};
   });
   push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
   for(let n = 1; n <= nObj; n++){
     offs[n] = len; push(n + ' 0 obj\n');
     const b = bodies[n];
-    if(b && typeof b === 'object'){ const bytes = enc.encode(b.stream); push('<< /Length ' + bytes.length + ' >>\nstream\n'); push(bytes); push('\nendstream'); }
+    if(b && typeof b === 'object' && b.bytes){ push('<< ' + b.dict + ' /Length ' + b.bytes.length + ' >>\nstream\n'); push(b.bytes); push('\nendstream'); }
+    else if(b && typeof b === 'object'){ const bytes = enc.encode(b.stream); push('<< /Length ' + bytes.length + ' >>\nstream\n'); push(bytes); push('\nendstream'); }
     else push(b || '<< >>');
     push('\nendobj\n');
   }

@@ -56,9 +56,26 @@ Every line of its code is in this repository, and GitHub builds the app from it,
 <details>
 <summary>Connect GitHub</summary>
 
-1. [Create a private repository](https://github.com/new?name=paper-map-data&visibility=private) and tick **Add a README file**.
-2. [Create a token](https://github.com/settings/personal-access-tokens/new?name=Paper+Map&expires_in=366&contents=write) for only that repository, with **Contents: Read and write**.
-3. Click the cloud on the map page, paste the token under **GitHub** and click **Connect**.
+**Once, and Paper Map does the rest**
+
+1. [Create a token](https://github.com/settings/personal-access-tokens/new?name=Paper+Map&description=Lets+Paper+Map+make+and+keep+its+private+repositories&expires_in=366&contents=write&administration=write). Under **Repository access**, choose **All repositories**. Its two permissions, **Contents** and **Administration** (read and write), are already filled in. It lasts a year.
+2. Click the cloud on the map page, paste the token under **GitHub** and click **Connect**.
+
+Paper Map then makes three private repositories of yours, each when it is first needed:
+
+| Repository | What it keeps |
+|---|---|
+| `paper-map-data` | Your library: the list of papers, notes, highlights, maps, mind maps and the research log. Every version is kept. |
+| `paper-map-pdfs` | PDFs, books, and pictures on your mind maps. |
+| `paper-map-notes` | Handwriting: one file for each paper, book or mind map. |
+
+When `paper-map-pdfs` or `paper-map-notes` nears 1 GB, the next one is made (`paper-map-pdfs-2`, `paper-map-notes-2`, …), and what is already kept stays where it is. Their history is cleared at most once a week, and only when it has grown well past what they hold. Your library's history is never cleared.
+
+**Private, always.** Before it writes to any repository, Paper Map asks GitHub whether it is private, and writes only if GitHub says it is. A public repository is refused: nothing is written to it, and Paper Map tells you how to make it private. The token is sent only to GitHub, in each request's header; it is never written into your library or into any file.
+
+**Prefer a narrower token?** Create the three repositories yourself ([paper-map-data](https://github.com/new?name=paper-map-data&visibility=private), [paper-map-pdfs](https://github.com/new?name=paper-map-pdfs&visibility=private), [paper-map-notes](https://github.com/new?name=paper-map-notes&visibility=private)), then [create a token](https://github.com/settings/personal-access-tokens/new?name=Paper+Map&description=Lets+Paper+Map+save+to+its+private+repositories&expires_in=366&contents=write) for those three only, with **Contents: Read and write**. Everything works the same; when a repository nears 1 GB, Paper Map tells you the name of the next one to make.
+
+A token that may make repositories may also change or delete them. Paper Map never deletes a repository; keep the token on your own devices, and make a new one if a device is lost.
 
 Changes made on two devices are combined field by field; Paper Map asks only when the very same thing was changed on both.
 

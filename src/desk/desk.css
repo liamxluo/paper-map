@@ -921,15 +921,11 @@ html [data-over="sync"], html [data-mm="sync"], html [data-atl="sync"]{position:
 body.sp-notes-off #spread .sp-right{display:none !important}
 body.sp-notes-off #spread .sp-book{grid-template-columns:minmax(0,1fr) !important}
 body.sp-notes-off #spNotesT{background:rgba(251,247,238,.16)}
-/* the folder copy, in the panel */
-.copy-row{margin:14px 0 6px}
-.copy-row h3{font:600 11px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:rgba(246,231,210,.6);margin:0 0 8px}
-.copy-opts{display:flex;flex-wrap:wrap;gap:6px}
-.copy-opts button{all:unset;cursor:pointer;padding:6px 11px;border-radius:10px;font:500 13px var(--sans);color:#F6E7D2;background:rgba(251,247,238,.08)}
-.copy-opts button.on{background:rgba(251,247,238,.24)}
+/* the folder copy, in the panel: the panel's own buttons; rows a little apart; what goes there rests while the copy is off */
+#copyRow .st-opts + .st-opts{margin-top:8px}
+#copyRow .st-opt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.copy-what{margin-top:6px}
-.copy-what.dim{opacity:.4;pointer-events:none}
+#copyRow .copy-what.dim{opacity:.45;pointer-events:none}
 
 /* two pages side by side (notes put away, wide screen): each page takes half the view, the pair is centred, and a turn
    moves by the pair */
@@ -937,3 +933,243 @@ body.sp-notes-off #spNotesT{background:rgba(251,247,238,.16)}
 #spread .sp-doc.pdf.side.two .sp-pg{margin:0 0 0 0;scroll-snap-align:none}
 #spread .sp-doc.pdf.side.two .sp-pg:nth-child(odd){margin-left:calc((100% - 2 * var(--pw, 300px) - 16px) / 2)}
 #spread .sp-doc.pdf.side.two .sp-pg:nth-child(even){margin-left:16px;margin-right:calc((100% - 2 * var(--pw, 300px) - 16px) / 2)}
+
+/* the panel's buttons answer the finger: a press sinks a little, a hover warms, and what is on says so */
+.st-opt{transition:transform .12s ease, box-shadow .15s ease, background .15s ease}
+.st-opt:hover{background:#FFF8EC}
+.st-opt:active{transform:scale(.96)}
+/* what goes there: each one is on or off by itself, so it shows a tick when on, and reads quieter when off */
+#copyRow .copy-what .st-opt{color:rgba(35,30,26,.55)}
+#copyRow .copy-what .st-opt.on{color:var(--ink)}
+#copyRow .copy-what .st-opt.on::before{content:'✓';margin-right:7px;font-weight:700}
+
+/* a page break in the notes: in A4 pages the writing after it starts a new page; on one long sheet it is a quiet line */
+#spread .sp-sheet.side .sp-pgbrk{break-before:column;-webkit-column-break-before:always;height:0;margin:0;padding:0;border:0}
+#spread .sp-sheet:not(.side) .sp-pgbrk{height:0;margin:22px 0;border-top:1px dashed rgba(60,40,20,.22)}
+#spNNew{font-size:17px;line-height:1}
+
+/* the PDF's size: − 100% + beside the page number */
+#spread .sp-zoom{display:inline-flex;align-items:center;gap:0;margin-right:2px}
+#spread .sp-zoom[hidden]{display:none}
+#spread .sp-zb{all:unset;cursor:pointer;min-width:24px;height:28px;padding:0 4px;border-radius:8px;text-align:center;font:600 14px var(--sans);color:#F6E7D2;transition:background .15s ease, transform .12s ease}
+#spread .sp-zb:hover{background:rgba(255,255,255,.10)}
+#spread .sp-zb:active{transform:scale(.92)}
+#spread .sp-zp{min-width:44px;font:600 12px var(--sans);color:rgba(246,231,210,.85)}
+/* a page made larger than the view can be scrolled in every direction, read page by page or as a scroll */
+#spread .sp-doc.pdf.side.zoomed{overflow-y:auto;align-items:flex-start}
+@media (max-width: 700px){ #spread .sp-zoom{display:none !important} }
+
+/* every button answers a press: it sinks a little (with the scale property, which leaves a button's own transform alone),
+   and eases into its hover; a button's own transitions, where it has them, still win */
+:where(button, .btn, .pill, .i, .st-opt, .sp-ib){transition-property:scale, background-color, box-shadow, color, opacity, filter;transition-duration:.14s;transition-timing-function:ease}
+:where(button:not([disabled])):active{scale:.95}
+/* the settings panel's own choices answer the pointer like every other button */
+.opt:hover,.wd:hover{background:#EFE5D2;box-shadow:inset 0 0 0 1px rgba(60,40,20,.22)}
+.opt.on:hover,.wd.on:hover{box-shadow:inset 0 0 0 2px var(--ink)}
+.px:hover{background:#E9DFCB}
+.more-set:hover{color:var(--ink)}
+/* the chosen filter still answers the pointer; every button in the reading bar does */
+#rboard .rb-side .tp.on:hover,#pboard .rb-side .tp.on:hover{background:rgba(251,247,238,.24)}
+#spread .sp-glass .sp-ib:hover,#spread .sp-glass .sp-ib.on:hover{background:rgba(255,255,255,.16) !important}
+#inkTools button:hover{background:rgba(251,247,238,.16)}
+#inkTools button.on:hover{background:rgba(251,247,238,.28)}
+
+/* turning pages, below the page: liquid glass, the same family as the bars; the old round buttons over the text are gone */
+#spread .sp-turn{display:none !important}
+#spread .sp-doc.paged{bottom:62px !important}
+#spread .sp-pnav{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:2px;padding:4px;border-radius:14px;background:rgba(251,247,238,.14);-webkit-backdrop-filter:blur(12px) saturate(1.25);backdrop-filter:blur(12px) saturate(1.25);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 0 0 1px rgba(255,255,255,.06),0 8px 22px rgba(0,0,0,.28)}
+#spread .sp-pnav[hidden]{display:none}
+#spread .sp-pn{all:unset;box-sizing:border-box;cursor:pointer;width:40px;height:34px;border-radius:10px;text-align:center;line-height:32px;font:400 24px var(--sans);color:#F6E7D2;transition:background .15s ease,scale .12s ease,opacity .15s ease}
+#spread .sp-pn:hover{background:rgba(255,255,255,.14)}
+#spread .sp-pn:active{scale:.9}
+#spread .sp-pn:disabled{opacity:.28;cursor:default;background:none;scale:1}
+#spread .sp-pnum{min-width:92px;padding:0 6px;text-align:center;font:600 12.5px var(--sans);color:rgba(246,231,210,.88);white-space:nowrap}
+/* on a book's light page the glass is light */
+#spread .sp-pnav.light{background:rgba(255,255,255,.6);box-shadow:inset 0 0 0 1px rgba(35,30,26,.08),0 6px 18px rgba(60,40,20,.14)}
+#spread .sp-pnav.light .sp-pn{color:#3A322B}
+#spread .sp-pnav.light .sp-pn:hover{background:rgba(35,30,26,.07)}
+#spread .sp-pnav.light .sp-pnum{color:#6E6357}
+/* the notes' own page control: the same glass, light on the paper; its arrows rest when there is nowhere to go; + adds a page */
+#spread .sp-npg{bottom:12px !important;gap:2px !important;padding:4px;border-radius:14px;background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(12px) saturate(1.2);backdrop-filter:blur(12px) saturate(1.2);box-shadow:inset 0 0 0 1px rgba(35,30,26,.08),0 6px 18px rgba(60,40,20,.14);font:600 12.5px var(--sans) !important;color:#6E6357 !important}
+#spread .sp-npg button{width:38px !important;height:32px !important;border-radius:10px !important;line-height:30px !important;font:400 22px var(--sans) !important;color:#3A322B !important;transition:background .15s ease,scale .12s ease,opacity .15s ease}
+#spread .sp-npg button:hover{background:rgba(35,30,26,.07) !important}
+#spread .sp-npg button:active{scale:.9}
+#spread .sp-npg button:disabled{opacity:.25 !important;cursor:default;background:none !important;scale:1}
+#spread .sp-npg #spNNum{min-width:52px;text-align:center}
+#spread .sp-sheet.side .sp-notes{padding-bottom:64px;box-sizing:border-box}
+
+/* iPad: while ✎ is on, fingers never choose words or bring up the iPad's menu on a page */
+body.ink-on #spDoc .textLayer{-webkit-user-select:none !important;user-select:none !important;pointer-events:none}
+body.ink-on #spread, #spread .ink-cv{-webkit-touch-callout:none}
+#spread .ink-cv{-webkit-user-select:none;user-select:none}
+/* pdf.js's end-of-content block: a long press chooses the words under the finger, not the whole page */
+#spread .textLayer .endOfContent{display:block;position:absolute;inset:100% 0 0;z-index:-1;cursor:default;-webkit-user-select:none;user-select:none}
+#spread .textLayer.selecting .endOfContent{top:0}
+/* the bar for chosen words, at the foot of the screen on a touch screen */
+#spSel.touch{position:fixed;z-index:430}
+/* pen sizes in the colour library */
+#inkPal .ip-sizes{align-items:center;gap:6px}
+#inkPal .ip-sz{all:unset;box-sizing:border-box;width:38px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s ease,scale .12s ease}
+#inkPal .ip-sz i{display:block;border-radius:50%;background:#F6E7D2}
+#inkPal .ip-sz:hover{background:rgba(255,255,255,.10)}
+#inkPal .ip-sz:active{scale:.92}
+#inkPal .ip-sz.on{background:rgba(255,255,255,.18);box-shadow:inset 0 0 0 1.5px rgba(246,231,210,.8)}
+/* the notes zoomed: the paper can be moved about */
+#spread .sp-right.nzoom{overflow:auto;-webkit-overflow-scrolling:touch;align-items:flex-start;justify-content:flex-start}
+/* the reading bar: every button the same height, its icon or letters centred, so they line up */
+#spread .sp-glass .sp-ib,#spread .sp-glass .sp-zb{display:inline-flex !important;align-items:center;justify-content:center;height:34px;line-height:1 !important;vertical-align:middle}
+#spread .sp-glass .sp-aa{font:700 15px/1 var(--serif) !important;padding-top:1px}
+#spread .ink-tools{align-self:center}
+#spread .ink-tools button{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle}
+#spread .sp-glass .sp-loc{display:inline-flex;align-items:center;height:34px}
+
+/* no stray line at the start of the bar when a book has no page number and no zoom */
+#spread .sp-glass .sp-loc:empty ~ .sp-zoom[hidden] + .sp-gsep{display:none}
+
+#spMindT.on{background:rgba(251,247,238,.22)}
+@media (max-width: 700px){ #spMindT{display:none !important} }
+
+#inkPal .ip-br{all:unset;box-sizing:border-box;width:36px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#F6E7D2;cursor:pointer;transition:background .15s ease,scale .12s ease}
+#inkPal .ip-br:hover{background:rgba(255,255,255,.10)}
+#inkPal .ip-br:active{scale:.92}
+#inkPal .ip-br.on{background:rgba(255,255,255,.2);box-shadow:inset 0 0 0 1.5px rgba(246,231,210,.75)}
+#inkPal .ip-slider{display:flex;align-items:center;gap:6px;margin-left:auto;font:600 11.5px var(--sans);color:#F6E7D2}
+#inkPal .ip-slider input{width:92px;accent-color:#F6E7D2}
+#inkPal .ip-slider b{min-width:26px;text-align:right}
+
+/* on a phone: the folders in a drawer that slides in from the left (and away again), above the papers, below the bar */
+.side-toggle,.side-scrim{display:none}
+@media (max-width: 700px){
+  #pboard .rb-side,#rboard .rb-side{position:fixed !important;left:0 !important;top:0 !important;bottom:0 !important;width:min(84vw,330px) !important;margin:0 !important;padding:calc(env(safe-area-inset-top, 0px) + 76px) 12px 28px !important;display:block !important;overflow-y:auto;-webkit-overflow-scrolling:touch;z-index:66;background:rgba(30,18,11,.9);-webkit-backdrop-filter:blur(18px) saturate(1.2);backdrop-filter:blur(18px) saturate(1.2);box-shadow:14px 0 40px rgba(0,0,0,.45);border-radius:0 18px 18px 0;transform:translateX(-106%);transition:transform .32s cubic-bezier(.2,.8,.2,1);animation:none !important;opacity:1 !important}
+  body.side-open #pboard .rb-side,body.side-open #rboard .rb-side{transform:none}
+  #pbMaps,#pbSt,#rStatus,#rcats{display:block !important}
+  #pboard .rb-side .tp,#rboard .rb-side .tp{display:flex !important;width:100% !important;box-sizing:border-box;padding:9px 12px !important;margin:2px 0 !important;font-size:15px !important;background:none}
+  #pboard .rb-side .h,#rboard .rb-side .h{width:auto;margin:16px 8px 6px !important}
+  .side-scrim{display:block;position:fixed;inset:0;z-index:65;background:rgba(10,4,2,.4);opacity:0;pointer-events:none;transition:opacity .25s ease}
+  body.side-open .side-scrim{opacity:1;pointer-events:auto}
+  .side-toggle{all:unset;display:inline-flex;align-items:center;gap:8px;box-sizing:border-box;max-width:100%;height:42px;padding:0 14px;margin:0 0 10px;border-radius:12px;font:600 14px var(--sans);color:#F6E7D2;background:rgba(251,247,238,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.1);cursor:pointer;transition:background .15s ease,scale .12s ease}
+  .side-toggle:active{scale:.96}
+  .side-toggle .st-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .side-toggle .st-chev{opacity:.6;flex:none}
+  .rb-tools{flex-wrap:wrap}
+  .rb-tools .side-toggle + input{flex:1 1 100%}
+}
+
+/* Your maps on a phone: its own list, every map whole, two to a row; the desk behind is simply darkened (no blur to redraw) */
+#phoneMaps{display:none}
+body.phone.st-maps #rowStrip{display:none !important}
+body.phone.st-maps #phoneMaps{display:block;position:fixed;inset:0;z-index:40;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(env(safe-area-inset-top, 0px) + 178px) 16px 40px;background:rgba(18,8,4,.86)}
+#phoneMaps .pm-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px 14px}
+#phoneMaps .pmc{all:unset;display:flex;flex-direction:column;gap:6px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:scale .12s ease}
+#phoneMaps .pmc:active{scale:.96}
+#phoneMaps .pmc-cov{display:block;width:100%;aspect-ratio:186/262;border-radius:3px;background-size:cover;background-position:center;box-shadow:0 1px 2px rgba(0,0,0,.35),0 10px 22px rgba(0,0,0,.35)}
+#phoneMaps .pmc-cov.mind{display:flex;align-items:center;justify-content:center;background:#F3EDE1 url(assets/desk/cover-paper.webp) center/cover}
+#phoneMaps .pmc-cov.mind svg{width:82%}
+#phoneMaps .pmc-cov.new{display:flex;align-items:center;justify-content:center;font:300 46px var(--serif);color:rgba(246,231,210,.7);background:rgba(251,247,238,.06);box-shadow:inset 0 0 0 1.5px rgba(246,231,210,.28);border-radius:8px}
+#phoneMaps .pmc b{font:700 15px/1.25 var(--serif);color:#F6E7D2}
+#phoneMaps .pmc em{font:italic 400 12.5px var(--serif);color:rgba(246,231,210,.62)}
+body.phone.st-maps .head{z-index:45}
+
+/* the research log's page control on a phone */
+.note-pager{display:none}
+body.phone.st-note .note-pager{display:flex;position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom, 0px) + 16px);transform:translateX(-50%);z-index:80;align-items:center;gap:2px;padding:4px;border-radius:14px;background:rgba(30,18,11,.62);-webkit-backdrop-filter:blur(12px) saturate(1.2);backdrop-filter:blur(12px) saturate(1.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 8px 22px rgba(0,0,0,.3)}
+.note-pager button{all:unset;box-sizing:border-box;width:42px;height:36px;border-radius:10px;text-align:center;line-height:34px;font:400 24px var(--sans);color:#F6E7D2;cursor:pointer;transition:background .15s ease,scale .12s ease,opacity .15s ease}
+.note-pager button:active{scale:.9}
+.note-pager button:disabled{opacity:.28;cursor:default}
+.note-pager span{min-width:62px;text-align:center;font:600 13px var(--sans);color:rgba(246,231,210,.88)}
+body.phone.st-note #memoPrev,body.phone.st-note #memoNext{visibility:hidden}
+
+/* pdf.js's own rules for its text layer that were missing: grouping spans take no room, line breaks are never painted as chosen */
+#spread .textLayer span.markedContent{top:0;height:0}
+#spread .textLayer br::selection{background:transparent}
+#spread .textLayer .endOfContent{z-index:0}
+#spread .textLayer > :not(.markedContent):not(.endOfContent),#spread .textLayer .markedContent span:not(.markedContent){z-index:1}
+
+/* Clip: the box being drawn over a PDF page */
+body.sp-clipping #spDoc .sp-pg{cursor:crosshair}
+body.sp-clipping #spDoc{touch-action:none}
+body.sp-clipping #spDoc .textLayer{pointer-events:none !important;-webkit-user-select:none !important;user-select:none !important}
+#spDoc .sp-clipbox{position:absolute;z-index:9;border-radius:3px;background:rgba(180,67,46,.08);box-shadow:0 0 0 1.5px rgba(180,67,46,.85),0 0 0 9999px rgba(20,10,5,.18);pointer-events:none}
+#spDoc .sp-clipbox.taken{background:rgba(255,255,255,.35);transition:background .2s ease}
+#spClipT.on{background:rgba(255,255,255,.2)}
+
+/* the drink menu: grouped, and the sake cups to choose from */
+#cupMenu{max-height:min(560px,calc(100vh - 240px));overflow-y:auto}
+#cupKinds .ck,#sakeCups .ck{width:100%;margin:8px 2px 2px;font:700 10.5px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:#8A7F72}
+#cupKinds .ck:first-child{margin-top:0}
+#sakeCups .ck em{font:italic 400 12px var(--serif);letter-spacing:0;text-transform:none;color:#5E544A}
+#sakeCups[hidden]{display:none}
+#sakeCups .sk-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:6px}
+#sakeCups .sk-grid button{all:unset;aspect-ratio:1;border-radius:10px;cursor:pointer;background:#2A1C14;overflow:hidden;transition:transform .12s ease,box-shadow .15s ease}
+#sakeCups .sk-grid button:hover{box-shadow:0 0 0 2px rgba(180,67,46,.45)}
+#sakeCups .sk-grid button:active{transform:scale(.94)}
+#sakeCups .sk-grid button.on{box-shadow:0 0 0 2.5px #B4432E}
+#sakeCups .sk-grid img{width:100%;height:100%;display:block}
+#sakeCups .sk-pour{all:unset;display:block;margin:10px auto 2px;padding:9px 22px;border-radius:999px;font:600 14px var(--sans);color:#FBF7EE;background:#231E1A;cursor:pointer;transition:transform .12s ease,background .15s ease}
+#sakeCups .sk-pour:hover{background:#3A2F27}
+#sakeCups .sk-pour:active{transform:scale(.95)}
+/* the sake cup on the desk: empty, and full on top of it */
+.sake-i{position:absolute;pointer-events:none;opacity:0;transition:opacity .35s ease}
+.sake-i.m{mix-blend-mode:multiply}.sake-i.p{mix-blend-mode:plus-lighter}
+.sake-i.on:not(.full){opacity:1}
+body.sake-full .sake-i.full.on{opacity:1}
+.sake-i.full{transition:opacity .9s ease}
+#sakeHit{position:absolute;left:1295px;top:205px;width:80px;height:80px;border-radius:50%;cursor:pointer;z-index:26}
+#drinkT.tilt,#drinkE.tilt{transform:translate(5px,4px) rotate(2deg);transition:transform .35s ease}
+#drinkT,#drinkE{transition:opacity .35s ease,transform .45s ease}
+#pourSvg{position:absolute;left:0;top:0;width:1440px;height:900px;pointer-events:none;z-index:27;overflow:visible}
+#pourSvg .pour{fill:none;stroke:rgba(255,250,236,.75);stroke-width:2.6;stroke-linecap:round;stroke-dasharray:260;stroke-dashoffset:260;animation:pourIn .42s ease-out forwards,pourOut .35s 1.15s ease-in forwards}
+#pourSvg .pour-glow{fill:none;stroke:rgba(255,240,210,.22);stroke-width:7;stroke-linecap:round;stroke-dasharray:260;stroke-dashoffset:260;animation:pourIn .42s ease-out forwards,pourOut .35s 1.15s ease-in forwards;mix-blend-mode:plus-lighter}
+#pourSvg .ripple{fill:none;stroke:rgba(255,252,240,.55);stroke-width:1.2;opacity:0;animation:ripple 1.1s .42s ease-out 2}
+#pourSvg .ripple.r2{animation-delay:.75s}
+@keyframes pourIn{to{stroke-dashoffset:0}}
+@keyframes pourOut{to{stroke-dashoffset:-260;opacity:0}}
+@keyframes ripple{0%{r:3;opacity:.8}100%{r:22;opacity:0}}
+/* candles: the jar and the votive on the desk, their flames, and the dark room */
+.cdl-i{position:absolute;pointer-events:none;opacity:0;transition:opacity .5s ease}
+.cdl-i.m{mix-blend-mode:multiply}.cdl-i.p{mix-blend-mode:plus-lighter}.cdl-i.on{opacity:1}
+.cdl-hit{position:absolute;border-radius:50%;cursor:pointer;z-index:26}
+.flame{position:absolute;width:0;height:0;z-index:62;pointer-events:none;opacity:0;transition:opacity .25s ease}
+.flame.lit{opacity:1}
+.flame i{position:absolute;border-radius:50%;transform:translate(-50%,-50%) translate(var(--dx,0),var(--dy,0)) rotate(var(--ang,0deg)) scale(var(--k,1),calc(var(--k,1) * var(--el,1)))}
+.flame .glow{transform:translate(-50%,-50%) translate(var(--dx,0),var(--dy,0)) scale(var(--k,1)) !important}
+.flame .glow{width:120px;height:120px;background:radial-gradient(circle,rgba(255,196,120,.42) 0%,rgba(255,150,60,.16) 32%,rgba(255,120,40,0) 70%);mix-blend-mode:plus-lighter}
+.flame .halo{width:16px;height:19px;background:radial-gradient(ellipse at 50% 55%,rgba(255,236,170,.95) 0%,rgba(255,170,60,.75) 45%,rgba(255,110,20,0) 75%);mix-blend-mode:plus-lighter;filter:blur(.4px)}
+.flame .core{width:6px;height:7.5px;background:radial-gradient(ellipse at 50% 60%,#fff 0%,rgba(255,250,225,.95) 50%,rgba(255,220,150,0) 100%);mix-blend-mode:plus-lighter}
+body.lights-off .flame .glow{width:190px;height:190px;background:radial-gradient(circle,rgba(255,196,120,.55) 0%,rgba(255,150,60,.20) 34%,rgba(255,120,40,0) 70%)}
+#roomDark{position:absolute;left:0;top:0;width:1440px;height:900px;pointer-events:none;z-index:60;mix-blend-mode:multiply;opacity:0;transition:opacity 1.1s ease}
+body.lights-off #roomDark{opacity:1}
+.smoke{position:absolute;width:80px;height:140px;z-index:61;pointer-events:none;overflow:visible}
+.smoke path{fill:none;stroke:rgba(235,230,225,.55);stroke-width:2.2;stroke-linecap:round;stroke-dasharray:180;stroke-dashoffset:180;animation:smoke 2.4s ease-out forwards;filter:blur(1.2px)}
+@keyframes smoke{0%{stroke-dashoffset:180;opacity:.9}35%{opacity:.7}100%{stroke-dashoffset:0;opacity:0;transform:translate(6px,-18px)}}
+/* the light switches in the Look panel */
+.lt-opts{display:flex;gap:8px;margin-bottom:6px}
+.lt{all:unset;display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:12px;font:600 13.5px var(--sans);color:var(--ink,#231E1A);background:rgba(35,30,26,.06);cursor:pointer;transition:background .15s ease,transform .12s ease}
+.lt:hover{background:rgba(35,30,26,.10)}
+.lt:active{transform:scale(.95)}
+.lt i{width:9px;height:9px;border-radius:50%;background:#B9B0A4;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.lt.on i{background:#F0B24A;box-shadow:0 0 8px rgba(240,178,74,.8)}
+
+/* the gallery: the postcard by the notebook, the print taped on the research log's right page */
+#galCard{position:absolute;left:318px;top:30px;width:206px;z-index:1;transform:rotate(-6deg);opacity:0;pointer-events:none;transition:opacity .5s ease;box-shadow:0 1px 1px rgba(0,0,0,.35),6px 9px 12px rgba(10,4,2,.45)}
+#galCard img{display:block;width:100%}
+#galCard.on{opacity:1}
+#galPage{position:absolute;left:923.9px;top:21.6px;width:183px;height:289px;transform:rotate(-2.5deg);z-index:2;pointer-events:none;opacity:0;transition:opacity .5s ease;border-radius:0 2px 2px 0;
+  background:linear-gradient(90deg,rgba(0,0,0,.16),rgba(0,0,0,.05) 7px,rgba(0,0,0,0) 22px),linear-gradient(115deg,rgba(255,255,255,0) 40%,rgba(255,255,255,.18) 52%,rgba(255,255,255,0) 64%),#F5F2EB;box-shadow:inset -1px 0 0 rgba(0,0,0,.06)}
+#galPage.on{opacity:1}
+#galPage .gp-plate{position:absolute;left:20px;right:14px;top:34px;overflow:hidden;box-shadow:0 0 0 .5px rgba(0,0,0,.25)}
+#galPage .gp-plate img{display:block;width:100%;filter:saturate(1.04) contrast(1.02)}
+#galPage .gp-gloss{position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.16) 46%,rgba(255,255,255,0) 60%);mix-blend-mode:screen}
+#galPage .gp-who,#galPage .gp-what,#galPage .gp-how{position:absolute;left:20px;right:14px;margin:0;color:#2B2623;font-family:var(--serif,'PMap Serif',Georgia,serif)}
+#galPage .gp-who{top:150px;font-size:6.2px;letter-spacing:.14em;text-transform:uppercase;color:#6B6259}
+#galPage .gp-what{top:159px;font-size:8.4px;font-style:italic}
+#galPage .gp-how{top:171px;font-size:5.8px;color:#7A7067}
+#galPage .gp-folio{position:absolute;right:14px;bottom:14px;margin:0;font:400 6px var(--serif,'PMap Serif',Georgia,serif);color:#8A7F72}
+body.gal-page #pen{z-index:3}
+/* the season: the wreath at the top-left corner, its centre at the corner, so a quarter of it shows */
+#wreath{position:absolute;left:-300px;top:-300px;width:600px;height:600px;z-index:1;pointer-events:none;opacity:0;transition:opacity .6s ease}
+#wreath.on{opacity:1}
+.lt.sm{padding:7px 11px;font-size:12.5px}
+.gal-pick{margin-top:-2px}
+
+#galCard.own{width:190px}

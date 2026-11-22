@@ -13,7 +13,7 @@ const DEFAULT_COLORS = {green:'#231E1A', red:'#B4432E'};
 const PREVIEW_DATA = 'example/displaydata.json';
 let PREVIEW = false;
 /* Set this to the tag of the GitHub release you are about to publish (v1.3.0, v1.3.1, …). */
-const APP_VERSION = 'v3.1.7';
+const APP_VERSION = 'v3.1.8';
 /* the shape of a library file: raised whenever it changes, so an older file is always read and brought up to date */
 const SCHEMA_VERSION = 3;
 const APP_REPO = 'liamxluo/paper-map';

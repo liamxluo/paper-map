@@ -50,7 +50,7 @@ function ztInbox(c){ c.map = c.map || {}; let tp = lib.topics.find(t => t.id ===
 function ztTagIds(tags){ return (tags || []).map(t => t.tag).filter(t => !/^(read|to-?read|want to read)$/i.test(t)).map(name => { let x = lib.tags.find(z => z.name.toLowerCase() === name.toLowerCase()); if(!x) x = newTag(name); return x.id; }); }
 function ztStatusOf(tags){ const n = (tags || []).map(t => t.tag.toLowerCase()); return n.includes('read') ? 'read' : n.some(t => /^to-?read$|^want to read$/.test(t)) ? 'want' : null; }
 async function ztSync(manual){
-  const c = ztCfg(); if(!c || !c.key || ZT.busy) return; ZT.busy = true; c.items = c.items || {}; c.children = c.children || {};
+  const c = ztCfg(); if(!c || !c.key || ZT.busy) return; ZT.busy = true; pmState('zotero', 'busy'); c.items = c.items || {}; c.children = c.children || {}; let ztOk = true;
   try{
     const colls = (await ztAll(c, '/users/' + c.user + '/collections')).items.filter(x => !(x.data && x.data.deleted));
     const chosen = new Set(c.include === 'all' || !c.include ? colls.map(x => x.key) : c.include);
@@ -72,11 +72,12 @@ async function ztSync(manual){
       const depth = k => { let n = 0, x = colls.find(cc => cc.key === k); while(x && x.data.parentCollection){ n++; x = colls.find(cc => cc.key === x.data.parentCollection); } return n; };
       inSel.sort((a, b) => depth(b) - depth(a));
       const place = e ? {topic: e.topic, sub: e.sub} : {topic: ZL.id, sub: ZL.subs[0].id};
-      if(!e){ const id = rid('z'); e = {id, kind: 'paper', t: title, au: '', y: null, topic: place.topic, sub: place.sub, tags: [], d: [], p: 1, group: '', n: ''}; lib.entries[id] = e; c.items[it.key] = id; made++; } else updated++;
+      let was = null; if(!e){ const id = rid('z'); e = {id, kind: 'paper', t: title, au: '', y: null, topic: place.topic, sub: place.sub, tags: [], d: [], p: 1, group: '', n: ''}; lib.entries[id] = e; c.items[it.key] = id; made++; } else was = JSON.stringify([e.t, e.au, e.y, e.v, e.doi, e.l, e.zcolls, e.tags, e.ztype, e.pdf && e.pdf.name]);
       if(lone(it) && !e.pdf){ e.pdf = {path: 'zotero:' + it.key, name: d.filename || (title + '.pdf'), zotero: it.key}; if(d.linkMode === 'linked_file' && d.path) e.pdf.zpath = d.path; }
       e.ztype = lone(it) ? 'PDF' : d.itemType; e.zkey = it.key; e.zcolls = (d.collections || []).filter(k => chosen.has(k)); if(d.itemType && !ZPAPER.has(d.itemType) && !e.l) e.l = ({book: 'Book', bookSection: 'Book chapter', encyclopediaArticle: 'Encyclopedia', dictionaryEntry: 'Dictionary', presentation: 'Talk', document: 'Document'})[d.itemType] || '';
       Object.assign(e, {t: title, au: ztAuthors(d.creators).join(' & '), y: ztYear(d.date) || e.y, v: d.publicationTitle || d.proceedingsTitle || d.bookTitle || d.institution || d.university || d.repository || e.v || '', doi: d.DOI || e.doi || '', l: d.url || e.l || '', zkey: it.key});
       const tg = ztTagIds(d.tags); e.tags = [...new Set((e.tags || []).concat(tg))];
+      if(was !== null && was !== JSON.stringify([e.t, e.au, e.y, e.v, e.doi, e.l, e.zcolls, e.tags, e.ztype, e.pdf && e.pdf.name])) updated++;
       if(st){ const k = keyOf(e); if(status[k] !== st){ status[k] = st; statusTime = Date.now(); } } });
     /* what hangs under an item: notes, files, annotations */
     const parentOf = {}; items.forEach(i => { if(i.data.parentItem) parentOf[i.key] = i.data.parentItem; });
@@ -101,10 +102,12 @@ async function ztSync(manual){
       const host = owner.startsWith('r:') ? (lib.readings || []).find(x => x.id === owner.slice(2)) : null; const arr = host ? (host.marks = host.marks || []) : list; if(!arr) return;
       const k = arr.findIndex(x => x.zkey === i.key); if(k >= 0) arr[k] = Object.assign(arr[k], m); else { arr.push(m); marks++; } });
     c.version = Math.max(c.version || 0, version); c.last = Date.now(); ztSave(c); reindex(); touchLib(); persistStatus(); try{ renderAll(); }catch(e){}
-    if(manual || made || notes || marks) toast('Zotero: ' + made + ' new, ' + updated + ' brought up to date' + (notes ? ', ' + notes + ' notes' : '') + (marks ? ', ' + marks + ' highlights and sticky notes' : ''));
-  }catch(err){ if(manual) toast('Zotero could not be reached just now (' + String((err && err.message) || err).slice(0, 60) + ')'); }
+    if(manual || made || notes || marks){ const h = ztHere(), extra = [updated ? updated + (updated === 1 ? ' paper' : ' papers') + ' brought up to date' : '', notes ? notes + (notes === 1 ? ' note' : ' notes') : '', marks ? marks + (marks === 1 ? ' highlight or sticky note' : ' highlights and sticky notes') : ''].filter(Boolean).join(', ');
+      toast(made ? 'Brought in ' + made + ' new ' + (made === 1 ? 'paper' : 'papers') + ' from Zotero' + (extra ? ', and ' + extra : '') + '. They are in Papers › Zotero.'
+        : 'Nothing new in Zotero: all ' + h.papers + ' of its papers are already here, in Papers › Zotero' + (extra ? ' (' + extra + ')' : '') + '.'); }
+  }catch(err){ ztOk = false; if(manual) toast('Zotero could not be reached just now (' + String((err && err.message) || err).slice(0, 60) + ')'); }
   setTimeout(() => { ztKeepPdfs(); }, 3000);
-  ZT.busy = false;
+  ZT.busy = false; pmState('zotero', ztOk ? 'ok' : 'err');
 }
 function R_ztBook(c, it, st){ const d = it.data; lib.readings = lib.readings || []; let b = c.items[it.key] && lib.readings.find(x => 'r:' + x.id === c.items[it.key]), isNew = false;
   if(!b){ b = {id: rid('r'), title: d.title, authors: [], status: st === 'read' ? 'read' : st === 'want' ? 'want' : 'reading', categories: [], notes: '', onMaps: [], added: new Date().toISOString()}; lib.readings.push(b); c.items[it.key] = 'r:' + b.id; isNew = true; }
@@ -130,11 +133,15 @@ function openZotero(){
       catch(e){ document.getElementById('ztErr').textContent = 'That key did not work. Check it, and that it can read your library.'; } })(); return false; }}]}); return; }
   ztChoose();
 }
+function ztHere(){ const ps = Object.values(lib.entries).filter(e => e.kind === 'paper' && (e.zkey || (e.zcolls || []).length || (e.pdf && e.pdf.zotero))); const per = {};
+  ps.forEach(e => (e.zcolls || []).forEach(k => { per[k] = (per[k] || 0) + 1; })); return {papers: ps.length, per}; }
+function ztWhen(t){ if(!t) return ''; const d = new Date(t), now = new Date(); const hm = d.toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'}); return d.toDateString() === now.toDateString() ? 'today at ' + hm : d.toLocaleDateString('en-GB', {day: 'numeric', month: 'short'}) + ' at ' + hm; }
 async function ztChoose(){ const c = ztCfg(); if(!c) return; let colls = [];
   try{ colls = (await ztAll(c, '/users/' + c.user + '/collections')).items; }catch(e){ toast('Zotero could not be reached just now'); return; }
   const tops = colls.filter(x => !x.data.parentCollection), on = k => c.include === 'all' || (c.include || []).includes(k);
-  openModal({title: 'Zotero' + (c.name ? ' · ' + c.name : ''), body: '<p class="zt-p">Choose the collections to bring in. They come into Papers as folders.</p><div class="zt-list">' + tops.map(t => '<label><input type="checkbox" data-zc="' + esc(t.key) + '"' + (on(t.key) ? ' checked' : '') + '> ' + esc(t.data.name) + '<em>' + (t.meta && t.meta.numItems != null ? t.meta.numItems + ' items' : '') + '</em></label>').join('') + '<label><input type="checkbox" data-zunf="1"' + (c.unfiled !== false ? ' checked' : '') + '> Not in any collection<em>to the folder From Zotero</em></label></div>' + (c.last ? '<p class="zt-p">Last brought in ' + new Date(c.last).toLocaleString('en-GB') + '</p>' : ''),
-    actions: [{label: 'Disconnect', onClick: () => { localStorage.removeItem('pm:zotero'); toast('Zotero disconnected; what came from it stays'); }}, {label: 'Bring them in', primary: true, onClick: () => {
+  const here = ztHere(), under = k => { let n = here.per[k] || 0; colls.filter(x => x.data.parentCollection === k).forEach(x => { n += under(x.key); }); return n; };
+  openModal({title: 'Zotero' + (c.name ? ' · ' + c.name : ''), body: '<p class="zt-p">Paper Map follows the collections ticked here and brings in anything new by itself, every few minutes; what is already here is never brought in twice. They are in Papers › Zotero. Untick one to stop following it (what came from it stays).</p><div class="zt-list">' + tops.map(t => { const inZ = t.meta && t.meta.numItems != null ? t.meta.numItems : null, h = here.per[t.key] || 0; return '<label><input type="checkbox" data-zc="' + esc(t.key) + '"' + (on(t.key) ? ' checked' : '') + '> ' + esc(t.data.name) + '<em>' + (inZ != null ? inZ + ' in Zotero · ' : '') + (h ? h + ' here' : (on(t.key) ? 'none here yet' : 'not followed')) + '</em></label>'; }).join('') + '<label><input type="checkbox" data-zunf="1"' + (c.unfiled !== false ? ' checked' : '') + '> Not in any collection<em>to the folder From Zotero</em></label></div>' + '<p class="zt-p">' + here.papers + (here.papers === 1 ? ' paper' : ' papers') + ' from Zotero here' + (c.last ? ' · last looked ' + ztWhen(c.last) : '') + '</p>',
+    actions: [{label: 'Disconnect', onClick: () => { localStorage.removeItem('pm:zotero'); toast('Zotero disconnected; what came from it stays'); }}, {label: 'Save and look for new ones', primary: true, onClick: () => {
       const keys = [...document.querySelectorAll('#modalBody [data-zc]')].filter(x => x.checked).map(x => x.dataset.zc), cc = ztCfg(); const subs = colls.filter(x => { let p = x.data.parentCollection; while(p){ if(keys.includes(p)) return true; const q = colls.find(y => y.key === p); p = q && q.data.parentCollection; } return false; }).map(x => x.key);
       cc.include = keys.length === tops.length ? 'all' : keys.concat(subs); const u = document.querySelector('#modalBody [data-zunf]'); cc.unfiled = !!(u && u.checked); ztSave(cc); setTimeout(() => ztSync(true), 0); }}]});
   setTimeout(() => { try{ settingsTidy && document.getElementById('modalRoot').classList.add('pm-settings'); }catch(e){} }, 0);
@@ -170,10 +177,19 @@ function ztMergeTwins(){ const key = t => ztName(t.name); const shelf = lib.topi
     Object.values(lib.entries).forEach(e => { if(e.topic === t.id){ e.topic = K.id; e.sub = subMap[e.sub] || rootK.id; } if(e.folder === t.id){ e.folder = K.id; e.fsub = subMap[e.fsub] || rootK.id; } });
     lib.topics = lib.topics.filter(x => x !== t); merged++; });
   const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]+/g, ' ').trim(); const byT = {}; let gone = 0;
-  Object.values(lib.entries).filter(e => e.kind === 'paper').forEach(e => { const k = (e.doi ? 'doi:' + String(e.doi).toLowerCase().replace(/^https?:\/\/(dx\.)?doi\.org\//, '') : norm(e.t) + '|' + (e.y || ''));
-    const o = byT[k]; if(!o){ byT[k] = e; return; } const onMap = x => { const t = lib.topics.find(tt => tt.id === x.topic); return t && !t.shelf; };
+  const sur = x => String(x.au || '').split(/[;,&]| and /)[0].trim().split(/\s+/).pop().toLowerCase();
+  Object.values(lib.entries).filter(e => e.kind === 'paper').forEach(e => { const tn = norm(e.t), longT = tn.length >= 20 && tn.split(' ').length >= 3;
+    const k = e.doi ? 'doi:' + String(e.doi).toLowerCase().replace(/^https?:\/\/(dx\.)?doi\.org\//, '') : longT ? tn + '|' + (e.y || '') : 'own:' + e.id;
+    const o = byT[k]; if(!o){ byT[k] = e; return; } if(!e.doi && sur(e) && sur(o) && sur(e) !== sur(o)) return; const onMap = x => { const t = lib.topics.find(tt => tt.id === x.topic); return t && !t.shelf; };
     const keep = (onMap(e) && !onMap(o)) || ((e.pdf && !o.pdf) && !(onMap(o) && !onMap(e))) || ((e.n || '').length > (o.n || '').length && onMap(e) === onMap(o)) ? e : o, drop = keep === e ? o : e;
-    if(!keep.folder && drop.folder){ keep.folder = drop.folder; keep.fsub = drop.fsub; } if(!keep.n && drop.n) keep.n = drop.n; if((drop.marks || []).length && !(keep.marks || []).length) keep.marks = drop.marks;
+    if(!keep.folder && drop.folder){ keep.folder = drop.folder; keep.fsub = drop.fsub; }
+    { const kn = String(keep.n || '').trim(), dn = String(drop.n || '').trim(); if(dn && kn !== dn && !kn.includes(dn)) keep.n = kn ? kn + '\n\n' + dn : dn; }
+    const union = (a1, a2) => { const seen = new Set((a1 || []).map(x => x && (x.id || JSON.stringify(x)))); return (a1 || []).concat((a2 || []).filter(x => x && !seen.has(x.id || JSON.stringify(x)))); };
+    if((drop.marks || []).length) keep.marks = union(keep.marks, drop.marks); if((drop.stickies || []).length) keep.stickies = union(keep.stickies, drop.stickies);
+    if(drop.ink){ const ki = keep.ink = keep.ink || {pdf: {}, notes: []}; ki.notes = (ki.notes || []).concat(drop.ink.notes || []); ki.pdf = ki.pdf || {}; Object.entries(drop.ink.pdf || {}).forEach(([pgn, arr]) => { ki.pdf[pgn] = (ki.pdf[pgn] || []).concat(arr || []); }); }
+    if((drop.readAt || 0) > (keep.readAt || 0)) keep.readAt = drop.readAt; if((drop.tags || []).length) keep.tags = [...new Set((keep.tags || []).concat(drop.tags))];
+    if((drop.zcolls || []).length) keep.zcolls = [...new Set((keep.zcolls || []).concat(drop.zcolls))]; if((drop.zNotes || []).length) keep.zNotes = [...new Set((keep.zNotes || []).concat(drop.zNotes))];
+    try{ if(status && status[drop.id] && !status[keep.id]){ status[keep.id] = status[drop.id]; } if(status && status[drop.id]){ delete status[drop.id]; persistStatus(); } }catch(err){}
     if(!keep.zkey && drop.zkey) keep.zkey = drop.zkey; if(!keep.pdf && drop.pdf) keep.pdf = drop.pdf; lib.links = (lib.links || []).map(l => l.map(x => x === drop.id ? keep.id : x));
     delete lib.entries[drop.id]; byT[k] = keep; gone++; });
   if(merged || gone){ try{ reindex(); }catch(e){} touchLib(); } return [merged, gone]; }

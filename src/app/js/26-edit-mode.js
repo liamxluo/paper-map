@@ -778,7 +778,7 @@ function openSettings(){
       '<div class="set-section"><h3>Map</h3><label style="display:flex;gap:.5em;align-items:center"><input type="checkbox" id="srcColors"' + (settings.mapColor !== 'plain' ? ' checked' : '') + '> Colour unmarked dots by tag</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.4em"><input type="checkbox" id="setShowRel"' + (settings.showRelated !== false ? ' checked' : '') + '> Show Related-to lines (dotted)</label><label style="display:flex;gap:.5em;align-items:center;margin-top:.6em"><input type="checkbox" id="setReadHints"' + (settings.readHints !== false ? ' checked' : '') + '> When I mark a paper read, show which papers on my map it cites</label><label class="set-arrows">Arrows on lines<select id="setArrows"><option value="flow"' + (settings.arrows === 'flow' ? ' selected' : '') + '>Point to the later paper: how ideas flow</option><option value="cite"' + (settings.arrows === 'cite' ? ' selected' : '') + '>Point to the paper it builds on: how citations go</option><option value="off"' + (settings.arrows === 'off' ? ' selected' : '') + '>Don’t show arrows</option></select></label><div class="set-actions"><button type="button" class="btn" id="setTags">Manage tags &amp; colours</button></div></div>' +
       '<div class="set-section"><h3>Undo</h3><label style="display:flex;gap:.5em;align-items:center">Undo stays available for <select id="setUndoWin">' + [[5, '5 minutes'], [10, '10 minutes'], [30, '30 minutes'], [0, 'until my next change']].map(o => '<option value="' + o[0] + '"' + (undoMinutes() === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></label><p class="hint" style="margin:.4em 0 0">Undo always covers your last change, until you make another one. ' + (ghCfg() ? 'Every version saved before that stays in <a href="https://github.com/' + encodeURIComponent(ghCfg().owner) + '/' + encodeURIComponent(ghCfg().repo) + '/commits/' + encodeURIComponent(ghCfg().branch || 'main') + '/' + ghCfg().path.split('/').map(encodeURIComponent).join('/') + '" target="_blank" rel="noopener">your repository’s history</a>.' : 'With sync, earlier versions are kept too: Settings → Sync → Earlier versions.') + '</p></div>' +
       '<div class="set-section"><h3>Colour lines</h3><p class="hint">Named paths of ideas, with their colours. Add, rename, recolour or hide them, and see what is on each.</p><div class="set-actions"><button type="button" class="btn" id="setBrManage">Manage colour lines</button></div></div>' +
-      syncSectionHTML() +
+      (PREVIEW ? syncSectionHTML() : '<div class="set-section"><h3>Sync</h3><p class="hint">Where your library is kept (GitHub or an iCloud / Dropbox folder), the copy on this Mac, and Zotero: all under the cloud.</p><div class="set-actions"><button type="button" class="btn primary" id="setOpenCloud">Open the cloud</button></div></div>') +
       '<div class="set-section"><h3>Data</h3><p class="hint">Saving status: <span data-save-state>' + esc(saveStateText()) + '</span>. A backup is one JSON file with all your topics, papers, lines and marks, in the same format as the data file in your repository.</p>' +
       '<div class="set-actions"><button type="button" class="btn" id="setExport">Export backup</button><button type="button" class="btn" id="setImport">Import backup</button><button type="button" class="btn" id="setNotes">Export notes</button><button type="button" class="btn" id="setMapExport">Export map (PNG or PDF)</button><button type="button" class="btn" id="setPapersImport">Import papers (Zotero, CSV, BibTeX, RIS)</button></div><p class="hint" style="margin-top:.9em"><b>Add from any page.</b> Drag this button to your bookmarks bar: <a class="bookmarklet" id="setBookmarklet" href="#" title="Drag me to your bookmarks bar">+ Paper Map</a>. On a paper’s page (a journal, arXiv, Google Scholar), click it: New paper opens here with its DOI and title, and you choose where it goes.</p><div class="set-actions"><button type="button" class="btn" id="setPapersExport">Export papers (CSV, BibTeX, RIS)</button><button type="button" class="btn" id="setReset">Start over</button>' + '</div></div>' +
       appSectionHTML() +
@@ -806,12 +806,14 @@ function openSettings(){
       b.querySelector('#setExport').addEventListener('click', () => { closeModal(); exportBackup(); });
       b.querySelector('#setImport').addEventListener('click', () => { closeModal(); importBackup(); });
       b.querySelector('#setReset').addEventListener('click', () => { closeModal(); resetBuiltin(); });
+      { const oc = b.querySelector('#setOpenCloud'); if(oc) oc.addEventListener('click', () => { closeModal(); setTimeout(() => { try{ window.pmOpenCloud && window.pmOpenCloud(); }catch(err){} }, 60); }); }
       b.querySelector('#setNotes').addEventListener('click', () => { closeModal(); setTimeout(() => openNotesExport(notedEntries(), false), 0); });
     }
   });
 }
 const REPO_LINK = 'https://github.com/new?name=paper-map-data&visibility=private&description=Paper+Map+data';
-const TOKEN_LINK = 'https://github.com/settings/personal-access-tokens/new?name=Paper+Map&description=Lets+Paper+Map+save+to+one+private+repository&expires_in=366&contents=write';
+const TOKEN_LINK = 'https://github.com/settings/personal-access-tokens/new?name=Paper+Map&description=Lets+Paper+Map+save+to+its+private+repositories&expires_in=366&contents=write';
+const TOKEN_LINK_ALL = 'https://github.com/settings/personal-access-tokens/new?name=Paper+Map&description=Lets+Paper+Map+make+and+keep+its+private+repositories&expires_in=366&contents=write&administration=write';
 function fmtDay(ms){ return new Date(ms).toLocaleDateString([], {day: 'numeric', month: 'short', year: 'numeric'}); }
 function tokenDaysLeft(c){ return c && c.tokenExp ? Math.ceil((c.tokenExp - Date.now()) / 864e5) : null; }
 const TOKENS_LINK = 'https://github.com/settings/personal-access-tokens';
@@ -904,10 +906,13 @@ function ghSectionHTML(){
   const has = !!(g.owner && g.repo && g.token);
   return '<div class="set-section"><h3>GitHub sync</h3>' +
     '<p class="hint">Your library in a private GitHub repository of your own: every change saved within seconds, every version kept, on any device.</p>' +
-    (has ? '' : '<ol class="gh-steps">' +
-      '<li><a href="' + REPO_LINK + '" target="_blank" rel="noopener">Create a private repository</a>. Its name is filled in.</li>' +
-      '<li><a href="' + TOKEN_LINK + '" target="_blank" rel="noopener">Create a token</a> for that repository only. Its one permission is filled in.</li>' +
-      '<li>Paste it below, then Connect.</li></ol>') +
+    (has ? '' : '<p class="gh-way">Once, and Paper Map does the rest</p><ol class="gh-steps">' +
+      '<li><a href="' + TOKEN_LINK_ALL + '" target="_blank" rel="noopener">Create a token</a>. Choose <b>All repositories</b>; its two permissions are filled in.</li>' +
+      '<li>Paste it below, then Connect. Paper Map makes its private repositories when they are needed.</li></ol>' +
+      '<details class="gh-alt"><summary>Or give the token only repositories you make</summary><ol class="gh-steps">' +
+      '<li><a href="' + REPO_LINK + '" target="_blank" rel="noopener">Create a private repository</a> for your library, and also <a href="https://github.com/new?name=paper-map-pdfs&visibility=private" target="_blank" rel="noopener">paper-map-pdfs</a> and <a href="https://github.com/new?name=paper-map-notes&visibility=private" target="_blank" rel="noopener">paper-map-notes</a>.</li>' +
+      '<li><a href="' + TOKEN_LINK + '" target="_blank" rel="noopener">Create a token</a> for those three only. Its one permission is filled in.</li>' +
+      '<li>Paste it below, then Connect.</li></ol></details>') +
     '<div class="form-grid">' +
     '<label>Repository<input type="text" id="ghRepo" autocomplete="off" spellcheck="false" value="' + esc(g.repo || 'paper-map-data') + '"></label>' +
     '<label>Token<input type="password" id="ghToken" autocomplete="off" spellcheck="false" placeholder="github_pat_…" value="' + esc(g.token || '') + '"></label>' +
@@ -955,6 +960,10 @@ function wireGhSection(b){
       b.querySelector('#ghOwner').value = owner || '';
     }
     if(!/^[A-Za-z0-9-]{1,39}$/.test(owner || '')) return err('Couldn’t find your GitHub username. Enter it under Advanced.');
+    { const cc = {kind: 'github', owner, repo, token, branch, path}; let pv = await ghIsPrivate(cc, repo);
+      if(pv === null){ go.disabled = true; go.textContent = 'Making ' + repo + '…'; const made = await ghEnsureRepo(cc, repo, 'Your Paper Map library'); go.disabled = false; go.textContent = 'Connect';
+        if(!made) return err('There is no repository named ' + repo + ' yet, and this token may not make one. Create it (private), or use a token for all repositories.'); pv = true; }
+      if(pv === false) return err('The repository ' + repo + ' is public. Paper Map saves only to private repositories: make it private on GitHub (Settings › General › Change visibility), then Connect.'); }
     go.textContent = 'Save and reload';
     const same = old.owner === owner && old.repo === repo && old.branch === branch && old.path === path;
     const tokenSame = old.token === token;
