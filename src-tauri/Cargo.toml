@@ -1,6 +1,6 @@
 [package]
 name = "paper-map"
-version = "3.1.8"
+version = "3.1.9"
 description = "A personal map of research, ideas and reading"
 authors = ["liamxluo"]
 license = "Apache-2.0"

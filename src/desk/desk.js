@@ -34,7 +34,7 @@ function fit(){
   if(phoneDesk()){ if(CAM) return; const s = innerHeight / 900, min = innerWidth - 1440 * s; if(PAN === null) PAN = Math.max(min, Math.min(0, innerWidth * .5 - 950 * s));
     PAN = Math.max(min, Math.min(0, PAN)); FIT = {s, tx: PAN, ty: 0}; stage.style.transform = 'translate(' + FIT.tx + 'px,0) scale(' + s + ')'; document.body.classList.add('narrow', 'phone'); return; }
   document.body.classList.remove('phone');
-  const s = narrow ? Math.min(innerWidth / 1440, innerHeight / 900) : Math.max(innerWidth / 1440, innerHeight / 900);
+  const s = narrow || innerWidth / innerHeight < 1440 / 900 ? Math.min(innerWidth / 1440, innerHeight / 900) * (narrow ? 1 : 0) + (narrow ? 0 : innerWidth / 1440) : Math.max(innerWidth / 1440, innerHeight / 900);
   FIT = {s, tx: (innerWidth - 1440 * s) / 2, ty: (innerHeight - 900 * s) / 2};
   stage.style.transform = 'translate(' + FIT.tx + 'px,' + FIT.ty + 'px) scale(' + s + ')';
   document.body.classList.toggle('narrow', narrow);
@@ -312,7 +312,7 @@ function setWood(v, instant){ prefs.wood = v; document.querySelectorAll('.wd').f
   const url = AS + 'bg-' + v + '.webp', img = new Image();
   img.onload = () => { const back = $(bgFront === 'A' ? 'bgB' : 'bgA'), front = $(bgFront === 'A' ? 'bgA' : 'bgB');
     back.style.backgroundImage = 'url(' + url + ')'; back.style.transition = instant ? 'none' : ''; front.style.transition = instant ? 'none' : '';
-    back.style.opacity = 1; front.style.opacity = 0; bgFront = bgFront === 'A' ? 'B' : 'A'; document.body.classList.add('ready'); };
+    back.style.opacity = 1; front.style.opacity = 0; bgFront = bgFront === 'A' ? 'B' : 'A'; $('bgxB').style.backgroundImage = 'url(' + url + ')'; $('bgxT').style.backgroundImage = 'url(' + AS + 'bgtop-' + v + '.webp)'; document.body.classList.add('ready'); };
   img.onerror = () => document.body.classList.add('ready');
   img.src = url; setTimeout(paintDrinkAnim, 350); }
 function setPaper(v){ prefs.paper = v; document.querySelectorAll('.opt').forEach(o => o.classList.toggle('on', o.dataset.paper === v));
@@ -2256,4 +2256,28 @@ window.__pmNbksRefresh = () => { try{ rNbksDraw(); }catch(e){} };
 
 /* how many deleted papers keep your notes, shown beside Deleted papers on the Papers board */
 { const _rp = renderPapers; renderPapers = function(){ const r = _rp.apply(this, arguments); try{ const n = P && P.deletedCount ? P.deletedCount() : 0; $('pbDelN').textContent = n || ''; }catch(e){} return r; }; }
+
+/* ===================== tool bars of their own =====================
+   A button with tools of its own (✎ on the reading page) opens them in a liquid-glass bar of their own, so the reading bar
+   never crowds. Drag the bar by its grip anywhere: near the left or right edge it stands upright along that side, near the
+   top or bottom it lies along it, anywhere else it stays where you leave it; it is remembered. The button again closes it. */
+function palPref(name){ try{ return JSON.parse(localStorage.getItem('pm:pal:' + name) || 'null'); }catch(e){ return null; } }
+function palPlace(p, name, def){ const v = palPref(name) || def, W = innerWidth, H = innerHeight, cl = (a, lo, hi) => Math.max(lo, Math.min(hi, a));
+  ['d-left', 'd-right', 'd-top', 'd-bottom', 'd-free'].forEach(c => p.classList.remove(c)); p.classList.add('d-' + v.dock); p.classList.toggle('vert', v.dock === 'left' || v.dock === 'right');
+  Object.assign(p.style, {left: 'auto', top: 'auto', right: 'auto', bottom: 'auto', transform: 'none'});
+  if(v.dock === 'left' || v.dock === 'right'){ p.style[v.dock] = 'calc(12px + env(safe-area-inset-' + v.dock + ', 0px))'; const h = p.offsetHeight || 300; p.style.top = cl((v.y != null ? v.y : H / 2) - h / 2, 84, Math.max(84, H - h - 14)) + 'px'; }
+  else if(v.dock === 'top' || v.dock === 'bottom'){ p.style[v.dock] = 'calc(14px + env(safe-area-inset-' + v.dock + ', 0px))'; p.style.left = cl(v.x != null ? v.x : W / 2, 120, W - 120) + 'px'; p.style.transform = 'translateX(-50%)'; }
+  else { const r = p.getBoundingClientRect(); p.style.left = cl(v.x, 6, W - (r.width || 60) - 6) + 'px'; p.style.top = cl(v.y, 6, H - (r.height || 40) - 6) + 'px'; } }
+function palWire(p, name){ let s = null;
+  p.addEventListener('pointerdown', e => { if(e.target.closest('button, input, select, label')) return; e.preventDefault(); const r = p.getBoundingClientRect(); s = {dx: e.clientX - r.left, dy: e.clientY - r.top}; try{ p.setPointerCapture(e.pointerId); }catch(x){}
+    p.classList.add('dragging'); Object.assign(p.style, {transform: 'none', right: 'auto', bottom: 'auto', left: r.left + 'px', top: r.top + 'px'}); });
+  p.addEventListener('pointermove', e => { if(!s) return; p.style.left = (e.clientX - s.dx) + 'px'; p.style.top = (e.clientY - s.dy) + 'px'; });
+  const up = () => { if(!s) return; s = null; p.classList.remove('dragging'); const r = p.getBoundingClientRect(), W = innerWidth, H = innerHeight, near = 90, cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const v = r.left < near ? {dock: 'left', y: cy} : W - r.right < near ? {dock: 'right', y: cy} : H - r.bottom < near ? {dock: 'bottom', x: cx} : r.top < near ? {dock: 'top', x: cx} : {dock: 'free', x: r.left, y: r.top};
+    try{ localStorage.setItem('pm:pal:' + name, JSON.stringify(v)); }catch(x){} palPlace(p, name, v); };
+  p.addEventListener('pointerup', up); p.addEventListener('pointercancel', up); addEventListener('resize', () => { if(p.classList.contains('on')) palPlace(p, name, palPref(name) || p._def); }); }
+function palShow(name, content, on, def){ let p = document.getElementById('pal-' + name);
+  if(!p){ p = document.createElement('div'); p.id = 'pal-' + name; p.className = 'pal'; p.innerHTML = '<span class="pal-grip" aria-hidden="true"></span><div class="pal-in"></div>'; document.body.appendChild(p); palWire(p, name); }
+  p._def = def; if(on){ const inn = p.querySelector('.pal-in'); if(content.parentNode !== inn) inn.appendChild(content); content.hidden = false; p.classList.add('on'); palPlace(p, name, def); } else p.classList.remove('on'); }
+$('spInk').addEventListener('click', () => { palShow('ink', $('inkTools'), INK.on, {dock: 'right', y: innerHeight / 2}); });
 })();

@@ -947,3 +947,24 @@ function axFoldMove(ax, f, from, to, done){ const bx = mmBox(), Xc = bx.l + bx.w
   const step = () => { const an = MM.foldAnim; if(!an) return; MM._axv = (MM._axv || 0) + 1; try{ mmAxisSnap(m); keep(); mmEdgesOnly(); mmAfterRender(m); }catch(e){}
     if(performance.now() - an.t0 < an.dur) requestAnimationFrame(step); else { MM.foldAnim = null; done(); MM._axv = (MM._axv || 0) + 1; mmRender(); keep(); mmSave(); } };
   requestAnimationFrame(step); }
+/* ===================== the mind map's handwriting tools: a bar of their own =====================
+   ✎ opens the pens, highlighter, eraser and sizes in a liquid-glass bar of their own; ✎ again closes it. Drag it by its grip:
+   near the left or right edge it stands upright along that side, near the top or foot it lies along it, anywhere else it
+   stays where you leave it. Where you leave it is remembered. */
+function mmPalPref(){ try{ return JSON.parse(localStorage.getItem('pm:pal:mmink') || 'null'); }catch(e){ return null; } }
+function mmPalPlace(tb){ const v = mmPalPref() || {dock: 'right', y: 220}, W = innerWidth, H = innerHeight, cl = (a, lo, hi) => Math.max(lo, Math.min(hi, a));
+  tb.classList.toggle('vert', v.dock === 'left' || v.dock === 'right'); Object.assign(tb.style, {left: 'auto', top: 'auto', right: 'auto', bottom: 'auto', transform: 'none'});
+  if(v.dock === 'left' || v.dock === 'right'){ tb.style[v.dock] = 'calc(14px + env(safe-area-inset-' + v.dock + ', 0px))'; const h = tb.offsetHeight || 300; tb.style.top = cl((v.y != null ? v.y : H / 2) - h / 2, 98, Math.max(98, H - h - 14)) + 'px'; }
+  else if(v.dock === 'top' || v.dock === 'bottom'){ tb.style[v.dock] = (v.dock === 'top' ? 'calc(70px + env(safe-area-inset-top, 0px))' : 'calc(16px + env(safe-area-inset-bottom, 0px))'); tb.style.left = cl(v.x, 160, W - 160) + 'px'; tb.style.transform = 'translateX(-50%)'; }
+  else { const r = tb.getBoundingClientRect(); tb.style.left = cl(v.x, 6, W - (r.width || 80) - 6) + 'px'; tb.style.top = cl(v.y, 6, H - (r.height || 40) - 6) + 'px'; } }
+{ const _h = mmInkToolsHTML; mmInkToolsHTML = function(){ return '<span class="pal-grip" aria-hidden="true"></span>' + _h.apply(this, arguments); }; }
+{ const _t = mmInkToggle; mmInkToggle = function(){ const r = _t.apply(this, arguments); try{ const tb = mm$('mmInkTools'); if(MI.on) mmPalPlace(tb); }catch(e){} return r; }; }
+document.addEventListener('pointerdown', e => { const tb = e.target.closest && e.target.closest('#mmInkTools'); if(!tb || e.target.closest('button, input, select, label')) return; e.preventDefault(); e.stopPropagation();
+  const r = tb.getBoundingClientRect(), s = {dx: e.clientX - r.left, dy: e.clientY - r.top}; tb.classList.add('dragging'); Object.assign(tb.style, {transform: 'none', right: 'auto', bottom: 'auto', left: r.left + 'px', top: r.top + 'px'}); try{ tb.setPointerCapture(e.pointerId); }catch(x){}
+  const mv = ev => { tb.style.left = (ev.clientX - s.dx) + 'px'; tb.style.top = (ev.clientY - s.dy) + 'px'; };
+  const up = () => { tb.removeEventListener('pointermove', mv); tb.removeEventListener('pointerup', up); tb.removeEventListener('pointercancel', up); tb.classList.remove('dragging');
+    const q = tb.getBoundingClientRect(), W = innerWidth, H = innerHeight, near = 90, cx = q.left + q.width / 2, cy = q.top + q.height / 2;
+    const v = q.left < near ? {dock: 'left', y: cy} : W - q.right < near ? {dock: 'right', y: cy} : H - q.bottom < near ? {dock: 'bottom', x: cx} : q.top < near + 50 ? {dock: 'top', x: cx} : {dock: 'free', x: q.left, y: q.top};
+    try{ localStorage.setItem('pm:pal:mmink', JSON.stringify(v)); }catch(x){} mmPalPlace(tb); };
+  tb.addEventListener('pointermove', mv); tb.addEventListener('pointerup', up); tb.addEventListener('pointercancel', up); }, true);
+addEventListener('resize', () => { try{ const tb = mm$('mmInkTools'); if(tb && !tb.hidden) mmPalPlace(tb); }catch(e){} });

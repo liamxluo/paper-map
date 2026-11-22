@@ -378,3 +378,16 @@ html #mind .mm-bar [data-mm="sync"]{position:relative !important}
 /* beside a notebook, the map's tools and its navigator move clear of it */
 body.nbk-docked #mind .mm-bar.mm-r{right:calc(min(46vw, 640px) + 14px)}
 body.nbk-docked #mmNav{right:calc(min(46vw, 640px) + 14px)}
+
+/* the handwriting bar: liquid glass, upright along a side, lying along the top or foot, or where you leave it */
+#mind .mm-inktools{position:fixed;border-radius:999px;padding:6px 10px 6px 8px;background:rgba(255,253,248,.74);-webkit-backdrop-filter:blur(18px) saturate(1.25);backdrop-filter:blur(18px) saturate(1.25);box-shadow:0 10px 30px rgba(40,25,10,.20),inset 0 0 0 .5px rgba(255,255,255,.75);touch-action:none;user-select:none;-webkit-user-select:none;z-index:30}
+#mind .mm-inktools.vert{flex-direction:column;padding:8px 6px 10px;border-radius:24px}
+#mind .mm-inktools .pal-grip{flex:none;width:6px;height:22px;border-radius:3px;background:rgba(35,30,26,.20);cursor:grab;margin-right:2px}
+#mind .mm-inktools.vert .pal-grip{width:22px;height:6px;margin:0 0 2px}
+#mind .mm-inktools.vert input[type=range]{width:34px;writing-mode:vertical-lr;direction:rtl;height:96px}
+#mind .mm-inktools.dragging{opacity:.94;box-shadow:0 18px 44px rgba(40,25,10,.28)}
+/* upright: the two rows of tools stand as two columns side by side, the grip across their top */
+#mind .mm-inktools.vert{display:grid;grid-template-columns:auto auto;align-items:start;column-gap:4px;row-gap:4px}
+#mind .mm-inktools.vert .pal-grip{grid-column:1 / -1;justify-self:center}
+#mind .mm-inktools.vert .mi-row{flex-direction:column;align-items:center}
+#mind .mm-inktools.vert .mi-row > i,#mind .mm-inktools.vert .mi-row > .mi-sep{width:18px !important;height:1px !important;margin:3px 0 !important}
